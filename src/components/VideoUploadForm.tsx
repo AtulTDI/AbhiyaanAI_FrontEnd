@@ -39,9 +39,14 @@ interface FormData {
 type Props = {
   onAddVideo: (data: any) => void;
   setShowAddView: (val: boolean) => void;
+  uploading: boolean;
 };
 
-export default function VideoUploadForm({ onAddVideo, setShowAddView }: Props) {
+export default function VideoUploadForm({
+  onAddVideo,
+  setShowAddView,
+  uploading,
+}: Props) {
   const theme = useTheme<AppTheme>();
   const styles = createStyles(theme);
   const { colors } = theme;
@@ -272,7 +277,8 @@ export default function VideoUploadForm({ onAddVideo, setShowAddView }: Props) {
             mode="contained"
             icon="upload"
             onPress={handleSubmit}
-            disabled={!formData.file}
+            disabled={!formData.file || uploading}
+            loading={uploading}
             style={styles.actionButton}
           >
             Upload Base Video

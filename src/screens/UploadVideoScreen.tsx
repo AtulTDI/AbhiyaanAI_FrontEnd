@@ -24,6 +24,7 @@ export default function UploadVideoScreen() {
   const [showAddView, setShowAddView] = useState(false);
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
   const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   const fetchVideos = useCallback(async () => {
     try {
@@ -45,11 +46,15 @@ export default function UploadVideoScreen() {
 
   const handleAddVideo = async (videoData: any) => {
     try {
+      setUploading(true);
       await uploadVideo(videoData);
+      setUploading(false);
       await fetchVideos();
       setShowAddView(false);
     } catch (error) {
       showToast(extractErrorMessage(error, "Failed to add video"), "error");
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -144,6 +149,7 @@ export default function UploadVideoScreen() {
               <VideoUploadForm
                 onAddVideo={handleAddVideo}
                 setShowAddView={setShowAddView}
+                uploading={uploading}
               />
             </>
           )}
