@@ -3,16 +3,19 @@ import { View, StyleSheet, Dimensions } from "react-native";
 import { Surface, Text, Button, useTheme } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import { AppTheme } from "../theme";
-
+import { useToast } from "../components/ToastProvider";
 import SelectBaseVideo from "../components/SelectBaseVideo";
 import SelectVoters from "../components/SelectVoters";
 import GenerateVideoProgress from "../components/GenerateVideoProgress";
-import { generateVideo } from "../api/videoApi";
+import { extractErrorMessage } from "../utils/common";
+import { generateCustomisedVideo } from "../api/videoApi";
 
 const steps = ["Select Base Video", "Select Voters", "Generate Video"];
 
 export default function GenerateVideoScreen() {
   const theme = useTheme<AppTheme>();
+  const { showToast } = useToast();
+
   const styles = createStyles(theme);
   const { colors } = theme;
 
@@ -35,9 +38,13 @@ export default function GenerateVideoScreen() {
       recipientIds: stepData[1],
     };
 
-    console.log(payload);
-    await generateVideo(payload);
-    // handleNext();
+    try {
+      await generateCustomisedVideo(payload);
+    } catch (error: any) {
+      showToast(extractErrorMessage(error, "Failed to generate videos"), "error");
+    } finally {
+      handleNext();
+    }
   };
 
   const handleSend = () => {};

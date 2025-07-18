@@ -5,3 +5,8 @@ export type Video = {
   status: string;
   file: any;
 }
+
+export type GenerateVideo = {
+  baseVideoId: string;
+  recipientIds: string[];
+}

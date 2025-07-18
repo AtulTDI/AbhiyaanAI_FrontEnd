@@ -1,6 +1,6 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { View, StyleSheet } from "react-native";
-import { IconButton, useTheme } from "react-native-paper";
+import { IconButton, ProgressBar, useTheme } from "react-native-paper";
 import { useFocusEffect } from "@react-navigation/native";
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import CommonTable from "./CommonTable";
@@ -22,6 +22,9 @@ export default function GenerateVideoProgress({ onGenerate }: Props) {
   const { colors } = theme;
   const { showToast } = useToast();
   const [voters, setVoters] = useState<Voter[]>([]);
+  const [voterStatuses, setVoterStatuses] = useState<
+    Record<string, "not_started" | "in_progress" | "completed">
+  >({});
 
   const fetchVoters = useCallback(async () => {
     try {
@@ -40,6 +43,28 @@ export default function GenerateVideoProgress({ onGenerate }: Props) {
     }, [fetchVoters])
   );
 
+  useEffect(() => {
+    if (voters.length === 0) return;
+
+    const interval = setInterval(() => {
+      setVoterStatuses((prev) => {
+        const updated = { ...prev };
+        voters.forEach((voter) => {
+          if (!updated[voter.id]) {
+            updated[voter.id] = "not_started";
+          } else if (updated[voter.id] === "not_started") {
+            updated[voter.id] = "in_progress";
+          } else if (updated[voter.id] === "in_progress") {
+            updated[voter.id] = "completed";
+          }
+        });
+        return updated;
+      });
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [voters]);
+
   const columns = [
     {
       label: "Name",
@@ -51,19 +76,53 @@ export default function GenerateVideoProgress({ onGenerate }: Props) {
     {
       key: "actions",
       label: "Actions",
-      flex: 1,
-      render: (item: Voter) => (
-        <IconButton
-          icon={() => (
-            <FontAwesome
-              name="whatsapp"
-              size={20}
-              color={colors.whatsappGreen}
-            />
-          )}
-          onPress={() => onGenerate?.(item)}
-        />
-      ),
+      flex: 1.5,
+      render: (item: Voter) => {
+        const status = voterStatuses[item.id] || "not_started";
+
+        switch (status) {
+          case "not_started":
+            return (
+              <View style={{ justifyContent: "flex-start" }}>
+                <View
+                  style={{
+                    width: 80,
+                    height: 8,
+                    borderRadius: 4,
+                    backgroundColor: colors.backdrop,
+                    opacity: 0.3,
+                  }}
+                />
+              </View>
+            );
+          case "in_progress":
+            return (
+              <View style={{ justifyContent: "flex-start" }}>
+                <ProgressBar
+                  indeterminate
+                  color={colors.primary}
+                  style={{ width: 80, height: 8, borderRadius: 4 }}
+                />
+              </View>
+            );
+          case "completed":
+            return (
+              <View style={{ justifyContent: "flex-start" }}>
+                <IconButton
+                  style={{ margin: 0 }}
+                  icon={() => (
+                    <FontAwesome
+                      name="whatsapp"
+                      size={20}
+                      color={colors.whatsappGreen}
+                    />
+                  )}
+                  onPress={() => onGenerate?.(item)}
+                />
+              </View>
+            );
+        }
+      },
     },
   ];
 

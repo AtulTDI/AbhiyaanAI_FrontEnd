@@ -1,5 +1,5 @@
 import axios from "./axiosInstance";
-import { Video } from "../types/Video";
+import { GenerateVideo, Video } from "../types/Video";
 import { base64ToBlob } from "../utils/common";
 import { getItem } from "../utils/storage";
 
@@ -53,12 +53,6 @@ export const uploadVideo = async (payload: Video) => {
 };
 
 /**
- * Generate video
- */
-export const generateVideo = (payload: Video) =>
-  axios.post<Video>(`/CustomizedAIVideo`, payload);
-
-/**
  * Edit video by ID
  */
 export const editVideoById = (id: string, payload: Video) =>
@@ -69,3 +63,16 @@ export const editVideoById = (id: string, payload: Video) =>
  */
 export const deleteVideoById = (id: string) =>
   axios.delete(`/BaseVideos/${id}/deletevideo`);
+
+/**
+ * Generate customised video
+ */
+export const generateCustomisedVideo = (payload: GenerateVideo) =>
+  axios.post<GenerateVideo>(`/CustomizedAIVideo`, payload);
+
+
+/**
+ * Get generated customised video
+ */
+export const getCustomisedVideos = () =>
+  axios.get<GenerateVideo>(`/GetUserCustomizedVideos`);
