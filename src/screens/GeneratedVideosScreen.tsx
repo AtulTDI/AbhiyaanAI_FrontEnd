@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { IconButton, Surface, Text, useTheme } from "react-native-paper";
 import { useFocusEffect } from "@react-navigation/native";
@@ -7,8 +7,9 @@ import CommonTable from "../components/CommonTable";
 import { Voter } from "../types/Voter";
 import { extractErrorMessage } from "../utils/common";
 import { useToast } from "../components/ToastProvider";
-import { getVoters } from "../api/voterApi";
-import { getCustomisedVideoLink } from "../api/videoApi";
+import FormDropdown from "../components/FormDropdown";
+import { getVotersWithCompletedVideoId } from "../api/voterApi";
+import { getCustomisedVideoLink, getVideos } from "../api/videoApi";
 import { AppTheme } from "../theme";
 
 export default function GeneratedVideoScreen() {
@@ -16,28 +17,58 @@ export default function GeneratedVideoScreen() {
   const styles = createStyles(theme);
   const { colors } = theme;
   const { showToast } = useToast();
+  const [baseVideos, setBaseVideos] = useState<any[]>([]);
+  const [selectedVideoId, setSelectedVideoId] = useState(null);
   const [voters, setVoters] = useState<Voter[]>([]);
 
-  const fetchVoters = useCallback(async () => {
+  const fetchVoters = async () => {
     try {
-      const response = await getVoters();
+      const response = await getVotersWithCompletedVideoId(selectedVideoId);
       setVoters(
         response?.data && Array.isArray(response.data) ? response.data : []
       );
     } catch (error: any) {
       showToast(extractErrorMessage(error, "Failed to load voters"), "error");
     }
+  };
+
+  const fetchVideos = useCallback(async () => {
+    try {
+      const response = await getVideos();
+
+      const videosData =
+        response?.data && Array.isArray(response.data) ? response.data : [];
+
+      const transformedVideos = videosData.map((video) => ({
+        label: video.campaignName,
+        value: video.id,
+      }));
+
+      setBaseVideos(transformedVideos);
+    } catch (error: any) {
+      if (error?.response || error?.message) {
+        showToast(extractErrorMessage(error, "Failed to load videos"), "error");
+      } else {
+        console.warn("No response received or unknown error:", error);
+      }
+    }
   }, []);
 
   useFocusEffect(
     useCallback(() => {
-      fetchVoters();
-    }, [fetchVoters])
+      fetchVideos();
+    }, [])
   );
 
+  useEffect(() => {
+    if (selectedVideoId) {
+      fetchVoters();
+    }
+  }, [selectedVideoId]);
+
   const handleSendVideo = async (link) => {
-    // const response = await 
-  }
+    // const response = await
+  };
 
   const handleGetVideoLink = async (item) => {
     const response = await getCustomisedVideoLink({
@@ -87,6 +118,21 @@ export default function GeneratedVideoScreen() {
         >
           Generated Videos
         </Text>
+        <FormDropdown
+          label="Select Campaign"
+          value={selectedVideoId}
+          options={
+            Array.isArray(baseVideos)
+              ? typeof (baseVideos as unknown[])[0] === "string"
+                ? (baseVideos as string[]).map((opt) => ({
+                    label: opt,
+                    value: opt,
+                  }))
+                : (baseVideos as { label: string; value: string }[])
+              : []
+          }
+          onSelect={(val) => setSelectedVideoId(val)}
+        />
         <CommonTable
           data={voters}
           columns={columns}

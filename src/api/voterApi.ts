@@ -10,10 +10,19 @@ export const getVoters = () =>
 
 
 /**
- * Get paginated users with base video id
+ * Get paginated voters with in progress vidoes using base video id
  */
 export const getVotersWithVideoId = (id: string) =>
   axios.get('/Recipients/getinProgressaivideoswithbaseid', {
+    params: { baseVideoID: id },
+  });
+
+
+/**
+* Get paginated voters with completed vidoes using base video id
+*/
+export const getVotersWithCompletedVideoId = (id: string) =>
+  axios.get('/Recipients/getcompletedaivideoswithbaseid', {
     params: { baseVideoID: id },
   });
 
