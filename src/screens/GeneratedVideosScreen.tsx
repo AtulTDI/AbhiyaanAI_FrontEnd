@@ -72,9 +72,11 @@ export default function GeneratedVideoScreen() {
 
   const handleGetVideoLink = async (item) => {
     const response = await getCustomisedVideoLink({
-      recipientId: item.id,
+      RecipientId: item.id,
+      BaseVideoID: selectedVideoId,
+      PlatformType: "WhatsApp"
     });
-    handleSendVideo(response.data.sharableLink);
+    handleSendVideo(response?.data?.sharableLink);
   };
 
   const columns = [
