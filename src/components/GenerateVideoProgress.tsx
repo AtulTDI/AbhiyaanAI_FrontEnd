@@ -7,17 +7,18 @@ import CommonTable from "./CommonTable";
 import { Voter } from "../types/Voter";
 import { extractErrorMessage } from "../utils/common";
 import { useToast } from "./ToastProvider";
-import { getVoters } from "../api/voterApi";
+import { getVotersWithVideoId } from "../api/voterApi";
 import { AppTheme } from "../theme";
 
 type Props = {
+  stepData: any;
   voters?: Voter[];
   onSendSelected?: (selected: Voter[]) => void;
   onSendAll?: () => void;
   onGenerate?: (voter: Voter) => void;
 };
 
-export default function GenerateVideoProgress({ onGenerate }: Props) {
+export default function GenerateVideoProgress({ stepData, onGenerate }: Props) {
   const theme = useTheme<AppTheme>();
   const { colors } = theme;
   const { showToast } = useToast();
@@ -28,7 +29,7 @@ export default function GenerateVideoProgress({ onGenerate }: Props) {
 
   const fetchVoters = useCallback(async () => {
     try {
-      const response = await getVoters();
+      const response = await getVotersWithVideoId(stepData?.[0]);
       setVoters(
         response?.data && Array.isArray(response.data) ? response.data : []
       );

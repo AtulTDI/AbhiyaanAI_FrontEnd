@@ -41,7 +41,10 @@ export default function GenerateVideoScreen() {
     try {
       await generateCustomisedVideo(payload);
     } catch (error: any) {
-      showToast(extractErrorMessage(error, "Failed to generate videos"), "error");
+      showToast(
+        extractErrorMessage(error, "Failed to generate videos"),
+        "error"
+      );
     } finally {
       handleNext();
     }
@@ -64,7 +67,7 @@ export default function GenerateVideoScreen() {
       case 1:
         return <SelectVoters stepData={stepData} setStepData={setStepData} />;
       case 2:
-        return <GenerateVideoProgress />;
+        return <GenerateVideoProgress stepData={stepData} />;
       default:
         return null;
     }

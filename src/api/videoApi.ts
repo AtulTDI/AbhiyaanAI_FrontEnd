@@ -1,5 +1,5 @@
 import axios from "./axiosInstance";
-import { GenerateVideo, Video } from "../types/Video";
+import { GenerateVideo, GetVideoLink, Video } from "../types/Video";
 import { base64ToBlob } from "../utils/common";
 import { getItem } from "../utils/storage";
 
@@ -76,3 +76,10 @@ export const generateCustomisedVideo = (payload: GenerateVideo) =>
  */
 export const getCustomisedVideos = () =>
   axios.get<GenerateVideo>(`/GetUserCustomizedVideos`);
+
+
+/**
+ * Get customised video link
+ */
+export const getCustomisedVideoLink = (payload: GetVideoLink) =>
+  axios.post<GetVideoLink>('/VideoShare/sendvideo', payload);

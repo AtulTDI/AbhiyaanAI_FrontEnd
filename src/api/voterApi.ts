@@ -6,7 +6,17 @@ import { base64ToBlob } from "../utils/common";
  * Get paginated users with optional search
  */
 export const getVoters = () =>
-  axios.get<Voter>("/Recipients");
+  axios.get<Voter>("/Recipients/getrecipients");
+
+
+/**
+ * Get paginated users with base video id
+ */
+export const getVotersWithVideoId = (id: string) =>
+  axios.get('/Recipients/getinProgressaivideoswithbaseid', {
+    params: { baseVideoID: id },
+  });
+
 
 /**
  * Get user by ID

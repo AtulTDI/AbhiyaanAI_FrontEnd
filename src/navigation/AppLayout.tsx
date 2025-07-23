@@ -9,6 +9,7 @@ import AddUserScreen from "../screens/AddUserScreen";
 import UploadVideoScreen from "../screens/UploadVideoScreen";
 import AddVoterScreen from "../screens/AddVoterScreen";
 import GenerateVideoScreen from "../screens/GenerateVideoScreen";
+import GeneratedVideoScreen from "../screens/GeneratedVideosScreen";
 import CustomDrawer from "../components/CustomDrawer";
 import CustomLabel from "../components/CustomLabel";
 import { AppTheme } from "../theme";
@@ -183,10 +184,33 @@ export default function AppLayout() {
               drawerLabel: (props) => (
                 <CustomLabel
                   {...props}
-                  label="Generate Video"
+                  label="Generate Video(s)"
                   icon={
                     <Ionicons
                       name="sparkles-outline"
+                      size={20}
+                      color={props.color || colors.onPrimary}
+                    />
+                  }
+                />
+              ),
+            }}
+          />
+
+          <Drawer.Screen
+            name="Generated"
+            component={GeneratedVideoScreen}
+            options={{
+              headerShown: true,
+              headerTitle: "",
+              headerRight: headerRightComponent,
+              drawerLabel: (props) => (
+                <CustomLabel
+                  {...props}
+                  label="Generated Video(s)"
+                  icon={
+                    <Ionicons
+                      name="film-outline"
                       size={20}
                       color={props.color || colors.onPrimary}
                     />

@@ -10,3 +10,8 @@ export type GenerateVideo = {
   baseVideoId: string;
   recipientIds: string[];
 }
+
+export type GetVideoLink = {
+  recipientId: string;
+  sharableLink?: string;
+}
