@@ -7,7 +7,14 @@ import CommonTable from "./CommonTable";
 import { Voter } from "../types/Voter";
 import { extractErrorMessage } from "../utils/common";
 import { useToast } from "./ToastProvider";
+import { getItem } from "../utils/storage";
 import { getVotersWithVideoId } from "../api/voterApi";
+import {
+  joinGroups,
+  registerOnServerEvents,
+  startConnection,
+  stopConnection,
+} from "../services/signalrService";
 import { AppTheme } from "../theme";
 
 type Props = {
@@ -43,6 +50,24 @@ export default function GenerateVideoProgress({ stepData, onGenerate }: Props) {
       fetchVoters();
     }, [fetchVoters])
   );
+
+  useEffect(() => {
+    const setupSignalR = async () => {
+      const token = await getItem("accessToken");
+      await startConnection(token);
+      await joinGroups(stepData?.[1]);
+
+      registerOnServerEvents("ReceiveVideoUpdate", (data) => {
+        console.log("📺 Video progress update:", data);
+      });
+    };
+
+    setupSignalR();
+
+    return () => {
+      stopConnection();
+    };
+  }, []);
 
   useEffect(() => {
     if (voters.length === 0) return;
