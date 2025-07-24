@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   TextStyle,
 } from "react-native";
-import { Menu, useTheme } from "react-native-paper";
+import { Menu, useTheme, ActivityIndicator } from "react-native-paper";
 import { MaterialIcons } from "@expo/vector-icons";
 import { AppTheme } from "../theme";
 
@@ -26,6 +26,7 @@ type Props<T> = {
   keyExtractor?: (item: T, index: number) => string;
   emptyText?: string;
   emptyIcon?: React.ReactNode;
+  loading?: boolean;
 };
 
 const ROWS_PER_PAGE_OPTIONS = [5, 10, 20];
@@ -36,6 +37,7 @@ export default function CommonTable<T>({
   keyExtractor = (_, index) => index.toString(),
   emptyText = "No data found",
   emptyIcon,
+  loading = false,
 }: Props<T>) {
   const theme = useTheme<AppTheme>();
   const styles = createStyles(theme);
@@ -75,11 +77,7 @@ export default function CommonTable<T>({
   const renderItem = ({ item, index }: { item: T; index: number }) => (
     <>
       <View
-        style={[
-          styles.row,
-          styles.dataRow,
-          { backgroundColor: colors.white },
-        ]}
+        style={[styles.row, styles.dataRow, { backgroundColor: colors.white }]}
       >
         {columns.map((col) => {
           const key = String(col.key);
@@ -209,7 +207,7 @@ export default function CommonTable<T>({
         <View style={styles.tableWrapper}>
           {renderHeader()}
           <FlatList
-            data={paginatedData}
+            data={loading ? [] : paginatedData}
             keyExtractor={keyExtractor}
             renderItem={renderItem}
             contentContainerStyle={
@@ -222,10 +220,16 @@ export default function CommonTable<T>({
                 : { paddingBottom: 8 }
             }
             ListEmptyComponent={
-              <View style={styles.emptyContainer}>
-                {emptyIcon}
-                <Text style={styles.emptyText}>{emptyText}</Text>
-              </View>
+              loading ? (
+                <View style={styles.loaderContainer}>
+                  <ActivityIndicator size="large" />
+                </View>
+              ) : (
+                <View style={styles.emptyContainer}>
+                  {emptyIcon}
+                  <Text style={styles.emptyText}>{emptyText}</Text>
+                </View>
+              )
             }
             scrollEnabled
             style={{ flexGrow: 1 }}
@@ -279,6 +283,12 @@ const createStyles = (theme: AppTheme) =>
     emptyContainer: {
       alignItems: "center",
       justifyContent: "center",
+      paddingVertical: 40,
+    },
+    loaderContainer: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
       paddingVertical: 40,
     },
     emptyText: {

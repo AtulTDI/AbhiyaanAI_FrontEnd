@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { View, Modal, StyleSheet, TouchableOpacity } from "react-native";
 import { Button, Text, useTheme } from "react-native-paper";
+import dayjs from "dayjs";
 import { Ionicons } from "@expo/vector-icons";
 import { ResizeMode, Video as ExpoVideo } from "expo-av";
 import CommonTable from "./CommonTable";
@@ -35,7 +36,14 @@ export default function VideoTable({
 
   const columns = [
     { label: "Campaign", key: "campaignName", flex: 3 },
-    { label: "Created At", key: "createdAt", flex: 3 },
+    {
+      label: "Uploaded At",
+      key: "createdAt",
+      flex: 3,
+      render: (item) => (
+        <Text>{dayjs(item.createdAt).format("DD MMM YYYY, hh:mm A")}</Text>
+      ),
+    },
     {
       label: "Approval",
       key: "isShared",
@@ -43,10 +51,10 @@ export default function VideoTable({
       render: (item) => (
         <ApprovalToggle
           isApproved={item.isShared}
-          onPress={() =>
+          onToggle={() =>
             item.isShared ? onUnshare(item.id) : onShare(item.id)
           }
-          iconSize={24}
+          iconSize={20}
           labelStyle={{ fontWeight: "bold" }}
         />
       ),

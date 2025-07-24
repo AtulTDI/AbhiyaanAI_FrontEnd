@@ -20,8 +20,11 @@ export default function GeneratedVideoScreen() {
   const [baseVideos, setBaseVideos] = useState<any[]>([]);
   const [selectedVideoId, setSelectedVideoId] = useState(null);
   const [voters, setVoters] = useState<Voter[]>([]);
+  const [loading, setLoading] = useState(false);
 
   const fetchVoters = async () => {
+    setLoading(true);
+
     try {
       const response = await getVotersWithCompletedVideoId(selectedVideoId);
       setVoters(
@@ -29,6 +32,8 @@ export default function GeneratedVideoScreen() {
       );
     } catch (error: any) {
       showToast(extractErrorMessage(error, "Failed to load voters"), "error");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -45,6 +50,19 @@ export default function GeneratedVideoScreen() {
       }));
 
       setBaseVideos(transformedVideos);
+
+      if (transformedVideos?.length) {
+        const firstId = transformedVideos?.[0]?.value;
+        setSelectedVideoId(firstId);
+
+        setLoading(true);
+        await getVotersWithCompletedVideoId(firstId)
+          .then((res) => setVoters(res?.data ?? []))
+          .catch((e) =>
+            showToast(extractErrorMessage(e, "Failed to load voters"), "error")
+          )
+          .finally(() => setLoading(false));
+      }
     } catch (error: any) {
       if (error?.response || error?.message) {
         showToast(extractErrorMessage(error, "Failed to load videos"), "error");
@@ -74,7 +92,7 @@ export default function GeneratedVideoScreen() {
     const response = await getCustomisedVideoLink({
       RecipientId: item.id,
       BaseVideoID: selectedVideoId,
-      PlatformType: "WhatsApp"
+      PlatformType: "WhatsApp",
     });
     handleSendVideo(response?.data?.sharableLink);
   };
@@ -138,6 +156,7 @@ export default function GeneratedVideoScreen() {
         <CommonTable
           data={voters}
           columns={columns}
+          loading={loading}
           emptyIcon={
             <Ionicons
               name="people-outline"

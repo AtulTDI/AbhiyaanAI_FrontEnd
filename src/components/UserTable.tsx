@@ -1,8 +1,9 @@
 import React from "react";
+import dayjs from "dayjs";
 import { User } from "../types/User";
 import { Ionicons } from "@expo/vector-icons";
 import { View, StyleSheet } from "react-native";
-import { useTheme } from "react-native-paper";
+import { Text, useTheme } from "react-native-paper";
 import CommonTable from "./CommonTable";
 import { AppTheme } from "../theme";
 
@@ -25,7 +26,14 @@ export default function UserTable({ users, onEdit, onDelete }: Props) {
     { label: "Mobile", key: "phoneNumber", flex: 2.5 },
     { label: "Email", key: "email", flex: 4 },
     { label: "Role", key: "role", flex: 1.5 },
-    { label: "Created At", key: "createdAt", flex: 3 },
+    {
+      label: "Created At",
+      key: "createdAt",
+      flex: 3,
+      render: (item) => (
+        <Text>{dayjs(item.createdAt).format("DD MMM YYYY, hh:mm A")}</Text>
+      ),
+    },
     {
       label: "Actions",
       key: "actions",

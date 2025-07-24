@@ -12,7 +12,7 @@ import { AppTheme } from "../theme";
 
 type Props = {
   isApproved: boolean;
-  onPress: () => void;
+  onToggle: () => void;
   style?: ViewStyle;
   iconSize?: number;
   labelStyle?: TextStyle;
@@ -20,7 +20,7 @@ type Props = {
 
 export default function ApprovalToggle({
   isApproved,
-  onPress,
+  onToggle,
   style,
   iconSize = 16,
   labelStyle,
@@ -28,25 +28,26 @@ export default function ApprovalToggle({
   const theme = useTheme<AppTheme>();
   const { colors } = theme;
 
-  const iconName = isApproved ? "checkmark-circle" : "close-circle";
-  const bgColor = isApproved ? colors.success : colors.error;
-  const label = isApproved ? "Approved" : "Rejected";
+  const iconName = isApproved ? "checkmark-circle" : "checkmark-circle-outline";
+  const label = isApproved ? "Approved" : "Click to Approve";
+  const tintColor = isApproved ? colors.success : colors.primary;
+  const background = tintColor + "22";
 
   return (
     <TouchableOpacity
-      onPress={onPress}
+      onPress={onToggle}
       activeOpacity={0.8}
       style={[
         styles.button,
         {
-          backgroundColor: bgColor + "22", // light tint
-          borderColor: bgColor,
+          backgroundColor: background,
+          borderColor: tintColor,
         },
         style,
       ]}
     >
-      <Ionicons name={iconName} size={iconSize} color={bgColor} />
-      <Text style={[styles.label, { color: bgColor }, labelStyle]}>
+      <Ionicons name={iconName} size={iconSize} color={tintColor} />
+      <Text style={[styles.label, { color: tintColor }, labelStyle]}>
         {label}
       </Text>
     </TouchableOpacity>
