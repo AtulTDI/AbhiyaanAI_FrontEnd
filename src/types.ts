@@ -32,3 +32,11 @@ export type FieldConfig = {
   options?: string[] | { label: string; value: string }[];
 };
 
+export type Thumbnail = {
+  uri: string;
+  mimeType: string;
+  name: string;
+  file?: File;
+};
+
+

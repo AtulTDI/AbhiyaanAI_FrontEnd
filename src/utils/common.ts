@@ -34,3 +34,7 @@ export const extractErrorMessage = (error: any, fallback = "Something went wrong
     fallback
   );
 };
+
+export const getFileNameWithoutExtension = (fullName: string): string => {
+  return fullName.replace(/\.[^/.]+$/, "");
+};
