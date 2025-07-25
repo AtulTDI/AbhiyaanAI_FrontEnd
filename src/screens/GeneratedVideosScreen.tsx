@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, Platform } from "react-native";
 import { IconButton, Surface, Text, useTheme } from "react-native-paper";
 import { useFocusEffect } from "@react-navigation/native";
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
+import * as Linking from "expo-linking";
 import CommonTable from "../components/CommonTable";
 import { Voter } from "../types/Voter";
 import { extractErrorMessage } from "../utils/common";
@@ -84,17 +85,40 @@ export default function GeneratedVideoScreen() {
     }
   }, [selectedVideoId]);
 
-  const handleSendVideo = async (link) => {
-    // const response = await
+  const handleSendVideo = async (whatsappLink: string) => {
+    try {
+      const canOpen = await Linking.canOpenURL(whatsappLink);
+      if (canOpen) {
+        await Linking.openURL(whatsappLink);
+      } else {
+        showToast("Unable to open WhatsApp", "error");
+      }
+    } catch (error) {
+      showToast("Error sending video", "error");
+    }
   };
 
   const handleGetVideoLink = async (item) => {
-    const response = await getCustomisedVideoLink({
-      RecipientId: item.id,
-      BaseVideoID: selectedVideoId,
-      PlatformType: "WhatsApp",
-    });
-    handleSendVideo(response?.data?.sharableLink);
+    try {
+      const response = await getCustomisedVideoLink({
+        recipientId: item.id,
+        baseVideoID: selectedVideoId,
+        platformType: "WhatsApp",
+      });
+
+      if (response?.data?.sharableLink) {
+        await handleSendVideo(response.data.sharableLink);
+      } else {
+        showToast("Failed to get video link", "error");
+      }
+    } catch (error) {
+      showToast("Error sending video link", "error");
+    }
+    // finally {
+    //   await handleSendVideo(
+    //     `https://api.whatsapp.com/send?phone=+91${item.phoneNumber}&text=https://5f26bb7e4034.ngrok-free.app/api/preview/${selectedVideoId}`
+    //   );
+    // }
   };
 
   const columns = [

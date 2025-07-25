@@ -33,21 +33,7 @@ export default function GenerateVideoScreen() {
   };
 
   const handleGenerate = async () => {
-    const payload = {
-      baseVideoId: stepData[0],
-      recipientIds: stepData[1],
-    };
-
-    try {
-      await generateCustomisedVideo(payload);
-    } catch (error: any) {
-      showToast(
-        extractErrorMessage(error, "Failed to generate videos"),
-        "error"
-      );
-    } finally {
-      handleNext();
-    }
+    handleNext();
   };
 
   const handleSend = () => {};

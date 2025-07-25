@@ -16,6 +16,7 @@ import {
   stopConnection,
 } from "../services/signalrService";
 import { AppTheme } from "../theme";
+import { generateCustomisedVideo } from "../api/videoApi";
 
 type Props = {
   stepData: any;
@@ -45,6 +46,22 @@ export default function GenerateVideoProgress({ stepData, onGenerate }: Props) {
     }
   }, []);
 
+  const generateVideo = async () => {
+    const payload = {
+      baseVideoId: stepData[0],
+      recipientIds: stepData[1],
+    };
+
+    try {
+      await generateCustomisedVideo(payload);
+    } catch (error: any) {
+      showToast(
+        extractErrorMessage(error, "Failed to generate videos"),
+        "error"
+      );
+    }
+  };
+
   useFocusEffect(
     useCallback(() => {
       fetchVoters();
@@ -56,6 +73,7 @@ export default function GenerateVideoProgress({ stepData, onGenerate }: Props) {
       const token = await getItem("accessToken");
       await startConnection(token);
       await joinGroups(stepData?.[1]);
+      await generateVideo();
 
       registerOnServerEvents("ReceiveVideoUpdate", (data) => {
         console.log("📺 Video progress update:", data);

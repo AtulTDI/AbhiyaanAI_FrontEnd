@@ -12,8 +12,8 @@ export type GenerateVideo = {
 }
 
 export type GetVideoLink = {
-  RecipientId: string;
-  BaseVideoID: string;
-  PlatformType: string;
+  recipientId: string;
+  baseVideoID: string;
+  platformType: string;
   sharableLink?: string;
 }
