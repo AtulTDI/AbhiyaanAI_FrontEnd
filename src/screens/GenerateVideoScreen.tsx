@@ -2,19 +2,16 @@ import React, { useState } from "react";
 import { View, StyleSheet, Dimensions } from "react-native";
 import { Surface, Text, Button, useTheme } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
-import { AppTheme } from "../theme";
-import { useToast } from "../components/ToastProvider";
 import SelectBaseVideo from "../components/SelectBaseVideo";
 import SelectVoters from "../components/SelectVoters";
 import GenerateVideoProgress from "../components/GenerateVideoProgress";
-import { extractErrorMessage } from "../utils/common";
-import { generateCustomisedVideo } from "../api/videoApi";
+import { navigate } from "../navigation/NavigationService";
+import { AppTheme } from "../theme";
 
-const steps = ["Select Base Video", "Select Voters", "Generate Video"];
+const steps = ["Select Base Video", "Select Voters", "Video Generation"];
 
 export default function GenerateVideoScreen() {
   const theme = useTheme<AppTheme>();
-  const { showToast } = useToast();
 
   const styles = createStyles(theme);
   const { colors } = theme;
@@ -25,6 +22,7 @@ export default function GenerateVideoScreen() {
     1: [],
     2: null,
   });
+  const [generationTriggered, setGenerationTriggered] = useState(false);
 
   const handleNext = () => {
     if (activeStep < steps.length - 1) {
@@ -32,11 +30,9 @@ export default function GenerateVideoScreen() {
     }
   };
 
-  const handleGenerate = async () => {
-    handleNext();
+  const handleClose = () => {
+    navigate("Generated");
   };
-
-  const handleSend = () => {};
 
   const handleBack = () => {
     if (activeStep > 0) {
@@ -51,9 +47,22 @@ export default function GenerateVideoScreen() {
           <SelectBaseVideo stepData={stepData} setStepData={setStepData} />
         );
       case 1:
-        return <SelectVoters stepData={stepData} setStepData={setStepData} />;
+        return (
+          <SelectVoters
+            stepData={stepData}
+            setStepData={setStepData}
+            handleNext={handleNext}
+            setGenerationTriggered={setGenerationTriggered}
+          />
+        );
       case 2:
-        return <GenerateVideoProgress stepData={stepData} />;
+        return (
+          <GenerateVideoProgress
+            stepData={stepData}
+            generationTriggered={generationTriggered}
+            setGenerationTriggered={setGenerationTriggered}
+          />
+        );
       default:
         return null;
     }
@@ -134,16 +143,10 @@ export default function GenerateVideoScreen() {
         </Button>
         <Button
           mode="contained"
-          onPress={
-            activeStep === 0
-              ? handleNext
-              : activeStep === 1
-              ? handleGenerate
-              : handleSend
-          }
+          onPress={activeStep === steps.length - 1 ? handleClose : handleNext}
           style={styles.btn}
         >
-          {activeStep === 0 ? "Next" : activeStep === 1 ? "Generate" : "Send"}
+          {activeStep === steps.length - 1 ? "Close" : "Next"}
         </Button>
       </View>
     </Surface>

@@ -3,6 +3,7 @@ export type RootStackParamList = {
   Login: undefined;
   App: undefined;
   Home: undefined;
+  Generated: undefined;
 };
 
 export type DrawerLabelProps = {

@@ -1,8 +1,12 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { View, StyleSheet } from "react-native";
-import { IconButton, ProgressBar, useTheme } from "react-native-paper";
+import { IconButton, ProgressBar, Text, useTheme } from "react-native-paper";
 import { useFocusEffect } from "@react-navigation/native";
-import { FontAwesome, Ionicons } from "@expo/vector-icons";
+import {
+  FontAwesome,
+  Ionicons,
+  MaterialCommunityIcons,
+} from "@expo/vector-icons";
 import CommonTable from "./CommonTable";
 import { Voter } from "../types/Voter";
 import { extractErrorMessage } from "../utils/common";
@@ -18,21 +22,36 @@ import {
 import { AppTheme } from "../theme";
 import { generateCustomisedVideo } from "../api/videoApi";
 
+type VoterStatus =
+  | "NotStarted"
+  | "InQueue"
+  | "Pending"
+  | "Processing"
+  | "Completed"
+  | "Failed";
+
 type Props = {
   stepData: any;
   voters?: Voter[];
   onSendSelected?: (selected: Voter[]) => void;
   onSendAll?: () => void;
   onGenerate?: (voter: Voter) => void;
+  generationTriggered?: boolean;
+  setGenerationTriggered?: (value: boolean | ((prev: boolean) => boolean)) => void;
 };
 
-export default function GenerateVideoProgress({ stepData, onGenerate }: Props) {
+export default function GenerateVideoProgress({
+  stepData,
+  onGenerate,
+  generationTriggered,
+  setGenerationTriggered,
+}: Props) {
   const theme = useTheme<AppTheme>();
   const { colors } = theme;
   const { showToast } = useToast();
   const [voters, setVoters] = useState<Voter[]>([]);
   const [voterStatuses, setVoterStatuses] = useState<
-    Record<string, "not_started" | "in_progress" | "completed">
+    Record<string, VoterStatus>
   >({});
 
   const fetchVoters = useCallback(async () => {
@@ -69,14 +88,22 @@ export default function GenerateVideoProgress({ stepData, onGenerate }: Props) {
   );
 
   useEffect(() => {
+    if (!generationTriggered) return;
+
     const setupSignalR = async () => {
       const token = await getItem("accessToken");
       await startConnection(token);
       await joinGroups(stepData?.[1]);
 
-      registerOnServerEvents("ReceiveVideoUpdate", (recipientId, status) => {
-        console.log("📺 Video progress update:", recipientId, status);
-      });
+      registerOnServerEvents(
+        "ReceiveVideoUpdate",
+        (recipientId: string, status: VoterStatus) => {
+          setVoterStatuses((prev) => ({
+            ...prev,
+            [recipientId]: status,
+          }));
+        }
+      );
 
       await generateVideo();
     };
@@ -84,31 +111,92 @@ export default function GenerateVideoProgress({ stepData, onGenerate }: Props) {
     setupSignalR();
 
     return () => {
-      stopConnection();
+      setGenerationTriggered(false);
     };
-  }, []);
+  }, [generationTriggered]);
 
-  useEffect(() => {
-    if (voters.length === 0) return;
-
-    const interval = setInterval(() => {
-      setVoterStatuses((prev) => {
-        const updated = { ...prev };
-        voters.forEach((voter) => {
-          if (!updated[voter.id]) {
-            updated[voter.id] = "not_started";
-          } else if (updated[voter.id] === "not_started") {
-            updated[voter.id] = "in_progress";
-          } else if (updated[voter.id] === "in_progress") {
-            updated[voter.id] = "completed";
-          }
-        });
-        return updated;
-      });
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, [voters]);
+  const getStatusView = (status: VoterStatus, item: Voter) => {
+    switch (status) {
+      case "NotStarted":
+        return (
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+            <Ionicons
+              name="pause-circle-outline"
+              size={16}
+              color={colors.disabledText}
+            />
+            <Text style={{ color: colors.disabledText, fontSize: 12 }}>
+              Not Started
+            </Text>
+          </View>
+        );
+      case "InQueue":
+        return (
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+            <MaterialCommunityIcons
+              name="clock-time-four-outline"
+              size={16}
+              color={colors.warning}
+            />
+            <Text style={{ fontSize: 12, color: colors.warning }}>
+              In Queue
+            </Text>
+          </View>
+        );
+      case "Pending":
+        return (
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+            <MaterialCommunityIcons
+              name="clock-outline"
+              size={16}
+              color={colors.primaryLight}
+            />
+            <Text style={{ fontSize: 12, color: colors.primaryLight }}>
+              Pending
+            </Text>
+          </View>
+        );
+      case "Processing":
+        return (
+          <View style={{ justifyContent: "flex-start" }}>
+            <ProgressBar
+              indeterminate
+              color={colors.primary}
+              style={{ width: 80, height: 8, borderRadius: 4 }}
+            />
+          </View>
+        );
+      case "Completed":
+        return (
+          <IconButton
+            style={{ margin: 0 }}
+            icon={() => (
+              <FontAwesome
+                name="whatsapp"
+                size={20}
+                color={colors.whatsappGreen}
+              />
+            )}
+            onPress={() => onGenerate?.(item)}
+          />
+        );
+      case "Failed":
+        return (
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+            <Ionicons
+              name="close-circle-outline"
+              size={18}
+              color={colors.criticalError}
+            />
+            <Text style={{ fontSize: 12, color: colors.criticalError }}>
+              Failed
+            </Text>
+          </View>
+        );
+      default:
+        return null;
+    }
+  };
 
   const columns = [
     {
@@ -117,56 +205,14 @@ export default function GenerateVideoProgress({ stepData, onGenerate }: Props) {
       flex: 2,
       render: (item) => item.firstName + " " + item.lastName,
     },
-    { key: "phoneNumber", label: "Mobile", flex: 1.5 },
+    { key: "phoneNumber", label: "Mobile", flex: 2 },
     {
       key: "actions",
-      label: "Actions",
-      flex: 1.5,
+      label: "Status",
+      flex: 1,
       render: (item: Voter) => {
-        const status = voterStatuses[item.id] || "not_started";
-
-        switch (status) {
-          case "not_started":
-            return (
-              <View style={{ justifyContent: "flex-start" }}>
-                <View
-                  style={{
-                    width: 80,
-                    height: 8,
-                    borderRadius: 4,
-                    backgroundColor: colors.backdrop,
-                    opacity: 0.3,
-                  }}
-                />
-              </View>
-            );
-          case "in_progress":
-            return (
-              <View style={{ justifyContent: "flex-start" }}>
-                <ProgressBar
-                  indeterminate
-                  color={colors.primary}
-                  style={{ width: 80, height: 8, borderRadius: 4 }}
-                />
-              </View>
-            );
-          case "completed":
-            return (
-              <View style={{ justifyContent: "flex-start" }}>
-                <IconButton
-                  style={{ margin: 0 }}
-                  icon={() => (
-                    <FontAwesome
-                      name="whatsapp"
-                      size={20}
-                      color={colors.whatsappGreen}
-                    />
-                  )}
-                  onPress={() => onGenerate?.(item)}
-                />
-              </View>
-            );
-        }
+        const status = voterStatuses[item.id] || "NotStarted";
+        return getStatusView(status, item);
       },
     },
   ];

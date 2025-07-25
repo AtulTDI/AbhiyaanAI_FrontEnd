@@ -155,7 +155,7 @@ export default function GeneratedVideoScreen() {
 
   return (
     <Surface style={styles.container} elevation={2}>
-      <View>
+      <View style={styles.content}>
         <Text
           variant="titleLarge"
           style={[styles.heading, { color: theme.colors.primary }]}
@@ -177,19 +177,21 @@ export default function GeneratedVideoScreen() {
           }
           onSelect={(val) => setSelectedVideoId(val)}
         />
-        <CommonTable
-          data={voters}
-          columns={columns}
-          loading={loading}
-          emptyIcon={
-            <Ionicons
-              name="people-outline"
-              size={48}
-              color={colors.disabledText}
-            />
-          }
-          emptyText="No voters found"
-        />
+        <View style={{ flex: 1 }}>
+          <CommonTable
+            data={voters}
+            columns={columns}
+            loading={loading}
+            emptyIcon={
+              <Ionicons
+                name="people-outline"
+                size={48}
+                color={colors.disabledText}
+              />
+            }
+            emptyText="No voters found"
+          />
+        </View>
       </View>
     </Surface>
   );
@@ -197,6 +199,10 @@ export default function GeneratedVideoScreen() {
 
 const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
+    content: {
+      flex: 1,
+      display: "flex",
+    },
     container: {
       padding: 16,
       flex: 1,

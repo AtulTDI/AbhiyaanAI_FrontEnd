@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from "react";
 import { View, StyleSheet } from "react-native";
-import { Checkbox, useTheme } from "react-native-paper";
+import { Button, Checkbox, useTheme } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import CommonTable from "../components/CommonTable";
 import { Voter } from "../types/Voter";
@@ -26,7 +26,12 @@ const columns = [
   { label: "Mobile", key: "phoneNumber", flex: 1.2 },
 ];
 
-export default function SelectVoters({ stepData, setStepData }) {
+export default function SelectVoters({
+  stepData,
+  setStepData,
+  handleNext,
+  setGenerationTriggered,
+}) {
   const theme = useTheme<AppTheme>();
   const { colors } = theme;
   const { showToast } = useToast();
@@ -72,6 +77,17 @@ export default function SelectVoters({ stepData, setStepData }) {
     }
   };
 
+  const handleGenerate = () => {
+    if (!stepData[1] || stepData[1].length === 0) {
+      showToast("Please select at least one voter", "warning");
+      return;
+    }
+
+    showToast("Video Generation started", "success");
+    setGenerationTriggered(true);
+    handleNext();
+  };
+
   const tableColumns = [
     {
       ...columns[0],
@@ -114,6 +130,16 @@ export default function SelectVoters({ stepData, setStepData }) {
         emptyText="No voters found"
         keyExtractor={(item) => item.id}
       />
+      <View style={styles.generateContainer}>
+        <Button
+          mode="contained"
+          onPress={handleGenerate}
+          disabled={stepData[1].length === 0}
+          style={styles.btn}
+        >
+          Generate Video
+        </Button>
+      </View>
     </View>
   );
 }
@@ -123,5 +149,14 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 12,
     paddingTop: 8,
+  },
+  generateContainer: {
+    marginTop: 12,
+    alignItems: "flex-end",
+  },
+  btn: {
+    flex: 1,
+    marginHorizontal: 6,
+    borderRadius: 8,
   },
 });

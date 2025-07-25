@@ -5,6 +5,7 @@ import { createDrawerNavigator } from "@react-navigation/drawer";
 import { Ionicons } from "@expo/vector-icons";
 import { getItem, removeItem } from "../utils/storage";
 import { navigate } from "./NavigationService";
+import { stopConnection } from "../services/signalrService";
 import AddUserScreen from "../screens/AddUserScreen";
 import UploadVideoScreen from "../screens/UploadVideoScreen";
 import AddVoterScreen from "../screens/AddVoterScreen";
@@ -44,6 +45,7 @@ export default function AppLayout() {
 
   const handleLogout = async () => {
     try {
+      stopConnection();
       await removeItem("accessToken");
       await removeItem("userName");
       await removeItem("role");
