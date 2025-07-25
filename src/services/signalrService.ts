@@ -46,7 +46,7 @@ export const joinGroups = async (voterIds: string[]) => {
 
 export const registerOnServerEvents = (
   eventName: string,
-  callback: (data: any) => void
+  callback: (...args: any[]) => void
 ) => {
   if (!connection) {
     console.warn("⚠️ SignalR not initialized.");

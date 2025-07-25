@@ -73,11 +73,12 @@ export default function GenerateVideoProgress({ stepData, onGenerate }: Props) {
       const token = await getItem("accessToken");
       await startConnection(token);
       await joinGroups(stepData?.[1]);
-      await generateVideo();
 
-      registerOnServerEvents("ReceiveVideoUpdate", (data) => {
-        console.log("📺 Video progress update:", data);
+      registerOnServerEvents("ReceiveVideoUpdate", (recipientId, status) => {
+        console.log("📺 Video progress update:", recipientId, status);
       });
+
+      await generateVideo();
     };
 
     setupSignalR();
