@@ -1,5 +1,4 @@
 import { Platform } from "react-native";
-// import { createThumbnail } from "react-native-create-thumbnail";
 import { Thumbnail } from "../types";
 import { getFileNameWithoutExtension } from "./common";
 
@@ -7,27 +6,10 @@ export const getVideoThumbnail = async (videoUri: string, fileName: string): Pro
   if (Platform.OS === "web") {
     return await getWebThumbnail(videoUri, fileName);
   } else {
-    // return await getMobileThumbnail(videoUri, fileName);
+    const { getMobileThumbnail } = await import("./getVideoThumbnail.native");
+    return await getMobileThumbnail(videoUri, fileName);
   }
 };
-
-// const getMobileThumbnail = async (videoUri: string, fileName: string): Promise<Thumbnail | null> => {
-//   try {
-//     const result = await createThumbnail({
-//       url: videoUri,
-//       timeStamp: 1000,
-//     });
-
-//     return {
-//       uri: result.path,
-//       mimeType: result.mime,
-//       name: `${getFileNameWithoutExtension(fileName)}_thumbnail.png`,
-//     };
-//   } catch (error) {
-//     console.error("❌ Mobile thumbnail error", error);
-//     return null;
-//   }
-// };
 
 const getWebThumbnail = async (videoUri: string, fileName: string): Promise<Thumbnail | null> => {
   return new Promise((resolve, reject) => {
