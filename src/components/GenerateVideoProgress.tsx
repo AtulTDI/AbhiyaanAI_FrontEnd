@@ -2,11 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { IconButton, ProgressBar, Text, useTheme } from "react-native-paper";
 import { useFocusEffect } from "@react-navigation/native";
-import {
-  FontAwesome,
-  Ionicons,
-  MaterialCommunityIcons,
-} from "@expo/vector-icons";
+import { Feather, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import CommonTable from "./CommonTable";
 import { Voter } from "../types/Voter";
 import { extractErrorMessage } from "../utils/common";
@@ -17,7 +13,6 @@ import {
   joinGroups,
   registerOnServerEvents,
   startConnection,
-  stopConnection,
 } from "../services/signalrService";
 import { AppTheme } from "../theme";
 import { generateCustomisedVideo } from "../api/videoApi";
@@ -37,7 +32,9 @@ type Props = {
   onSendAll?: () => void;
   onGenerate?: (voter: Voter) => void;
   generationTriggered?: boolean;
-  setGenerationTriggered?: (value: boolean | ((prev: boolean) => boolean)) => void;
+  setGenerationTriggered?: (
+    value: boolean | ((prev: boolean) => boolean)
+  ) => void;
 };
 
 export default function GenerateVideoProgress({
@@ -171,10 +168,10 @@ export default function GenerateVideoProgress({
           <IconButton
             style={{ margin: 0 }}
             icon={() => (
-              <FontAwesome
-                name="whatsapp"
+              <Feather
+                name="check-circle"
                 size={20}
-                color={colors.whatsappGreen}
+                color={colors.greenAccent}
               />
             )}
             onPress={() => onGenerate?.(item)}

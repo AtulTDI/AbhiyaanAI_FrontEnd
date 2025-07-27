@@ -42,7 +42,10 @@ export default function DynamicForm({
     const errors: Record<string, string> = {};
 
     fields.forEach((field) => {
-      const value = formData[field.name]?.trim();
+      const value =
+        typeof formData[field.name] === "string"
+          ? formData[field.name].trim()
+          : formData[field.name];
 
       if (field.required && !value) {
         errors[field.name] = `${field.label} is required.`;
@@ -63,11 +66,19 @@ export default function DynamicForm({
     return Object.keys(errors).length === 0;
   };
 
-  const handleChange = (name: string, value: string) => {
+  const handleChange = (name: string, type: string, value: string) => {
     let newValue = value;
 
+    if (type === "number") {
+      newValue = value.replace(/[^0-9]/g, "");
+    }
+
     if (name === "mobile" || name === "phoneNumber") {
-      newValue = value.replace(/[^0-9]/g, "").slice(0, 10); // Only digits, max 10
+      newValue = value.replace(/[^0-9]/g, "").slice(0, 10);
+    }
+
+    if (name === "firstName" || name === "lastName") {
+      newValue = value.replace(/[^a-zA-Z\s]/g, "");
     }
 
     setFormData({ ...formData, [name]: newValue });
@@ -116,14 +127,16 @@ export default function DynamicForm({
                     : []
                 }
                 error={formErrors[field.name]}
-                onSelect={(val) => handleChange(field.name, val)}
+                onSelect={(val) => handleChange(field.name, field.type, val)}
               />
             ) : (
               <>
                 <TextInput
                   label={field.label}
                   value={formData[field.name]}
-                  onChangeText={(text) => handleChange(field.name, text)}
+                  onChangeText={(text) =>
+                    handleChange(field.name, field.type, text)
+                  }
                   mode="outlined"
                   secureTextEntry={field.type === "password" && !showPassword}
                   keyboardType={

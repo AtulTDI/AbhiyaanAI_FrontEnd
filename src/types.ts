@@ -30,7 +30,7 @@ export type FieldConfig = {
   label: string;
   type: FieldType;
   required?: boolean;
-  options?: string[] | { label: string; value: string }[];
+  options?: string[] | { label: string; value: string | number }[];
 };
 
 export type Thumbnail = {

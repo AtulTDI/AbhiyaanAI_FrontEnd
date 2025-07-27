@@ -1,12 +1,13 @@
 import axios from "axios";
-import { Alert } from "react-native";
 import { navigate } from "../navigation/NavigationService";
 import { getItem, removeItem } from "../utils/storage";
+import { triggerToast } from "../services/toastService";
 
 const axiosInstance = axios.create({
   baseURL: process.env.EXPO_PUBLIC_API_URL,
   timeout: 60000,
 });
+
 
 // Request interceptor to attach token and content-type
 axiosInstance.interceptors.request.use(
@@ -37,7 +38,7 @@ axiosInstance.interceptors.response.use(
   async (error) => {
     if (error.response?.status === 401) {
       await removeItem("accessToken");
-      Alert.alert("Session expired", "Please log in again.");
+      triggerToast("Session expired. Please log in again.", "error");
       navigate("Login");
     }
     return Promise.reject(error);

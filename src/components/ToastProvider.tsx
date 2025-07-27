@@ -8,6 +8,7 @@ import React, {
 import { StyleSheet, Animated, View } from "react-native";
 import { Text, useTheme } from "react-native-paper";
 import { Ionicons, MaterialIcons, FontAwesome } from "@expo/vector-icons";
+import { registerToastTrigger } from "../services/toastService";
 import { AppTheme } from "../theme";
 
 type ToastType = "success" | "error" | "warning" | "info";
@@ -31,6 +32,8 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const showToast = useCallback(
     (msg: string, toastType: ToastType = "info", duration = 3000) => {
+      if (!msg?.trim()) return;
+
       setMessage(msg);
       setType(toastType);
       setVisible(true);
@@ -49,10 +52,14 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
         }),
       ]).start(() => {
         setVisible(false);
+        setMessage("");
       });
     },
     []
   );
+
+  // 🔗 Register for global access
+  registerToastTrigger(showToast);
 
   const getIcon = (toastType: ToastType) => {
     const iconColor = iconColors[toastType];

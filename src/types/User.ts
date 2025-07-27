@@ -5,6 +5,7 @@ export type User = {
   email: string;
   password: string;
   phoneNumber: string;
+  applicationId?: string;
   role: string;
   createdAt?: string;
   createdBy?: string;
@@ -23,6 +24,7 @@ export type CreateUserPayload = {
   email: string;
   password: string;
   phoneNumber: string;
+  applicationId?: string;
   role: string;
 }
 
@@ -32,5 +34,6 @@ export type EditUserPayload = {
   email: string;
   password: string;
   phoneNumber: string;
+  applicationId?: string;
   role: string;
 }

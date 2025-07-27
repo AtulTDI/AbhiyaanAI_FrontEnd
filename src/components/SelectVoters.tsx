@@ -36,6 +36,7 @@ export default function SelectVoters({
   const { colors } = theme;
   const { showToast } = useToast();
   const [voters, setVoters] = useState<Voter[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const isSelected = (id: string) => stepData[1]?.includes(id);
   const toggleSelection = (id: string) => {
@@ -83,9 +84,14 @@ export default function SelectVoters({
       return;
     }
 
-    showToast("Video Generation started", "success");
     setGenerationTriggered(true);
-    handleNext();
+    setIsLoading(true);
+
+    setTimeout(() => {
+      showToast("Video Generation started", "success");
+      handleNext();
+      setIsLoading(false);
+    }, 2000);
   };
 
   const tableColumns = [
@@ -134,10 +140,11 @@ export default function SelectVoters({
         <Button
           mode="contained"
           onPress={handleGenerate}
-          disabled={stepData[1].length === 0}
+          loading={isLoading}
+          disabled={!stepData[0] || stepData[1].length === 0 || isLoading}
           style={styles.btn}
         >
-          Generate Video
+          {isLoading ? "Generating..." : "Generate Video"}
         </Button>
       </View>
     </View>

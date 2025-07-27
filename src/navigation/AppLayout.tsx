@@ -11,6 +11,7 @@ import UploadVideoScreen from "../screens/UploadVideoScreen";
 import AddVoterScreen from "../screens/AddVoterScreen";
 import GenerateVideoScreen from "../screens/GenerateVideoScreen";
 import GeneratedVideoScreen from "../screens/GeneratedVideosScreen";
+import AddApplicationScreen from "../screens/AddApplicationScreen";
 import CustomDrawer from "../components/CustomDrawer";
 import CustomLabel from "../components/CustomLabel";
 import { AppTheme } from "../theme";
@@ -126,6 +127,30 @@ export default function AppLayout() {
               ),
             }}
           />
+          {role === "SuperAdmin" && (
+            <Drawer.Screen
+              name="AddApplication"
+              component={AddApplicationScreen}
+              options={{
+                headerShown: true,
+                headerTitle: "",
+                headerRight: headerRightComponent,
+                drawerLabel: (props) => (
+                  <CustomLabel
+                    {...props}
+                    label="Add Application"
+                    icon={
+                      <Ionicons
+                        name="apps"
+                        size={20}
+                        color={props.color || colors.onPrimary}
+                      />
+                    }
+                  />
+                ),
+              }}
+            />
+          )}
           <Drawer.Screen
             name="Upload"
             component={UploadVideoScreen}

@@ -294,6 +294,7 @@ const createStyles = (theme: AppTheme) =>
     emptyText: {
       fontSize: 16,
       fontWeight: "500",
+      marginTop: 10
     },
     paginationContainer: {
       flexDirection: "row",

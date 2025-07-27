@@ -85,7 +85,6 @@ export default function AddUserScreen() {
       await createUser({
         ...userData,
         model: null,
-        applicationId: "b2177e95-c3f3-4d6b-b2f9-d3dbfa4529e2",
       });
       await fetchUsers();
       setShowAddUserView(false);
