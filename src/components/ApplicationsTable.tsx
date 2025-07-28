@@ -3,23 +3,24 @@ import dayjs from "dayjs";
 import { Application } from "../types/Application";
 import { Ionicons } from "@expo/vector-icons";
 import { View, StyleSheet } from "react-native";
-import { Text, useTheme } from "react-native-paper";
+import { Text, useTheme, Switch } from "react-native-paper";
 import CommonTable from "./CommonTable";
 import { AppTheme } from "../theme";
 
 type Props = {
   applications: Application[];
-  onEdit: (item: any) => void;
-  onDelete: (id: string) => void;
+  onEdit: (item: Application) => void;
+  onToggleStatus: (item: Application) => void;
 };
 
 export default function ApplicationsTable({
   applications,
   onEdit,
-  onDelete,
+  onToggleStatus,
 }: Props) {
   const theme = useTheme<AppTheme>();
   const { colors } = theme;
+
   const columns = [
     {
       label: "Name",
@@ -35,27 +36,45 @@ export default function ApplicationsTable({
       label: "Created At",
       key: "createdAt",
       flex: 2,
-      render: (item) => (
+      render: (item: Application) => (
         <Text>{dayjs(item.createdAt).format("DD MMM YYYY, hh:mm A")}</Text>
       ),
     },
     {
-      label: "Actions",
+      label: "Status",
+      key: "isActive",
+      flex: 2,
+      render: (item: Application) => (
+        <View style={styles.statusToggle}>
+          <Text
+            style={{
+              fontSize: 12,
+              marginRight: 8,
+              color: item.isActive ? colors.success : colors.error,
+              fontWeight: "600",
+            }}
+          >
+            {item.isActive ? "Active" : "Inactive"}
+          </Text>
+          <Switch
+            value={item.isActive}
+            onValueChange={() => onToggleStatus(item)}
+            color={item.isActive ? colors.success : colors.error}
+          />
+        </View>
+      ),
+    },
+    {
+      label: "Action",
       key: "actions",
-      flex: 0.8,
-      render: (item) => (
+      flex: 1,
+      render: (item: Application) => (
         <View style={styles.actions}>
           <Ionicons
             name="pencil"
             size={20}
             color={colors.primary}
             onPress={() => onEdit(item)}
-          />
-          <Ionicons
-            name="trash-outline"
-            size={20}
-            color={colors.criticalError}
-            onPress={() => onDelete(item.id)}
           />
         </View>
       ),
@@ -66,13 +85,7 @@ export default function ApplicationsTable({
     <CommonTable
       data={applications}
       columns={columns}
-      emptyIcon={
-        <Ionicons
-          name="apps"
-          size={48}
-          color={colors.disabledText}
-        />
-      }
+      emptyIcon={<Ionicons name="apps" size={48} color={colors.disabledText} />}
       emptyText="No applications found"
     />
   );
@@ -83,5 +96,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 14,
+  },
+  statusToggle: {
+    flexDirection: "row",
+    alignItems: "center",
   },
 });

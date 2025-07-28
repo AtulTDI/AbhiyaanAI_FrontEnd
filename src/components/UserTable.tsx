@@ -31,7 +31,11 @@ export default function UserTable({ users, onEdit, onDelete }: Props) {
       key: "createdAt",
       flex: 3,
       render: (item) => (
-        <Text>{dayjs(item.createdAt).format("DD MMM YYYY, hh:mm A")}</Text>
+        <Text>
+          {item.createdAt
+            ? dayjs(item.createdAt).format("DD MMM YYYY, hh:mm A")
+            : "-"}
+        </Text>
       ),
     },
     {

@@ -5,7 +5,6 @@ import { useTheme } from "react-native-paper";
 import { useFocusEffect } from "@react-navigation/native";
 import {
   createApplication,
-  deleteApplicationById,
   editApplicationById,
   getApplications,
 } from "../api/applicationApi";
@@ -17,8 +16,7 @@ import {
 import { useToast } from "../components/ToastProvider";
 import ApplicationsTable from "../components/ApplicationsTable";
 import ApplicationForm from "../components/ApplicationForm";
-import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
-import { extractErrorMessage } from "../utils/common";
+import { extractErrorMessage, sortByDateDesc } from "../utils/common";
 import { AppTheme } from "../theme";
 
 export default function AddApplicationScreen() {
@@ -28,17 +26,14 @@ export default function AddApplicationScreen() {
 
   const [applications, setApplications] = useState([]);
   const [showAddApplicationView, setShowAddApplicationView] = useState(false);
-  const [selectedApplicationId, setSelectedApplicationId] = useState<
-    string | null
-  >(null);
-  const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
   const [applicationToEdit, setApplicationToEdit] =
     useState<Application | null>(null);
 
   const fetchApplications = useCallback(async () => {
     try {
       const response = await getApplications();
-      setApplications(response?.data || []);
+      const sortedApps = sortByDateDesc(response?.data || [], "createdAt");
+      setApplications(sortedApps);
     } catch (error) {
       showToast("Failed to load applications", "error");
     }
@@ -88,26 +83,19 @@ export default function AddApplicationScreen() {
     setShowAddApplicationView(true);
   };
 
-  const handleDelete = (id: string) => {
-    setSelectedApplicationId(id);
-    setDeleteDialogVisible(true);
-  };
-
-  const confirmDeleteApplication = async () => {
-    if (selectedApplicationId) {
-      try {
-        await deleteApplicationById(selectedApplicationId);
-        showToast("Application deleted", "success");
-        fetchApplications();
-      } catch (error: any) {
-        showToast(
-          extractErrorMessage(error, "Failed to delete application"),
-          "error"
-        );
-      }
-
-      setSelectedApplicationId(null);
-      setDeleteDialogVisible(false);
+  const handleToggle = async (item: Application) => {
+    try {
+      await editApplicationById(item.id, {
+        ...item,
+        isActive: !item.isActive,
+      });
+      await fetchApplications();
+      showToast("Application updated", "success");
+    } catch (error: any) {
+      showToast(
+        extractErrorMessage(error, "Failed to update application"),
+        "error"
+      );
     }
   };
 
@@ -150,17 +138,9 @@ export default function AddApplicationScreen() {
         <ApplicationsTable
           applications={applications}
           onEdit={handleEdit}
-          onDelete={handleDelete}
+          onToggleStatus={handleToggle}
         />
       )}
-
-      <DeleteConfirmationDialog
-        visible={deleteDialogVisible}
-        title="Delete Application"
-        message="Are you sure you want to delete this application?"
-        onCancel={() => setDeleteDialogVisible(false)}
-        onConfirm={confirmDeleteApplication}
-      />
     </ScrollView>
   );
 }

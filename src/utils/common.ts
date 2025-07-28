@@ -38,3 +38,10 @@ export const extractErrorMessage = (error: any, fallback = "Something went wrong
 export const getFileNameWithoutExtension = (fullName: string): string => {
   return fullName.replace(/\.[^/.]+$/, "");
 };
+
+
+export const sortByDateDesc = (data, key) => {
+  return [...data].sort(
+    (a, b) => new Date(b[key]).getTime() - new Date(a[key]).getTime()
+  );
+}

@@ -151,28 +151,30 @@ export default function AppLayout() {
               }}
             />
           )}
-          <Drawer.Screen
-            name="Upload"
-            component={UploadVideoScreen}
-            options={{
-              headerShown: true,
-              headerTitle: "",
-              headerRight: headerRightComponent,
-              drawerLabel: (props) => (
-                <CustomLabel
-                  {...props}
-                  label="Upload Base Video"
-                  icon={
-                    <Ionicons
-                      name="cloud-upload"
-                      size={20}
-                      color={props.color || colors.onPrimary}
-                    />
-                  }
-                />
-              ),
-            }}
-          />
+          {role === "Admin" && (
+            <Drawer.Screen
+              name="Upload"
+              component={UploadVideoScreen}
+              options={{
+                headerShown: true,
+                headerTitle: "",
+                headerRight: headerRightComponent,
+                drawerLabel: (props) => (
+                  <CustomLabel
+                    {...props}
+                    label="Upload Base Video"
+                    icon={
+                      <Ionicons
+                        name="cloud-upload"
+                        size={20}
+                        color={props.color || colors.onPrimary}
+                      />
+                    }
+                  />
+                ),
+              }}
+            />
+          )}
         </>
       )}
 

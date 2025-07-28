@@ -12,7 +12,7 @@ import {
   shareVideoById,
   uploadVideo,
 } from "../api/videoApi";
-import { extractErrorMessage } from "../utils/common";
+import { extractErrorMessage, sortByDateDesc } from "../utils/common";
 import { AppTheme } from "../theme";
 
 export default function UploadVideoScreen() {
@@ -29,9 +29,11 @@ export default function UploadVideoScreen() {
   const fetchVideos = useCallback(async () => {
     try {
       const response = await getVideos();
-      setVideos(
-        response?.data && Array.isArray(response.data) ? response.data : []
+      const sortedVideos = sortByDateDesc(
+        response?.data && Array.isArray(response.data) ? response.data : [],
+        "createdAt"
       );
+      setVideos(sortedVideos);
     } catch (error: any) {
       showToast(extractErrorMessage(error, "Failed to load videos"), "error");
     }

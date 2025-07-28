@@ -1,5 +1,6 @@
 export type Application = {
   id?: string;
+  createdAt?: string;
   name: string;
   videoCount: number;
   isActive: boolean;
