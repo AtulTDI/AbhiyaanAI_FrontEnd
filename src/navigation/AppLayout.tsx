@@ -105,28 +105,6 @@ export default function AppLayout() {
     >
       {(role === "Admin" || role === "SuperAdmin") && (
         <>
-          <Drawer.Screen
-            name="AddUser"
-            component={AddUserScreen}
-            options={{
-              headerShown: true,
-              headerTitle: "",
-              headerRight: headerRightComponent,
-              drawerLabel: (props) => (
-                <CustomLabel
-                  {...props}
-                  label="Add User"
-                  icon={
-                    <Ionicons
-                      name="person-add"
-                      size={20}
-                      color={props.color || colors.onPrimary}
-                    />
-                  }
-                />
-              ),
-            }}
-          />
           {role === "SuperAdmin" && (
             <Drawer.Screen
               name="AddApplication"
@@ -138,7 +116,7 @@ export default function AppLayout() {
                 drawerLabel: (props) => (
                   <CustomLabel
                     {...props}
-                    label="Add Application"
+                    label="Applications"
                     icon={
                       <Ionicons
                         name="apps"
@@ -151,6 +129,30 @@ export default function AppLayout() {
               }}
             />
           )}
+          
+          <Drawer.Screen
+            name="AddUser"
+            component={AddUserScreen}
+            options={{
+              headerShown: true,
+              headerTitle: "",
+              headerRight: headerRightComponent,
+              drawerLabel: (props) => (
+                <CustomLabel
+                  {...props}
+                  label="Users"
+                  icon={
+                    <Ionicons
+                      name="people-outline"
+                      size={20}
+                      color={props.color || colors.onPrimary}
+                    />
+                  }
+                />
+              ),
+            }}
+          />
+
           {role === "Admin" && (
             <Drawer.Screen
               name="Upload"
@@ -190,7 +192,7 @@ export default function AppLayout() {
               drawerLabel: (props) => (
                 <CustomLabel
                   {...props}
-                  label="Add Voter"
+                  label="Voters"
                   icon={
                     <Ionicons
                       name="people-outline"

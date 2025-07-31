@@ -28,9 +28,10 @@ export default function UserForm({
   setShowAddUserView,
 }: Props) {
   const [applicationOptions, setApplicationOptions] = useState<any[]>([]);
-  const [role, setRole] = useState<"Admin" | "User" | "SuperAdmin" | null>(
-    null
-  );
+  const [loggedInUserRole, setLoggedInUserRole] = useState<
+    "Admin" | "User" | "SuperAdmin" | null
+  >(null);
+  const [formRole, setFormRole] = useState("");
 
   useEffect(() => {
     (async () => {
@@ -40,7 +41,7 @@ export default function UserForm({
         storedRole === "SuperAdmin" ||
         storedRole === "User"
       ) {
-        setRole(storedRole);
+        setLoggedInUserRole(storedRole);
       }
     })();
   }, []);
@@ -62,40 +63,59 @@ export default function UserForm({
       }
     };
 
-    if (role === "SuperAdmin") {
+    if (loggedInUserRole === "SuperAdmin") {
       fetchApplications();
     }
-  }, [role]);
+  }, [loggedInUserRole]);
 
-  const userFields: FieldConfig[] = [
-    { name: "firstName", label: "First Name", type: "text", required: true },
-    { name: "lastName", label: "Last Name", type: "text", required: true },
-    { name: "email", label: "Email", type: "email", required: true },
-    { name: "password", label: "Password", type: "password", required: true },
-    { name: "phoneNumber", label: "Mobile", type: "number", required: true },
-    ...(role === "SuperAdmin"
-      ? [
-          {
-            name: "applicationId",
-            label: "Application",
-            type: "dropdown" as FieldType,
-            options: applicationOptions,
-            required: true,
-          },
-        ]
-      : []),
-    {
-      name: "role",
-      label: "Role",
-      type: "dropdown",
-      options: ["User", "Admin"],
-      required: true,
-    },
-  ];
+  const getUserFields = (): FieldConfig[] => {
+    const fields: FieldConfig[] = [
+      { name: "firstName", label: "First Name", type: "text", required: true },
+      { name: "lastName", label: "Last Name", type: "text", required: true },
+      { name: "email", label: "Email", type: "email", required: true },
+      {
+        name: "password",
+        label: "Password",
+        type: "password",
+        required: true,
+      },
+      {
+        name: "phoneNumber",
+        label: "Mobile",
+        type: "number",
+        required: true,
+      },
+      {
+        name: "role",
+        label: "Role",
+        type: "dropdown",
+        options:
+          loggedInUserRole === "SuperAdmin"
+            ? ["Admin", "Sales Agent"]
+            : ["User"],
+        required: true,
+      },
+    ];
+
+    const shouldShowApplicationField =
+      loggedInUserRole === "SuperAdmin" && formRole === "Admin";
+
+    if (shouldShowApplicationField) {
+      fields.push({
+        name: "applicationId",
+        label: "Application",
+        type: "dropdown" as FieldType,
+        options: applicationOptions,
+        required: true,
+      });
+    }
+
+    return fields;
+  };
 
   return (
     <DynamicForm
-      fields={userFields}
+      fields={getUserFields()}
       initialValues={{
         firstName: userToEdit?.firstName || "",
         lastName: userToEdit?.lastName || "",
@@ -106,6 +126,11 @@ export default function UserForm({
         role: userToEdit?.role || "User",
       }}
       mode={mode}
+      onChange={(field, value) => {
+        if (field.name === "role") {
+          setFormRole(value);
+        }
+      }}
       onSubmit={(data) =>
         onCreate(
           data as {

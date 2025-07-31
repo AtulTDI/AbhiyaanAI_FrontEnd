@@ -28,8 +28,13 @@ export default function ApplicationsTable({
       flex: 2,
     },
     {
-      label: "Video Count",
-      key: "videoCount",
+      label: "Remaining Video Count",
+      key: "remainingVideoCount",
+      flex: 2,
+    },
+    {
+      label: "Total Video Count",
+      key: "totalVideoCount",
       flex: 2,
     },
     {

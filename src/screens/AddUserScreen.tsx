@@ -28,6 +28,7 @@ import {
   editUserById,
   getUsers,
 } from "../api/userApi";
+import { createSalesAgent } from "../api/salesAgentApi";
 import { extractErrorMessage } from "../utils/common";
 import { AppTheme } from "../theme";
 
@@ -82,10 +83,9 @@ export default function AddUserScreen() {
     password: string;
   }) => {
     try {
-      await createUser({
-        ...userData,
-        model: null,
-      });
+      userData?.role === "Sales Agent"
+        ? await createSalesAgent(userData)
+        : await createUser(userData);
       await fetchUsers();
       setShowAddUserView(false);
       setUserToEdit(null);

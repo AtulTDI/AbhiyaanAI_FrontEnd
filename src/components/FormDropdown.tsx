@@ -40,24 +40,24 @@ export default function FormDropdown({
         CustomDropdownInput={(props) => (
           <TextInput
             {...props}
-            style={[styles.input, { backgroundColor: theme.colors.white }]}
-            theme={{ roundness: 8 }}
+            style={{ backgroundColor: colors.white }}
+            theme={{
+              roundness: 8,
+              colors: {
+                primary: colors.primary,
+                outline: error ? colors.error : colors.outline,
+              },
+            }}
             right={props.rightIcon}
             value={props.selectedLabel}
             disabled={props.disabled}
-            error={props.error}
+            error={!!error || props.error}
             mode={props.mode}
             label={props.label}
             placeholder={props.placeholder}
           />
         )}
-        CustomDropdownItem={({
-          option,
-          value,
-          onSelect,
-          toggleMenu,
-          isLast,
-        }) => (
+        CustomDropdownItem={({ option, onSelect, toggleMenu, isLast }) => (
           <List.Item
             title={option.label}
             titleStyle={styles.optionText}
@@ -128,7 +128,7 @@ const createStyles = (theme: AppTheme) =>
       paddingVertical: 0,
     },
     errorText: {
-      color: theme.colors.deepRed,
+      color: theme.colors.error,
       fontSize: 12,
       marginTop: 4,
       paddingLeft: 4,

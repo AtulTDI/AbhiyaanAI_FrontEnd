@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, Platform } from "react-native";
 import {
   TextInput,
   HelperText,
@@ -15,6 +15,7 @@ type Props = {
   fields: FieldConfig[];
   initialValues: Record<string, string>;
   mode: "create" | "edit";
+  onChange: (data: FieldConfig, value: string) => void;
   onSubmit: (data: Record<string, string>) => void;
   onCancel: () => void;
 };
@@ -23,6 +24,7 @@ export default function DynamicForm({
   fields,
   initialValues,
   mode,
+  onChange,
   onSubmit,
   onCancel,
 }: Props) {
@@ -32,20 +34,23 @@ export default function DynamicForm({
   const [formData, setFormData] = useState(initialValues);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [showPassword, setShowPassword] = useState(false);
+  const [hasInitialized, setHasInitialized] = useState(false);
 
   useEffect(() => {
-    setFormData(initialValues);
-    setFormErrors({});
-  }, [initialValues]);
+    if (!hasInitialized) {
+      setFormData(initialValues);
+      setFormErrors({});
+      setHasInitialized(true);
+    }
+  }, [initialValues, hasInitialized]);
 
   const validate = () => {
     const errors: Record<string, string> = {};
 
     fields.forEach((field) => {
-      const value =
-        typeof formData[field.name] === "string"
-          ? formData[field.name].trim()
-          : formData[field.name];
+      const rawValue = formData[field.name];
+      const value = typeof rawValue === "string" ? rawValue.trim() : rawValue;
+      const numericValue = parseFloat(value);
 
       if (field.required && !value) {
         errors[field.name] = `${field.label} is required.`;
@@ -55,10 +60,38 @@ export default function DynamicForm({
         !/^\S+@\S+\.\S+$/.test(value)
       ) {
         errors[field.name] = "Invalid email format.";
-      } else if (field.type === "number" && value && !/^\d+$/.test(value)) {
-        errors[field.name] = `${field.label} must be a number.`;
-      } else if (field.name === "password" && value && value.length < 6) {
-        errors[field.name] = "Password must be at least 6 characters.";
+      } else if (field.type === "number" && value && isNaN(numericValue)) {
+        errors[field.name] = `${field.label} must be a valid number.`;
+      } else if (
+        field.type === "number" &&
+        value &&
+        field.decimalPlaces != null
+      ) {
+        const decimalRegex = new RegExp(
+          `^\\d+(\\.\\d{1,${field.decimalPlaces}})?$`
+        );
+        if (!decimalRegex.test(value)) {
+          errors[
+            field.name
+          ] = `Only up to ${field.decimalPlaces} decimal place(s) allowed.`;
+        }
+      } else if (
+        field.type === "number" &&
+        value &&
+        field.decimalPlaces == null &&
+        value.includes(".")
+      ) {
+        errors[field.name] = `${field.label} must be a whole number.`;
+      }
+
+      if (
+        field.type === "number" &&
+        value &&
+        field.max != null &&
+        !isNaN(numericValue) &&
+        numericValue > field.max
+      ) {
+        errors[field.name] = `${field.label} must be ≤ ${field.max}`;
       }
     });
 
@@ -66,11 +99,21 @@ export default function DynamicForm({
     return Object.keys(errors).length === 0;
   };
 
-  const handleChange = (name: string, type: string, value: string) => {
+  const handleChange = (field: FieldConfig, value: string) => {
+    const { name, type } = field;
     let newValue = value;
 
     if (type === "number") {
-      newValue = value.replace(/[^0-9]/g, "");
+      if (field.decimalPlaces) {
+        const decimalRegex = new RegExp(
+          `^\\d*\\.?\\d{0,${field.decimalPlaces}}$`
+        );
+        if (!decimalRegex.test(value)) return;
+      } else {
+        newValue = value.replace(/[^0-9]/g, "");
+      }
+
+      if (field.max && parseFloat(value) > field.max) return;
     }
 
     if (name === "mobile" || name === "phoneNumber") {
@@ -82,6 +125,10 @@ export default function DynamicForm({
     }
 
     setFormData({ ...formData, [name]: newValue });
+
+    if (onChange) {
+      onChange(field, newValue);
+    }
 
     if (formErrors[name]) {
       setFormErrors({ ...formErrors, [name]: "" });
@@ -127,21 +174,23 @@ export default function DynamicForm({
                     : []
                 }
                 error={formErrors[field.name]}
-                onSelect={(val) => handleChange(field.name, field.type, val)}
+                onSelect={(val) => handleChange(field, val)}
               />
             ) : (
               <>
                 <TextInput
                   label={field.label}
                   value={formData[field.name]}
-                  onChangeText={(text) =>
-                    handleChange(field.name, field.type, text)
-                  }
+                  onChangeText={(text) => handleChange(field, text)}
                   mode="outlined"
                   secureTextEntry={field.type === "password" && !showPassword}
                   keyboardType={
                     field.type === "email"
                       ? "email-address"
+                      : field.decimalPlaces
+                      ? Platform.OS === "web"
+                        ? "default"
+                        : "decimal-pad"
                       : field.type === "number"
                       ? "number-pad"
                       : "default"

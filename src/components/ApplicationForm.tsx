@@ -1,5 +1,7 @@
+import { useEffect, useState } from "react";
 import { FieldConfig } from "../types";
 import { Application } from "../types/Application";
+import { getSalesAgents } from "../api/salesAgentApi";
 import DynamicForm from "./DynamicForm";
 
 type Props = {
@@ -17,12 +19,49 @@ export default function ApplicationForm({
   setApplicationToEdit,
   setShowAddApplicationView,
 }: Props) {
+  const [salesAgentOptions, setSalesAgentOptions] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchSalesAgents = async () => {
+      try {
+        const response = await getSalesAgents();
+        const agents = response.data || [];
+        const agentsArray = Array.isArray(agents) ? agents : [agents];
+
+        const formatted = agentsArray.map((app) => ({
+          label: `${app.firstName} ${app.lastName}`,
+          value: app.id,
+        }));
+        setSalesAgentOptions(formatted);
+      } catch (error) {
+        console.error("Failed to fetch sales agents", error);
+      }
+    };
+
+    fetchSalesAgents();
+  }, []);
+
   const applicationFields: FieldConfig[] = [
     { name: "appName", label: "Name", type: "text", required: true },
     {
       name: "videoCount",
       label: "Video Count",
       type: "number",
+      max: 5000,
+      required: true,
+    },
+    {
+      name: "salesAgent",
+      label: "Sales Agent",
+      type: "dropdown",
+      options: salesAgentOptions,
+      required: true,
+    },
+    {
+      name: "videoGenerationRate",
+      label: "Video Generation Rate",
+      type: "number",
+      decimalPlaces: 2,
       required: true,
     },
   ];
@@ -32,7 +71,9 @@ export default function ApplicationForm({
       fields={applicationFields}
       initialValues={{
         appName: applicationToEdit?.name || "",
-        videoCount: applicationToEdit?.videoCount || "",
+        videoCount: applicationToEdit?.totalVideoCount || "5000",
+        salesAgent: applicationToEdit?.salesAgent || "",
+        videoGenerationRate: applicationToEdit?.videoGenerationRate || ""
       }}
       mode={mode}
       onSubmit={(data) => onCreate(data as any)}
