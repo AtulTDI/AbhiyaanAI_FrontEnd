@@ -11,7 +11,7 @@ type Props = {
     firstName: string;
     lastName: string;
     email: string;
-    password: string;
+    password?: string;
     phoneNumber: string;
     role: string;
   }) => void;
@@ -73,12 +73,18 @@ export default function UserForm({
       { name: "firstName", label: "First Name", type: "text", required: true },
       { name: "lastName", label: "Last Name", type: "text", required: true },
       { name: "email", label: "Email", type: "email", required: true },
-      {
+    ];
+
+    if (mode === "create") {
+      fields.push({
         name: "password",
         label: "Password",
         type: "password",
         required: true,
-      },
+      });
+    }
+
+    fields.push(
       {
         name: "phoneNumber",
         label: "Mobile",
@@ -94,8 +100,8 @@ export default function UserForm({
             ? ["Admin", "Sales Agent"]
             : ["User"],
         required: true,
-      },
-    ];
+      }
+    );
 
     const shouldShowApplicationField =
       loggedInUserRole === "SuperAdmin" && formRole === "Admin";
@@ -120,7 +126,7 @@ export default function UserForm({
         firstName: userToEdit?.firstName || "",
         lastName: userToEdit?.lastName || "",
         email: userToEdit?.email || "",
-        password: userToEdit?.password || "",
+        password: "",
         applicationId: userToEdit?.applicationId || "",
         phoneNumber: userToEdit?.phoneNumber || "",
         role: userToEdit?.role || "User",
@@ -137,7 +143,7 @@ export default function UserForm({
             firstName: string;
             lastName: string;
             email: string;
-            password: string;
+            password?: string;
             phoneNumber: string;
             role: string;
           }
