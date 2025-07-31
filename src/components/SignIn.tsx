@@ -67,9 +67,11 @@ export default function SignIn({
       const token = response.data.token || "dummy-token";
       const username = response.data?.userName || "User";
       const role = response.data?.role || "User";
+      const applicationId = response.data?.applicationId || "";
       await setItem("accessToken", token);
       await setItem("userName", username);
       await setItem("role", role);
+      await setItem("applicationId", applicationId);
       navigate("App");
     } catch (error: any) {
       setAuthError(extractErrorMessage(error));
@@ -132,10 +134,7 @@ export default function SignIn({
               if (text.trim()) setPasswordError("");
             }}
             secureTextEntry={!showPassword}
-            style={[
-              styles.passwordInput,
-              { backgroundColor: colors.white },
-            ]}
+            style={[styles.passwordInput, { backgroundColor: colors.white }]}
             mode="outlined"
             outlineColor={colors.outline}
             activeOutlineColor={colors.primary}
