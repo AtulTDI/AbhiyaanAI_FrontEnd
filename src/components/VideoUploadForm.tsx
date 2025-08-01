@@ -5,7 +5,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Alert,
   Dimensions,
 } from "react-native";
 import {
@@ -22,10 +21,18 @@ import {
   Video as ExpoVideo,
   AVPlaybackStatusSuccess,
 } from "expo-av";
-import axios from "axios";
+import { useToast } from "./ToastProvider";
 import * as DocumentPicker from "expo-document-picker";
 import CommonUpload from "./CommonUpload";
+import { generateSampleVideo } from "../api/videoApi";
+import { getAuthData } from "../utils/storage";
+import {
+  joinGroups,
+  registerOnServerEvents,
+  startConnection,
+} from "../services/signalrService";
 import { AppTheme } from "../theme";
+import { extractErrorMessage } from "../utils/common";
 
 interface FormData {
   campaign: string;
@@ -48,6 +55,7 @@ export default function VideoUploadForm({
   uploading,
 }: Props) {
   const theme = useTheme<AppTheme>();
+  const { showToast } = useToast();
   const styles = createStyles(theme);
   const { colors } = theme;
   const screenWidth = Dimensions.get("window").width;
@@ -66,30 +74,45 @@ export default function VideoUploadForm({
     height: 0,
   });
 
-  const handleGenerateDummy = async () => {
-    if (!name.trim()) {
-      Alert.alert("Validation", "Name is required to generate sample video");
-      return;
-    }
+  const setupSignalR = async () => {
+    const { accessToken, userId } = await getAuthData();
+
+    await startConnection(accessToken);
+    await joinGroups(userId);
+
+    registerOnServerEvents(
+      "CustomizedVideoLink",
+      (recepientId: string, status: string, customizedVideoLink: string) => {
+        if (status === "Completed" && customizedVideoLink) {
+          setGeneratedUri(customizedVideoLink);
+          setLoading(false);
+        }
+      }
+    );
 
     try {
       setLoading(true);
-      const response = await axios.post("/api/generate-dummy", {
-        name: name.trim(),
+      await generateSampleVideo({
+        file: formData?.file,
+        recipientName: name.trim(),
       });
-
-      const uri =
-        response.data?.uri || "http://localhost:4566/your-generated.mp4";
-      setGeneratedUri(uri);
-      Alert.alert("Success", "Sample video generated successfully");
     } catch (error) {
-      Alert.alert("Error", "Failed to generate sample video");
-    } finally {
-      setLoading(false);
-      setGeneratedUri(
-        "http://localhost:4566/my-local-bucket/c8f368a2-df26-44d2-9c54-cbfe78d078de/sdadsadadsadsa/Video_1_20250712103047.mp4"
+      showToast(
+        extractErrorMessage(error, "Failed to generate sample video"),
+        "error"
       );
+      setLoading(false);
     }
+  };
+
+  const handleGenerateSampleVideo = async () => {
+    if (!name.trim()) {
+      showToast("Failed to generate sample video", "error");
+      return;
+    }
+
+    setLoading(true);
+    setupSignalR();
   };
 
   const handleSubmit = () => {
@@ -189,11 +212,12 @@ export default function VideoUploadForm({
                   <View style={{ width: "100%", alignItems: "flex-end" }}>
                     <Button
                       mode="contained"
-                      onPress={handleGenerateDummy}
+                      onPress={handleGenerateSampleVideo}
                       loading={loading}
+                      disabled={loading}
                       style={{ marginTop: 8, borderRadius: 5 }}
                     >
-                      Generate & Preview
+                      {loading ? "Generating video..." : "Generate & Preview"}
                     </Button>
                   </View>
 

@@ -17,3 +17,8 @@ export type GetVideoLink = {
   platformType: string;
   sharableLink?: string;
 }
+
+export type SampleVideo = {
+  file: any;
+  recipientName: string;
+}

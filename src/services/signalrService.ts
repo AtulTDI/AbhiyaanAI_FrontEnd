@@ -26,22 +26,24 @@ export const startConnection = async (accessToken: string) => {
   }
 };
 
-export const joinGroups = async (voterIds: string[]) => {
+export const joinGroups = async (userInput: string | string[]) => {
   if (!connection || connection.state !== signalR.HubConnectionState.Connected) {
     console.warn("⚠️ Cannot join groups: SignalR is not connected.");
     return;
   }
 
-  for (const voterId of voterIds) {
+  const userIds = Array.isArray(userInput) ? userInput : [userInput];
+
+  for (const userId of userIds) {
     try {
-      await connection.invoke("JoinGroup", voterId);
-      console.log(`✅ Joined group: ${voterId}`);
+      await connection.invoke("JoinGroup", userId);
+      console.log(`✅ Joined group: ${userId}`);
     } catch (error) {
-      console.error(`❌ Failed to join group ${voterId}:`, error);
+      console.error(`❌ Failed to join group ${userId}:`, error);
     }
   }
 
-  joinedGroups = [...new Set([...joinedGroups, ...voterIds])];
+  joinedGroups = [...new Set([...joinedGroups, ...userIds])];
 };
 
 export const registerOnServerEvents = (

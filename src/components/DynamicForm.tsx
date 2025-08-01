@@ -70,10 +70,19 @@ export default function DynamicForm({
         const decimalRegex = new RegExp(
           `^\\d+(\\.\\d{1,${field.decimalPlaces}})?$`
         );
+        const numericValue = parseFloat(value);
+
         if (!decimalRegex.test(value)) {
           errors[
             field.name
           ] = `Only up to ${field.decimalPlaces} decimal place(s) allowed.`;
+        } else if (
+          (field.min != null && numericValue < field.min) ||
+          (field.max != null && numericValue > field.max)
+        ) {
+          errors[
+            field.name
+          ] = `Value must be between ${field.min} and ${field.max}.`;
         }
       } else if (
         field.type === "number" &&
@@ -87,11 +96,11 @@ export default function DynamicForm({
       if (
         field.type === "number" &&
         value &&
-        field.max != null &&
+        field.min != null &&
         !isNaN(numericValue) &&
-        numericValue > field.max
+        numericValue < field.min
       ) {
-        errors[field.name] = `${field.label} must be ≤ ${field.max}`;
+        errors[field.name] = `${field.label} must be >= ${field.min}`;
       }
     });
 
@@ -112,8 +121,6 @@ export default function DynamicForm({
       } else {
         newValue = value.replace(/[^0-9]/g, "");
       }
-
-      if (field.max && parseFloat(value) > field.max) return;
     }
 
     if (name === "mobile" || name === "phoneNumber") {

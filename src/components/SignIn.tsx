@@ -11,7 +11,7 @@ import {
 } from "react-native-paper";
 import { navigate } from "../navigation/NavigationService";
 import { login } from "../api/authApi";
-import { setItem } from "../utils/storage";
+import { saveAuthData } from "../utils/storage";
 import { extractErrorMessage } from "../utils/common";
 import { AppTheme } from "../theme";
 
@@ -65,13 +65,21 @@ export default function SignIn({
     try {
       const response = await login(email, password);
       const token = response.data.token || "dummy-token";
+      const userId = response.data?.userId || "";
       const username = response.data?.userName || "User";
       const role = response.data?.role || "User";
       const applicationId = response.data?.applicationId || "";
-      await setItem("accessToken", token);
-      await setItem("userName", username);
-      await setItem("role", role);
-      await setItem("applicationId", applicationId);
+      const videoCount = response.data?.videoCount?.toString() ?? "0";
+
+      await saveAuthData({
+        accessToken: token,
+        userId,
+        userName: username,
+        role,
+        applicationId,
+        videoCount,
+      });
+
       navigate("App");
     } catch (error: any) {
       setAuthError(extractErrorMessage(error));

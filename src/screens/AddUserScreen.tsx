@@ -21,7 +21,7 @@ import {
 } from "../api/userApi";
 import { createSalesAgent } from "../api/salesAgentApi";
 import { extractErrorMessage } from "../utils/common";
-import { getItem } from "../utils/storage";
+import { getAuthData } from "../utils/storage";
 import { AppTheme } from "../theme";
 
 export default function AddUserScreen() {
@@ -63,7 +63,7 @@ export default function AddUserScreen() {
     applicationId?: string;
   }) => {
     try {
-      const loggedInUserApplicationId = await getItem("applicationId");
+      const { applicationId: loggedInUserApplicationId } = await getAuthData();
 
       userData?.role === "Sales Agent"
         ? await createSalesAgent(userData)

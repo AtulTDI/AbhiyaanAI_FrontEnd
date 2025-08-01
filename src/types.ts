@@ -29,6 +29,7 @@ export type FieldConfig = {
   name: string;
   label: string;
   type: FieldType;
+  min?: number;
   max?: number;
   decimalPlaces?: number,
   required?: boolean;

@@ -7,7 +7,7 @@ import CommonTable from "./CommonTable";
 import { Voter } from "../types/Voter";
 import { extractErrorMessage } from "../utils/common";
 import { useToast } from "./ToastProvider";
-import { getItem } from "../utils/storage";
+import { getAuthData } from "../utils/storage";
 import { getVotersWithVideoId } from "../api/voterApi";
 import {
   joinGroups,
@@ -88,8 +88,9 @@ export default function GenerateVideoProgress({
     if (!generationTriggered) return;
 
     const setupSignalR = async () => {
-      const token = await getItem("accessToken");
-      await startConnection(token);
+      const { accessToken } = await getAuthData();
+
+      await startConnection(accessToken);
       await joinGroups(stepData?.[1]);
 
       registerOnServerEvents(

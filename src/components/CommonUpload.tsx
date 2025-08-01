@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, StyleSheet, TouchableOpacity, Alert } from "react-native";
+import { View, StyleSheet, TouchableOpacity } from "react-native";
 import * as DocumentPicker from "expo-document-picker";
 import {
   useTheme,
@@ -8,6 +8,7 @@ import {
   Text,
   Button,
 } from "react-native-paper";
+import { useToast } from "./ToastProvider";
 import { AppTheme } from "../theme";
 
 type FileType = "excel" | "video";
@@ -26,6 +27,7 @@ export default function CommonUpload({
   label,
 }: Props) {
   const theme = useTheme<AppTheme>();
+  const { showToast } = useToast();
   const { colors } = theme;
   const [file, setFile] = useState<DocumentPicker.DocumentPickerAsset | null>(
     null
@@ -72,10 +74,7 @@ export default function CommonUpload({
 
       const name = selectedFile.name.toLowerCase();
       if (!getValidation(name)) {
-        Alert.alert(
-          "Invalid file",
-          `Please upload a valid ${getSupportedText()} file.`
-        );
+        showToast(`Invalid file! Please upload a valid ${getSupportedText()} file`, "error");
         return;
       }
 
@@ -86,7 +85,7 @@ export default function CommonUpload({
       }
     } catch (err) {
       console.error("File upload error:", err);
-      Alert.alert("Error", "Something went wrong while selecting the file.");
+      showToast("Something went wrong while selecting the file", "error");
     }
   };
 
@@ -136,10 +135,7 @@ export default function CommonUpload({
             onPress={() => {
               if (file) onUpload(file);
               else
-                Alert.alert(
-                  "No file selected",
-                  "Please select a file to upload."
-                );
+                showToast("No file selected. Please select a file to upload", "error");
             }}
             disabled={!file}
             style={styles.actionButton}

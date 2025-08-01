@@ -1,6 +1,6 @@
 import axios from "axios";
 import { navigate } from "../navigation/NavigationService";
-import { getItem, removeItem } from "../utils/storage";
+import { getAuthData, clearAuthData } from "../utils/storage";
 import { triggerToast } from "../services/toastService";
 
 const axiosInstance = axios.create({
@@ -12,10 +12,10 @@ const axiosInstance = axios.create({
 // Request interceptor to attach token and content-type
 axiosInstance.interceptors.request.use(
   async (config) => {
-    const token = await getItem("accessToken");
+    const { accessToken } = (await getAuthData()) ?? {};
 
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    if (accessToken) {
+      config.headers.Authorization = `Bearer ${accessToken}`;
     }
 
     // Set Content-Type only for methods that send a body
@@ -36,11 +36,19 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
-    if (error.response?.status === 401) {
-      await removeItem("accessToken");
-      triggerToast("Session expired. Please log in again.", "error");
-      navigate("Login");
+    const status = error?.response?.status;
+    const message = error?.response?.data;
+
+    if (status === 401 && message !== "Invalid login") {
+      try {
+        await clearAuthData();
+        triggerToast("Session expired. Please log in again.", "error");
+        navigate("Login");
+      } catch (e) {
+        console.error("Failed to clear auth data or navigate:", e);
+      }
     }
+
     return Promise.reject(error);
   }
 );

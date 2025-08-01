@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { TouchableOpacity, useWindowDimensions, View } from "react-native";
-import { Avatar, useTheme } from "react-native-paper";
+import { Avatar, Text, useTheme } from "react-native-paper";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { Ionicons } from "@expo/vector-icons";
-import { getItem, removeItem } from "../utils/storage";
+import { clearAuthData, getAuthData } from "../utils/storage";
 import { navigate } from "./NavigationService";
 import { stopConnection } from "../services/signalrService";
 import AddUserScreen from "../screens/AddUserScreen";
@@ -28,11 +28,16 @@ export default function AppLayout() {
   const [role, setRole] = useState<"Admin" | "User" | "SuperAdmin" | null>(
     null
   );
+  const [videoCount, setVideoCount] = useState<number | null>(null);
 
   useEffect(() => {
     (async () => {
-      const name = await getItem("userName");
-      const storedRole = await getItem("role");
+      const {
+        userName: name,
+        role: storedRole,
+        videoCount: count,
+      } = await getAuthData();
+
       if (name) setUserName(name);
       if (
         storedRole === "Admin" ||
@@ -41,21 +46,29 @@ export default function AppLayout() {
       ) {
         setRole(storedRole);
       }
+
+      if (count !== undefined && !isNaN(Number(count))) {
+        setVideoCount(Number(count));
+      }
     })();
   }, []);
 
   const handleLogout = async () => {
     try {
       stopConnection();
-      await removeItem("accessToken");
-      await removeItem("userName");
-      await removeItem("role");
+      await clearAuthData();
     } catch (error: any) {
       const msg = error?.response?.data?.error || "Something went wrong.";
       alert(msg);
     } finally {
       navigate("Login");
     }
+  };
+
+  const getCountColor = () => {
+    if (videoCount >= 5000) return colors.success;
+    if (videoCount > 1000) return colors.warning;
+    return colors.error;
   };
 
   const headerRightComponent = () => (
@@ -67,6 +80,46 @@ export default function AppLayout() {
         gap: 12,
       }}
     >
+      {role === "Admin" && videoCount !== null && (
+        <TouchableOpacity
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            backgroundColor: getCountColor(),
+            paddingHorizontal: 12,
+            paddingVertical: 6,
+            borderRadius: 5,
+            alignSelf: "flex-start",
+            shadowColor: colors.black,
+            shadowOffset: { width: 0, height: 1 },
+            shadowOpacity: 0.1,
+            shadowRadius: 3,
+            elevation: 3,
+            cursor: "default"
+          }}
+          activeOpacity={0.8}
+          onPress={() => {
+            // Optional action
+          }}
+        >
+          <Ionicons
+            name="videocam"
+            size={18}
+            color={colors.white}
+            style={{ marginRight: 6 }}
+          />
+          <Text
+            style={{
+              color: colors.white,
+              fontSize: 14,
+              fontWeight: "600",
+            }}
+          >
+            {videoCount}
+          </Text>
+        </TouchableOpacity>
+      )}
+
       <TouchableOpacity onPress={handleLogout}>
         <Ionicons name="log-out-outline" size={28} color={colors.primary} />
       </TouchableOpacity>
@@ -129,7 +182,7 @@ export default function AppLayout() {
               }}
             />
           )}
-          
+
           <Drawer.Screen
             name="AddUser"
             component={AddUserScreen}

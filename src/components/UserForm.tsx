@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { FieldConfig, FieldType } from "../types";
 import { User } from "../types/User";
 import { getApplications } from "../api/applicationApi";
+import { getAuthData } from "../utils/storage";
 import DynamicForm from "./DynamicForm";
-import { getItem } from "../utils/storage";
 
 type Props = {
   mode: "create" | "edit";
@@ -35,7 +35,8 @@ export default function UserForm({
 
   useEffect(() => {
     (async () => {
-      const storedRole = await getItem("role");
+      const { role: storedRole } = await getAuthData();
+
       if (
         storedRole === "Admin" ||
         storedRole === "SuperAdmin" ||

@@ -2,6 +2,7 @@ export type Application = {
   id?: string;
   createdAt?: string;
   name: string;
+  remainingVideoCount: string;
   totalVideoCount: number;
   salesAgent: string;
   videoGenerationRate?: string;

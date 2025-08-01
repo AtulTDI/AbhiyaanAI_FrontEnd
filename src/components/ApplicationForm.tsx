@@ -47,7 +47,7 @@ export default function ApplicationForm({
       name: "videoCount",
       label: "Video Count",
       type: "number",
-      max: 5000,
+      min: 5000,
       required: true,
     },
     {
@@ -62,6 +62,8 @@ export default function ApplicationForm({
       label: "Video Generation Rate",
       type: "number",
       decimalPlaces: 2,
+      min: 1,
+      max: 15,
       required: true,
     },
   ];

@@ -62,7 +62,7 @@ export default function VideoTable({
     {
       label: "Actions",
       key: "actions",
-      flex: 2,
+      flex: 1,
       render: (item: Video) => (
         <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
           {/* Play */}

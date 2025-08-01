@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { View, ActivityIndicator } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { getItem } from "../utils/storage";
+import { getAuthData } from "../utils/storage";
 
 export default function AuthLoadingScreen() {
   const navigation = useNavigation<any>();
@@ -9,8 +9,9 @@ export default function AuthLoadingScreen() {
   useEffect(() => {
     const checkToken = async () => {
       try {
-        const token = await getItem("accessToken");
-        if (token) {
+        const { accessToken } = await getAuthData();
+
+        if (accessToken) {
           navigation.replace("App");
         } else {
           navigation.replace("Login");

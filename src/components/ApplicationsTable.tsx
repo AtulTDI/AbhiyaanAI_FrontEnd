@@ -28,14 +28,12 @@ export default function ApplicationsTable({
       flex: 2,
     },
     {
-      label: "Remaining Video Count",
-      key: "remainingVideoCount",
+      label: "Video Count",
+      key: "videoCount",
       flex: 2,
-    },
-    {
-      label: "Total Video Count",
-      key: "totalVideoCount",
-      flex: 2,
+      render: (item: Application) => (
+        <Text>{`${item.remainingVideoCount} / ${item.totalVideoCount}`}</Text>
+      ),
     },
     {
       label: "Created At",
