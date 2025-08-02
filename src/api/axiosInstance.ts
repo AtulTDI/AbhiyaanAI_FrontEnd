@@ -3,11 +3,16 @@ import { navigate } from "../navigation/NavigationService";
 import { getAuthData, clearAuthData } from "../utils/storage";
 import { triggerToast } from "../services/toastService";
 
+declare module "axios" {
+  export interface AxiosRequestConfig {
+    useApiPrefix?: boolean;
+  }
+}
+
 const axiosInstance = axios.create({
-  baseURL: process.env.EXPO_PUBLIC_API_URL,
+  baseURL: process.env.EXPO_PUBLIC_API,
   timeout: 60000,
 });
-
 
 // Request interceptor to attach token and content-type
 axiosInstance.interceptors.request.use(
@@ -18,13 +23,16 @@ axiosInstance.interceptors.request.use(
       config.headers.Authorization = `Bearer ${accessToken}`;
     }
 
-    // Set Content-Type only for methods that send a body
+    // Optional: Append /api if custom flag is set
+    if (config.useApiPrefix && config.url?.startsWith("/")) {
+      config.url = `/api${config.url}`;
+    }
+
     const method = config.method?.toUpperCase();
-    if (["POST", "PUT", "PATCH"].includes(config.method?.toUpperCase())) {
+    if (["POST", "PUT", "PATCH"].includes(method)) {
       config.headers["Content-Type"] = "application/json";
     }
 
-    // Optionally set Accept for all requests
     config.headers["Accept"] = "application/json";
 
     return config;

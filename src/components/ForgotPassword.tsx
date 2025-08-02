@@ -2,6 +2,8 @@ import { useState } from "react";
 import { StyleSheet } from "react-native";
 import { Text, TextInput, Button, Card, useTheme } from "react-native-paper";
 import { useToast } from "./ToastProvider";
+import { forgotPasswordLink } from "../api/authApi";
+import { extractErrorMessage } from "../utils/common";
 import { AppTheme } from "../theme";
 
 type ForgotPasswordProps = {
@@ -18,9 +20,15 @@ export default function ForgotPassword({
   const { colors } = theme;
   const [email, setEmail] = useState("");
 
-  const handleReset = () => {
+  const handleReset = async () => {
     if (!email) return showToast("Please enter your email", "info");
-    showToast(`Password reset link sent to ${email}`, "success");
+
+    try {
+      await forgotPasswordLink(email);
+      showToast(`Password reset link sent to ${email}`, "success");
+    } catch (error: any) {
+      showToast(extractErrorMessage(error));
+    }
   };
 
   return (

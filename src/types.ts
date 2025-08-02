@@ -4,6 +4,7 @@ export type RootStackParamList = {
   App: undefined;
   Home: undefined;
   Generated: undefined;
+  ResetPasswordScreen: undefined;
 };
 
 export type DrawerLabelProps = {

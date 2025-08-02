@@ -1,3 +1,5 @@
+import { Platform } from "react-native";
+import * as FileSystem from "expo-file-system";
 import axios from "./axiosInstance";
 import { CreateVoterPayload, EditVoterPayload, Voter } from "../types/Voter";
 import { base64ToBlob } from "../utils/common";
@@ -6,7 +8,7 @@ import { base64ToBlob } from "../utils/common";
  * Get paginated users with optional search
  */
 export const getVoters = () =>
-  axios.get<Voter>("/Recipients/getrecipients");
+  axios.get<Voter>("/Recipients/getrecipients", { useApiPrefix: true });
 
 
 /**
@@ -15,6 +17,7 @@ export const getVoters = () =>
 export const getVotersWithVideoId = (id: string) =>
   axios.get('/Recipients/getinProgressaivideoswithbaseid', {
     params: { baseVideoID: id },
+    useApiPrefix: true,
   });
 
 
@@ -24,6 +27,7 @@ export const getVotersWithVideoId = (id: string) =>
 export const getVotersWithCompletedVideoId = (id: string) =>
   axios.get('/Recipients/getcompletedaivideoswithbaseid', {
     params: { baseVideoID: id },
+    useApiPrefix: true
   });
 
 
@@ -31,13 +35,13 @@ export const getVotersWithCompletedVideoId = (id: string) =>
  * Get user by ID
  */
 export const getVoterById = (id: string) =>
-  axios.get<Voter>(`/Recipients/${id}`);
+  axios.get<Voter>(`/Recipients/${id}`, { useApiPrefix: true });
 
 /**
  * Add new user
  */
 export const createVoter = (payload: CreateVoterPayload) =>
-  axios.post<Voter>("/Recipients", payload);
+  axios.post<Voter>("/Recipients", payload, { useApiPrefix: true });
 
 
 /**
@@ -45,24 +49,40 @@ export const createVoter = (payload: CreateVoterPayload) =>
  */
 export const uploadVoters = async (file: any) => {
   const formData = new FormData();
+  const fileName = file.name || "upload.xlsx";
+  const mimeType =
+    file.mimeType ||
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
-  // Case: base64 string in file.uri
   if (file?.uri?.startsWith("data:")) {
-    const [metadata, base64] = file.uri.split(",");
-    const mimeType = file.mimeType || metadata.match(/data:(.*);base64/)?.[1] || "application/octet-stream";
-    const blob = base64ToBlob(base64, mimeType);
-    formData.append("file", blob, file.name || "upload.xlsx");
-  }
-  // Case: plain File object (web)
-  else if (file instanceof File) {
+    // Base64 case
+    const base64 = file.uri.split(",")[1];
+    const blob = await base64ToBlob(base64, mimeType);
+
+    if (Platform.OS === "web") {
+      const webFile = new File([blob], fileName, { type: mimeType });
+      formData.append("file", webFile);
+    } else {
+      const tempPath = `${FileSystem.cacheDirectory}${fileName}`;
+      await FileSystem.writeAsStringAsync(tempPath, base64, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+
+      formData.append("file", {
+        uri: tempPath,
+        name: fileName,
+        type: mimeType,
+      } as any);
+    }
+  } else if (file instanceof File) {
+    // Web File
     formData.append("file", file);
-  }
-  // Case: file from RN picker with uri
-  else if (file?.uri) {
+  } else if (file?.uri?.startsWith("file://")) {
+    // RN Picker or native uri
     formData.append("file", {
       uri: file.uri,
-      name: file.name || "upload.xlsx",
-      type: file.mimeType || "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      name: fileName,
+      type: mimeType,
     } as any);
   } else {
     throw new Error("Unsupported file format");
@@ -72,20 +92,21 @@ export const uploadVoters = async (file: any) => {
     headers: {
       "Content-Type": "multipart/form-data",
     },
+    useApiPrefix: true,
+    transformRequest: (data) => data, // ensure FormData isn't serialized
   });
 
   return response.data;
 };
 
-
 /**
  * Edit user by ID
  */
 export const editVoterById = (id: string, payload: EditVoterPayload) =>
-  axios.put<Voter>(`/Recipients/${id}`, payload);
+  axios.put<Voter>(`/Recipients/${id}`, payload, { useApiPrefix: true });
 
 /**
  * Delete user by ID
  */
 export const deleteVoterById = (id: string) =>
-  axios.delete(`/Recipients/${id}`);
+  axios.delete(`/Recipients/${id}`, { useApiPrefix: true });

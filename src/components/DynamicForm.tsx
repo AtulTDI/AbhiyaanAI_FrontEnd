@@ -88,7 +88,7 @@ export default function DynamicForm({
         field.type === "number" &&
         value &&
         field.decimalPlaces == null &&
-        value.includes(".")
+        value.toString().includes(".")
       ) {
         errors[field.name] = `${field.label} must be a whole number.`;
       }

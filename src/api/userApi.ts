@@ -9,20 +9,20 @@ import { base64ToBlob } from "../utils/common";
 /**
  * Get paginated users with optional search
  */
-export const getUsers = () => 
-  axios.get<User>("/Users");
+export const getUsers = () =>
+  axios.get<User>("/Users", { useApiPrefix: true });
 
 /**
  * Get user by ID
  */
 export const getUserById = (id: string) =>
-  axios.get<User>(`/users/${id}`);
+  axios.get<User>(`/users/${id}`, { useApiPrefix: true });
 
 /**
  * Add new user
  */
 export const createUser = (payload: CreateUserPayload) =>
-  axios.post<User>("/Users/register", payload);
+  axios.post<User>("/Users/register", payload, { useApiPrefix: true });
 
 
 /**
@@ -57,6 +57,7 @@ export const uploadUsers = async (file: any) => {
     headers: {
       "Content-Type": "multipart/form-data",
     },
+    useApiPrefix: true,
   });
 
   return response.data;
@@ -66,10 +67,10 @@ export const uploadUsers = async (file: any) => {
  * Edit user by ID
  */
 export const editUserById = (id: string, payload: EditUserPayload) =>
-  axios.put<User>(`/Users/${id}`, payload);
+  axios.put<User>(`/Users/${id}`, payload, { useApiPrefix: true });
 
 /**
  * Delete user by ID
  */
 export const deleteUserById = (id: string) =>
-  axios.delete(`/Users/delete/${id}`);
+  axios.delete(`/Users/delete/${id}`, { useApiPrefix: true });

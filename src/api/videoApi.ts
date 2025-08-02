@@ -10,7 +10,7 @@ import { getAuthData } from "../utils/storage";
 export const getVideos = async () => {
   const { role } = await getAuthData();
 
-  const response = await axios.get<Video>(`/BaseVideos/${role === "User" ? "getsharedvideos" : "getmyvideos"}`);
+  const response = await axios.get<Video>(`/BaseVideos/${role === "User" ? "getsharedvideos" : "getmyvideos"}`, { useApiPrefix: true });
 
   return response;
 }
@@ -19,7 +19,7 @@ export const getVideos = async () => {
  * Get video by ID
  */
 export const shareVideoById = (id: string, payload: boolean) =>
-  axios.put<Video>(`/BaseVideos/${id}/shareforcampaign`, payload);
+  axios.put<Video>(`/BaseVideos/${id}/shareforcampaign`, payload, { useApiPrefix: true });
 
 /**
  * Upload video
@@ -96,6 +96,7 @@ export const uploadVideo = async (payload: Video) => {
     headers: {
       "Content-Type": "multipart/form-data",
     },
+    useApiPrefix: true,
     transformRequest: (data) => data,
   });
 
@@ -105,19 +106,19 @@ export const uploadVideo = async (payload: Video) => {
  * Edit video by ID
  */
 export const editVideoById = (id: string, payload: Video) =>
-  axios.put<Video>(`/BaseVideos/${id}`, payload);
+  axios.put<Video>(`/BaseVideos/${id}`, payload, { useApiPrefix: true });
 
 /**
  * Delete video by ID
  */
 export const deleteVideoById = (id: string) =>
-  axios.delete(`/BaseVideos/${id}/deletevideo`);
+  axios.delete(`/BaseVideos/${id}/deletevideo`, { useApiPrefix: true });
 
 /**
  * Generate customised video
  */
 export const generateCustomisedVideo = (payload: GenerateVideo) =>
-  axios.post<GenerateVideo>(`/CustomizedAIVideo`, payload);
+  axios.post<GenerateVideo>(`/CustomizedAIVideo/api/CustomizedAIVideo`, payload, { useApiPrefix: true });
 
 /**
  * Generate customised video
@@ -168,6 +169,7 @@ export const generateSampleVideo = async (payload: SampleVideo) => {
     headers: {
       "Content-Type": "multipart/form-data",
     },
+    useApiPrefix: true,
     transformRequest: (data) => data,
   });
 
@@ -179,11 +181,11 @@ export const generateSampleVideo = async (payload: SampleVideo) => {
  * Get generated customised video
  */
 export const getCustomisedVideos = () =>
-  axios.get<GenerateVideo>(`/GetUserCustomizedVideos`);
+  axios.get<GenerateVideo>(`/GetUserCustomizedVideos`, { useApiPrefix: true });
 
 
 /**
  * Get customised video link
  */
 export const getCustomisedVideoLink = (payload: GetVideoLink) =>
-  axios.post<GetVideoLink>('/VideoShare/sendvideo', payload);
+  axios.post<GetVideoLink>('/VideoShare/sendvideo', payload, { useApiPrefix: true });

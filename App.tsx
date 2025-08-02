@@ -10,15 +10,34 @@ import { VideoPreviewProvider } from "./src/components/VideoPreviewContext";
 import LoginScreen from "./src/screens/LoginScreen";
 import AppLayout from "./src/navigation/AppLayout";
 import AuthLoadingScreen from "./src/screens/AuthLoadingScreen";
+import ResetPasswordScreen from "./src/screens/ResetPasswordScreen";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
+
+const linking = {
+  prefixes: ["http://localhost:5201", "https://yourdomain.com", "abhiyanai://"],
+  config: {
+    screens: {
+      AuthLoading: "authloading",
+      Login: "login",
+      App: "app",
+      ResetPasswordScreen: {
+        path: "Account/resetpassword",
+        parse: {
+          token: (token: string) => token,
+          email: (email: string) => email,
+        },
+      },
+    },
+  },
+};
 
 export default function App() {
   return (
     <PaperProvider theme={customTheme}>
       <ToastProvider>
         <VideoPreviewProvider>
-          <NavigationContainer ref={navigationRef}>
+          <NavigationContainer ref={navigationRef} linking={linking}>
             <Stack.Navigator
               id={undefined}
               initialRouteName="AuthLoading"
@@ -27,6 +46,10 @@ export default function App() {
               <Stack.Screen name="AuthLoading" component={AuthLoadingScreen} />
               <Stack.Screen name="Login" component={LoginScreen} />
               <Stack.Screen name="App" component={AppLayout} />
+              <Stack.Screen
+                name="ResetPasswordScreen"
+                component={ResetPasswordScreen}
+              />
             </Stack.Navigator>
           </NavigationContainer>
         </VideoPreviewProvider>
