@@ -20,16 +20,16 @@ export default function UserTable({ users, onEdit, onDelete }: Props) {
     {
       label: "Name",
       key: "fullName",
-      flex: 4,
+      flex: 3.5,
       render: (item) => item.firstName + " " + item.lastName,
     },
-    { label: "Mobile", key: "phoneNumber", flex: 2.5 },
-    { label: "Email", key: "email", flex: 4 },
+    { label: "Mobile", key: "phoneNumber", flex: 2.2 },
+    { label: "Email", key: "email", flex: 3.5 },
     { label: "Role", key: "role", flex: 1.5 },
     {
       label: "Created At",
       key: "createdAt",
-      flex: 3,
+      flex: 2.6,
       render: (item) => (
         <Text>
           {item.createdAt
@@ -41,7 +41,7 @@ export default function UserTable({ users, onEdit, onDelete }: Props) {
     {
       label: "Actions",
       key: "actions",
-      flex: 2,
+      flex: 1.5,
       render: (item) => (
         <View style={styles.actions}>
           <Ionicons
@@ -81,6 +81,6 @@ const styles = StyleSheet.create({
   actions: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 14,
+    gap: 5,
   },
 });

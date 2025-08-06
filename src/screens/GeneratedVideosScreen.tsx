@@ -132,7 +132,7 @@ export default function GeneratedVideoScreen() {
     {
       key: "actions",
       label: "Actions",
-      flex: 0.8,
+      flex: 1,
       render: (item: Voter) => {
         return (
           <View style={{ justifyContent: "flex-start" }}>

@@ -18,18 +18,20 @@ type AuthData = {
   accessToken: string;
   userId: string;
   userName: string;
+  userEmail: string;
   role: string;
   applicationId: string;
   videoCount?: string;
 };
 
 export const saveAuthData = async (data: AuthData) => {
-  const { accessToken, userId, userName, role, applicationId, videoCount } = data;
+  const { accessToken, userId, userName, userEmail, role, applicationId, videoCount } = data;
 
   if (isWeb) {
     localStorage.setItem("accessToken", encrypt(accessToken));
     localStorage.setItem("userId", encrypt(userId));
     localStorage.setItem("userName", encrypt(userName));
+    localStorage.setItem("userEmail", encrypt(userEmail));
     localStorage.setItem("role", encrypt(role));
     localStorage.setItem("applicationId", encrypt(applicationId));
     localStorage.setItem("videoCount", encrypt(videoCount ?? "0"));
@@ -38,6 +40,7 @@ export const saveAuthData = async (data: AuthData) => {
     await AsyncStorage.multiSet([
       ["userId", userId],
       ["userName", userName],
+      ["userEmail", userEmail],
       ["role", role],
       ["applicationId", applicationId],
       ["videoCount", videoCount ?? "0"],
@@ -50,6 +53,7 @@ export const getAuthData = async (): Promise<AuthData | null> => {
     const accessToken = localStorage.getItem("accessToken");
     const userId = localStorage.getItem("userId");
     const userName = localStorage.getItem("userName");
+    const userEmail = localStorage.getItem("userEmail");
     const role = localStorage.getItem("role");
     const applicationId = localStorage.getItem("applicationId");
     const videoCount = localStorage.getItem("videoCount");
@@ -59,6 +63,7 @@ export const getAuthData = async (): Promise<AuthData | null> => {
         accessToken: decrypt(accessToken),
         userId: decrypt(userId),
         userName: decrypt(userName),
+        userEmail: decrypt(userEmail),
         role: decrypt(role),
         applicationId: decrypt(applicationId),
         videoCount: decrypt(videoCount || "0"),
@@ -70,12 +75,13 @@ export const getAuthData = async (): Promise<AuthData | null> => {
     const accessToken = await SecureStore.getItemAsync("accessToken");
     const userId = await AsyncStorage.getItem("userId");
     const userName = await AsyncStorage.getItem("userName");
+    const userEmail = await AsyncStorage.getItem("userEmail");
     const role = await AsyncStorage.getItem("role");
     const applicationId = await AsyncStorage.getItem("applicationId");
     const videoCount = await AsyncStorage.getItem("videoCount");
 
     if (accessToken && userName && role) {
-      return { accessToken, userId, userName, role, applicationId, videoCount: videoCount ?? "0" };
+      return { accessToken, userId, userName, userEmail, role, applicationId, videoCount: videoCount ?? "0" };
     }
 
     return null;
@@ -87,6 +93,7 @@ export const clearAuthData = async () => {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("userId");
     localStorage.removeItem("userName");
+    localStorage.removeItem("userEmail");
     localStorage.removeItem("role");
     localStorage.removeItem("applicationId");
     localStorage.removeItem("videoCount");
@@ -95,6 +102,7 @@ export const clearAuthData = async () => {
     await AsyncStorage.multiRemove([
       "userId",
       "userName",
+      "userEmail",
       "role",
       "applicationId",
       "videoCount",

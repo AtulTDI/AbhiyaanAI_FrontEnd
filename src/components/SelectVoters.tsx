@@ -135,6 +135,7 @@ export default function SelectVoters({
         }
         emptyText="No voters found"
         keyExtractor={(item) => item.id}
+        tableWithSelection={true}
       />
       <View style={styles.generateContainer}>
         <Button

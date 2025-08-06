@@ -6,6 +6,7 @@ import {
   Button,
   Surface,
   useTheme,
+  Text,
 } from "react-native-paper";
 import FormDropdown from "./FormDropdown";
 import { FieldConfig } from "../types";
@@ -29,6 +30,7 @@ export default function DynamicForm({
   onCancel,
 }: Props) {
   const theme = useTheme<AppTheme>();
+  const { colors } = theme;
   const styles = createStyles(theme);
 
   const [formData, setFormData] = useState(initialValues);
@@ -53,54 +55,108 @@ export default function DynamicForm({
       const numericValue = parseFloat(value);
 
       if (field.required && !value) {
-        errors[field.name] = `${field.label} is required.`;
-      } else if (
-        field.type === "email" &&
-        value &&
-        !/^\S+@\S+\.\S+$/.test(value)
-      ) {
-        errors[field.name] = "Invalid email format.";
-      } else if (field.type === "number" && value && isNaN(numericValue)) {
-        errors[field.name] = `${field.label} must be a valid number.`;
-      } else if (
-        field.type === "number" &&
-        value &&
-        field.decimalPlaces != null
-      ) {
-        const decimalRegex = new RegExp(
-          `^\\d+(\\.\\d{1,${field.decimalPlaces}})?$`
-        );
-        const numericValue = parseFloat(value);
+        errors[field.name] = `${field.label} is required`;
+        return;
+      }
 
-        if (!decimalRegex.test(value)) {
-          errors[
-            field.name
-          ] = `Only up to ${field.decimalPlaces} decimal place(s) allowed.`;
+      if (field.type === "email" && value && !/^\S+@\S+\.\S+$/.test(value)) {
+        errors[field.name] = "Invalid email format";
+      }
+
+      if (field.type === "password" && value) {
+        const errorsList: string[] = [];
+
+        if (value.length < 6) {
+          errorsList.push("Passwords must be at least 6 characters");
+        }
+
+        if (!/[0-9]/.test(value)) {
+          errorsList.push("Passwords must have at least one digit ('0'-'9')");
+        }
+
+        if (!/[a-z]/.test(value)) {
+          errorsList.push(
+            "Passwords must have at least one lowercase character"
+          );
+        }
+
+        if (!/[A-Z]/.test(value)) {
+          errorsList.push(
+            "Passwords must have at least one uppercase character"
+          );
+        }
+
+        if (!/[^a-zA-Z0-9]/.test(value)) {
+          errorsList.push("Passwords must have at least one special character");
+        }
+
+        if (errorsList.length > 0) {
+          errors[field.name] = errorsList.join("\n");
+        }
+      }
+
+      if (field.validationRules && Array.isArray(field.validationRules)) {
+        const failedRules = field.validationRules
+          .filter((rule) => !rule.test(value || ""))
+          .map((rule) => rule.message);
+
+        if (failedRules.length > 0) {
+          errors[field.name] = failedRules.join("\n");
+        }
+      }
+
+      if (field.type === "number") {
+        if (value && isNaN(numericValue)) {
+          errors[field.name] = `${field.label} must be a valid number`;
         } else if (
-          (field.min != null && numericValue < field.min) ||
-          (field.max != null && numericValue > field.max)
+          value &&
+          field.decimalPlaces != null &&
+          !new RegExp(`^\\d+(\\.\\d{1,${field.decimalPlaces}})?$`).test(value)
         ) {
           errors[
             field.name
-          ] = `Value must be between ${field.min} and ${field.max}.`;
+          ] = `Only up to ${field.decimalPlaces} decimal place(s) allowed`;
+        } else if (
+          value &&
+          field.decimalPlaces == null &&
+          value.toString().includes(".")
+        ) {
+          errors[field.name] = `${field.label} must be a whole number`;
         }
-      } else if (
-        field.type === "number" &&
-        value &&
-        field.decimalPlaces == null &&
-        value.toString().includes(".")
-      ) {
-        errors[field.name] = `${field.label} must be a whole number.`;
+
+        if (
+          value &&
+          !isNaN(numericValue) &&
+          field.min != null &&
+          numericValue < field.min
+        ) {
+          errors[field.name] = `${field.label} must be ≥ ${field.min}`;
+        }
+
+        if (
+          value &&
+          !isNaN(numericValue) &&
+          field.max != null &&
+          numericValue > field.max
+        ) {
+          errors[field.name] = `${field.label} must be ≤ ${field.max}`;
+        }
+      }
+
+      if ((field.name === "mobile" || field.name === "phoneNumber") && value) {
+        if (!/^\d{10}$/.test(value)) {
+          errors[field.name] = `${field.label} must be exactly 10 digits`;
+        }
       }
 
       if (
-        field.type === "number" &&
+        (field.name === "firstName" || field.name === "lastName") &&
         value &&
-        field.min != null &&
-        !isNaN(numericValue) &&
-        numericValue < field.min
+        /[^a-zA-Z\s]/.test(value)
       ) {
-        errors[field.name] = `${field.label} must be >= ${field.min}`;
+        errors[
+          field.name
+        ] = `${field.label} can only contain letters and spaces`;
       }
     });
 
@@ -168,7 +224,14 @@ export default function DynamicForm({
           >
             {field.type === "dropdown" ? (
               <FormDropdown
-                label={field.label}
+                label={
+                  <Text>
+                    {field.label}
+                    {field.required && (
+                      <Text style={{ color: colors.error }}> *</Text>
+                    )}
+                  </Text>
+                }
                 value={formData[field.name]}
                 options={
                   Array.isArray(field.options)
@@ -186,7 +249,14 @@ export default function DynamicForm({
             ) : (
               <>
                 <TextInput
-                  label={field.label}
+                  label={
+                    <Text>
+                      {field.label}
+                      {field.required && (
+                        <Text style={{ color: colors.error }}> *</Text>
+                      )}
+                    </Text>
+                  }
                   value={formData[field.name]}
                   onChangeText={(text) => handleChange(field, text)}
                   mode="outlined"

@@ -7,7 +7,7 @@ import { AppTheme } from "../theme";
 type Option = { label: string; value: string };
 
 type Props = {
-  label: string;
+  label: any;
   placeholder?: string;
   value: string;
   options: Option[];
@@ -88,6 +88,7 @@ export default function FormDropdown({
             </View>
           ) : null
         }
+        error={error?.length > 0}
       />
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
     </View>

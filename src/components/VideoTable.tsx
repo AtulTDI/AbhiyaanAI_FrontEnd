@@ -64,7 +64,7 @@ export default function VideoTable({
       key: "actions",
       flex: 1,
       render: (item: Video) => (
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
           {/* Play */}
           <TouchableOpacity
             onPress={() => setSelectedVideoUri(item.s3Url || "")}

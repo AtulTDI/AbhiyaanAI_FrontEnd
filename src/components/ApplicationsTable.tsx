@@ -25,12 +25,12 @@ export default function ApplicationsTable({
     {
       label: "Name",
       key: "name",
-      flex: 2,
+      flex: 2.5,
     },
     {
       label: "Video Count",
       key: "videoCount",
-      flex: 2,
+      flex: 1.5,
       render: (item: Application) => (
         <Text>{`${item.remainingVideoCount} / ${item.totalVideoCount}`}</Text>
       ),
@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
   actions: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 14,
+    gap: 5,
   },
   statusToggle: {
     flexDirection: "row",

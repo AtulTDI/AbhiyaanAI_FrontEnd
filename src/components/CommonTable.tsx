@@ -16,7 +16,7 @@ type Column<T> = {
   label: string | React.ReactNode;
   key: keyof T | "actions" | "radio" | string;
   flex: number;
-  render?: (item: T) => React.ReactNode;
+  render?: (item: T, index: number) => React.ReactNode;
   renderHeader?: () => React.ReactNode;
 };
 
@@ -27,6 +27,7 @@ type Props<T> = {
   emptyText?: string;
   emptyIcon?: React.ReactNode;
   loading?: boolean;
+  tableWithSelection?: boolean;
 };
 
 const ROWS_PER_PAGE_OPTIONS = [5, 10, 20];
@@ -38,6 +39,7 @@ export default function CommonTable<T>({
   emptyText = "No data found",
   emptyIcon,
   loading = false,
+  tableWithSelection,
 }: Props<T>) {
   const theme = useTheme<AppTheme>();
   const styles = createStyles(theme);
@@ -52,20 +54,32 @@ export default function CommonTable<T>({
   const paginatedData = data.slice(startIndex, endIndex);
   const totalPages = Math.ceil(data.length / rowsPerPage);
 
+  const enhancedColumns: Column<T>[] = [
+    ...(!tableWithSelection
+      ? [
+          {
+            key: "__sno__",
+            label: "S.No.",
+            flex: 0.7,
+            render: (_: T, index: number) => (
+              <Text style={{ color: colors.onSurface }}>
+                {startIndex + index + 1}
+              </Text>
+            ),
+          },
+        ]
+      : []),
+    ...columns,
+  ];
+
   const renderHeader = () => (
-    <View
-      style={[
-        styles.row,
-        styles.headerRow,
-        { backgroundColor: colors.primary },
-      ]}
-    >
-      {columns.map((col) => (
-        <View key={String(col.key)} style={{ flex: col.flex, paddingRight: 6 }}>
+    <View style={[styles.row, styles.headerRow]}>
+      {enhancedColumns.map((col) => (
+        <View key={String(col.key)} style={[styles.cell, { flex: col.flex }]}>
           {col.renderHeader ? (
             col.renderHeader()
           ) : (
-            <Text style={[styles.headerCell, { color: colors.onPrimary }]}>
+            <Text style={[styles.headerCell, { color: colors.white }]}>
               {col.label}
             </Text>
           )}
@@ -76,17 +90,15 @@ export default function CommonTable<T>({
 
   const renderItem = ({ item, index }: { item: T; index: number }) => (
     <>
-      <View
-        style={[styles.row, styles.dataRow, { backgroundColor: colors.white }]}
-      >
-        {columns.map((col) => {
+      <View style={styles.dataRow}>
+        {enhancedColumns.map((col) => {
           const key = String(col.key);
           const value = item[col.key as keyof T];
 
           let displayNode: React.ReactNode;
 
           if (col.render) {
-            displayNode = col.render(item);
+            displayNode = col.render(item, index);
           } else {
             displayNode =
               typeof value === "string" || typeof value === "number"
@@ -243,25 +255,42 @@ export default function CommonTable<T>({
 
 const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
-    container: { flex: 1 },
+    container: {
+      flex: 1,
+    },
     tableWrapper: {
+      backgroundColor: theme.colors.white,
+      borderRadius: 12,
+      overflow: "hidden",
+
+      shadowColor: theme.colors.black,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.1,
+      shadowRadius: 8,
+      elevation: 6,
+
       borderWidth: 1,
-      borderRadius: 8,
-      borderColor: theme.colors.mutedBorder,
+      borderColor: theme.colors.lightBackground,
+
       minWidth: 600,
       flex: 1,
     },
     row: {
       flexDirection: "row",
       alignItems: "center",
+      paddingVertical: 10,
       paddingHorizontal: 6,
-      minHeight: 42,
     },
     headerRow: {
-      paddingVertical: 10,
+      backgroundColor: theme.colors.primary,
+      height: 40
     },
     dataRow: {
-      paddingVertical: 6,
+      flexDirection: "row",
+      alignItems: "center",
+      paddingVertical: 10,
+      paddingHorizontal: 6,
+      backgroundColor: theme.colors.white,
     },
     headerCell: {
       fontWeight: "bold",
@@ -269,6 +298,7 @@ const createStyles = (theme: AppTheme) =>
     },
     cell: {
       fontSize: 13,
+      paddingHorizontal: 8,
     } as TextStyle,
     separator: {
       height: 1,
@@ -294,7 +324,7 @@ const createStyles = (theme: AppTheme) =>
     emptyText: {
       fontSize: 16,
       fontWeight: "500",
-      marginTop: 10
+      marginTop: 10,
     },
     paginationContainer: {
       flexDirection: "row",

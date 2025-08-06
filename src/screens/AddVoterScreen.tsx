@@ -193,7 +193,11 @@ export default function AddVoterScreen() {
             variant="titleLarge"
             style={[styles.heading, { color: theme.colors.primary }]}
           >
-            Voters
+            {showAddVoterView
+              ? `${voterToEdit ? "Edit" : "Add"} ${
+                  voterToEdit ? "Voter" : "Voter(s)"
+                }`
+              : "Voters"}
           </Text>
           {!showAddVoterView && (
             <Button

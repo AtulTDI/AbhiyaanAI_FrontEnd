@@ -27,7 +27,7 @@ export default function VoterTable({ voters, onEdit, onDelete }: Props) {
     {
       label: "Actions",
       key: "actions",
-      flex: 0.8,
+      flex: 1,
       render: (item) => (
         <View style={styles.actions}>
           <Ionicons

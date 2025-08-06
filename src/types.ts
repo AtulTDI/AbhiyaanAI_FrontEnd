@@ -33,6 +33,10 @@ export type FieldConfig = {
   min?: number;
   max?: number;
   decimalPlaces?: number,
+  validationRules?: {
+    test: (val: string) => boolean;
+    message: string;
+  }[],
   required?: boolean;
   options?: string[] | { label: string; value: string | number }[];
 };

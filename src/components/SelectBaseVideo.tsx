@@ -77,7 +77,7 @@ export default function SelectBaseVideo({ stepData, setStepData }) {
     {
       label: "Actions",
       key: "actions",
-      flex: 0.4,
+      flex: 0.8,
       render: (item) => (
         <View style={styles.actions}>
           <Ionicons
@@ -129,6 +129,7 @@ export default function SelectBaseVideo({ stepData, setStepData }) {
           />
         }
         emptyText="No videos found"
+        tableWithSelection={true}
       />
     </View>
   );

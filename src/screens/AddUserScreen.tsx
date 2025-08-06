@@ -26,6 +26,7 @@ import { AppTheme } from "../theme";
 
 export default function AddUserScreen() {
   const theme = useTheme<AppTheme>();
+  const styles = createStyles(theme);
   const { showToast } = useToast();
 
   const [users, setUsers] = useState<User[]>([]);
@@ -127,13 +128,15 @@ export default function AddUserScreen() {
 
   return (
     <>
-      <Surface style={styles.container} elevation={1}>
+      <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.header}>
           <Text
             variant="titleLarge"
             style={[styles.heading, { color: theme.colors.primary }]}
           >
-            Users
+            {showAddUserView
+              ? `${userToEdit ? "Edit" : "Add"} User`
+              : "Users"}
           </Text>
           {!showAddUserView && (
             <Button
@@ -158,15 +161,13 @@ export default function AddUserScreen() {
             behavior={Platform.OS === "ios" ? "padding" : undefined}
             style={{ flex: 1 }}
           >
-            <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
-              <UserForm
-                mode={userToEdit ? "edit" : "create"}
-                onCreate={userToEdit ? editUser : addUser}
-                userToEdit={userToEdit}
-                setUserToEdit={setUserToEdit}
-                setShowAddUserView={setShowAddUserView}
-              />
-            </ScrollView>
+            <UserForm
+              mode={userToEdit ? "edit" : "create"}
+              onCreate={userToEdit ? editUser : addUser}
+              userToEdit={userToEdit}
+              setUserToEdit={setUserToEdit}
+              setShowAddUserView={setShowAddUserView}
+            />
           </KeyboardAvoidingView>
         ) : (
           <UserTable
@@ -175,7 +176,7 @@ export default function AddUserScreen() {
             onDelete={handleDeleteRequest}
           />
         )}
-      </Surface>
+      </ScrollView>
 
       <DeleteConfirmationDialog
         visible={deleteDialogVisible}
@@ -188,18 +189,20 @@ export default function AddUserScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    padding: 16,
-    flex: 1,
-  },
-  heading: {
-    fontWeight: "bold",
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-});
+const createStyles = (theme: AppTheme) =>
+  StyleSheet.create({
+    container: {
+      padding: 16,
+      backgroundColor: theme.colors.white,
+      flex: 1,
+    },
+    heading: {
+      fontWeight: "bold",
+    },
+    header: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 16,
+    },
+  });

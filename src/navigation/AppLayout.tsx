@@ -14,6 +14,7 @@ import GeneratedVideoScreen from "../screens/GeneratedVideosScreen";
 import AddApplicationScreen from "../screens/AddApplicationScreen";
 import CustomDrawer from "../components/CustomDrawer";
 import CustomLabel from "../components/CustomLabel";
+import UserAvatarMenu from "../components/UserAvatarMenu";
 import { AppTheme } from "../theme";
 
 const Drawer = createDrawerNavigator();
@@ -28,17 +29,20 @@ export default function AppLayout() {
   const [role, setRole] = useState<"Admin" | "User" | "SuperAdmin" | null>(
     null
   );
+  const [userEmail, setUserEmail] = useState("");
   const [videoCount, setVideoCount] = useState<number | null>(null);
 
   useEffect(() => {
     (async () => {
       const {
         userName: name,
+        userEmail: email,
         role: storedRole,
         videoCount: count,
       } = await getAuthData();
 
       if (name) setUserName(name);
+      if (email) setUserEmail(email);
       if (
         storedRole === "Admin" ||
         storedRole === "SuperAdmin" ||
@@ -89,13 +93,12 @@ export default function AppLayout() {
             paddingHorizontal: 12,
             paddingVertical: 6,
             borderRadius: 5,
-            alignSelf: "flex-start",
             shadowColor: colors.black,
             shadowOffset: { width: 0, height: 1 },
             shadowOpacity: 0.1,
             shadowRadius: 3,
             elevation: 3,
-            cursor: "default"
+            cursor: "default",
           }}
           activeOpacity={0.8}
           onPress={() => {
@@ -123,12 +126,7 @@ export default function AppLayout() {
       <TouchableOpacity onPress={handleLogout}>
         <Ionicons name="log-out-outline" size={28} color={colors.primary} />
       </TouchableOpacity>
-      <Avatar.Text
-        label={userName?.charAt(0)}
-        size={32}
-        style={{ backgroundColor: colors.primary }}
-        labelStyle={{ color: colors.onPrimary }}
-      />
+      <UserAvatarMenu userName={userName} email={userEmail} role={role} />
     </View>
   );
 

@@ -106,7 +106,7 @@ export default function AddApplicationScreen() {
           variant="titleLarge"
           style={[styles.heading, { color: theme.colors.primary }]}
         >
-          Applications
+          {showAddApplicationView ? `${applicationToEdit ? "Edit" : "Add"} Application` : "Applications"}
         </Text>
         {!showAddApplicationView && (
           <Button

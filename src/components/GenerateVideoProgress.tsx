@@ -207,7 +207,7 @@ export default function GenerateVideoProgress({
     {
       key: "actions",
       label: "Status",
-      flex: 1,
+      flex: 0.8,
       render: (item: Voter) => {
         const status = voterStatuses[item.id] || "NotStarted";
         return getStatusView(status, item);

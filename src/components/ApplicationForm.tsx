@@ -42,12 +42,28 @@ export default function ApplicationForm({
   }, []);
 
   const applicationFields: FieldConfig[] = [
-    { name: "appName", label: "Name", type: "text", required: true },
+    {
+      name: "appName",
+      label: "Name",
+      type: "text",
+      validationRules: [
+        {
+          test: (val: string) => val.length >= 5,
+          message: "Name must be at least 5 characters long",
+        },
+        {
+          test: (val: string) => /^[a-zA-Z_]+$/.test(val),
+          message: "Name must only contain alphabets and '_'",
+        },
+      ],
+      required: true,
+    },
     {
       name: "videoCount",
       label: "Video Count",
       type: "number",
       min: 5000,
+      max: 100000,
       required: true,
     },
     {
@@ -75,7 +91,7 @@ export default function ApplicationForm({
         appName: applicationToEdit?.name || "",
         videoCount: applicationToEdit?.totalVideoCount || "5000",
         salesAgent: applicationToEdit?.salesAgent || "",
-        videoGenerationRate: applicationToEdit?.videoGenerationRate || ""
+        videoGenerationRate: applicationToEdit?.videoGenerationRate || "",
       }}
       mode={mode}
       onSubmit={(data) => onCreate(data as any)}
