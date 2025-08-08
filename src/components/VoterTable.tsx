@@ -21,7 +21,7 @@ export default function VoterTable({ voters, onEdit, onDelete }: Props) {
       label: "Name",
       key: "fullName",
       flex: 2,
-      render: (item) => item.firstName + " " + item.lastName,
+      render: (item) => item.fullName,
     },
     { label: "Mobile", key: "phoneNumber", flex: 2 },
     {

@@ -21,7 +21,7 @@ export default function UserTable({ users, onEdit, onDelete }: Props) {
       label: "Name",
       key: "fullName",
       flex: 3.5,
-      render: (item) => item.firstName + " " + item.lastName,
+      render: (item) => item.fullName,
     },
     { label: "Mobile", key: "phoneNumber", flex: 2.2 },
     { label: "Email", key: "email", flex: 3.5 },

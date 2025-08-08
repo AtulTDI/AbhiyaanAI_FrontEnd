@@ -21,7 +21,7 @@ const columns = [
     label: "Name",
     key: "fullName",
     flex: 2,
-    render: (item) => item.firstName + " " + item.lastName,
+    render: (item) => item.fullName,
   },
   { label: "Mobile", key: "phoneNumber", flex: 1.2 },
 ];

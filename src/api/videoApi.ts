@@ -118,7 +118,7 @@ export const deleteVideoById = (id: string) =>
  * Generate customised video
  */
 export const generateCustomisedVideo = (payload: GenerateVideo) =>
-  axios.post<GenerateVideo>(`/CustomizedAIVideo/api/CustomizedAIVideo`, payload, { useApiPrefix: true });
+  axios.post<GenerateVideo>(`/CustomizedAIVideo/createcustomized-aivideo`, payload, { useApiPrefix: true });
 
 /**
  * Generate customised video
@@ -165,7 +165,7 @@ export const generateSampleVideo = async (payload: SampleVideo) => {
 
   formData.append("RecipientName", payload.recipientName);
 
-  const response = await axios.post(`/CustomizedAIVideo/api/createsamplevideo`, formData, {
+  const response = await axios.post(`/CustomizedAIVideo/createsamplevideo`, formData, {
     headers: {
       "Content-Type": "multipart/form-data",
     },
@@ -181,7 +181,7 @@ export const generateSampleVideo = async (payload: SampleVideo) => {
  * Get generated customised video
  */
 export const getCustomisedVideos = () =>
-  axios.get<GenerateVideo>(`/GetUserCustomizedVideos`, { useApiPrefix: true });
+  axios.get<GenerateVideo>(`/CustomizedAIVideo/getusercustomized-videos`, { useApiPrefix: true });
 
 
 /**

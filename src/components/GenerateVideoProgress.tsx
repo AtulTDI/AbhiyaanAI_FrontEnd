@@ -201,7 +201,7 @@ export default function GenerateVideoProgress({
       label: "Name",
       key: "fullName",
       flex: 2,
-      render: (item) => item.firstName + " " + item.lastName,
+      render: (item) => item.fullName,
     },
     { key: "phoneNumber", label: "Mobile", flex: 2 },
     {
