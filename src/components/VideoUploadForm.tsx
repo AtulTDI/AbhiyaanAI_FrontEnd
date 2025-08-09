@@ -21,6 +21,8 @@ import {
   Video as ExpoVideo,
   AVPlaybackStatusSuccess,
 } from "expo-av";
+import { Asset } from "expo-asset";
+import * as Sharing from "expo-sharing";
 import { useToast } from "./ToastProvider";
 import * as DocumentPicker from "expo-document-picker";
 import CommonUpload from "./CommonUpload";
@@ -138,6 +140,27 @@ export default function VideoUploadForm({
     onAddVideo(payload);
   };
 
+  const downloadSampleVideo = async () => {
+    try {
+      const asset = Asset.fromModule(require("../assets/sample-video.mp4"));
+      await asset.downloadAsync();
+      const fileUri = asset.localUri || asset.uri;
+
+      if (Platform.OS === "web") {
+        const link = document.createElement("a");
+        link.href = fileUri;
+        link.download = "sample-video.mp4";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        await Sharing.shareAsync(fileUri);
+      }
+    } catch (error) {
+      console.error("Error downloading video:", error);
+    }
+  };
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -168,6 +191,20 @@ export default function VideoUploadForm({
           <HelperText type="error" visible={!!formData.errors.campaign}>
             {formData.errors.campaign}
           </HelperText>
+
+          <View style={styles.downloadButton}>
+            <Button
+              mode="outlined"
+              icon="download"
+              onPress={downloadSampleVideo}
+              style={{
+                borderRadius: 8,
+                borderColor: colors.primary,
+              }}
+            >
+              Download Sample Video
+            </Button>
+          </View>
 
           {/* Upload Base Video */}
           <CommonUpload
@@ -338,5 +375,9 @@ const createStyles = (theme: AppTheme) =>
     actionButton: {
       flex: 1,
       borderRadius: 6,
+    },
+    downloadButton: {
+      display: "flex",
+      alignItems: "flex-end",
     },
   });

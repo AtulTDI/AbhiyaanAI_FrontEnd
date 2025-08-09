@@ -16,7 +16,9 @@ import {
   SceneRendererProps,
   TabBarItem,
 } from "react-native-tab-view";
+import { Asset } from "expo-asset";
 import { Voter } from "../types/Voter";
+import * as Sharing from "expo-sharing";
 import VoterForm from "../components/VoterForm";
 import VoterUpload from "../components/VoterUpload";
 import VoterTable from "../components/VoterTable";
@@ -133,6 +135,30 @@ export default function AddVoterScreen() {
     }
   };
 
+  const downloadSampleExcel = async () => {
+    try {
+      const asset = Asset.fromModule(
+        require("../assets/sample-voter-upload.xlsx")
+      );
+      await asset.downloadAsync();
+
+      const fileUri = asset.localUri || asset.uri;
+
+      if (Platform.OS === "web") {
+        const link = document.createElement("a");
+        link.href = fileUri;
+        link.download = "sample-voter-upload.xlsx";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        await Sharing.shareAsync(fileUri);
+      }
+    } catch (error) {
+      console.error("Error sharing/downloading Excel:", error);
+    }
+  };
+
   const renderScene = SceneMap({
     manual: () => (
       <VoterForm
@@ -145,10 +171,30 @@ export default function AddVoterScreen() {
       />
     ),
     excel: () => (
-      <VoterUpload
-        fetchVoters={fetchVoters}
-        setShowAddVoterView={setShowAddVoterView}
-      />
+      <View style={{ flex: 1 }}>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "flex-end",
+            paddingTop: 15,
+            paddingBottom: 8,
+          }}
+        >
+          <Button
+            mode="outlined"
+            icon="download"
+            onPress={downloadSampleExcel}
+            style={{ borderRadius: 8, borderColor: colors.primary }}
+          >
+            Download Sample
+          </Button>
+        </View>
+
+        <VoterUpload
+          fetchVoters={fetchVoters}
+          setShowAddVoterView={setShowAddVoterView}
+        />
+      </View>
     ),
   });
 
@@ -238,7 +284,7 @@ export default function AddVoterScreen() {
                   renderTabBar={renderTabBar}
                   onIndexChange={setIndex}
                   initialLayout={{ width: layout.width }}
-                  swipeEnabled={false} 
+                  swipeEnabled={false}
                   lazy
                 />
               )}
