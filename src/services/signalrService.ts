@@ -46,6 +46,26 @@ export const joinGroups = async (userInput: string | string[]) => {
   joinedGroups = [...new Set([...joinedGroups, ...userIds])];
 };
 
+export const leaveGroups = async (userInput: string | string[]) => {
+  if (!connection || connection.state !== signalR.HubConnectionState.Connected) {
+    console.warn("⚠️ Cannot leave groups: SignalR is not connected.");
+    return;
+  }
+
+  const userIds = Array.isArray(userInput) ? userInput : [userInput];
+
+  for (const userId of userIds) {
+    try {
+      await connection.invoke("LeaveGroup", userId);
+      console.log(`✅ Left group: ${userId}`);
+    } catch (error) {
+      console.error(`❌ Failed to leave group ${userId}:`, error);
+    }
+  }
+
+  joinedGroups = joinedGroups.filter(id => !userIds.includes(id));
+};
+
 export const registerOnServerEvents = (
   eventName: string,
   callback: (...args: any[]) => void

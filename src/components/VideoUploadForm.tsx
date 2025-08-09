@@ -28,8 +28,10 @@ import { generateSampleVideo } from "../api/videoApi";
 import { getAuthData } from "../utils/storage";
 import {
   joinGroups,
+  leaveGroups,
   registerOnServerEvents,
   startConnection,
+  stopConnection,
 } from "../services/signalrService";
 import { AppTheme } from "../theme";
 import { extractErrorMessage } from "../utils/common";
@@ -81,11 +83,13 @@ export default function VideoUploadForm({
     await joinGroups(userId);
 
     registerOnServerEvents(
-      "CustomizedVideoLink",
+      "ReceiveVideoUpdate",
       (recepientId: string, status: string, customizedVideoLink: string) => {
         if (status === "Completed" && customizedVideoLink) {
           setGeneratedUri(customizedVideoLink);
           setLoading(false);
+          leaveGroups(userId);
+          stopConnection();
         }
       }
     );

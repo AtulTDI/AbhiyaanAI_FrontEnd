@@ -65,6 +65,7 @@ export default function AddApplicationScreen() {
       await editApplicationById(applicationToEdit.id, {
         ...data,
         name: data?.appName,
+        isActive: applicationToEdit?.isActive
       });
       await fetchApplications();
       setShowAddApplicationView(false);

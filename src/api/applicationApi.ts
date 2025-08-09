@@ -11,6 +11,11 @@ import {
 export const getApplications = () =>
   axios.get<Application>("/Application/all", { useApiPrefix: true });
 
+/**
+ * Get paginated active applications with optional search
+ */
+export const getActiveApplications = () =>
+  axios.get<Application>("/Application/get-active-applications", { useApiPrefix: true });
 
 /**
  * Add new application

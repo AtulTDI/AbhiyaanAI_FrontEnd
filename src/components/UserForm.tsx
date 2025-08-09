@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { FieldConfig, FieldType } from "../types";
 import { User } from "../types/User";
-import { getApplications } from "../api/applicationApi";
+import { getActiveApplications } from "../api/applicationApi";
 import { getAuthData } from "../utils/storage";
 import DynamicForm from "./DynamicForm";
 
@@ -50,7 +50,7 @@ export default function UserForm({
   useEffect(() => {
     const fetchApplications = async () => {
       try {
-        const response = await getApplications();
+        const response = await getActiveApplications();
         const apps = response.data || [];
         const appArray = Array.isArray(apps) ? apps : [apps];
 

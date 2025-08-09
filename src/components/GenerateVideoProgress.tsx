@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { IconButton, ProgressBar, Text, useTheme } from "react-native-paper";
-import { useFocusEffect } from "@react-navigation/native";
 import { Feather, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import CommonTable from "./CommonTable";
 import { Voter } from "../types/Voter";
@@ -11,6 +10,7 @@ import { getAuthData } from "../utils/storage";
 import { getVotersWithVideoId } from "../api/voterApi";
 import {
   joinGroups,
+  leaveGroups,
   registerOnServerEvents,
   startConnection,
 } from "../services/signalrService";
@@ -50,8 +50,9 @@ export default function GenerateVideoProgress({
   const [voterStatuses, setVoterStatuses] = useState<
     Record<string, VoterStatus>
   >({});
+  const [loading, setLoading] = useState(false);
 
-  const fetchVoters = useCallback(async () => {
+  const fetchVoters = async () => {
     try {
       const response = await getVotersWithVideoId(stepData?.[0]);
       setVoters(
@@ -60,7 +61,7 @@ export default function GenerateVideoProgress({
     } catch (error: any) {
       showToast(extractErrorMessage(error, "Failed to load voters"), "error");
     }
-  }, []);
+  };
 
   const generateVideo = async () => {
     const payload = {
@@ -70,19 +71,16 @@ export default function GenerateVideoProgress({
 
     try {
       await generateCustomisedVideo(payload);
+      await fetchVoters();
+      setLoading(false);
     } catch (error: any) {
+      setLoading(false);
       showToast(
         extractErrorMessage(error, "Failed to generate videos"),
         "error"
       );
     }
   };
-
-  useFocusEffect(
-    useCallback(() => {
-      fetchVoters();
-    }, [fetchVoters])
-  );
 
   useEffect(() => {
     if (!generationTriggered) return;
@@ -100,12 +98,17 @@ export default function GenerateVideoProgress({
             ...prev,
             [recipientId]: status,
           }));
+
+          if (status === "Completed") {
+            leaveGroups(recipientId);
+          }
         }
       );
 
       await generateVideo();
     };
 
+    setLoading(true);
     setupSignalR();
 
     return () => {
@@ -227,6 +230,7 @@ export default function GenerateVideoProgress({
           />
         }
         emptyText="No voters found"
+        loading={loading}
       />
     </View>
   );
