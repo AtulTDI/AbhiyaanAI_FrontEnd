@@ -114,11 +114,6 @@ export default function GeneratedVideoScreen() {
     } catch (error) {
       showToast("Error sending video link", "error");
     }
-    // finally {
-    //   await handleSendVideo(
-    //     `https://api.whatsapp.com/send?phone=+91${item.phoneNumber}&text=https://5f26bb7e4034.ngrok-free.app/api/preview/${selectedVideoId}`
-    //   );
-    // }
   };
 
   const columns = [
@@ -126,7 +121,6 @@ export default function GeneratedVideoScreen() {
       label: "Name",
       key: "fullName",
       flex: 2,
-      render: (item) => item.fullName,
     },
     { key: "phoneNumber", label: "Mobile", flex: 2 },
     {

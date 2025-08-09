@@ -238,6 +238,7 @@ export default function AddVoterScreen() {
                   renderTabBar={renderTabBar}
                   onIndexChange={setIndex}
                   initialLayout={{ width: layout.width }}
+                  swipeEnabled={false} 
                   lazy
                 />
               )}

@@ -3,7 +3,6 @@ import DynamicForm from "./DynamicForm";
 
 type Voter = {
   fullname: string;
-  //lastName: string;
   phoneNumber: string;
 };
 
@@ -24,7 +23,6 @@ export default function VoterForm({
 }: Props) {
   const voterFields: FieldConfig[] = [
     { name: "fullname", label: "Full name", type: "text", required: true },
-    // { name: "lastName", label: "Last name", type: "text", required: true },
     { name: "phoneNumber", label: "Mobile", type: "number", required: true },
   ];
 
@@ -33,7 +31,6 @@ export default function VoterForm({
       fields={voterFields}
       initialValues={{
         fullName: voterToEdit?.fullname || "",
-        // lastName: voterToEdit?.lastName || "",
         phoneNumber: voterToEdit?.phoneNumber || "",
       }}
       mode={mode}
