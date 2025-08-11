@@ -36,9 +36,24 @@ export default function ApplicationsTable({
       ),
     },
     {
+      label: "Video Rate",
+      key: "videoGenerationRate",
+      flex: 1.5,
+    },
+    {
+      label: "Sales Agent",
+      key: "salesAgentName",
+      flex: 2,
+    },
+    {
+      label: "Created By",
+      key: "createdByUserName",
+      flex: 2,
+    },
+    {
       label: "Created At",
       key: "createdAt",
-      flex: 2,
+      flex: 3,
       render: (item: Application) => (
         <Text>{dayjs(item.createdAt).format("DD MMM YYYY, hh:mm A")}</Text>
       ),
@@ -46,7 +61,7 @@ export default function ApplicationsTable({
     {
       label: "Status",
       key: "isActive",
-      flex: 2,
+      flex: 1.5,
       render: (item: Application) => (
         <View style={styles.statusToggle}>
           <Text
@@ -70,7 +85,7 @@ export default function ApplicationsTable({
     {
       label: "Action",
       key: "actions",
-      flex: 1,
+      flex: 0.8,
       render: (item: Application) => (
         <View style={styles.actions}>
           <Ionicons
