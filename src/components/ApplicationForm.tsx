@@ -90,7 +90,7 @@ export default function ApplicationForm({
       initialValues={{
         appName: applicationToEdit?.name || "",
         videoCount: applicationToEdit ? "0" : "5000",
-        salesAgent: applicationToEdit?.salesAgent || "",
+        salesAgent: applicationToEdit?.salesAgentId || "",
         videoGenerationRate: applicationToEdit?.videoGenerationRate || "",
       }}
       mode={mode}

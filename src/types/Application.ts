@@ -5,6 +5,7 @@ export type Application = {
   remainingVideoCount: string;
   totalVideoCount: number;
   salesAgent: string;
+  salesAgentId?: string;
   videoGenerationRate?: string;
   isActive: boolean;
 }
