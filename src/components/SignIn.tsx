@@ -81,6 +81,7 @@ export default function SignIn({
       const token = response.data.token || "dummy-token";
       const userId = response.data?.userId || "";
       const username = response.data?.userName || "User";
+      const userEmail = response.data?.userEmail || "";
       const role = response.data?.role || "User";
       const applicationId = response.data?.applicationId || "";
       const videoCount = response.data?.videoCount?.toString() ?? "0";
@@ -89,6 +90,7 @@ export default function SignIn({
         accessToken: token,
         userId,
         userName: username,
+        userEmail,
         role,
         applicationId,
         videoCount,
