@@ -8,6 +8,7 @@ type Props = {
   visible: boolean;
   title?: string;
   message?: string;
+  deleteLoading?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
 };
@@ -16,6 +17,7 @@ const DeleteConfirmationDialog = ({
   visible,
   title = "Delete Confirmation",
   message = "Are you sure you want to delete this item?",
+  deleteLoading,
   onConfirm,
   onCancel,
 }: Props) => {
@@ -81,6 +83,8 @@ const DeleteConfirmationDialog = ({
             textColor={colors.white}
             style={styles.button}
             labelStyle={styles.label}
+            loading={deleteLoading}
+            disabled={deleteLoading}
           >
             Delete
           </Button>

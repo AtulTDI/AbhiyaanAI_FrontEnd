@@ -16,6 +16,7 @@ type Props = {
   fields: FieldConfig[];
   initialValues: Record<string, string>;
   mode: "create" | "edit";
+  formSubmitLoading?: boolean;
   onChange: (data: FieldConfig, value: string) => void;
   onSubmit: (data: Record<string, string>) => void;
   onCancel: () => void;
@@ -25,6 +26,7 @@ export default function DynamicForm({
   fields,
   initialValues,
   mode,
+  formSubmitLoading,
   onChange,
   onSubmit,
   onCancel,
@@ -326,6 +328,8 @@ export default function DynamicForm({
         </Button>
         <Button
           mode="contained"
+          disabled={formSubmitLoading}
+          loading={formSubmitLoading}
           onPress={handleFormSubmit}
           style={styles.submitBtn}
         >

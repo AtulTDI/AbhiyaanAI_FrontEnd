@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosInstance } from "axios";
 import { navigate } from "../navigation/NavigationService";
 import { getAuthData, clearAuthData } from "../utils/storage";
 import { triggerToast } from "../services/toastService";
@@ -6,59 +6,74 @@ import { triggerToast } from "../services/toastService";
 declare module "axios" {
   export interface AxiosRequestConfig {
     useApiPrefix?: boolean;
+    useAltBase?: boolean;
   }
 }
 
-const axiosInstance = axios.create({
-  baseURL: process.env.EXPO_PUBLIC_API,
-  timeout: 60000,
-});
+const API_BASE = process.env.EXPO_PUBLIC_API;
+const ALT_API_BASE = process.env.EXPO_PUBLIC_ALT_API;
 
-// Request interceptor to attach token and content-type
-axiosInstance.interceptors.request.use(
-  async (config) => {
-    const { accessToken } = (await getAuthData()) ?? {};
+const createAxiosInstance = (baseURL: string): AxiosInstance => {
+  const instance = axios.create({
+    baseURL,
+    timeout: 60000,
+  });
 
-    if (accessToken) {
-      config.headers.Authorization = `Bearer ${accessToken}`;
-    }
-
-    // Optional: Append /api if custom flag is set
-    if (config.useApiPrefix && config.url?.startsWith("/")) {
-      config.url = `/api${config.url}`;
-    }
-
-    const method = config.method?.toUpperCase();
-    if (["POST", "PUT", "PATCH"].includes(method)) {
-      config.headers["Content-Type"] = "application/json";
-    }
-
-    config.headers["Accept"] = "application/json";
-
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
-// Response interceptor to handle 401
-axiosInstance.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const status = error?.response?.status;
-    const message = error?.response?.data;
-
-    if (status === 401 && message !== "Invalid login") {
-      try {
-        await clearAuthData();
-        triggerToast("Session expired. Please log in again.", "error");
-        navigate("Login");
-      } catch (e) {
-        console.error("Failed to clear auth data or navigate:", e);
+  // Request Interceptor
+  instance.interceptors.request.use(
+    async (config) => {
+      const { accessToken } = (await getAuthData()) ?? {};
+      if (accessToken) {
+        config.headers.Authorization = `Bearer ${accessToken}`;
       }
-    }
 
-    return Promise.reject(error);
-  }
-);
+      // Optional: Append /api if custom flag is set
+      if (config.useApiPrefix && config.url?.startsWith("/")) {
+        config.url = `/api${config.url}`;
+      }
+
+      // Switch to alternate base if needed
+      if (config.useAltBase) {
+        config.baseURL = ALT_API_BASE;
+      }
+
+      const method = config.method?.toUpperCase();
+      if (["POST", "PUT", "PATCH"].includes(method)) {
+        config.headers["Content-Type"] = "application/json";
+      }
+
+      config.headers["Accept"] = "application/json";
+
+      return config;
+    },
+    (error) => Promise.reject(error)
+  );
+
+  // Response Interceptor
+  instance.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+      const status = error?.response?.status;
+      const message = error?.response?.data;
+
+      if (status === 401 && message !== "Invalid login") {
+        try {
+          await clearAuthData();
+          triggerToast("Session expired. Please log in again.", "error");
+          navigate("Login");
+        } catch (e) {
+          console.error("Failed to clear auth data or navigate:", e);
+        }
+      }
+
+      return Promise.reject(error);
+    }
+  );
+
+  return instance;
+};
+
+// Create the default instance
+const axiosInstance = createAxiosInstance(API_BASE);
 
 export default axiosInstance;

@@ -12,6 +12,8 @@ import AddVoterScreen from "../screens/AddVoterScreen";
 import GenerateVideoScreen from "../screens/GenerateVideoScreen";
 import GeneratedVideoScreen from "../screens/GeneratedVideosScreen";
 import AddApplicationScreen from "../screens/AddApplicationScreen";
+import AddChannelScreen from "../screens/AddChannelScreen";
+import WhatsAppRegisterScreen from "../screens/WhatsAppRegisterScreen";
 import CustomDrawer from "../components/CustomDrawer";
 import CustomLabel from "../components/CustomLabel";
 import UserAvatarMenu from "../components/UserAvatarMenu";
@@ -181,6 +183,31 @@ export default function AppLayout() {
             />
           )}
 
+          {role === "SuperAdmin" && (
+            <Drawer.Screen
+              name="AddChannel"
+              component={AddChannelScreen}
+              options={{
+                headerShown: true,
+                headerTitle: "",
+                headerRight: headerRightComponent,
+                drawerLabel: (props) => (
+                  <CustomLabel
+                    {...props}
+                    label="Channels"
+                    icon={
+                      <Ionicons
+                        name="radio-outline"
+                        size={20}
+                        color={props.color || colors.onPrimary}
+                      />
+                    }
+                  />
+                ),
+              }}
+            />
+          )}
+
           <Drawer.Screen
             name="AddUser"
             component={AddUserScreen}
@@ -203,6 +230,31 @@ export default function AppLayout() {
               ),
             }}
           />
+
+          {role === "Admin" && (
+            <Drawer.Screen
+              name="register"
+              component={WhatsAppRegisterScreen}
+              options={{
+                headerShown: true,
+                headerTitle: "",
+                headerRight: headerRightComponent,
+                drawerLabel: (props) => (
+                  <CustomLabel
+                    {...props}
+                    label="WhatsApp Registration"
+                    icon={
+                      <Ionicons
+                        name="logo-whatsapp"
+                        size={20}
+                        color={props.color || colors.onPrimary}
+                      />
+                    }
+                  />
+                ),
+              }}
+            />
+          )}
 
           {role === "Admin" && (
             <Drawer.Screen

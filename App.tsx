@@ -15,7 +15,12 @@ import ResetPasswordScreen from "./src/screens/ResetPasswordScreen";
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const linking = {
-  prefixes: ["http://localhost:5000", "https://yourdomain.com", "abhiyanai://"],
+  prefixes: [
+    "http://localhost:5201",
+    "http://localhost:5202",
+    "https://yourdomain.com",
+    "abhiyanai://",
+  ],
   config: {
     screens: {
       AuthLoading: "authloading",
