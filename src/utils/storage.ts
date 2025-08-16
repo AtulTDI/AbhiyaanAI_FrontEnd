@@ -22,10 +22,11 @@ type AuthData = {
   role: string;
   applicationId: string;
   videoCount?: string;
+  channelId?: string;
 };
 
 export const saveAuthData = async (data: AuthData) => {
-  const { accessToken, userId, userName, userEmail, role, applicationId, videoCount } = data;
+  const { accessToken, userId, userName, userEmail, role, applicationId, videoCount,channelId } = data;
 
   if (isWeb) {
     localStorage.setItem("accessToken", encrypt(accessToken));
@@ -35,6 +36,7 @@ export const saveAuthData = async (data: AuthData) => {
     localStorage.setItem("role", encrypt(role));
     localStorage.setItem("applicationId", encrypt(applicationId));
     localStorage.setItem("videoCount", encrypt(videoCount ?? "0"));
+    localStorage.setItem("channelId", encrypt(channelId ?? ""));
   } else {
     await SecureStore.setItemAsync("accessToken", accessToken);
     await AsyncStorage.multiSet([
@@ -44,6 +46,7 @@ export const saveAuthData = async (data: AuthData) => {
       ["role", role],
       ["applicationId", applicationId],
       ["videoCount", videoCount ?? "0"],
+      ["channelId", channelId ?? ""],
     ]);
   }
 };
@@ -57,6 +60,7 @@ export const getAuthData = async (): Promise<AuthData | null> => {
     const role = localStorage.getItem("role");
     const applicationId = localStorage.getItem("applicationId");
     const videoCount = localStorage.getItem("videoCount");
+    const channelId = localStorage.getItem("channelId");
 
     if (accessToken && userName && role) {
       return {
@@ -67,6 +71,7 @@ export const getAuthData = async (): Promise<AuthData | null> => {
         role: decrypt(role),
         applicationId: decrypt(applicationId),
         videoCount: decrypt(videoCount || "0"),
+        channelId: decrypt(channelId || "")
       };
     }
 
@@ -79,9 +84,10 @@ export const getAuthData = async (): Promise<AuthData | null> => {
     const role = await AsyncStorage.getItem("role");
     const applicationId = await AsyncStorage.getItem("applicationId");
     const videoCount = await AsyncStorage.getItem("videoCount");
+    const channelId = await AsyncStorage.getItem("channelId");
 
     if (accessToken && userName && role) {
-      return { accessToken, userId, userName, userEmail, role, applicationId, videoCount: videoCount ?? "0" };
+      return { accessToken, userId, userName, userEmail, role, applicationId, videoCount: videoCount ?? "0", channelId:channelId ?? "" };
     }
 
     return null;
@@ -97,6 +103,7 @@ export const clearAuthData = async () => {
     localStorage.removeItem("role");
     localStorage.removeItem("applicationId");
     localStorage.removeItem("videoCount");
+    localStorage.removeItem("channelId");
   } else {
     await SecureStore.deleteItemAsync("accessToken");
     await AsyncStorage.multiRemove([
@@ -106,6 +113,7 @@ export const clearAuthData = async () => {
       "role",
       "applicationId",
       "videoCount",
+      "channelId"
     ]);
   }
 };
