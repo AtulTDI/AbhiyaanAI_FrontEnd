@@ -10,6 +10,12 @@ export const getChannels = (applicationId: string) =>
     { useApiPrefix: true, useAltBase: true }
   );
 
+  export const getallChannels = () =>
+  axios.get<Channel[]>(
+    `/WHChannel/getallchannels`,
+    { useApiPrefix: true, useAltBase: true }
+  );
+
 /**
  * Create a new WhatsApp channel.
  */
@@ -42,8 +48,9 @@ export const deleteChannelById = (id: string) =>
 /**
  * Generate QR code for a WhatsApp channel by ID.
  */
-export const generateChannelQr = (id: string) =>
+export const generateChannelQr = (id: string, userId: string) =>
   axios.get(
-    `/WHChannel/requestqr?channelId=${id}`,
+    `/WHChannel/requestqr?channelId=${id}&adminId=${userId}`,
     { useApiPrefix: true, useAltBase: true }
   );
+  

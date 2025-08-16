@@ -43,12 +43,14 @@ export default function WhatsAppRegisterScreen() {
   }, []);
 
   const handleGenerateQr = async (channelId: string) => {
+    const { userId } = await getAuthData();
     setLoadingQrId(channelId);
     try {
-      const response = await generateChannelQr(channelId);
-
-      if (response?.data.base64) {
-        setQrImageUrl(response?.data.base64);
+      const response = await generateChannelQr(channelId, userId);
+      console.log(response);
+      const parsedResponse = JSON.parse(response.data);
+      if (parsedResponse?.base64) {
+        setQrImageUrl(parsedResponse?.base64);
         setQrVisible(true);
       } else {
         showToast("QR code not found in response", "warning");

@@ -85,6 +85,7 @@ export default function SignIn({
       const role = response.data?.role || "User";
       const applicationId = response.data?.applicationId || "";
       const videoCount = response.data?.videoCount?.toString() ?? "0";
+      const channelId = response.data?.channelId || "";
 
       await saveAuthData({
         accessToken: token,
@@ -94,6 +95,7 @@ export default function SignIn({
         role,
         applicationId,
         videoCount,
+        channelId
       });
 
       navigate("App");
