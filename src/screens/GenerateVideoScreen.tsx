@@ -4,34 +4,73 @@ import { Surface, Text, Button, useTheme } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import SelectBaseVideo from "../components/SelectBaseVideo";
 import SelectVoters from "../components/SelectVoters";
-import GenerateVideoProgress from "../components/GenerateVideoProgress";
+import { useToast } from "../components/ToastProvider";
 import { navigate } from "../navigation/NavigationService";
+import { getAuthData } from "../utils/storage";
+import { extractErrorMessage } from "../utils/common";
+import { joinGroups, startConnection } from "../services/signalrService";
+import { generateCustomisedVideo } from "../api/videoApi";
 import { AppTheme } from "../theme";
 
-const steps = ["Select Base Video", "Select Voters", "Video Generation"];
+const steps = ["Select Base Video", "Select Voters"];
 
 export default function GenerateVideoScreen() {
   const theme = useTheme<AppTheme>();
-
   const styles = createStyles(theme);
   const { colors } = theme;
 
   const [activeStep, setActiveStep] = useState(0);
+  const { showToast } = useToast();
   const [stepData, setStepData] = useState({
     0: null,
     1: [],
-    2: null,
   });
-  const [generationTriggered, setGenerationTriggered] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const generateVideo = async () => {
+    const payload = {
+      baseVideoId: stepData[0],
+      recipientIds: stepData[1],
+    };
+
+    try {
+      await generateCustomisedVideo(payload);
+      showToast("Video Generation started", "success");
+      setTimeout(() => {
+        navigate("Processing");
+      }, 1000);
+    } catch (error: any) {
+      showToast(
+        extractErrorMessage(error, "Failed to generate videos"),
+        "error"
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const setupSignalR = async () => {
+    const { accessToken } = await getAuthData();
+
+    await startConnection(accessToken);
+    await joinGroups(stepData?.[1]);
+    await generateVideo();
+  };
+
+  const handleGenerate = async () => {
+    if (!stepData[1] || stepData[1].length === 0) {
+      showToast("Please select at least one voter", "warning");
+      return;
+    }
+
+    setIsLoading(true);
+    await setupSignalR();
+  };
 
   const handleNext = () => {
     if (activeStep < steps.length - 1) {
       setActiveStep((prev) => prev + 1);
     }
-  };
-
-  const handleClose = () => {
-    navigate("Generated");
   };
 
   const handleBack = () => {
@@ -51,16 +90,6 @@ export default function GenerateVideoScreen() {
           <SelectVoters
             stepData={stepData}
             setStepData={setStepData}
-            handleNext={handleNext}
-            setGenerationTriggered={setGenerationTriggered}
-          />
-        );
-      case 2:
-        return (
-          <GenerateVideoProgress
-            stepData={stepData}
-            generationTriggered={generationTriggered}
-            setGenerationTriggered={setGenerationTriggered}
           />
         );
       default:
@@ -143,10 +172,20 @@ export default function GenerateVideoScreen() {
         </Button>
         <Button
           mode="contained"
-          onPress={activeStep === steps.length - 1 ? handleClose : handleNext}
+          onPress={activeStep === steps.length - 1 ? handleGenerate : handleNext}
+          loading={isLoading}
+          disabled={
+            !stepData[0] ||
+            (activeStep === 1 && stepData[1].length === 0) ||
+            isLoading
+          }
           style={styles.btn}
         >
-          {activeStep === steps.length - 1 ? "Close" : "Next"}
+          {activeStep === steps.length - 1
+            ? isLoading
+              ? "Generating..."
+              : "Generate Video"
+            : "Next"}
         </Button>
       </View>
     </Surface>

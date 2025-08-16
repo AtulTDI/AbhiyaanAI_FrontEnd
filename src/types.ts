@@ -3,6 +3,8 @@ export type RootStackParamList = {
   Login: undefined;
   App: undefined;
   Home: undefined;
+  Generate: undefined;
+  Processing: undefined;
   Generated: undefined;
   ResetPasswordScreen: undefined;
 };

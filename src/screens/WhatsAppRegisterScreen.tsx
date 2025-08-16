@@ -13,6 +13,11 @@ import dayjs from "dayjs";
 import CommonTable from "../components/CommonTable";
 import { useToast } from "../components/ToastProvider";
 import { extractErrorMessage } from "../utils/common";
+import {
+  joinGroups,
+  registerOnServerEvents,
+  startConnection,
+} from "../services/signalrService";
 import { generateChannelQr, getChannels } from "../api/channelApi";
 import { getAuthData } from "../utils/storage";
 import { AppTheme } from "../theme";
@@ -42,12 +47,32 @@ export default function WhatsAppRegisterScreen() {
     }
   }, []);
 
+  const setupSignalR = async (channelId: string) => {
+    const { accessToken } = await getAuthData();
+
+    await startConnection(accessToken);
+    await joinGroups(channelId);
+
+    registerOnServerEvents(
+      "ReceiveVideoUpdate",
+      (recepientId: string, status: string, channelId: string) => {
+        if (status === "Completed" && channelId) {
+          setChannels((prev) =>
+            prev.map((ch) =>
+              ch.id === channelId ? { ...ch, status: "completed" } : ch
+            )
+          );
+        }
+      }
+    );
+  };
+
   const handleGenerateQr = async (channelId: string) => {
     const { userId } = await getAuthData();
+    await setupSignalR(channelId);
     setLoadingQrId(channelId);
     try {
       const response = await generateChannelQr(channelId, userId);
-      console.log(response);
       const parsedResponse = JSON.parse(response.data);
       if (parsedResponse?.base64) {
         setQrImageUrl(parsedResponse?.base64);
@@ -65,6 +90,8 @@ export default function WhatsAppRegisterScreen() {
     }
   };
 
+  const handleLogout = (channelId: string) => {};
+
   useFocusEffect(
     useCallback(() => {
       fetchChannels();
@@ -80,29 +107,50 @@ export default function WhatsAppRegisterScreen() {
     {
       label: "QR Code",
       flex: 1.5,
-      render: (item: any) => (
-        <Button
-          mode="outlined"
-          icon="qrcode"
-          compact
-          loading={loadingQrId === item.id}
-          disabled={loadingQrId === item.id}
-          onPress={() => handleGenerateQr(item.id)}
-          style={{
-            borderRadius: 6,
-            borderColor: loadingQrId === item.id ? colors.disabledText : colors.primary,
-            minHeight: 32,
-            paddingHorizontal: 6,
-            width: 150,
-          }}
-          labelStyle={{
-            fontSize: 14,
-            lineHeight: 16,
-          }}
-        >
-          {loadingQrId === item.id ? "Generating" : "Generate" }
-        </Button>
-      ),
+      render: (item: any) =>
+        item.status.toLowerCase() === "completed" ? (
+          <Button
+            mode="contained"
+            icon="logout"
+            compact
+            onPress={() => handleLogout(item.id)}
+            style={{
+              borderRadius: 6,
+              minHeight: 32,
+              paddingHorizontal: 6,
+              width: 150,
+            }}
+            labelStyle={{
+              fontSize: 14,
+              lineHeight: 16,
+            }}
+          >
+            Logout
+          </Button>
+        ) : (
+          <Button
+            mode="outlined"
+            icon="qrcode"
+            compact
+            loading={loadingQrId === item.id}
+            disabled={loadingQrId === item.id}
+            onPress={() => handleGenerateQr(item.id)}
+            style={{
+              borderRadius: 6,
+              borderColor:
+                loadingQrId === item.id ? colors.disabledText : colors.primary,
+              minHeight: 32,
+              paddingHorizontal: 6,
+              width: 150,
+            }}
+            labelStyle={{
+              fontSize: 14,
+              lineHeight: 16,
+            }}
+          >
+            {loadingQrId === item.id ? "Generating" : "Generate"}
+          </Button>
+        ),
     },
     {
       label: "Status",

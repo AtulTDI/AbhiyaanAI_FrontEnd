@@ -10,7 +10,7 @@ export const getChannels = (applicationId: string) =>
     { useApiPrefix: true, useAltBase: true }
   );
 
-  export const getallChannels = () =>
+export const getAllChannels = () =>
   axios.get<Channel[]>(
     `/WHChannel/getallchannels`,
     { useApiPrefix: true, useAltBase: true }
@@ -53,4 +53,3 @@ export const generateChannelQr = (id: string, userId: string) =>
     `/WHChannel/requestqr?channelId=${id}&adminId=${userId}`,
     { useApiPrefix: true, useAltBase: true }
   );
-  

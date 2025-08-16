@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from "react";
 import { View, StyleSheet } from "react-native";
-import { Button, Checkbox, useTheme } from "react-native-paper";
+import { Checkbox, useTheme } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import CommonTable from "../components/CommonTable";
 import { Voter } from "../types/Voter";
@@ -25,17 +25,11 @@ const columns = [
   { label: "Mobile", key: "phoneNumber", flex: 1.2 },
 ];
 
-export default function SelectVoters({
-  stepData,
-  setStepData,
-  handleNext,
-  setGenerationTriggered,
-}) {
+export default function SelectVoters({ stepData, setStepData }) {
   const theme = useTheme<AppTheme>();
   const { colors } = theme;
   const { showToast } = useToast();
   const [voters, setVoters] = useState<Voter[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
 
   const isSelected = (id: string) => stepData[1]?.includes(id);
   const toggleSelection = (id: string) => {
@@ -75,22 +69,6 @@ export default function SelectVoters({
     } else {
       setStepData({ ...stepData, 1: voters.map((v) => v.id) });
     }
-  };
-
-  const handleGenerate = () => {
-    if (!stepData[1] || stepData[1].length === 0) {
-      showToast("Please select at least one voter", "warning");
-      return;
-    }
-
-    setGenerationTriggered(true);
-    setIsLoading(true);
-
-    setTimeout(() => {
-      showToast("Video Generation started", "success");
-      handleNext();
-      setIsLoading(false);
-    }, 2000);
   };
 
   const tableColumns = [
@@ -136,17 +114,6 @@ export default function SelectVoters({
         keyExtractor={(item) => item.id}
         tableWithSelection={true}
       />
-      <View style={styles.generateContainer}>
-        <Button
-          mode="contained"
-          onPress={handleGenerate}
-          loading={isLoading}
-          disabled={!stepData[0] || stepData[1].length === 0 || isLoading}
-          style={styles.btn}
-        >
-          {isLoading ? "Generating..." : "Generate Video"}
-        </Button>
-      </View>
     </View>
   );
 }

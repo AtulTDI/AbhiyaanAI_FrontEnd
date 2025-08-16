@@ -6,7 +6,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import {
   createChannel,
   deleteChannelById,
-  getChannels,
+  getAllChannels,
   updateChannelSetting,
 } from "../api/channelApi";
 import { Channel } from "../types/Channel";
@@ -15,7 +15,6 @@ import ChannelsTable from "../components/ChannelsTable";
 import CreateChannelForm from "../components/ChannelForm";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 import { extractErrorMessage, sortByDateDesc } from "../utils/common";
-import { getAuthData } from "../utils/storage";
 import { AppTheme } from "../theme";
 
 export default function AddChannelScreen() {
@@ -34,10 +33,8 @@ export default function AddChannelScreen() {
   const [deleteLoading, setDeleteLoading] = useState(false);
 
   const fetchChannels = useCallback(async () => {
-    const { applicationId } = await getAuthData();
-
     try {
-      const response = await getChannels(applicationId);
+      const response = await getAllChannels();
       const sortedChannels = sortByDateDesc(response?.data || [], "createdAt");
       setChannels(sortedChannels);
     } catch (error) {

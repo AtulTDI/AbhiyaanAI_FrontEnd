@@ -14,6 +14,7 @@ import GeneratedVideoScreen from "../screens/GeneratedVideosScreen";
 import AddApplicationScreen from "../screens/AddApplicationScreen";
 import AddChannelScreen from "../screens/AddChannelScreen";
 import WhatsAppRegisterScreen from "../screens/WhatsAppRegisterScreen";
+import ProcessingVideosScreen from "../screens/ProcessingVideosScreen";
 import CustomDrawer from "../components/CustomDrawer";
 import CustomLabel from "../components/CustomLabel";
 import UserAvatarMenu from "../components/UserAvatarMenu";
@@ -233,7 +234,7 @@ export default function AppLayout() {
 
           {role === "Admin" && (
             <Drawer.Screen
-              name="register"
+              name="Register"
               component={WhatsAppRegisterScreen}
               options={{
                 headerShown: true,
@@ -322,6 +323,29 @@ export default function AppLayout() {
                   icon={
                     <Ionicons
                       name="sparkles-outline"
+                      size={20}
+                      color={props.color || colors.onPrimary}
+                    />
+                  }
+                />
+              ),
+            }}
+          />
+
+          <Drawer.Screen
+            name="Processing"
+            component={ProcessingVideosScreen}
+            options={{
+              headerShown: true,
+              headerTitle: "",
+              headerRight: headerRightComponent,
+              drawerLabel: (props) => (
+                <CustomLabel
+                  {...props}
+                  label="Processing Video(s)"
+                  icon={
+                    <Ionicons
+                      name="time-outline"
                       size={20}
                       color={props.color || colors.onPrimary}
                     />
