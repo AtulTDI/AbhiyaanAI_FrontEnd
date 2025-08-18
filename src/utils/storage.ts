@@ -4,7 +4,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const isWeb = Platform.OS === "web";
 
-// Simple base64 encoding/decoding for basic obfuscation
 const encrypt = (text: string) => btoa(text);
 const decrypt = (text: string) => {
   try {
@@ -14,106 +13,69 @@ const decrypt = (text: string) => {
   }
 };
 
-type AuthData = {
+export type AuthData = {
   accessToken: string;
   userId: string;
   userName: string;
   userEmail: string;
   role: string;
   applicationId: string;
-  videoCount?: string;
-  channelId?: string;
+  videoCount: string;
+  channelId: string;
 };
 
-export const saveAuthData = async (data: AuthData) => {
-  const { accessToken, userId, userName, userEmail, role, applicationId, videoCount,channelId } = data;
+const DEFAULT_AUTH: AuthData = {
+  accessToken: "",
+  userId: "",
+  userName: "",
+  userEmail: "",
+  role: "User",
+  applicationId: "",
+  videoCount: "0",
+  channelId: "",
+};
+
+export const saveAuthData = async (data: Partial<AuthData>) => {
+  const finalData = { ...DEFAULT_AUTH, ...data };
 
   if (isWeb) {
-    localStorage.setItem("accessToken", encrypt(accessToken));
-    localStorage.setItem("userId", encrypt(userId));
-    localStorage.setItem("userName", encrypt(userName));
-    localStorage.setItem("userEmail", encrypt(userEmail));
-    localStorage.setItem("role", encrypt(role));
-    localStorage.setItem("applicationId", encrypt(applicationId));
-    localStorage.setItem("videoCount", encrypt(videoCount ?? "0"));
-    localStorage.setItem("channelId", encrypt(channelId ?? ""));
+    Object.entries(finalData).forEach(([key, value]) =>
+      localStorage.setItem(key, encrypt(value))
+    );
   } else {
-    await SecureStore.setItemAsync("accessToken", accessToken);
-    await AsyncStorage.multiSet([
-      ["userId", userId],
-      ["userName", userName],
-      ["userEmail", userEmail],
-      ["role", role],
-      ["applicationId", applicationId],
-      ["videoCount", videoCount ?? "0"],
-      ["channelId", channelId ?? ""],
-    ]);
+    await SecureStore.setItemAsync("accessToken", finalData.accessToken);
+    await AsyncStorage.multiSet(
+      Object.entries(finalData).filter(([k]) => k !== "accessToken")
+    );
   }
 };
 
-export const getAuthData = async (): Promise<AuthData | null> => {
+export const getAuthData = async (): Promise<AuthData> => {
   if (isWeb) {
-    const accessToken = localStorage.getItem("accessToken");
-    const userId = localStorage.getItem("userId");
-    const userName = localStorage.getItem("userName");
-    const userEmail = localStorage.getItem("userEmail");
-    const role = localStorage.getItem("role");
-    const applicationId = localStorage.getItem("applicationId");
-    const videoCount = localStorage.getItem("videoCount");
-    const channelId = localStorage.getItem("channelId");
-
-    if (accessToken && userName && role) {
-      return {
-        accessToken: decrypt(accessToken),
-        userId: decrypt(userId),
-        userName: decrypt(userName),
-        userEmail: decrypt(userEmail),
-        role: decrypt(role),
-        applicationId: decrypt(applicationId),
-        videoCount: decrypt(videoCount || "0"),
-        channelId: decrypt(channelId || "")
-      };
-    }
-
-    return null;
+    const raw: Partial<AuthData> = {};
+    Object.keys(DEFAULT_AUTH).forEach((key) => {
+      const value = localStorage.getItem(key);
+      raw[key as keyof AuthData] = value ? decrypt(value) : DEFAULT_AUTH[key as keyof AuthData];
+    });
+    return raw as AuthData;
   } else {
-    const accessToken = await SecureStore.getItemAsync("accessToken");
-    const userId = await AsyncStorage.getItem("userId");
-    const userName = await AsyncStorage.getItem("userName");
-    const userEmail = await AsyncStorage.getItem("userEmail");
-    const role = await AsyncStorage.getItem("role");
-    const applicationId = await AsyncStorage.getItem("applicationId");
-    const videoCount = await AsyncStorage.getItem("videoCount");
-    const channelId = await AsyncStorage.getItem("channelId");
-
-    if (accessToken && userName && role) {
-      return { accessToken, userId, userName, userEmail, role, applicationId, videoCount: videoCount ?? "0", channelId:channelId ?? "" };
-    }
-
-    return null;
+    const accessToken = (await SecureStore.getItemAsync("accessToken")) ?? "";
+    const items = await AsyncStorage.multiGet(
+      Object.keys(DEFAULT_AUTH).filter((k) => k !== "accessToken")
+    );
+    const data: any = { accessToken };
+    items.forEach(([key, value]) => {
+      data[key] = value ?? DEFAULT_AUTH[key as keyof AuthData];
+    });
+    return data as AuthData;
   }
 };
 
 export const clearAuthData = async () => {
   if (isWeb) {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("userId");
-    localStorage.removeItem("userName");
-    localStorage.removeItem("userEmail");
-    localStorage.removeItem("role");
-    localStorage.removeItem("applicationId");
-    localStorage.removeItem("videoCount");
-    localStorage.removeItem("channelId");
+    Object.keys(DEFAULT_AUTH).forEach((key) => localStorage.removeItem(key));
   } else {
     await SecureStore.deleteItemAsync("accessToken");
-    await AsyncStorage.multiRemove([
-      "userId",
-      "userName",
-      "userEmail",
-      "role",
-      "applicationId",
-      "videoCount",
-      "channelId"
-    ]);
+    await AsyncStorage.multiRemove(Object.keys(DEFAULT_AUTH).filter((k) => k !== "accessToken"));
   }
 };

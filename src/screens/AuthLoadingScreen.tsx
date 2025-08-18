@@ -9,9 +9,9 @@ export default function AuthLoadingScreen() {
   useEffect(() => {
     const checkToken = async () => {
       try {
-        const { accessToken } = await getAuthData();
+        const authData = await getAuthData();
 
-        if (accessToken) {
+        if (authData?.accessToken) {
           navigation.replace("App");
         } else {
           navigation.replace("Login");

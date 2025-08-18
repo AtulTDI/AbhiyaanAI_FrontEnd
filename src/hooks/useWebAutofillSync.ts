@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { Platform } from "react-native";
 
 type AutofillField = {
   inputId: string;
@@ -12,15 +13,17 @@ type UseWebAutofillSyncProps = {
 
 export function useWebAutofillSync({ email, password }: UseWebAutofillSyncProps) {
   const initializedRef = useRef({ email: false, password: false });
+  const isWeb = Platform.OS === "web";
 
   useEffect(() => {
+    if (!isWeb) return;
+
     const syncInput = (field: AutofillField | undefined, key: "email" | "password") => {
       if (!field || initializedRef.current[key]) return;
 
       const el = document.getElementById(field.inputId) as HTMLInputElement;
       if (!el) return;
 
-      // Trigger browser autofill (Chrome-specific quirk)
       el.focus();
       el.blur();
 
@@ -51,5 +54,5 @@ export function useWebAutofillSync({ email, password }: UseWebAutofillSyncProps)
     return () => {
       document.removeEventListener("input", handleInput);
     };
-  }, [email, password]);
+  }, [email, password, isWeb]);
 }
