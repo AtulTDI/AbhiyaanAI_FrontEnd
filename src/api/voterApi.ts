@@ -10,7 +10,11 @@ import { base64ToBlob } from "../utils/common";
 export const getVoters = () =>
   axios.get<Voter>("/Recipients/getrecipients", { useApiPrefix: true });
 
-
+export const getVotersForProcessing = (id: string) =>
+  axios.get<Voter>("/Recipients/getrecipientsforprocessing", { 
+    params: { baseVideoID: id },
+    useApiPrefix: true,
+  });
 /**
  * Get paginated voters with in progress vidoes using base video id
  */

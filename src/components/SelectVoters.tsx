@@ -4,7 +4,7 @@ import { Checkbox, useTheme } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import CommonTable from "../components/CommonTable";
 import { Voter } from "../types/Voter";
-import { getVoters } from "../api/voterApi";
+ import { getVoters, getVotersForProcessing } from "../api/voterApi";
 import { extractErrorMessage } from "../utils/common";
 import { useToast } from "./ToastProvider";
 import { useFocusEffect } from "@react-navigation/native";
@@ -48,7 +48,8 @@ export default function SelectVoters({ stepData, setStepData }) {
 
   const fetchVoters = useCallback(async () => {
     try {
-      const response = await getVoters();
+	    const adminID = stepData[0];
+      const response = await getVotersForProcessing(adminID);
       setVoters(
         response?.data && Array.isArray(response.data) ? response.data : []
       );
