@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { View, StyleSheet, Dimensions } from "react-native";
 import { Surface, Text, Button, useTheme } from "react-native-paper";
+import { useFocusEffect } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import SelectBaseVideo from "../components/SelectBaseVideo";
 import SelectVoters from "../components/SelectVoters";
@@ -27,6 +28,18 @@ export default function GenerateVideoScreen() {
   });
   const [isLoading, setIsLoading] = useState(false);
 
+  useFocusEffect(
+    useCallback(() => {
+      setActiveStep(0);
+      setStepData({ 0: null, 1: [] });
+
+      return () => {
+        setActiveStep(0);
+        setStepData({ 0: null, 1: [] });
+      };
+    }, [])
+  );
+
   const generateVideo = async () => {
     const payload = {
       baseVideoId: stepData[0],
@@ -36,9 +49,7 @@ export default function GenerateVideoScreen() {
     try {
       await generateCustomisedVideo(payload);
       showToast("Video Generation started", "success");
-      setTimeout(() => {
-        navigate("Processing");
-      }, 1000);
+      navigate("Processing");
     } catch (error: any) {
       showToast(
         extractErrorMessage(error, "Failed to generate videos"),
@@ -86,12 +97,7 @@ export default function GenerateVideoScreen() {
           <SelectBaseVideo stepData={stepData} setStepData={setStepData} />
         );
       case 1:
-        return (
-          <SelectVoters
-            stepData={stepData}
-            setStepData={setStepData}
-          />
-        );
+        return <SelectVoters stepData={stepData} setStepData={setStepData} />;
       default:
         return null;
     }
@@ -172,7 +178,9 @@ export default function GenerateVideoScreen() {
         </Button>
         <Button
           mode="contained"
-          onPress={activeStep === steps.length - 1 ? handleGenerate : handleNext}
+          onPress={
+            activeStep === steps.length - 1 ? handleGenerate : handleNext
+          }
           loading={isLoading}
           disabled={
             !stepData[0] ||

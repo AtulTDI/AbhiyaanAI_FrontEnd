@@ -197,40 +197,40 @@ export default function ProcessingVideosScreen({ route }) {
 
   return (
     <Surface style={styles.container} elevation={1}>
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: 16,
-          }}
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: 16,
+        }}
+      >
+        <Text
+          variant="titleLarge"
+          style={[styles.heading, { color: theme.colors.primary }]}
         >
-          <Text
-            variant="titleLarge"
-            style={[styles.heading, { color: theme.colors.primary }]}
-          >
-            Processing Videos
-          </Text>
+          Processing Videos
+        </Text>
 
-          <ProgressChip
-            completedCount={completedCount}
-            totalCount={totalCount}
-          />
-        </View>
-      
-        <CommonTable
-          data={voters}
-          columns={columns}
-          emptyIcon={
-            <Ionicons
-              name="people-outline"
-              size={48}
-              color={colors.disabledText}
-            />
-          }
-          emptyText="No voters found"
-          loading={loading}
+        <ProgressChip
+          completedCount={totalCount === 0 ? 0 : completedCount}
+          totalCount={totalCount === 0 ? 0 : totalCount}
         />
+      </View>
+
+      <CommonTable
+        data={voters}
+        columns={columns}
+        emptyIcon={
+          <Ionicons
+            name="people-outline"
+            size={48}
+            color={colors.disabledText}
+          />
+        }
+        emptyText="No voters found"
+        loading={loading}
+      />
     </Surface>
   );
 }
