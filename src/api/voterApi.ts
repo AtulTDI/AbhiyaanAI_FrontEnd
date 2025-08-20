@@ -5,22 +5,26 @@ import { CreateVoterPayload, EditVoterPayload, Voter } from "../types/Voter";
 import { base64ToBlob } from "../utils/common";
 
 /**
- * Get paginated users with optional search
+ * Get paginated voters with optional search
  */
 export const getVoters = () =>
   axios.get<Voter>("/Recipients/getrecipients", { useApiPrefix: true });
 
+
+/**
+ * Get paginated voters without processing videos
+ */
 export const getVotersForProcessing = (id: string) =>
-  axios.get<Voter>("/Recipients/getrecipientsforprocessing", { 
+  axios.get<Voter>("/Recipients/getrecipientsforprocessing", {
     params: { baseVideoID: id },
     useApiPrefix: true,
   });
+
 /**
  * Get paginated voters with in progress vidoes using base video id
  */
-export const getVotersWithVideoId = (id: string) =>
-  axios.get('/Recipients/getinProgressaivideoswithbaseid', {
-    params: { baseVideoID: id },
+export const getVotersWithInProgressVidoes = () =>
+  axios.get('/Recipients/getinProgressaivideos', {
     useApiPrefix: true,
   });
 
@@ -29,10 +33,11 @@ export const getVotersWithVideoId = (id: string) =>
 * Get paginated voters with completed vidoes using base video id
 */
 export const getVotersWithCompletedVideoId = (id: string) =>
-  axios.get('/Recipients/getcompletedaivideoswithbaseid', {
-    params: { baseVideoID: id },
-    useApiPrefix: true
-  });
+  axios.get('/Recipients/getcompletedaivideoswithbaseid',
+    {
+      params: { baseVideoID: id },
+      useApiPrefix: true
+    });
 
 
 /**

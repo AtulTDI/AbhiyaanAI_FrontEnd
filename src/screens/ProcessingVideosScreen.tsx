@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { View, StyleSheet } from "react-native";
 import {
   IconButton,
@@ -9,15 +9,13 @@ import {
 } from "react-native-paper";
 import { useFocusEffect } from "@react-navigation/native";
 import { Feather, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import CommonTable from "../components/CommonTable";
 import { Voter } from "../types/Voter";
 import { extractErrorMessage } from "../utils/common";
 import { useToast } from "../components/ToastProvider";
-import FormDropdown from "../components/FormDropdown";
 import ProgressChip from "../components/ProgressChip";
+import CommonTable from "../components/CommonTable";
 import { getAuthData } from "../utils/storage";
-import { getVotersWithVideoId } from "../api/voterApi";
-import { getVideos } from "../api/videoApi";
+import { getVotersWithInProgressVidoes } from "../api/voterApi";
 import {
   joinGroups,
   leaveGroups,
@@ -39,8 +37,6 @@ export default function ProcessingVideosScreen({ route }) {
   const styles = createStyles(theme);
   const { colors } = theme;
   const { showToast } = useToast();
-  const [baseVideos, setBaseVideos] = useState<any[]>([]);
-  const [selectedVideoId, setSelectedVideoId] = useState(null);
   const [voters, setVoters] = useState<Voter[]>([]);
   const [voterStatuses, setVoterStatuses] = useState<
     Record<string, VoterStatus>
@@ -50,13 +46,13 @@ export default function ProcessingVideosScreen({ route }) {
   const [loading, setLoading] = useState(false);
 
   const setupSignalR = async (voters) => {
-    const fromPage = route?.params?.from;
-    const { accessToken } = await getAuthData();
+    // const fromPage = route?.params?.from;
+    // const { accessToken } = await getAuthData();
 
-    if (fromPage !== "Generate") {
-      await startConnection(accessToken);
-      await joinGroups(voters);
-    }
+    // if (fromPage !== "Generate") {
+    //   await startConnection(accessToken);
+    //   await joinGroups(voters);
+    // }
 
     registerOnServerEvents(
       "ReceiveVideoUpdate",
@@ -76,65 +72,28 @@ export default function ProcessingVideosScreen({ route }) {
   };
 
   const fetchVoters = async () => {
+    setLoading(true);
+
     try {
-      const response = await getVotersWithVideoId(selectedVideoId);
+      const response = await getVotersWithInProgressVidoes();
       const voterList =
         response?.data && Array.isArray(response.data) ? response.data : [];
       setVoters(voterList);
       setTotalCount(voterList.length);
 
-      await setupSignalR(voterList);
+      await setupSignalR(voterList.map((voter) => voter?.id));
     } catch (error: any) {
       showToast(extractErrorMessage(error, "Failed to load voters"), "error");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const fetchVideos = useCallback(async () => {
-    try {
-      const response = await getVideos();
-
-      const videosData =
-        response?.data && Array.isArray(response.data) ? response.data : [];
-
-      const transformedVideos = videosData.map((video) => ({
-        label: video.campaignName,
-        value: video.id,
-      }));
-
-      setBaseVideos(transformedVideos);
-
-      if (transformedVideos?.length) {
-        const firstId = transformedVideos?.[0]?.value;
-        setSelectedVideoId(firstId);
-
-        setLoading(true);
-        await getVotersWithVideoId(firstId)
-          .then((res) => setVoters(res?.data ?? []))
-          .catch((e) =>
-            showToast(extractErrorMessage(e, "Failed to load voters"), "error")
-          )
-          .finally(() => setLoading(false));
-      }
-    } catch (error: any) {
-      if (error?.response || error?.message) {
-        showToast(extractErrorMessage(error, "Failed to load videos"), "error");
-      } else {
-        console.warn("No response received or unknown error:", error);
-      }
-    }
-  }, []);
-
   useFocusEffect(
     useCallback(() => {
-      fetchVideos();
+      fetchVoters();
     }, [])
   );
-
-  useEffect(() => {
-    if (selectedVideoId) {
-      fetchVoters();
-    }
-  }, [selectedVideoId]);
 
   const getStatusView = (status: VoterStatus, item: Voter) => {
     switch (status) {
@@ -237,8 +196,7 @@ export default function ProcessingVideosScreen({ route }) {
   ];
 
   return (
-    <Surface style={styles.container} elevation={2}>
-      <View>
+    <Surface style={styles.container} elevation={1}>
         <View
           style={{
             flexDirection: "row",
@@ -259,21 +217,7 @@ export default function ProcessingVideosScreen({ route }) {
             totalCount={totalCount}
           />
         </View>
-        <FormDropdown
-          label="Select Campaign"
-          value={selectedVideoId}
-          options={
-            Array.isArray(baseVideos)
-              ? typeof (baseVideos as unknown[])[0] === "string"
-                ? (baseVideos as string[]).map((opt) => ({
-                    label: opt,
-                    value: opt,
-                  }))
-                : (baseVideos as { label: string; value: string }[])
-              : []
-          }
-          onSelect={(val) => setSelectedVideoId(val)}
-        />
+      
         <CommonTable
           data={voters}
           columns={columns}
@@ -287,17 +231,12 @@ export default function ProcessingVideosScreen({ route }) {
           emptyText="No voters found"
           loading={loading}
         />
-      </View>
     </Surface>
   );
 }
 
 const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
-    content: {
-      flex: 1,
-      display: "flex",
-    },
     container: {
       padding: 16,
       flex: 1,
