@@ -36,9 +36,7 @@ export default function GenerateVideoScreen() {
     try {
       await generateCustomisedVideo(payload);
       showToast("Video Generation started", "success");
-      setTimeout(() => {
-        navigate("Processing");
-      }, 1000);
+      navigate("Processing");
     } catch (error: any) {
       showToast(
         extractErrorMessage(error, "Failed to generate videos"),
