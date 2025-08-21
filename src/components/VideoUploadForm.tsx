@@ -134,7 +134,7 @@ export default function VideoUploadForm({
 
     const payload = {
       campaign: formData.campaign.trim(),
-      ...(generatedUri ? { file: generatedUri } : { file: formData.file }),
+        file: formData.file
     };
 
     onAddVideo(payload);
