@@ -3,6 +3,7 @@ import * as signalR from "@microsoft/signalr";
 let connection: signalR.HubConnection | null = null;
 let joinedGroups: Set<string> = new Set();
 const subscribers: Record<string, Set<(...args: any[]) => void>> = {};
+const APP_ENV = process.env.APP_ENV || "development";
 
 /**
  * Start SignalR connection (idempotent)
@@ -14,7 +15,7 @@ export const startConnection = async (accessToken: string) => {
   }
 
   connection = new signalR.HubConnectionBuilder()
-    .withUrl(`${process.env.EXPO_PUBLIC_API}/videoProgressHub`, {
+    .withUrl(`${APP_ENV === "production" ? process.env.PROD_API : process.env.DEV_API}/videoProgressHub`, {
       accessTokenFactory: () => accessToken,
       transport: signalR.HttpTransportType.WebSockets,
     })
