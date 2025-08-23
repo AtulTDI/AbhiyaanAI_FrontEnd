@@ -1,13 +1,11 @@
 const APP_ENV = process.env.APP_ENV || "development";
 
 export default ({ config }) => {
-  console.log("Using APP_ENV:", APP_ENV);
-
   return {
     ...config,
     expo: {
       ...config.expo,
-      name: "AbhiyaanAI",
+      name: "abhiyaanAI",
       slug: "abhiyanai",
       version: "1.0.0",
       orientation: "default",
@@ -23,7 +21,7 @@ export default ({ config }) => {
 
       ios: {
         supportsTablet: true,
-        bundleIdentifier: "com.anonymous.abhiyaan-ai",
+        bundleIdentifier: "com.abhiyaanai.app"
       },
 
       android: {
@@ -32,7 +30,7 @@ export default ({ config }) => {
           backgroundColor: "#ffffff",
         },
         edgeToEdgeEnabled: true,
-        package: "com.anonymous.abhiyaan-ai",
+        package: "com.anonymous.abhiyaan_ai",
         usesCleartextTraffic: true,
       },
 

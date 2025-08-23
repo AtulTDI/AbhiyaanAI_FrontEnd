@@ -1,9 +1,9 @@
 import * as signalR from "@microsoft/signalr";
+import Constants from 'expo-constants';
 
 let connection: signalR.HubConnection | null = null;
 let joinedGroups: Set<string> = new Set();
 const subscribers: Record<string, Set<(...args: any[]) => void>> = {};
-const APP_ENV = process.env.APP_ENV || "development";
 
 /**
  * Start SignalR connection (idempotent)
@@ -15,7 +15,7 @@ export const startConnection = async (accessToken: string) => {
   }
 
   connection = new signalR.HubConnectionBuilder()
-    .withUrl(`${APP_ENV === "production" ? process.env.PROD_API : process.env.DEV_API}/videoProgressHub`, {
+    .withUrl(`${Constants.expoConfig.extra.API}/videoProgressHub`, {
       accessTokenFactory: () => accessToken,
       transport: signalR.HttpTransportType.WebSockets,
     })
