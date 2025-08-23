@@ -8,10 +8,8 @@ import {
 } from "react-native";
 import { Text, useTheme, Surface, Button } from "react-native-paper";
 import { useFocusEffect } from "@react-navigation/native";
-import { ScrollView } from "react-native-gesture-handler";
 import {
   TabView,
-  SceneMap,
   TabBar,
   SceneRendererProps,
   TabBarItem,
@@ -159,44 +157,49 @@ export default function AddVoterScreen() {
     }
   };
 
-  const renderScene = SceneMap({
-    manual: () => (
-      <VoterForm
-        key="voter-form"
-        mode="create"
-        onCreate={addVoter}
-        voterToEdit={null}
-        setVoterToEdit={setVoterToEdit}
-        setShowAddVoterView={setShowAddVoterView}
-      />
-    ),
-    excel: () => (
-      <View style={{ flex: 1 }}>
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "flex-end",
-            paddingTop: 15,
-            paddingBottom: 8,
-          }}
-        >
-          <Button
-            mode="outlined"
-            icon="download"
-            onPress={downloadSampleExcel}
-            style={{ borderRadius: 8, borderColor: colors.primary }}
-          >
-            Download Sample
-          </Button>
-        </View>
+  const renderScene = ({ route }) => {
+    switch (route.key) {
+      case "manual":
+        return (
+          <VoterForm
+            mode="create"
+            onCreate={addVoter}
+            voterToEdit={null}
+            setVoterToEdit={setVoterToEdit}
+            setShowAddVoterView={setShowAddVoterView}
+          />
+        );
+      case "excel":
+        return (
+          <View style={{ flex: 1 }}>
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "flex-end",
+                paddingTop: 15,
+                paddingBottom: 8,
+              }}
+            >
+              <Button
+                mode="outlined"
+                icon="download"
+                onPress={downloadSampleExcel}
+                style={{ borderRadius: 8, borderColor: colors.primary }}
+              >
+                Download Sample
+              </Button>
+            </View>
 
-        <VoterUpload
-          fetchVoters={fetchVoters}
-          setShowAddVoterView={setShowAddVoterView}
-        />
-      </View>
-    ),
-  });
+            <VoterUpload
+              fetchVoters={fetchVoters}
+              setShowAddVoterView={setShowAddVoterView}
+            />
+          </View>
+        );
+      default:
+        return null;
+    }
+  };
 
   const renderTabBar = (
     props: SceneRendererProps & {
@@ -268,27 +271,25 @@ export default function AddVoterScreen() {
             behavior={Platform.OS === "ios" ? "padding" : undefined}
             style={{ flex: 1 }}
           >
-            <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
-              {voterToEdit ? (
-                <VoterForm
-                  mode="edit"
-                  onCreate={voterToEdit ? editVoter : addVoter}
-                  voterToEdit={voterToEdit}
-                  setVoterToEdit={setVoterToEdit}
-                  setShowAddVoterView={setShowAddVoterView}
-                />
-              ) : (
-                <TabView
-                  navigationState={{ index, routes }}
-                  renderScene={renderScene}
-                  renderTabBar={renderTabBar}
-                  onIndexChange={setIndex}
-                  initialLayout={{ width: layout.width }}
-                  swipeEnabled={false}
-                  lazy
-                />
-              )}
-            </ScrollView>
+            {voterToEdit ? (
+              <VoterForm
+                mode="edit"
+                onCreate={voterToEdit ? editVoter : addVoter}
+                voterToEdit={voterToEdit}
+                setVoterToEdit={setVoterToEdit}
+                setShowAddVoterView={setShowAddVoterView}
+              />
+            ) : (
+              <TabView
+                navigationState={{ index, routes }}
+                renderScene={renderScene}
+                renderTabBar={renderTabBar}
+                onIndexChange={setIndex}
+                initialLayout={{ width: layout.width }}
+                swipeEnabled={false}
+                lazy
+              />
+            )}
           </KeyboardAvoidingView>
         ) : (
           <VoterTable

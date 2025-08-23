@@ -14,10 +14,6 @@ import AppLayout from "./src/navigation/AppLayout";
 import AuthLoadingScreen from "./src/screens/AuthLoadingScreen";
 import ResetPasswordScreen from "./src/screens/ResetPasswordScreen";
 
-
-console.log("ENV:", Constants.expoConfig?.extra?.ENV);
-console.log("API:", Constants.expoConfig?.extra?.API);
-
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const linking = {

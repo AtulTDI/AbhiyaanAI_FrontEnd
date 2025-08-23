@@ -45,12 +45,6 @@ const createAxiosInstance = (baseURL: string): AxiosInstance => {
 
       config.headers["Accept"] = "application/json";
 
-      console.log(
-        `📡 [${method}] ${config.baseURL}${config.url}`,
-        "Headers:",
-        config.headers
-      );
-
       return config;
     },
     (error) => Promise.reject(error)
@@ -62,15 +56,6 @@ const createAxiosInstance = (baseURL: string): AxiosInstance => {
     async (error) => {
       const status = error?.response?.status;
       const message = error?.response?.data;
-
-      console.log("=======AXIOS ERROR:=========", {
-        message: error.message,
-        url: error.config?.url,
-        baseURL: error.config?.baseURL,
-        full: error.config?.baseURL + error.config?.url,
-        status: error.response?.status,
-        data: error.response?.data,
-      });
 
       if (status === 401 && message !== "Invalid login") {
         try {

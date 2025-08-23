@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState, useMemo } from "react";
 import { View, StyleSheet } from "react-native";
 import {
   IconButton,
@@ -41,8 +41,11 @@ export default function ProcessingVideosScreen() {
     Record<string, VoterStatus>
   >({});
   const [totalCount, setTotalCount] = useState(0);
-  const [completedCount, setCompletedCount] = useState(0);
   const [loading, setLoading] = useState(false);
+
+  const completedCount = useMemo(() => {
+    return totalCount - voters.length;
+  }, [totalCount, voters]);
 
   useEffect(() => {
     const handleProgressUpdate = (recipientId: string, status: VoterStatus) => {
@@ -51,7 +54,6 @@ export default function ProcessingVideosScreen() {
       setVoterStatuses((prev) => ({ ...prev, [recipientId]: status }));
 
       if (status === "Completed") {
-        setCompletedCount((prev) => prev + 1);
         setVoters((prev) => prev.filter((v) => v.id !== recipientId));
         leaveGroups(recipientId);
       }
