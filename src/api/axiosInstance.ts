@@ -1,4 +1,5 @@
 import axios, { AxiosInstance } from "axios";
+import Constants from 'expo-constants';
 import { navigate } from "../navigation/NavigationService";
 import { getAuthData, clearAuthData } from "../utils/storage";
 import { triggerToast } from "../services/toastService";
@@ -10,8 +11,8 @@ declare module "axios" {
   }
 }
 
-const API_BASE = process.env.EXPO_PUBLIC_API;
-const ALT_API_BASE = process.env.EXPO_PUBLIC_ALT_API;
+const API_BASE = Constants.expoConfig.extra.API
+const ALT_API_BASE = Constants.expoConfig.extra.ALT_API;
 
 const createAxiosInstance = (baseURL: string): AxiosInstance => {
   const instance = axios.create({
@@ -44,6 +45,12 @@ const createAxiosInstance = (baseURL: string): AxiosInstance => {
 
       config.headers["Accept"] = "application/json";
 
+      console.log(
+        `📡 [${method}] ${config.baseURL}${config.url}`,
+        "Headers:",
+        config.headers
+      );
+
       return config;
     },
     (error) => Promise.reject(error)
@@ -55,6 +62,15 @@ const createAxiosInstance = (baseURL: string): AxiosInstance => {
     async (error) => {
       const status = error?.response?.status;
       const message = error?.response?.data;
+
+      console.log("=======AXIOS ERROR:=========", {
+        message: error.message,
+        url: error.config?.url,
+        baseURL: error.config?.baseURL,
+        full: error.config?.baseURL + error.config?.url,
+        status: error.response?.status,
+        data: error.response?.data,
+      });
 
       if (status === 401 && message !== "Invalid login") {
         try {

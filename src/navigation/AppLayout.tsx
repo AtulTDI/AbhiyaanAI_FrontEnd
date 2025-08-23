@@ -184,7 +184,7 @@ export default function AppLayout() {
             />
           )}
 
-          {role === "SuperAdmin" && (
+          {/* {role === "SuperAdmin" && (
             <Drawer.Screen
               name="AddChannel"
               component={AddChannelScreen}
@@ -207,7 +207,7 @@ export default function AppLayout() {
                 ),
               }}
             />
-          )}
+          )} */}
 
           <Drawer.Screen
             name="AddUser"
@@ -232,7 +232,7 @@ export default function AppLayout() {
             }}
           />
 
-          {role === "Admin" && (
+          {/* {role === "Admin" && (
             <Drawer.Screen
               name="Register"
               component={WhatsAppRegisterScreen}
@@ -255,7 +255,7 @@ export default function AppLayout() {
                 ),
               }}
             />
-          )}
+          )} */}
 
           {role === "Admin" && (
             <Drawer.Screen

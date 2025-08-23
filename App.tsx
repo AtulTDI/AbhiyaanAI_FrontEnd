@@ -1,4 +1,5 @@
 import React from "react";
+import Constants from "expo-constants";
 import { Provider as PaperProvider } from "react-native-paper";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -7,20 +8,20 @@ import { RootStackParamList } from "./src/types";
 import { customTheme } from "./src/theme";
 import { ToastProvider } from "./src/components/ToastProvider";
 import { VideoPreviewProvider } from "./src/components/VideoPreviewContext";
+import prefixes from "./src/utils/deeplinks";
 import LoginScreen from "./src/screens/LoginScreen";
 import AppLayout from "./src/navigation/AppLayout";
 import AuthLoadingScreen from "./src/screens/AuthLoadingScreen";
 import ResetPasswordScreen from "./src/screens/ResetPasswordScreen";
 
+
+console.log("ENV:", Constants.expoConfig?.extra?.ENV);
+console.log("API:", Constants.expoConfig?.extra?.API);
+
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const linking = {
-  prefixes: [
-    "http://localhost:5201",
-    "http://localhost:5202",
-    "https://yourdomain.com",
-    "abhiyanai://",
-  ],
+  prefixes,
   config: {
     screens: {
       AuthLoading: "authloading",

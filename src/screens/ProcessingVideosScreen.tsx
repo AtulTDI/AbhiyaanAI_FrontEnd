@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { View, StyleSheet } from "react-native";
 import {
   IconButton,
@@ -17,22 +17,21 @@ import CommonTable from "../components/CommonTable";
 import { getAuthData } from "../utils/storage";
 import { getVotersWithInProgressVidoes } from "../api/voterApi";
 import {
+  startConnection,
   joinGroups,
   leaveGroups,
-  registerOnServerEvents,
-  startConnection,
+  onEvent,
 } from "../services/signalrService";
 import { AppTheme } from "../theme";
 
 type VoterStatus =
-  | "NotStarted"
   | "InQueue"
   | "Pending"
   | "Processing"
   | "Completed"
   | "Failed";
 
-export default function ProcessingVideosScreen({ route }) {
+export default function ProcessingVideosScreen() {
   const theme = useTheme<AppTheme>();
   const styles = createStyles(theme);
   const { colors } = theme;
@@ -45,43 +44,34 @@ export default function ProcessingVideosScreen({ route }) {
   const [completedCount, setCompletedCount] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  const setupSignalR = async (voters) => {
-    // const fromPage = route?.params?.from;
-    // const { accessToken } = await getAuthData();
+  useEffect(() => {
+    const handleProgressUpdate = (recipientId: string, status: VoterStatus) => {
+      console.log("📩 Update:", recipientId, status);
 
-    // if (fromPage !== "Generate") {
-    //   await startConnection(accessToken);
-    //   await joinGroups(voters);
-    // }
+      setVoterStatuses((prev) => ({ ...prev, [recipientId]: status }));
 
-    registerOnServerEvents(
-      "ReceiveVideoUpdate",
-      (recipientId: string, status: VoterStatus) => {
-        setVoterStatuses((prev) => ({
-          ...prev,
-          [recipientId]: status,
-        }));
-
-        if (status === "Completed") {
-          setCompletedCount((prev) => prev + 1);
-          setVoters((prev) => prev.filter((v) => v.id !== recipientId));
-          leaveGroups(recipientId);
-        }
+      if (status === "Completed") {
+        setCompletedCount((prev) => prev + 1);
+        setVoters((prev) => prev.filter((v) => v.id !== recipientId));
+        leaveGroups(recipientId);
       }
-    );
-  };
+    };
+
+    onEvent("ReceiveVideoUpdate", handleProgressUpdate);
+  }, []);
 
   const fetchVoters = async () => {
     setLoading(true);
-
     try {
       const response = await getVotersWithInProgressVidoes();
-      const voterList =
-        response?.data && Array.isArray(response.data) ? response.data : [];
+      const voterList = Array.isArray(response?.data) ? response.data : [];
+
       setVoters(voterList);
       setTotalCount(voterList.length);
 
-      await setupSignalR(voterList.map((voter) => voter?.id));
+      const { accessToken } = await getAuthData();
+      await startConnection(accessToken);
+      await joinGroups(voterList.map((v) => v.id));
     } catch (error: any) {
       showToast(extractErrorMessage(error, "Failed to load voters"), "error");
     } finally {
@@ -97,19 +87,6 @@ export default function ProcessingVideosScreen({ route }) {
 
   const getStatusView = (status: VoterStatus, item: Voter) => {
     switch (status) {
-      case "NotStarted":
-        return (
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-            <Ionicons
-              name="pause-circle-outline"
-              size={16}
-              color={colors.disabledText}
-            />
-            <Text style={{ color: colors.disabledText, fontSize: 12 }}>
-              Not Started
-            </Text>
-          </View>
-        );
       case "InQueue":
         return (
           <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
@@ -178,20 +155,14 @@ export default function ProcessingVideosScreen({ route }) {
   };
 
   const columns = [
-    {
-      label: "Name",
-      key: "fullName",
-      flex: 2,
-    },
+    { label: "Name", key: "fullName", flex: 2 },
     { key: "phoneNumber", label: "Mobile", flex: 2 },
     {
       key: "actions",
       label: "Status",
       flex: 0.8,
-      render: (item: Voter) => {
-        const status = voterStatuses[item.id] || "NotStarted";
-        return getStatusView(status, item);
-      },
+      render: (item: Voter) =>
+        getStatusView(voterStatuses[item.id] || "InQueue", item),
     },
   ];
 
@@ -211,7 +182,6 @@ export default function ProcessingVideosScreen({ route }) {
         >
           Processing Videos
         </Text>
-
         <ProgressChip
           completedCount={totalCount === 0 ? 0 : completedCount}
           totalCount={totalCount === 0 ? 0 : totalCount}
@@ -237,13 +207,6 @@ export default function ProcessingVideosScreen({ route }) {
 
 const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
-    container: {
-      padding: 16,
-      flex: 1,
-      backgroundColor: theme.colors.white,
-    },
-    heading: {
-      fontWeight: "bold",
-      marginBottom: 16,
-    },
+    container: { padding: 16, flex: 1, backgroundColor: theme.colors.white },
+    heading: { fontWeight: "bold", marginBottom: 16 },
   });

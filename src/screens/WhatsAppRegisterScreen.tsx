@@ -15,7 +15,7 @@ import { useToast } from "../components/ToastProvider";
 import { extractErrorMessage } from "../utils/common";
 import {
   joinGroups,
-  registerOnServerEvents,
+  onEvent,
   startConnection,
 } from "../services/signalrService";
 import { generateChannelQr, getChannels } from "../api/channelApi";
@@ -53,10 +53,10 @@ export default function WhatsAppRegisterScreen() {
     await startConnection(accessToken);
     await joinGroups(channelId);
 
-    registerOnServerEvents(
+    onEvent(
       "ReceiveVideoUpdate",
-      (recepientId: string, status: string, channelId: string) => {
-        if (status === "Completed" && channelId) {
+      (recipientId: string, status: string, channelId: string) => {
+        if (status === "Completed") {
           setChannels((prev) =>
             prev.map((ch) =>
               ch.id === channelId ? { ...ch, status: "completed" } : ch

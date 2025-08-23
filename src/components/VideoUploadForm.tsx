@@ -31,7 +31,7 @@ import { getAuthData } from "../utils/storage";
 import {
   joinGroups,
   leaveGroups,
-  registerOnServerEvents,
+  onEvent,
   startConnection,
   stopConnection,
 } from "../services/signalrService";
@@ -81,22 +81,22 @@ export default function VideoUploadForm({
   const setupSignalR = async () => {
     const { accessToken, userId } = await getAuthData();
 
-    await startConnection(accessToken);
-    await joinGroups(userId);
-
-    registerOnServerEvents(
-      "ReceiveVideoUpdate",
-      (recepientId: string, status: string, customizedVideoLink: string) => {
-        if (status === "Completed" && customizedVideoLink) {
-          setGeneratedUri(customizedVideoLink);
-          setLoading(false);
-          leaveGroups(userId);
-          stopConnection();
-        }
-      }
-    );
-
     try {
+      await startConnection(accessToken);
+      await joinGroups(userId);
+
+      onEvent(
+        "ReceiveVideoUpdate",
+        (recipientId: string, status: string, customizedVideoLink: string) => {
+          if (status === "Completed" && customizedVideoLink) {
+            setGeneratedUri(customizedVideoLink);
+            setLoading(false);
+            leaveGroups(userId);
+            stopConnection();
+          }
+        }
+      );
+
       setLoading(true);
       await generateSampleVideo({
         file: formData?.file,
@@ -116,7 +116,6 @@ export default function VideoUploadForm({
       showToast("Failed to generate sample video", "error");
       return;
     }
-
     setLoading(true);
     setupSignalR();
   };
@@ -134,7 +133,7 @@ export default function VideoUploadForm({
 
     const payload = {
       campaign: formData.campaign.trim(),
-        file: formData.file
+      file: formData.file
     };
 
     onAddVideo(payload);
