@@ -16,6 +16,8 @@ type Props = {
   style?: ViewStyle;
   iconSize?: number;
   labelStyle?: TextStyle;
+  approvedText?: string;
+  pendingText?: string;
 };
 
 export default function ApprovalToggle({
@@ -24,12 +26,14 @@ export default function ApprovalToggle({
   style,
   iconSize = 16,
   labelStyle,
+  approvedText = "Approved",
+  pendingText = "Click to Approve",
 }: Props) {
   const theme = useTheme<AppTheme>();
   const { colors } = theme;
 
   const iconName = isApproved ? "checkmark-circle" : "checkmark-circle-outline";
-  const label = isApproved ? "Approved" : "Click to Approve";
+  const label = isApproved ? approvedText : pendingText;
   const tintColor = isApproved ? colors.success : colors.primary;
   const background = tintColor + "22";
 

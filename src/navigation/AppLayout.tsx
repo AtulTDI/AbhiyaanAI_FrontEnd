@@ -9,11 +9,14 @@ import { stopConnection } from "../services/signalrService";
 import AddUserScreen from "../screens/AddUserScreen";
 import UploadVideoScreen from "../screens/UploadVideoScreen";
 import AddVoterScreen from "../screens/AddVoterScreen";
+import AddSenderScreen from "../screens/AddSenderScreen";
 import GenerateVideoScreen from "../screens/GenerateVideoScreen";
 import GeneratedVideoScreen from "../screens/GeneratedVideosScreen";
+import CompletedVideosScreen from "../screens/CompletedVideosScreen";
 import AddApplicationScreen from "../screens/AddApplicationScreen";
 import AddChannelScreen from "../screens/AddChannelScreen";
 import WhatsAppRegisterScreen from "../screens/WhatsAppRegisterScreen";
+import ActivateSenderScreen from "../screens/ActivateSenderScreen";
 import ProcessingVideosScreen from "../screens/ProcessingVideosScreen";
 import CustomDrawer from "../components/CustomDrawer";
 import CustomLabel from "../components/CustomLabel";
@@ -29,9 +32,9 @@ export default function AppLayout() {
   const { colors } = theme;
 
   const [userName, setUserName] = useState("");
-  const [role, setRole] = useState<"Admin" | "User" | "SuperAdmin" | null>(
-    null
-  );
+  const [role, setRole] = useState<
+    "Admin" | "User" | "SuperAdmin" | "Sender" | null
+  >(null);
   const [userEmail, setUserEmail] = useState("");
   const [videoCount, setVideoCount] = useState<number | null>(null);
 
@@ -49,7 +52,8 @@ export default function AppLayout() {
       if (
         storedRole === "Admin" ||
         storedRole === "SuperAdmin" ||
-        storedRole === "User"
+        storedRole === "User" ||
+        storedRole === "Sender"
       ) {
         setRole(storedRole);
       }
@@ -259,6 +263,31 @@ export default function AppLayout() {
 
           {role === "Admin" && (
             <Drawer.Screen
+              name="ActivateSender"
+              component={ActivateSenderScreen}
+              options={{
+                headerShown: true,
+                headerTitle: "",
+                headerRight: headerRightComponent,
+                drawerLabel: (props) => (
+                  <CustomLabel
+                    {...props}
+                    label="Activate Sender"
+                    icon={
+                      <Ionicons
+                        name="checkmark-circle-outline"
+                        size={20}
+                        color={props.color || colors.onPrimary}
+                      />
+                    }
+                  />
+                ),
+              }}
+            />
+          )}
+
+          {role === "Admin" && (
+            <Drawer.Screen
               name="Upload"
               component={UploadVideoScreen}
               options={{
@@ -300,6 +329,29 @@ export default function AppLayout() {
                   icon={
                     <Ionicons
                       name="people-outline"
+                      size={20}
+                      color={props.color || colors.onPrimary}
+                    />
+                  }
+                />
+              ),
+            }}
+          />
+
+          <Drawer.Screen
+            name="AddSender"
+            component={AddSenderScreen}
+            options={{
+              headerShown: true,
+              headerTitle: "",
+              headerRight: headerRightComponent,
+              drawerLabel: (props) => (
+                <CustomLabel
+                  {...props}
+                  label="Senders"
+                  icon={
+                    <Ionicons
+                      name="paper-plane-outline"
                       size={20}
                       color={props.color || colors.onPrimary}
                     />
@@ -358,6 +410,33 @@ export default function AppLayout() {
           <Drawer.Screen
             name="Generated"
             component={GeneratedVideoScreen}
+            options={{
+              headerShown: true,
+              headerTitle: "",
+              headerRight: headerRightComponent,
+              drawerLabel: (props) => (
+                <CustomLabel
+                  {...props}
+                  label="Generated Video(s)"
+                  icon={
+                    <Ionicons
+                      name="film-outline"
+                      size={20}
+                      color={props.color || colors.onPrimary}
+                    />
+                  }
+                />
+              ),
+            }}
+          />
+        </>
+      )}
+
+      {role === "Sender" && (
+        <>
+          <Drawer.Screen
+            name="CompletedVideos"
+            component={CompletedVideosScreen}
             options={{
               headerShown: true,
               headerTitle: "",
