@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, StyleSheet, Platform } from "react-native";
+import { View, StyleSheet } from "react-native";
 import {
   Text,
   TextInput,
@@ -13,7 +13,6 @@ import { navigate } from "../navigation/NavigationService";
 import { login } from "../api/authApi";
 import { saveAuthData } from "../utils/storage";
 import { extractErrorMessage } from "../utils/common";
-import { useWebAutofillSync } from "../hooks/useWebAutofillSync";
 import { AppTheme } from "../theme";
 
 type SignInProps = {
@@ -36,18 +35,6 @@ export default function SignIn({
   const [passwordError, setPasswordError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
-  // Sync autofill values on web
-  useWebAutofillSync({
-    email: {
-      inputId: "web-email",
-      setter: setEmail,
-    },
-    password: {
-      inputId: "web-password",
-      setter: setPassword,
-    },
-  });
 
   const validate = () => {
     let hasError = false;
@@ -95,7 +82,7 @@ export default function SignIn({
         role,
         applicationId,
         videoCount,
-        channelId
+        channelId,
       });
 
       navigate("App");
@@ -107,133 +94,113 @@ export default function SignIn({
   };
 
   return (
-    <>
-      {/* Hidden Inputs for Web Autofill */}
-      {Platform.OS === "web" && (
-        <>
-          <input
-            id="web-email"
-            type="email"
-            autoComplete="email"
-            name="email"
-            style={styles.hiddenInput}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <input
-            id="web-password"
-            type="password"
-            autoComplete="current-password"
-            name="password"
-            style={styles.hiddenInput}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </>
-      )}
+    <Card
+      style={[
+        styles.card,
+        {
+          backgroundColor: colors.white,
+          shadowColor: colors.shadow,
+        },
+      ]}
+    >
+      <Card.Content>
+        <Text
+          variant="titleLarge"
+          style={[styles.title, { color: colors.onSurface }]}
+        >
+          Sign In
+        </Text>
 
-      <Card
-        style={[
-          styles.card,
-          {
-            backgroundColor: colors.white,
-            shadowColor: colors.shadow,
-          },
-        ]}
-      >
-        <Card.Content>
-          <Text
-            variant="titleLarge"
-            style={[styles.title, { color: colors.onSurface }]}
-          >
-            Sign In
-          </Text>
+        {authError ? <Text style={styles.error}>{authError}</Text> : null}
 
-          {authError ? <Text style={styles.error}>{authError}</Text> : null}
+        {/* Email Label */}
+        <Text style={[styles.inputLabel, { color: colors.placeholder }]}>
+          Email
+        </Text>
+        <TextInput
+          value={email}
+          onChangeText={(text) => {
+            setEmail(text);
+            if (text.trim()) setEmailError("");
+          }}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          autoComplete="email"
+          textContentType="emailAddress"
+          name="email"
+          importantForAutofill="yes"
+          style={[styles.input, { backgroundColor: colors.white }]}
+          mode="outlined"
+          outlineColor={colors.inputBorder}
+          activeOutlineColor={colors.primary}
+          error={!!emailError}
+        />
+        <HelperText
+          type="error"
+          visible={!!emailError}
+          style={{ paddingLeft: 0 }}
+        >
+          {emailError}
+        </HelperText>
 
-          {/* Email Field */}
+        {/* Password Label */}
+        <Text style={[styles.inputLabel, styles.passwordLabel, { color: colors.placeholder }]}>
+          Password
+        </Text>
+        <View style={styles.passwordWrapper}>
           <TextInput
-            label="Email"
-            value={email}
+            value={password}
             onChangeText={(text) => {
-              setEmail(text);
-              if (text.trim()) setEmailError("");
+              setPassword(text);
+              if (text.trim()) setPasswordError("");
             }}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoComplete="email"
-            textContentType="emailAddress"
-            name="email"
+            secureTextEntry={!showPassword}
+            autoComplete="current-password"
+            textContentType="password"
+            name="password"
             importantForAutofill="yes"
-            style={[styles.input, { backgroundColor: colors.white }]}
+            style={[styles.passwordInput, { backgroundColor: colors.white }]}
             mode="outlined"
-            outlineColor={colors.inputBorder}
+            outlineColor={colors.outline}
             activeOutlineColor={colors.primary}
-            error={!!emailError}
+            error={!!passwordError}
           />
-          <HelperText
-            type="error"
-            visible={!!emailError}
-            style={{ paddingLeft: 0 }}
-          >
-            {emailError}
-          </HelperText>
+          <IconButton
+            icon={showPassword ? "eye" : "eye-off"}
+            onPress={() => setShowPassword(!showPassword)}
+            style={styles.eyeIcon}
+          />
+        </View>
+        <HelperText
+          type="error"
+          visible={!!passwordError}
+          style={{ paddingLeft: 0 }}
+        >
+          {passwordError}
+        </HelperText>
 
-          {/* Password Field */}
-          <View style={styles.passwordWrapper}>
-            <TextInput
-              label="Password"
-              value={password}
-              onChangeText={(text) => {
-                setPassword(text);
-                if (text.trim()) setPasswordError("");
-              }}
-              secureTextEntry={!showPassword}
-              autoComplete="current-password"
-              textContentType="password"
-              name="password"
-              importantForAutofill="yes"
-              style={[styles.passwordInput, { backgroundColor: colors.white }]}
-              mode="outlined"
-              outlineColor={colors.outline}
-              activeOutlineColor={colors.primary}
-              error={!!passwordError}
-            />
-            <IconButton
-              icon={showPassword ? "eye" : "eye-off"}
-              onPress={() => setShowPassword(!showPassword)}
-              style={styles.eyeIcon}
-            />
-          </View>
-          <HelperText
-            type="error"
-            visible={!!passwordError}
-            style={{ paddingLeft: 0 }}
-          >
-            {passwordError}
-          </HelperText>
+        <Button
+          onPress={() => setShowSignInPage(false)}
+          mode="text"
+          contentStyle={{ justifyContent: "flex-end" }}
+          style={styles.forgot}
+          labelStyle={{ color: colors.primary }}
+        >
+          Forgot Password?
+        </Button>
 
-          <Button
-            onPress={() => setShowSignInPage(false)}
-            mode="text"
-            contentStyle={{ justifyContent: "flex-end" }}
-            style={styles.forgot}
-            labelStyle={{ color: colors.primary }}
-          >
-            Forgot Password?
-          </Button>
-
-          <Button
-            mode="contained"
-            onPress={handleSignIn}
-            loading={isLoading}
-            disabled={isLoading}
-            style={[styles.button, { backgroundColor: colors.primary }]}
-            contentStyle={{ paddingVertical: 8 }}
-          >
-            {isLoading ? "Signing In..." : "Sign In"}
-          </Button>
-        </Card.Content>
-      </Card>
-    </>
+        <Button
+          mode="contained"
+          onPress={handleSignIn}
+          loading={isLoading}
+          disabled={isLoading}
+          style={[styles.button, { backgroundColor: colors.primary }]}
+          contentStyle={{ paddingVertical: 8 }}
+        >
+          {isLoading ? "Signing In..." : "Sign In"}
+        </Button>
+      </Card.Content>
+    </Card>
   );
 }
 
@@ -256,15 +223,23 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     textAlign: "center",
   },
+  inputLabel: {
+    fontSize: 15,         
+    marginBottom: 4,
+    fontWeight: "500",
+  },
   input: {
-    marginBottom: 0,
+    fontSize: 15,
+  },
+  passwordLabel: {
+    marginTop: 5
   },
   passwordWrapper: {
     position: "relative",
     justifyContent: "center",
   },
   passwordInput: {
-    marginBottom: 0,
+    fontSize: 15
   },
   eyeIcon: {
     position: "absolute",
@@ -274,18 +249,10 @@ const styles = StyleSheet.create({
   },
   forgot: {
     alignSelf: "flex-end",
-    marginBottom: 16,
+    marginBottom: 12,
     marginTop: 4,
   },
   button: {
     borderRadius: 8,
-    marginTop: 8,
-  },
-  hiddenInput: {
-    position: "absolute",
-    opacity: 0,
-    height: 0,
-    width: 0,
-    pointerEvents: "none",
   },
 });

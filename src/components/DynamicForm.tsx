@@ -17,9 +17,9 @@ type Props = {
   initialValues: Record<string, string>;
   mode: "create" | "edit";
   formSubmitLoading?: boolean;
-  onChange: (data: FieldConfig, value: string) => void;
-  onSubmit: (data: Record<string, string>) => void;
-  onCancel: () => void;
+  onChange?: (data: FieldConfig, value: string) => void;
+  onSubmit?: (data: Record<string, string>) => void;
+  onCancel?: () => void;
 };
 
 export default function DynamicForm({

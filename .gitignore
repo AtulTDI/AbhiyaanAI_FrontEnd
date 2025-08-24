@@ -90,4 +90,8 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
+# tar files
+/tar/
+*.tar
+
 # @end expo-cli
