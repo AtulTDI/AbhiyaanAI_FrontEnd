@@ -12,7 +12,6 @@ import AddVoterScreen from "../screens/AddVoterScreen";
 import AddSenderScreen from "../screens/AddSenderScreen";
 import GenerateVideoScreen from "../screens/GenerateVideoScreen";
 import GeneratedVideoScreen from "../screens/GeneratedVideosScreen";
-import CompletedVideosScreen from "../screens/CompletedVideosScreen";
 import AddApplicationScreen from "../screens/AddApplicationScreen";
 import AddChannelScreen from "../screens/AddChannelScreen";
 import WhatsAppRegisterScreen from "../screens/WhatsAppRegisterScreen";
@@ -432,11 +431,10 @@ export default function AppLayout() {
         </>
       )}
 
-      {role === "Sender" && (
-        <>
+      {role === "Sender" && (  
           <Drawer.Screen
-            name="CompletedVideos"
-            component={CompletedVideosScreen}
+            name="Generated"
+            component={GeneratedVideoScreen}
             options={{
               headerShown: true,
               headerTitle: "",
@@ -456,7 +454,6 @@ export default function AppLayout() {
               ),
             }}
           />
-        </>
       )}
     </Drawer.Navigator>
   );

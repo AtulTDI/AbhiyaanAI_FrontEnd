@@ -2,7 +2,7 @@ import { FieldConfig } from "../types";
 import DynamicForm from "./DynamicForm";
 
 type Voter = {
-  fullname: string;
+  fullName: string;
   phoneNumber: string;
 };
 
@@ -22,7 +22,7 @@ export default function VoterForm({
   setShowAddVoterView,
 }: Props) {
   const voterFields: FieldConfig[] = [
-    { name: "fullname", label: "Full name", type: "text", required: true },
+    { name: "fullName", label: "Full name", type: "text", required: true },
     { name: "phoneNumber", label: "Mobile", type: "number", required: true },
   ];
 
@@ -30,7 +30,7 @@ export default function VoterForm({
     <DynamicForm
       fields={voterFields}
       initialValues={{
-        fullName: voterToEdit?.fullname || "",
+        fullName: voterToEdit?.fullName || "",
         phoneNumber: voterToEdit?.phoneNumber || "",
       }}
       mode={mode}

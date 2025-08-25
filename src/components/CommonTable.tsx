@@ -14,7 +14,7 @@ import { AppTheme } from "../theme";
 
 type Column<T> = {
   label: string | React.ReactNode;
-  key: keyof T | "actions" | "radio" | string;
+  key?: keyof T | "actions" | "radio" | string;
   flex: number;
   render?: (item: T, index: number) => React.ReactNode;
   renderHeader?: () => React.ReactNode;

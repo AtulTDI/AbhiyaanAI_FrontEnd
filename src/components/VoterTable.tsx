@@ -50,8 +50,6 @@ export default function VoterTable({ voters, onEdit, onDelete }: Props) {
     <CommonTable
       data={voters}
       columns={columns}
-      onEdit={onEdit}
-      onDelete={onDelete}
       emptyIcon={
         <Ionicons name="people-outline" size={48} color={colors.disabledText} />
       }

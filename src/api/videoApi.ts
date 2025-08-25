@@ -10,7 +10,7 @@ import { getAuthData } from "../utils/storage";
 export const getVideos = async () => {
   const { role } = await getAuthData();
 
-  const response = await axios.get<Video>(`/BaseVideos/${role === "User" ? "getsharedvideos" : "getmyvideos"}`, { useApiPrefix: true });
+  const response = await axios.get<Video>(`/BaseVideos/${role === "User" || role === "Sender" ? "getsharedvideos" : "getmyvideos"}`, { useApiPrefix: true });
 
   return response;
 }

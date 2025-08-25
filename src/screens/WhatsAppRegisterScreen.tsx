@@ -192,8 +192,7 @@ export default function WhatsAppRegisterScreen() {
           columns={columns}
           data={channels}
           loading={loading}
-          pagination
-          emptyMessage="No channels found"
+          emptyText="No channels found"
         />
       </Surface>
 
