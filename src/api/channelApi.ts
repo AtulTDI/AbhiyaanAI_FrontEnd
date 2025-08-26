@@ -50,6 +50,6 @@ export const deleteChannelById = (id: string) =>
  */
 export const generateChannelQr = (id: string, userId: string) =>
   axios.get(
-    `/WHChannel/requestqr?channelId=${id}&adminId=${userId}`,
+    `/WhtaspApp/getqr`,
     { useApiPrefix: true, useAltBase: true }
   );
