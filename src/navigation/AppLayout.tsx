@@ -236,7 +236,7 @@ export default function AppLayout() {
             }}
           />
 
-          {/* {role === "Admin" && (
+          {role === "Admin" && (
             <Drawer.Screen
               name="Register"
               component={WhatsAppRegisterScreen}
@@ -259,7 +259,7 @@ export default function AppLayout() {
                 ),
               }}
             />
-          )} */}
+          )}
 
           {role === "Admin" && (
             <Drawer.Screen

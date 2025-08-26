@@ -6,7 +6,7 @@ export default function RegisterWhatsapp() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('http://localhost:5202/api/WHChannel/requestqr?channelId=SHAZAM-XK9A8') // your backend API
+    fetch('http://localhost:5202/api/WhtaspApp/getqr') // your backend API
       .then(res => res.json())
       .then(data => {
         try {
