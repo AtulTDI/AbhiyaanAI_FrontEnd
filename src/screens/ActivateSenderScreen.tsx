@@ -92,17 +92,17 @@ export default function ActivateSenderScreen() {
     {
       label: "Name",
       key: "fullName",
-      flex: 3.5,
+      flex: 0.5,
       render: (item) => item.firstName + " " + item.lastName,
     },
-    { label: "Mobile", key: "phoneNumber", flex: 2.2 },
-    { label: "Email", key: "email", flex: 2.5 },
+    { label: "Mobile", key: "phoneNumber", flex: 0.3 },
+    { label: "Email", key: "email", flex: 0.4 },
     {
       label: "Created At",
       key: "createdAt",
-      flex: 2.6,
+      flex: 0.4,
       render: (item) => (
-        <Text>
+        <Text style={{ marginLeft: 8 }}>
           {item.createdAt
             ? dayjs(item.createdAt).format("DD MMM YYYY, hh:mm A")
             : "-"}
@@ -112,7 +112,7 @@ export default function ActivateSenderScreen() {
     {
       key: "actions",
       label: "Activation",
-      flex: 2.5,
+      flex: 1,
       render: (item: Sender) => {
         return (
           <ApprovalToggle

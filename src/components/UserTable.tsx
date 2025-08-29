@@ -20,18 +20,18 @@ export default function UserTable({ users, onEdit, onDelete }: Props) {
     {
       label: "Name",
       key: "fullName",
-      flex: 3.5,
+      flex: 0.4,
       render: (item) => item.firstName + " " + item.lastName,
     },
-    { label: "Mobile", key: "phoneNumber", flex: 2.2 },
-    { label: "Email", key: "email", flex: 3.5 },
-    { label: "Role", key: "role", flex: 1.5 },
+    { label: "Mobile", key: "phoneNumber", flex: 0.3 },
+    { label: "Email", key: "email", flex: 0.4 },
+    { label: "Role", key: "role", flex: 0.2 },
     {
       label: "Created At",
       key: "createdAt",
-      flex: 2.6,
+      flex: 0.4,
       render: (item) => (
-        <Text>
+        <Text style={{ marginLeft: 8 }}>
           {item.createdAt
             ? dayjs(item.createdAt).format("DD MMM YYYY, hh:mm A")
             : "-"}
@@ -41,7 +41,8 @@ export default function UserTable({ users, onEdit, onDelete }: Props) {
     {
       label: "Actions",
       key: "actions",
-      flex: 1.5,
+      flex: 0.9,
+      smallColumn: true,
       render: (item) => (
         <View style={styles.actions}>
           <Ionicons
@@ -82,5 +83,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 5,
+    marginLeft: 8,
   },
 });

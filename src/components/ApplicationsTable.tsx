@@ -25,43 +25,47 @@ export default function ApplicationsTable({
     {
       label: "Name",
       key: "name",
-      flex: 2.5,
+      flex: 1,
     },
     {
       label: "Video Count",
       key: "videoCount",
-      flex: 1.5,
+      flex: 0.8,
       render: (item: Application) => (
-        <Text>{`${item.remainingVideoCount} / ${item.totalVideoCount}`}</Text>
+        <Text
+          style={{ marginLeft: 8 }}
+        >{`${item.remainingVideoCount} / ${item.totalVideoCount}`}</Text>
       ),
     },
     {
       label: "Video Rate",
       key: "videoGenerationRate",
-      flex: 1.5,
+      flex: 0.8,
     },
     {
       label: "Sales Agent",
       key: "salesAgentName",
-      flex: 2,
+      flex: 1,
     },
     {
       label: "Created By",
       key: "createdByUserName",
-      flex: 2,
+      flex: 1,
     },
     {
       label: "Created At",
       key: "createdAt",
-      flex: 3,
+      flex: 1,
       render: (item: Application) => (
-        <Text>{dayjs(item.createdAt).format("DD MMM YYYY, hh:mm A")}</Text>
+        <Text style={{ marginLeft: 8 }}>
+          {dayjs(item.createdAt).format("DD MMM YYYY, hh:mm A")}
+        </Text>
       ),
     },
     {
       label: "Status",
       key: "isActive",
-      flex: 1.5,
+      flex: 0.8,
       render: (item: Application) => (
         <View style={styles.statusToggle}>
           <Text
@@ -85,7 +89,8 @@ export default function ApplicationsTable({
     {
       label: "Action",
       key: "actions",
-      flex: 0.8,
+      flex: 0.9,
+      smallColumn: true,
       render: (item: Application) => (
         <View style={styles.actions}>
           <Ionicons
@@ -114,9 +119,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 5,
+    marginLeft: 8,
   },
   statusToggle: {
     flexDirection: "row",
     alignItems: "center",
+    marginLeft: 8,
   },
 });

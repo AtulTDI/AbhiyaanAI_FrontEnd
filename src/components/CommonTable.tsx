@@ -3,19 +3,21 @@ import {
   View,
   Text,
   StyleSheet,
-  FlatList,
   ScrollView,
   TouchableOpacity,
-  TextStyle,
+  useWindowDimensions,
+  Platform,
 } from "react-native";
 import { Menu, useTheme, ActivityIndicator } from "react-native-paper";
 import { MaterialIcons } from "@expo/vector-icons";
 import { AppTheme } from "../theme";
+import { Table, Row } from "react-native-table-component";
 
 type Column<T> = {
   label: string | React.ReactNode;
   key?: keyof T | "actions" | "radio" | string;
   flex: number;
+  smallColumn?: boolean;
   render?: (item: T, index: number) => React.ReactNode;
   renderHeader?: () => React.ReactNode;
 };
@@ -44,11 +46,15 @@ export default function CommonTable<T>({
   const theme = useTheme<AppTheme>();
   const styles = createStyles(theme);
   const { colors } = theme;
+  const { width: screenWidth } = useWindowDimensions();
 
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [menuVisible, setMenuVisible] = useState(false);
+  const [wrapperWidth, setWrapperWidth] = useState(0);
+  const isWeb = Platform.OS === "web";
 
+  const SCROLL_THRESHOLD = 900;
   const startIndex = page * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
   const paginatedData = data.slice(startIndex, endIndex);
@@ -60,11 +66,10 @@ export default function CommonTable<T>({
           {
             key: "__sno__",
             label: "S.No.",
-            flex: 0.7,
+            flex: columns?.length > 7 ? 0.3 : 0.1,
+            smallColumn: true,
             render: (_: T, index: number) => (
-              <Text style={{ color: colors.onSurface }}>
-                {startIndex + index + 1}
-              </Text>
+              <Text style={styles.dataCell}>{startIndex + index + 1}</Text>
             ),
           },
         ]
@@ -72,248 +77,227 @@ export default function CommonTable<T>({
     ...columns,
   ];
 
-  const renderHeader = () => (
-    <View style={[styles.row, styles.headerRow]}>
-      {enhancedColumns.map((col) => (
-        <View key={String(col.key)} style={[styles.cell, { flex: col.flex }]}>
-          {col.renderHeader ? (
-            col.renderHeader()
-          ) : (
-            <Text style={[styles.headerCell, { color: colors.white }]}>
-              {col.label}
-            </Text>
-          )}
-        </View>
-      ))}
-    </View>
+  const tableHead = enhancedColumns.map((col) =>
+    col.renderHeader ? col.renderHeader() : col.label
   );
 
-  const renderItem = ({ item, index }: { item: T; index: number }) => (
-    <>
-      <View style={styles.dataRow}>
-        {enhancedColumns.map((col) => {
-          const key = String(col.key);
-          const value = item[col.key as keyof T];
-
-          let displayNode: React.ReactNode;
-
-          if (col.render) {
-            displayNode = col.render(item, index);
-          } else {
-            displayNode =
-              typeof value === "string" || typeof value === "number"
-                ? String(value)
-                : "-";
-          }
-
-          return (
-            <View key={key} style={[styles.cell, { flex: col.flex }]}>
-              {typeof displayNode === "string" ? (
-                <Text
-                  style={{ color: colors.onSurface }}
-                  numberOfLines={1}
-                  ellipsizeMode="tail"
-                >
-                  {displayNode}
-                </Text>
-              ) : (
-                displayNode
-              )}
-            </View>
-          );
-        })}
-      </View>
-      {index < paginatedData.length - 1 && <View style={styles.separator} />}
-    </>
+  const tableData = paginatedData.map((item, index) =>
+    enhancedColumns.map((col) => {
+      const value = item[col.key as keyof T];
+      if (col.render) return col.render(item, index);
+      return typeof value === "string" || typeof value === "number"
+        ? String(value)
+        : "-";
+    })
   );
 
-  const renderPagination = () => (
-    <>
-      <View style={styles.divider} />
-      <View style={styles.paginationContainer}>
-        <View style={styles.rowsPerPageWrapper}>
-          <Text style={styles.pageText}>Rows per page:</Text>
-          <Menu
-            visible={menuVisible}
-            onDismiss={() => setMenuVisible(false)}
-            anchor={
-              <TouchableOpacity onPress={() => setMenuVisible(true)}>
-                <View style={styles.dropdownTrigger}>
-                  <Text style={styles.pageText}>{rowsPerPage}</Text>
-                  <MaterialIcons
-                    name="arrow-drop-down"
-                    size={20}
-                    color={colors.textTertiary}
-                  />
-                </View>
-              </TouchableOpacity>
-            }
-          >
-            {ROWS_PER_PAGE_OPTIONS.map((option) => (
-              <Menu.Item
-                key={option}
-                onPress={() => {
-                  setRowsPerPage(option);
-                  setPage(0);
-                  setMenuVisible(false);
-                }}
-                title={`${option}`}
-              />
-            ))}
-          </Menu>
-        </View>
+  const totalFlex = enhancedColumns.reduce((sum, col) => sum + col.flex, 0);
 
-        <Text style={styles.pageText}>
-          {startIndex + 1}-{Math.min(endIndex, data.length)} of {data.length}
-        </Text>
+  const widthArr = enhancedColumns.map((col) => {
+    if (isWeb) {
+      return (col.flex / totalFlex) * screenWidth;
+    } else {
+      if (col?.smallColumn) {
+        return 80;
+      }
+      return Math.max(col.flex * 150, 200);
+    }
+  });
 
-        <View style={styles.pageNavWrapper}>
-          <TouchableOpacity
-            style={styles.navButton}
-            disabled={page === 0}
-            onPress={() => setPage((prev) => Math.max(prev - 1, 0))}
-          >
-            <MaterialIcons
-              name="chevron-left"
-              size={20}
-              color={page === 0 ? colors.borderGray : colors.black}
-            />
-            <Text
-              style={[
-                styles.pageText,
-                page === 0 && { color: colors.borderGray },
-              ]}
-            >
-              Previous
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.navButton}
-            disabled={page >= totalPages - 1}
-            onPress={() =>
-              setPage((prev) => Math.min(prev + 1, totalPages - 1))
-            }
-          >
-            <Text
-              style={[
-                styles.pageText,
-                page >= totalPages - 1 && { color: colors.borderGray },
-              ]}
-            >
-              Next
-            </Text>
-            <MaterialIcons
-              name="chevron-right"
-              size={20}
-              color={page >= totalPages - 1 ? colors.borderGray : colors.black}
-            />
-          </TouchableOpacity>
-        </View>
-      </View>
-    </>
-  );
+  const enableHorizontalScroll = wrapperWidth < SCROLL_THRESHOLD || columns.length > 7;
 
   return (
     <View style={styles.container}>
-      <ScrollView horizontal contentContainerStyle={{ flexGrow: 1 }}>
-        <View style={styles.tableWrapper}>
-          {renderHeader()}
-          <FlatList
-            data={loading ? [] : paginatedData}
-            keyExtractor={keyExtractor}
-            renderItem={renderItem}
-            contentContainerStyle={
-              paginatedData.length === 0
-                ? {
-                    flex: 1,
-                    alignItems: "center",
-                    justifyContent: "center",
+      <View
+        style={styles.tableWrapper}
+        onLayout={(event) => {
+          const { width } = event.nativeEvent.layout;
+          setWrapperWidth(width);
+        }}
+      >
+        {loading ? (
+          <View style={styles.loaderContainer}>
+            <ActivityIndicator size="large" />
+          </View>
+        ) : data.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            {emptyIcon ?? (
+              <MaterialIcons
+                name="info-outline"
+                size={40}
+                color={colors.borderGray}
+              />
+            )}
+            <Text style={styles.emptyText}>{emptyText}</Text>
+          </View>
+        ) : (
+          <>
+            <ScrollView
+              style={styles.scrollArea}
+              horizontal={!isWeb || enableHorizontalScroll}
+              showsHorizontalScrollIndicator={true}
+            >
+              <Table borderStyle={{ borderWidth: 0 }}>
+                <Row
+                  data={tableHead}
+                  style={styles.headerRow}
+                  textStyle={[styles.headerCell, { color: colors.white }]}
+                  widthArr={widthArr}
+                />
+
+                {tableData.map((rowData, rowIndex) => (
+                  <Row
+                    key={rowIndex}
+                    data={rowData}
+                    style={[styles.dataRow]}
+                    textStyle={styles.dataCell}
+                    widthArr={widthArr}
+                  />
+                ))}
+              </Table>
+            </ScrollView>
+
+            <View style={styles.divider} />
+            <View style={styles.paginationContainer}>
+              <View style={styles.rowsPerPageWrapper}>
+                <Text style={styles.pageText}>Rows per page:</Text>
+                <Menu
+                  visible={menuVisible}
+                  onDismiss={() => setMenuVisible(false)}
+                  anchor={
+                    <TouchableOpacity onPress={() => setMenuVisible(true)}>
+                      <View style={styles.dropdownTrigger}>
+                        <Text style={styles.pageText}>{rowsPerPage}</Text>
+                        <MaterialIcons
+                          name="arrow-drop-down"
+                          size={20}
+                          color={colors.textTertiary}
+                        />
+                      </View>
+                    </TouchableOpacity>
                   }
-                : { paddingBottom: 8 }
-            }
-            ListEmptyComponent={
-              loading ? (
-                <View style={styles.loaderContainer}>
-                  <ActivityIndicator size="large" />
-                </View>
-              ) : (
-                <View style={styles.emptyContainer}>
-                  {emptyIcon}
-                  <Text style={styles.emptyText}>{emptyText}</Text>
-                </View>
-              )
-            }
-            scrollEnabled
-            style={{ flexGrow: 1 }}
-          />
-          {data.length > 0 && renderPagination()}
-        </View>
-      </ScrollView>
+                >
+                  {ROWS_PER_PAGE_OPTIONS.map((option) => (
+                    <Menu.Item
+                      key={option}
+                      onPress={() => {
+                        setRowsPerPage(option);
+                        setPage(0);
+                        setMenuVisible(false);
+                      }}
+                      title={`${option}`}
+                    />
+                  ))}
+                </Menu>
+              </View>
+
+              <Text style={styles.pageText}>
+                {startIndex + 1}-{Math.min(endIndex, data.length)} of{" "}
+                {data.length}
+              </Text>
+
+              <View style={styles.pageNavWrapper}>
+                <TouchableOpacity
+                  style={styles.navButton}
+                  disabled={page === 0}
+                  onPress={() => setPage((prev) => Math.max(prev - 1, 0))}
+                >
+                  <MaterialIcons
+                    name="chevron-left"
+                    size={20}
+                    color={page === 0 ? colors.borderGray : colors.black}
+                  />
+                  <Text
+                    style={[
+                      styles.pageText,
+                      page === 0 && { color: colors.borderGray },
+                    ]}
+                  >
+                    Previous
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.navButton}
+                  disabled={page >= totalPages - 1}
+                  onPress={() =>
+                    setPage((prev) => Math.min(prev + 1, totalPages - 1))
+                  }
+                >
+                  <Text
+                    style={[
+                      styles.pageText,
+                      page >= totalPages - 1 && { color: colors.borderGray },
+                    ]}
+                  >
+                    Next
+                  </Text>
+                  <MaterialIcons
+                    name="chevron-right"
+                    size={20}
+                    color={
+                      page >= totalPages - 1 ? colors.borderGray : colors.black
+                    }
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
+          </>
+        )}
+      </View>
     </View>
   );
 }
 
 const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
-    container: {
-      flex: 1,
-    },
+    container: { flex: 1, width: "100%", paddingTop: 8 },
     tableWrapper: {
-      backgroundColor: theme.colors.white,
-      borderRadius: 12,
-      overflow: "hidden",
-
-      shadowColor: theme.colors.black,
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.1,
-      shadowRadius: 8,
-      elevation: 6,
-
-      borderWidth: 1,
-      borderColor: theme.colors.lightBackground,
-
-      minWidth: 600,
       flex: 1,
+      backgroundColor: theme.colors.white,
+      borderRadius: 8,
+      overflow: "hidden",
+      shadowColor: theme.colors.black,
+      shadowOffset: { width: 0, height: 3 },
+      shadowOpacity: 0.08,
+      shadowRadius: 6,
+      elevation: 4,
+      borderWidth: 1,
+      borderColor: theme.colors.borderGray,
     },
-    row: {
-      flexDirection: "row",
-      alignItems: "center",
-      paddingVertical: 10,
-      paddingHorizontal: 6,
+    scrollArea: {
+      flexGrow: 1,
     },
     headerRow: {
       backgroundColor: theme.colors.primary,
-      height: 40
-    },
-    dataRow: {
-      flexDirection: "row",
-      alignItems: "center",
-      paddingVertical: 10,
-      paddingHorizontal: 6,
-      backgroundColor: theme.colors.white,
+      height: 46,
     },
     headerCell: {
-      fontWeight: "bold",
+      fontWeight: "600",
       fontSize: 14,
-    },
-    cell: {
-      fontSize: 13,
+      textAlign: "left",
       paddingHorizontal: 8,
-    } as TextStyle,
-    separator: {
-      height: 1,
-      backgroundColor: theme.colors.mutedBorder,
-      marginHorizontal: 6,
+    },
+    dataRow: {
+      height: 48,
+      borderBottomWidth: 1,
+      borderColor: theme.colors.borderGray,
+    },
+    dataCell: {
+      fontSize: 13,
+      textAlign: "left",
+      color: theme.colors.onSurface,
+      paddingHorizontal: 8,
+      ...(Platform.OS === "web" ? { flexShrink: 1, flexWrap: "nowrap" } : {}),
     },
     divider: {
       height: 1,
       backgroundColor: theme.colors.borderGray,
-      marginTop: 6,
     },
     emptyContainer: {
       alignItems: "center",
       justifyContent: "center",
-      paddingVertical: 40,
+      flex: 1,
+      paddingVertical: 50,
     },
     loaderContainer: {
       flex: 1,
@@ -322,17 +306,18 @@ const createStyles = (theme: AppTheme) =>
       paddingVertical: 40,
     },
     emptyText: {
-      fontSize: 16,
+      fontSize: 15,
       fontWeight: "500",
-      marginTop: 10,
+      marginTop: 8,
+      color: theme.colors.darkerGrayText,
     },
     paginationContainer: {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
-      paddingHorizontal: 10,
-      paddingVertical: 8,
-      gap: 12,
+      paddingHorizontal: 14,
+      paddingVertical: 10,
+      backgroundColor: theme.colors.white,
     },
     rowsPerPageWrapper: {
       flexDirection: "row",
@@ -342,11 +327,11 @@ const createStyles = (theme: AppTheme) =>
     dropdownTrigger: {
       flexDirection: "row",
       alignItems: "center",
-      paddingHorizontal: 6,
-      paddingVertical: 2,
+      paddingHorizontal: 8,
+      paddingVertical: 4,
       borderWidth: 1,
       borderColor: theme.colors.borderGray,
-      borderRadius: 4,
+      borderRadius: 6,
       marginLeft: 4,
     },
     pageText: {
@@ -363,6 +348,6 @@ const createStyles = (theme: AppTheme) =>
       alignItems: "center",
       gap: 4,
       paddingHorizontal: 6,
-      paddingVertical: 2,
+      paddingVertical: 4,
     },
   });

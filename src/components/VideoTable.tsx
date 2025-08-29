@@ -35,11 +35,11 @@ export default function VideoTable({
   const [selectedVideoUri, setSelectedVideoUri] = useState<string | null>(null);
 
   const columns = [
-    { label: "Campaign", key: "campaignName", flex: 3 },
+    { label: "Campaign", key: "campaignName", flex: 0.8 },
     {
       label: "Uploaded At",
       key: "createdAt",
-      flex: 3,
+      flex: 0.5,
       render: (item) => (
         <Text>{dayjs(item.createdAt).format("DD MMM YYYY, hh:mm A")}</Text>
       ),
@@ -47,7 +47,7 @@ export default function VideoTable({
     {
       label: "Approval",
       key: "isShared",
-      flex: 2,
+      flex: 0.4,
       render: (item) => (
         <ApprovalToggle
           isApproved={item.isShared}
@@ -62,9 +62,17 @@ export default function VideoTable({
     {
       label: "Actions",
       key: "actions",
-      flex: 1,
+      flex: 0.9,
+      smallColumn: true,
       render: (item: Video) => (
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 10,
+            marginLeft: true,
+          }}
+        >
           {/* Play */}
           <TouchableOpacity
             onPress={() => setSelectedVideoUri(item.s3Url || "")}

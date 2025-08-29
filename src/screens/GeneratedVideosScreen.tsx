@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { View, StyleSheet, Platform } from "react-native";
 import { IconButton, Surface, Text, useTheme } from "react-native-paper";
+import dayjs from "dayjs";
 import { useFocusEffect } from "@react-navigation/native";
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import * as Linking from "expo-linking";
@@ -120,16 +121,26 @@ export default function GeneratedVideoScreen() {
     {
       label: "Name",
       key: "fullName",
-      flex: 2,
+      flex: 0.8,
     },
-    { key: "phoneNumber", label: "Mobile", flex: 2 },
+    { key: "phoneNumber", label: "Mobile", flex: 0.4 },
+    {
+      label: "Created At",
+      key: "createdAt",
+      flex: 0.4,
+      render: (item) =>
+        item.createdAt
+          ? dayjs(item.createdAt).format("DD MMM YYYY, hh:mm A")
+          : "-",
+    },
     {
       key: "actions",
       label: "Actions",
       flex: 1,
+      smallColumn: true,
       render: (item: Voter) => {
         return (
-          <View style={{ justifyContent: "flex-start" }}>
+          <View style={{ justifyContent: "flex-start", marginLeft: 8 }}>
             <IconButton
               style={{ margin: 0 }}
               icon={() => (

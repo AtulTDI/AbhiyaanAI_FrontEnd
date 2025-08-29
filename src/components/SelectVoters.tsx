@@ -14,15 +14,16 @@ const columns = [
   {
     label: "",
     key: "checkbox" as const,
-    flex: 0.5,
+    flex: 0.1,
+    smallColumn: true,
     render: undefined,
   },
   {
     label: "Name",
     key: "fullName",
-    flex: 2,
+    flex: 1,
   },
-  { label: "Mobile", key: "phoneNumber", flex: 1.2 },
+  { label: "Mobile", key: "phoneNumber", flex: 0.8 },
 ];
 
 export default function SelectVoters({ stepData, setStepData }) {

@@ -22,7 +22,7 @@ export default function SelectBaseVideo({ stepData, setStepData }) {
   const { open } = useVideoPreview();
   const [videos, setVideos] = useState<any[]>([]);
   const { showToast } = useToast();
-  
+
   const fetchVideos = useCallback(async () => {
     try {
       const response = await getVideos();
@@ -55,7 +55,8 @@ export default function SelectBaseVideo({ stepData, setStepData }) {
     {
       label: "",
       key: "radio",
-      flex: 0.5,
+      flex: 0.1,
+      smallColumn: true,
       render: (item: BaseVideo) => (
         <RadioButton
           value={item.id}
@@ -72,12 +73,13 @@ export default function SelectBaseVideo({ stepData, setStepData }) {
     {
       label: "Campaign",
       key: "campaignName" as const,
-      flex: 3,
+      flex: 1.8,
     },
     {
       label: "Actions",
       key: "actions",
-      flex: 0.8,
+      flex: 1,
+      smallColumn: true,
       render: (item) => (
         <View style={styles.actions}>
           <Ionicons
@@ -140,7 +142,8 @@ const createStyles = (theme: AppTheme) =>
     actions: {
       flexDirection: "row",
       alignItems: "center",
-      gap: 14,
+      gap: 5,
+      marginLeft: 20,
     },
     fullscreenContainer: {
       flex: 1,

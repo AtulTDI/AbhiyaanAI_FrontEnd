@@ -5,10 +5,11 @@ import { useTheme } from "react-native-paper";
 import { Voter } from "../types/Voter";
 import CommonTable from "./CommonTable";
 import { AppTheme } from "../theme";
+import dayjs from "dayjs";
 
 type Props = {
   voters: Voter[];
-  onEdit: (item: any) => void;
+  onEdit: (item: Voter) => void;
   onDelete: (id: string) => void;
 };
 
@@ -20,14 +21,28 @@ export default function VoterTable({ voters, onEdit, onDelete }: Props) {
     {
       label: "Name",
       key: "fullName",
-      flex: 2,
+      flex: 1,
     },
-    { label: "Mobile", key: "phoneNumber", flex: 2 },
+    {
+      label: "Mobile",
+      key: "phoneNumber",
+      flex: 0.3,
+    },
+    {
+      label: "Created At",
+      key: "createdAt",
+      flex: 0.4,
+      render: (item) =>
+        item.createdAt
+          ? dayjs(item.createdAt).format("DD MMM YYYY, hh:mm A")
+          : "-",
+    },
     {
       label: "Actions",
       key: "actions",
-      flex: 1,
-      render: (item) => (
+      flex: 0.9,
+      smallColumn: true,
+      render: (item: Voter) => (
         <View style={styles.actions}>
           <Ionicons
             name="pencil"
@@ -62,6 +77,7 @@ const styles = StyleSheet.create({
   actions: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 14,
+    gap: 5,
+    marginLeft: 10,
   },
 });

@@ -8,6 +8,7 @@ import {
   useTheme,
 } from "react-native-paper";
 import { useFocusEffect } from "@react-navigation/native";
+import dayjs from "dayjs";
 import { Feather, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { Voter } from "../types/Voter";
 import { extractErrorMessage } from "../utils/common";
@@ -91,7 +92,14 @@ export default function ProcessingVideosScreen() {
     switch (status) {
       case "InQueue":
         return (
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 6,
+              marginLeft: 8,
+            }}
+          >
             <MaterialCommunityIcons
               name="clock-time-four-outline"
               size={16}
@@ -104,7 +112,14 @@ export default function ProcessingVideosScreen() {
         );
       case "Pending":
         return (
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 6,
+              marginLeft: 8,
+            }}
+          >
             <MaterialCommunityIcons
               name="clock-outline"
               size={16}
@@ -117,7 +132,7 @@ export default function ProcessingVideosScreen() {
         );
       case "Processing":
         return (
-          <View style={{ justifyContent: "flex-start" }}>
+          <View style={{ justifyContent: "flex-start", marginLeft: 8 }}>
             <ProgressBar
               indeterminate
               color={colors.primary}
@@ -127,20 +142,33 @@ export default function ProcessingVideosScreen() {
         );
       case "Completed":
         return (
-          <IconButton
-            style={{ margin: 0 }}
-            icon={() => (
-              <Feather
-                name="check-circle"
-                size={20}
-                color={colors.greenAccent}
-              />
-            )}
-          />
+          <View
+            style={{
+              marginLeft: 8,
+            }}
+          >
+            <IconButton
+              style={{ margin: 0 }}
+              icon={() => (
+                <Feather
+                  name="check-circle"
+                  size={20}
+                  color={colors.greenAccent}
+                />
+              )}
+            />
+          </View>
         );
       case "Failed":
         return (
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 6,
+              marginLeft: 8,
+            }}
+          >
             <Ionicons
               name="close-circle-outline"
               size={18}
@@ -157,12 +185,21 @@ export default function ProcessingVideosScreen() {
   };
 
   const columns = [
-    { label: "Name", key: "fullName", flex: 2 },
-    { key: "phoneNumber", label: "Mobile", flex: 2 },
+    { label: "Name", key: "fullName", flex: 0.8 },
+    { key: "phoneNumber", label: "Mobile", flex: 0.4 },
+    {
+      label: "Created At",
+      key: "createdAt",
+      flex: 0.4,
+      render: (item) =>
+        item.createdAt
+          ? dayjs(item.createdAt).format("DD MMM YYYY, hh:mm A")
+          : "-",
+    },
     {
       key: "actions",
       label: "Status",
-      flex: 0.8,
+      flex: 1,
       render: (item: Voter) =>
         getStatusView(voterStatuses[item.id] || "InQueue", item),
     },
