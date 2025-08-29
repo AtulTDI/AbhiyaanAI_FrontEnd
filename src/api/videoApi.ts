@@ -1,4 +1,5 @@
 import { Platform } from "react-native";
+import * as FileSystem from "expo-file-system";
 import axios from "./axiosInstance";
 import { GenerateVideo, GetVideoLink, SampleVideo, Video } from "../types/Video";
 import { getVideoThumbnail } from "../utils/getVideoThumbnail";
@@ -130,25 +131,21 @@ export const generateSampleVideo = async (payload: SampleVideo) => {
   const mimeType = payload.file.mimeType || "video/mp4";
 
   if (payload.file.uri?.startsWith("file://")) {
-    // Mobile
     formData.append("file", {
       uri: payload.file.uri,
       name: fileName,
       type: mimeType,
     } as any);
   } else if (payload.file.uri?.startsWith("data:")) {
-    // Base64
-    const base64 = payload.file.uri.split(",")[1];
-    const blob = await base64ToBlob(base64, mimeType);
-
     if (Platform.OS === "web") {
+      const blob = await (await fetch(payload.file.uri)).blob();
       const file = new File([blob], fileName, { type: mimeType });
       formData.append("file", file);
     } else {
-      const fs = require("expo-file-system");
-      const tempPath = `${fs.cacheDirectory}${fileName}`;
-      await fs.writeAsStringAsync(tempPath, base64, {
-        encoding: fs.EncodingType.Base64,
+      const base64 = payload.file.uri.split(",")[1];
+      const tempPath = `${FileSystem.cacheDirectory}${fileName}`;
+      await FileSystem.writeAsStringAsync(tempPath, base64, {
+        encoding: FileSystem.EncodingType.Base64,
       });
 
       formData.append("file", {
@@ -165,13 +162,17 @@ export const generateSampleVideo = async (payload: SampleVideo) => {
 
   formData.append("RecipientName", payload.recipientName);
 
-  const response = await axios.post(`/CustomizedAIVideo/createsamplevideo`, formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-    useApiPrefix: true,
-    transformRequest: (data) => data,
-  });
+  const response = await axios.post(
+    `/CustomizedAIVideo/createsamplevideo`,
+    formData,
+    {
+      useApiPrefix: true,
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "multipart/form-data", 
+      },
+    }
+  );
 
   return response.data;
 };

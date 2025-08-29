@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { FieldConfig } from "../types";
 import { Application } from "../types/Application";
 import { getSalesAgents } from "../api/salesAgentApi";
@@ -85,20 +86,28 @@ export default function ApplicationForm({
   ];
 
   return (
-    <DynamicForm
-      fields={applicationFields}
-      initialValues={{
-        appName: applicationToEdit?.name || "",
-        videoCount: applicationToEdit ? "0" : "5000",
-        salesAgent: applicationToEdit?.salesAgentId || "",
-        videoGenerationRate: applicationToEdit?.videoGenerationRate || "",
-      }}
-      mode={mode}
-      onSubmit={(data) => onCreate(data as any)}
-      onCancel={() => {
-        setApplicationToEdit(null);
-        setShowAddApplicationView(false);
-      }}
-    />
+    <KeyboardAwareScrollView
+      style={{ flex: 1 }}
+      contentContainerStyle={{ flexGrow: 1, padding: 16 }}
+      enableOnAndroid
+      extraScrollHeight={20}
+      keyboardShouldPersistTaps="handled"
+    >
+      <DynamicForm
+        fields={applicationFields}
+        initialValues={{
+          appName: applicationToEdit?.name || "",
+          videoCount: applicationToEdit ? "0" : "5000",
+          salesAgent: applicationToEdit?.salesAgentId || "",
+          videoGenerationRate: applicationToEdit?.videoGenerationRate || "",
+        }}
+        mode={mode}
+        onSubmit={(data) => onCreate(data as any)}
+        onCancel={() => {
+          setApplicationToEdit(null);
+          setShowAddApplicationView(false);
+        }}
+      />
+    </KeyboardAwareScrollView>
   );
 }

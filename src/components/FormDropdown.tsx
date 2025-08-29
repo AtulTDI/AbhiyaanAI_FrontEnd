@@ -11,6 +11,7 @@ type Props = {
   placeholder?: string;
   value: string;
   options: Option[];
+  disabled?: boolean;
   error?: string;
   onSelect: (val: string) => void;
 };
@@ -20,6 +21,7 @@ export default function FormDropdown({
   placeholder,
   value,
   options,
+  disabled,
   error,
   onSelect,
 }: Props) {
@@ -37,6 +39,7 @@ export default function FormDropdown({
         onSelect={onSelect}
         mode="outlined"
         menuContentStyle={styles.menuContent}
+        disabled={disabled}
         CustomDropdownInput={(props) => (
           <TextInput
             {...props}

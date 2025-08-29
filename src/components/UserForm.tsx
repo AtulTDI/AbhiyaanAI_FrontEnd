@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view"; // ✅ added
 import { FieldConfig, FieldType } from "../types";
 import { User } from "../types/User";
 import { getActiveApplications } from "../api/applicationApi";
@@ -73,19 +74,20 @@ export default function UserForm({
     const fields: FieldConfig[] = [
       { name: "firstName", label: "First Name", type: "text", required: true },
       { name: "lastName", label: "Last Name", type: "text", required: true },
-      { name: "email", label: "Email", type: "email", required: true },
-    ];
-
-    if (mode === "create") {
-      fields.push({
+      {
+        name: "email",
+        label: "Email",
+        type: "email",
+        required: true,
+        disabled: mode === "edit",
+      },
+      {
         name: "password",
         label: "Password",
         type: "password",
         required: true,
-      });
-    }
-
-    fields.push(
+        disabled: mode === "edit",
+      },
       {
         name: "phoneNumber",
         label: "Mobile",
@@ -101,8 +103,9 @@ export default function UserForm({
             ? ["Admin", "Sales Agent"]
             : ["User"],
         required: true,
-      }
-    );
+        disabled: mode === "edit",
+      },
+    ];
 
     const shouldShowApplicationField =
       loggedInUserRole === "SuperAdmin" && formRole === "Admin";
@@ -121,39 +124,47 @@ export default function UserForm({
   };
 
   return (
-    <DynamicForm
-      fields={getUserFields()}
-      initialValues={{
-        firstName: userToEdit?.firstName || "",
-        lastName: userToEdit?.lastName || "",
-        email: userToEdit?.email || "",
-        password: "",
-        applicationId: userToEdit?.applicationId || "",
-        phoneNumber: userToEdit?.phoneNumber || "",
-        role: userToEdit?.role || "User",
-      }}
-      mode={mode}
-      onChange={(field, value) => {
-        if (field.name === "role") {
-          setFormRole(value);
-        }
-      }}
-      onSubmit={(data) =>
-        onCreate(
-          data as {
-            firstName: string;
-            lastName: string;
-            email: string;
-            password?: string;
-            phoneNumber: string;
-            role: string;
+    <KeyboardAwareScrollView
+      style={{ flex: 1 }}
+      contentContainerStyle={{ flexGrow: 1, padding: 16 }}
+      enableOnAndroid
+      extraScrollHeight={20}
+      keyboardShouldPersistTaps="handled"
+    >
+      <DynamicForm
+        fields={getUserFields()}
+        initialValues={{
+          firstName: userToEdit?.firstName || "",
+          lastName: userToEdit?.lastName || "",
+          email: userToEdit?.email || "",
+          password: mode === "edit" ? "******" : "",
+          applicationId: userToEdit?.applicationId || "",
+          phoneNumber: userToEdit?.phoneNumber || "",
+          role: userToEdit?.role || "User",
+        }}
+        mode={mode}
+        onChange={(field, value) => {
+          if (field.name === "role") {
+            setFormRole(value);
           }
-        )
-      }
-      onCancel={() => {
-        setUserToEdit(null);
-        setShowAddUserView(false);
-      }}
-    />
+        }}
+        onSubmit={(data) =>
+          onCreate(
+            data as {
+              firstName: string;
+              lastName: string;
+              email: string;
+              password?: string;
+              phoneNumber: string;
+              role: string;
+            }
+          )
+        }
+        onCancel={() => {
+          setUserToEdit(null);
+          setShowAddUserView(false);
+        }}
+      />
+    </KeyboardAwareScrollView>
   );
 }

@@ -9,6 +9,7 @@ import {
   useTheme,
   HelperText,
 } from "react-native-paper";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { navigate } from "../navigation/NavigationService";
 import { login } from "../api/authApi";
 import { saveAuthData } from "../utils/storage";
@@ -94,113 +95,129 @@ export default function SignIn({
   };
 
   return (
-    <Card
-      style={[
-        styles.card,
-        {
-          backgroundColor: colors.white,
-          shadowColor: colors.shadow,
-        },
-      ]}
+    <KeyboardAwareScrollView
+      contentContainerStyle={{
+        flexGrow: 1,
+        justifyContent: "center",
+      }}
+      extraScrollHeight={50}
+      enableOnAndroid={true}
+      keyboardShouldPersistTaps="handled"
     >
-      <Card.Content>
-        <Text
-          variant="titleLarge"
-          style={[styles.title, { color: colors.onSurface }]}
-        >
-          Sign In
-        </Text>
+      <Card
+        style={[
+          styles.card,
+          {
+            backgroundColor: colors.white,
+            shadowColor: colors.shadow,
+          },
+        ]}
+      >
+        <Card.Content>
+          <Text
+            variant="titleLarge"
+            style={[styles.title, { color: colors.onSurface }]}
+          >
+            Sign In
+          </Text>
 
-        {authError ? <Text style={styles.error}>{authError}</Text> : null}
+          {authError ? <Text style={styles.error}>{authError}</Text> : null}
 
-        {/* Email Label */}
-        <Text style={[styles.inputLabel, { color: colors.placeholder }]}>
-          Email
-        </Text>
-        <TextInput
-          value={email}
-          onChangeText={(text) => {
-            setEmail(text);
-            if (text.trim()) setEmailError("");
-          }}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          autoComplete="email"
-          textContentType="emailAddress"
-          name="email"
-          importantForAutofill="yes"
-          style={[styles.input, { backgroundColor: colors.white }]}
-          mode="outlined"
-          outlineColor={colors.inputBorder}
-          activeOutlineColor={colors.primary}
-          error={!!emailError}
-        />
-        <HelperText
-          type="error"
-          visible={!!emailError}
-          style={{ paddingLeft: 0 }}
-        >
-          {emailError}
-        </HelperText>
-
-        {/* Password Label */}
-        <Text style={[styles.inputLabel, styles.passwordLabel, { color: colors.placeholder }]}>
-          Password
-        </Text>
-        <View style={styles.passwordWrapper}>
+          {/* Email Label */}
+          <Text style={[styles.inputLabel, { color: colors.placeholder }]}>
+            Email
+          </Text>
           <TextInput
-            value={password}
+            value={email}
             onChangeText={(text) => {
-              setPassword(text);
-              if (text.trim()) setPasswordError("");
+              setEmail(text);
+              if (text.trim()) setEmailError("");
             }}
-            secureTextEntry={!showPassword}
-            autoComplete="current-password"
-            textContentType="password"
-            name="password"
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoComplete="email"
+            textContentType="emailAddress"
+            name="email"
             importantForAutofill="yes"
-            style={[styles.passwordInput, { backgroundColor: colors.white }]}
+            style={[styles.input, { backgroundColor: colors.white }]}
             mode="outlined"
-            outlineColor={colors.outline}
+            outlineColor={colors.inputBorder}
             activeOutlineColor={colors.primary}
-            error={!!passwordError}
+            error={!!emailError}
           />
-          <IconButton
-            icon={showPassword ? "eye" : "eye-off"}
-            onPress={() => setShowPassword(!showPassword)}
-            style={styles.eyeIcon}
-          />
-        </View>
-        <HelperText
-          type="error"
-          visible={!!passwordError}
-          style={{ paddingLeft: 0 }}
-        >
-          {passwordError}
-        </HelperText>
+          <HelperText
+            type="error"
+            visible={!!emailError}
+            style={{ paddingLeft: 0 }}
+          >
+            {emailError}
+          </HelperText>
 
-        <Button
-          onPress={() => setShowSignInPage(false)}
-          mode="text"
-          contentStyle={{ justifyContent: "flex-end" }}
-          style={styles.forgot}
-          labelStyle={{ color: colors.primary }}
-        >
-          Forgot Password?
-        </Button>
+          {/* Password Label */}
+          <Text
+            style={[
+              styles.inputLabel,
+              styles.passwordLabel,
+              { color: colors.placeholder },
+            ]}
+          >
+            Password
+          </Text>
+          <View style={styles.passwordWrapper}>
+            <TextInput
+              value={password}
+              onChangeText={(text) => {
+                setPassword(text);
+                if (text.trim()) setPasswordError("");
+              }}
+              secureTextEntry={!showPassword}
+              autoComplete="current-password"
+              textContentType="password"
+              name="password"
+              importantForAutofill="yes"
+              style={[styles.passwordInput, { backgroundColor: colors.white }]}
+              mode="outlined"
+              outlineColor={colors.outline}
+              activeOutlineColor={colors.primary}
+              error={!!passwordError}
+            />
+            <IconButton
+              icon={showPassword ? "eye" : "eye-off"}
+              onPress={() => setShowPassword(!showPassword)}
+              style={styles.eyeIcon}
+            />
+          </View>
+          <HelperText
+            type="error"
+            visible={!!passwordError}
+            style={{ paddingLeft: 0 }}
+          >
+            {passwordError}
+          </HelperText>
 
-        <Button
-          mode="contained"
-          onPress={handleSignIn}
-          loading={isLoading}
-          disabled={isLoading}
-          style={[styles.button, { backgroundColor: colors.primary }]}
-          contentStyle={{ paddingVertical: 8 }}
-        >
-          {isLoading ? "Signing In..." : "Sign In"}
-        </Button>
-      </Card.Content>
-    </Card>
+          <Button
+            onPress={() => setShowSignInPage(false)}
+            mode="text"
+            contentStyle={{ justifyContent: "flex-end" }}
+            style={styles.forgot}
+            labelStyle={{ color: colors.primary }}
+          >
+            Forgot Password?
+          </Button>
+
+          <Button
+            mode="contained"
+            onPress={handleSignIn}
+            loading={isLoading}
+            disabled={isLoading}
+            style={[styles.button, { backgroundColor: colors.primary }]}
+            contentStyle={{ paddingVertical: 8 }}
+          >
+            {isLoading ? "Signing In..." : "Sign In"}
+          </Button>
+        </Card.Content>
+      </Card>
+    </KeyboardAwareScrollView>
   );
 }
 
@@ -224,7 +241,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   inputLabel: {
-    fontSize: 15,         
+    fontSize: 15,
     marginBottom: 4,
     fontWeight: "500",
   },
@@ -232,14 +249,14 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   passwordLabel: {
-    marginTop: 5
+    marginTop: 5,
   },
   passwordWrapper: {
     position: "relative",
     justifyContent: "center",
   },
   passwordInput: {
-    fontSize: 15
+    fontSize: 15,
   },
   eyeIcon: {
     position: "absolute",

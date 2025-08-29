@@ -65,7 +65,7 @@ export default function DynamicForm({
         errors[field.name] = "Invalid email format";
       }
 
-      if (field.type === "password" && value) {
+      if (field.type === "password" && mode === "create" && value) {
         const errorsList: string[] = [];
 
         if (value.length < 6) {
@@ -202,7 +202,10 @@ export default function DynamicForm({
 
   const handleFormSubmit = () => {
     if (validate()) {
-      onSubmit(formData);
+      onSubmit({
+        ...formData,
+        password: mode === "edit" ? undefined : formData?.password,
+      });
     }
   };
 
@@ -245,6 +248,7 @@ export default function DynamicForm({
                       : (field.options as { label: string; value: string }[])
                     : []
                 }
+                disabled={field?.disabled}
                 error={formErrors[field.name]}
                 onSelect={(val) => handleChange(field, val)}
               />
@@ -293,6 +297,7 @@ export default function DynamicForm({
                       : "none"
                   }
                   multiline={field.type === "textarea"}
+                  disabled={field?.disabled}
                   numberOfLines={field.type === "textarea" ? 4 : 1}
                   style={[
                     { backgroundColor: theme.colors.white },

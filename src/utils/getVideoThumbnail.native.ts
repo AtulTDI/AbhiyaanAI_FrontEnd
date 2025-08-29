@@ -1,25 +1,28 @@
 import { Thumbnail } from "../types";
 import { getFileNameWithoutExtension } from "./common";
-import { FFmpegKit } from 'ffmpeg-kit-react-native';
-import RNFS from 'react-native-fs';
+import { Video } from "react-native-compressor";
 
 export const getMobileThumbnail = async (
   videoUri: string,
   fileName: string
 ): Promise<Thumbnail | null> => {
   try {
-    const outputPath = `${RNFS.CachesDirectoryPath}/${getFileNameWithoutExtension(fileName)}_thumbnail.jpg`;
-    const command = `-i "${videoUri}" -ss 00:00:01.000 -vframes 1 "${outputPath}"`;
+    const thumbnailUri = await Video.getThumbnail(videoUri);
 
-    await FFmpegKit.execute(command);
+    if (!thumbnailUri) {
+      console.warn("⚠️ Could not generate thumbnail.");
+      return null;
+    }
+
+    const baseName = getFileNameWithoutExtension(fileName);
 
     return {
-      uri: `file://${outputPath}`,
-      mimeType: "image/png",
-      name: `${getFileNameWithoutExtension(fileName)}_thumbnail.png`,
+      uri: thumbnailUri.startsWith("file://") ? thumbnailUri : `file://${thumbnailUri}`,
+      mimeType: "image/jpeg",
+      name: `${baseName}_thumbnail.jpg`,
     };
   } catch (error) {
-    console.error("❌ FFmpeg thumbnail error", error);
+    console.error("❌ Thumbnail generation error:", error);
     return null;
   }
 };

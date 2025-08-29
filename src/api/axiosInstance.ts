@@ -39,8 +39,11 @@ const createAxiosInstance = (baseURL: string): AxiosInstance => {
       }
 
       const method = config.method?.toUpperCase();
+
       if (["POST", "PUT", "PATCH"].includes(method)) {
-        config.headers["Content-Type"] = "application/json";
+        if (!(config.data && config.data.constructor && config.data.constructor.name === "FormData")) {
+          config.headers["Content-Type"] = "application/json";
+        }
       }
 
       config.headers["Accept"] = "application/json";

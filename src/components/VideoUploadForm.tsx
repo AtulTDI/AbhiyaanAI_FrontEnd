@@ -1,12 +1,5 @@
 import { useState } from "react";
-import {
-  View,
-  StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  Dimensions,
-} from "react-native";
+import { View, StyleSheet, Platform, Dimensions } from "react-native";
 import {
   Text,
   TextInput,
@@ -37,6 +30,7 @@ import {
 } from "../services/signalrService";
 import { AppTheme } from "../theme";
 import { extractErrorMessage } from "../utils/common";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 interface FormData {
   campaign: string;
@@ -133,7 +127,7 @@ export default function VideoUploadForm({
 
     const payload = {
       campaign: formData.campaign.trim(),
-      file: formData.file
+      file: formData.file,
     };
 
     onAddVideo(payload);
@@ -161,195 +155,189 @@ export default function VideoUploadForm({
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-      style={{ flex: 1 }}
-    >
-      <View style={{ flex: 1 }}>
-        <ScrollView
-          contentContainerStyle={{
-            padding: 16,
-            paddingBottom: 160,
-          }}
-        >
-          {/* Campaign */}
-          <TextInput
-            label="Campaign"
-            value={formData.campaign}
-            onChangeText={(text) =>
-              setFormData((prev) => ({
-                ...prev,
-                campaign: text,
-                errors: { ...prev.errors, campaign: undefined },
-              }))
-            }
+    <View style={{ flex: 1 }}>
+      <KeyboardAwareScrollView
+        contentContainerStyle={{ padding: 16, paddingBottom: 160 }}
+        enableOnAndroid
+        extraScrollHeight={Platform.OS === "ios" ? 100 : 120}
+        keyboardShouldPersistTaps="handled"
+      >
+        {/* Campaign */}
+        <TextInput
+          label="Campaign"
+          value={formData.campaign}
+          onChangeText={(text) =>
+            setFormData((prev) => ({
+              ...prev,
+              campaign: text,
+              errors: { ...prev.errors, campaign: undefined },
+            }))
+          }
+          mode="outlined"
+          style={styles.input}
+          error={!!formData.errors.campaign}
+        />
+        <HelperText type="error" visible={!!formData.errors.campaign}>
+          {formData.errors.campaign}
+        </HelperText>
+
+        <View style={styles.downloadButton}>
+          <Button
             mode="outlined"
-            style={styles.input}
-            error={!!formData.errors.campaign}
-          />
-          <HelperText type="error" visible={!!formData.errors.campaign}>
-            {formData.errors.campaign}
-          </HelperText>
-
-          <View style={styles.downloadButton}>
-            <Button
-              mode="outlined"
-              icon="download"
-              onPress={downloadSampleVideo}
-              style={{
-                borderRadius: 8,
-                borderColor: colors.primary,
-              }}
-            >
-              Download Sample Video
-            </Button>
-          </View>
-
-          {/* Upload Base Video */}
-          <CommonUpload
-            label="Upload Base Video"
-            fileType="video"
-            onUpload={(file) =>
-              setFormData((prev) => ({
-                ...prev,
-                file,
-                errors: { ...prev.errors, file: undefined },
-              }))
-            }
-            onCancel={() => {
-              setFormData((prev) => ({ ...prev, file: null }));
-              setGeneratedUri(null);
+            icon="download"
+            onPress={downloadSampleVideo}
+            style={{
+              borderRadius: 8,
+              borderColor: colors.primary,
             }}
-          />
-          {formData.errors.file && (
-            <HelperText type="error" visible>
-              {formData.errors.file}
-            </HelperText>
-          )}
-
-          {/* Optional Generate Section */}
-          {formData.file && (
-            <>
-              <Divider style={{ marginVertical: 20 }} />
-
-              <List.Accordion
-                title="Generate Sample Video (Optional)"
-                expanded={expanded}
-                onPress={() => setExpanded(!expanded)}
-                titleStyle={{
-                  fontWeight: "bold",
-                  color: theme.colors.primary,
-                }}
-              >
-                <View style={{ marginTop: 16 }}>
-                  <TextInput
-                    label="Name"
-                    value={name}
-                    onChangeText={setName}
-                    mode="outlined"
-                    style={styles.input}
-                  />
-                  <View style={{ width: "100%", alignItems: "flex-end" }}>
-                    <Button
-                      mode="contained"
-                      onPress={handleGenerateSampleVideo}
-                      loading={loading}
-                      disabled={loading}
-                      style={{ marginTop: 8, borderRadius: 5 }}
-                    >
-                      {loading ? "Generating video..." : "Generate & Preview"}
-                    </Button>
-                  </View>
-
-                  {generatedUri && (
-                    <View style={{ marginTop: 16 }}>
-                      <Text
-                        variant="titleMedium"
-                        style={{ marginBottom: 8, color: colors.primary }}
-                      >
-                        Preview:
-                      </Text>
-
-                      <ExpoVideo
-                        source={{ uri: generatedUri }}
-                        useNativeControls
-                        resizeMode={ResizeMode.CONTAIN}
-                        shouldPlay
-                        onLoad={(status) => {
-                          if ("isLoaded" in status && status.isLoaded) {
-                            const { naturalSize } =
-                              status as AVPlaybackStatusSuccess & {
-                                naturalSize: {
-                                  width: number;
-                                  height: number;
-                                  orientation?: "portrait" | "landscape";
-                                };
-                              };
-
-                            if (naturalSize?.width && naturalSize?.height) {
-                              const isPortrait =
-                                naturalSize.orientation === "portrait" &&
-                                naturalSize.height > naturalSize.width;
-
-                              setVideoDimensions({
-                                width: isPortrait
-                                  ? naturalSize.height
-                                  : naturalSize.width,
-                                height: isPortrait
-                                  ? naturalSize.width
-                                  : naturalSize.height,
-                              });
-                            }
-                          }
-                        }}
-                        style={{
-                          width: "100%",
-                          height:
-                            Platform.OS !== "web" &&
-                            videoDimensions.width &&
-                            videoDimensions.height
-                              ? (videoDimensions.height /
-                                  videoDimensions.width) *
-                                screenWidth
-                              : undefined,
-                          maxWidth: 800,
-                          aspectRatio: 16 / 9,
-                          backgroundColor: colors.black,
-                          borderRadius: 8,
-                          marginTop: 12,
-                          alignSelf: "center",
-                        }}
-                      />
-                    </View>
-                  )}
-                </View>
-              </List.Accordion>
-            </>
-          )}
-        </ScrollView>
-
-        {/* Footer */}
-        <View style={styles.footer}>
-          <Button
-            mode="outlined"
-            onPress={() => setShowAddView(false)}
-            style={styles.actionButton}
           >
-            Cancel
-          </Button>
-          <Button
-            mode="contained"
-            icon="upload"
-            onPress={handleSubmit}
-            disabled={!formData.file || uploading}
-            loading={uploading}
-            style={styles.actionButton}
-          >
-            Upload Base Video
+            Download Sample Video
           </Button>
         </View>
+
+        {/* Upload Base Video */}
+        <CommonUpload
+          label="Upload Base Video"
+          fileType="video"
+          onUpload={(file) =>
+            setFormData((prev) => ({
+              ...prev,
+              file,
+              errors: { ...prev.errors, file: undefined },
+            }))
+          }
+          onCancel={() => {
+            setFormData((prev) => ({ ...prev, file: null }));
+            setGeneratedUri(null);
+          }}
+        />
+        {formData.errors.file && (
+          <HelperText type="error" visible>
+            {formData.errors.file}
+          </HelperText>
+        )}
+
+        {/* Optional Generate Section */}
+        {formData.file && (
+          <>
+            <Divider style={{ marginVertical: 20 }} />
+
+            <List.Accordion
+              title="Generate Sample Video (Optional)"
+              expanded={expanded}
+              onPress={() => setExpanded(!expanded)}
+              titleStyle={{
+                fontWeight: "bold",
+                color: theme.colors.primary,
+              }}
+            >
+              <View style={{ marginTop: 16 }}>
+                <TextInput
+                  label="Name"
+                  value={name}
+                  onChangeText={setName}
+                  mode="outlined"
+                  style={styles.input}
+                />
+                <View style={{ width: "100%", alignItems: "flex-end" }}>
+                  <Button
+                    mode="contained"
+                    onPress={handleGenerateSampleVideo}
+                    loading={loading}
+                    disabled={loading}
+                    style={{ marginTop: 8, borderRadius: 5 }}
+                  >
+                    {loading ? "Generating video..." : "Generate & Preview"}
+                  </Button>
+                </View>
+
+                {generatedUri && (
+                  <View style={{ marginTop: 16 }}>
+                    <Text
+                      variant="titleMedium"
+                      style={{ marginBottom: 8, color: colors.primary }}
+                    >
+                      Preview:
+                    </Text>
+
+                    <ExpoVideo
+                      source={{ uri: generatedUri }}
+                      useNativeControls
+                      resizeMode={ResizeMode.CONTAIN}
+                      shouldPlay
+                      onLoad={(status) => {
+                        if ("isLoaded" in status && status.isLoaded) {
+                          const { naturalSize } =
+                            status as AVPlaybackStatusSuccess & {
+                              naturalSize: {
+                                width: number;
+                                height: number;
+                                orientation?: "portrait" | "landscape";
+                              };
+                            };
+
+                          if (naturalSize?.width && naturalSize?.height) {
+                            const isPortrait =
+                              naturalSize.orientation === "portrait" &&
+                              naturalSize.height > naturalSize.width;
+
+                            setVideoDimensions({
+                              width: isPortrait
+                                ? naturalSize.height
+                                : naturalSize.width,
+                              height: isPortrait
+                                ? naturalSize.width
+                                : naturalSize.height,
+                            });
+                          }
+                        }
+                      }}
+                      style={{
+                        width: "100%",
+                        height:
+                          Platform.OS !== "web" &&
+                          videoDimensions.width &&
+                          videoDimensions.height
+                            ? (videoDimensions.height / videoDimensions.width) *
+                              screenWidth
+                            : undefined,
+                        maxWidth: 800,
+                        aspectRatio: 16 / 9,
+                        backgroundColor: colors.black,
+                        borderRadius: 8,
+                        marginTop: 12,
+                        alignSelf: "center",
+                      }}
+                    />
+                  </View>
+                )}
+              </View>
+            </List.Accordion>
+          </>
+        )}
+      </KeyboardAwareScrollView>
+
+      {/* Footer */}
+      <View style={styles.footer}>
+        <Button
+          mode="outlined"
+          onPress={() => setShowAddView(false)}
+          style={styles.actionButton}
+        >
+          Cancel
+        </Button>
+        <Button
+          mode="contained"
+          icon="upload"
+          onPress={handleSubmit}
+          disabled={!formData.file || uploading}
+          loading={uploading}
+          style={styles.actionButton}
+        >
+          Upload Base Video
+        </Button>
       </View>
-    </KeyboardAvoidingView>
+    </View>
   );
 }
 

@@ -41,6 +41,7 @@ export type FieldConfig = {
   }[],
   required?: boolean;
   options?: string[] | { label: string; value: string | number }[];
+  disabled?: boolean;
 };
 
 export type Thumbnail = {
