@@ -10,13 +10,19 @@ import { base64ToBlob } from "../utils/common";
  * Get paginated users with optional search
  */
 export const getUsers = () =>
-  axios.get<User>("/Users", { useApiPrefix: true });
+  axios.get<User>("/Users/get-users", { useApiPrefix: true });
 
 /**
- * Get user by ID
+ * Get paginated distributors with optional search
  */
-export const getUserById = (id: string) =>
-  axios.get<User>(`/users/${id}`, { useApiPrefix: true });
+export const getDistributors = () =>
+  axios.get<User>("/Users/get-distributors", { useApiPrefix: true });
+
+/**
+ * Get paginated customer admins with optional search
+ */
+export const getCustomerAdmins = () =>
+  axios.get<User>("/Users/get-admins", { useApiPrefix: true });
 
 /**
  * Add new user
@@ -24,6 +30,17 @@ export const getUserById = (id: string) =>
 export const createUser = (payload: CreateUserPayload) =>
   axios.post<User>("/Users/register", payload, { useApiPrefix: true });
 
+/**
+ * Edit user by ID
+ */
+export const editUserById = (id: string, payload: EditUserPayload) =>
+  axios.put<User>(`/Users/${id}`, payload, { useApiPrefix: true });
+
+/**
+ * Delete user by ID
+ */
+export const deleteUserById = (id: string) =>
+  axios.delete(`/Users/delete/${id}`, { useApiPrefix: true });
 
 /**
  * Add multiple users
@@ -63,14 +80,4 @@ export const uploadUsers = async (file: any) => {
   return response.data;
 };
 
-/**
- * Edit user by ID
- */
-export const editUserById = (id: string, payload: EditUserPayload) =>
-  axios.put<User>(`/Users/${id}`, payload, { useApiPrefix: true });
 
-/**
- * Delete user by ID
- */
-export const deleteUserById = (id: string) =>
-  axios.delete(`/Users/delete/${id}`, { useApiPrefix: true });

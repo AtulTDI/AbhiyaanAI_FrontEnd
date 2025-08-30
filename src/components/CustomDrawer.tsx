@@ -1,3 +1,4 @@
+import React from "react";
 import { View, Image, StyleSheet, SafeAreaView, Platform } from "react-native";
 import {
   DrawerContentScrollView,

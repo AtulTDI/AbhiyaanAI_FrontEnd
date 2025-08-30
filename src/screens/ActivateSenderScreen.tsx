@@ -95,14 +95,14 @@ export default function ActivateSenderScreen() {
       flex: 0.5,
       render: (item) => item.firstName + " " + item.lastName,
     },
-    { label: "Mobile", key: "phoneNumber", flex: 0.3 },
+    { label: "Mobile", key: "phoneNumber", flex: 0.2 },
     { label: "Email", key: "email", flex: 0.4 },
     {
       label: "Created At",
       key: "createdAt",
       flex: 0.4,
       render: (item) => (
-        <Text style={{ marginLeft: 8 }}>
+        <Text>
           {item.createdAt
             ? dayjs(item.createdAt).format("DD MMM YYYY, hh:mm A")
             : "-"}

@@ -1,6 +1,7 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { StyleSheet } from "react-native";
 import { Text, TextInput, Button, Card, useTheme } from "react-native-paper";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { useToast } from "./ToastProvider";
 import { forgotPasswordLink } from "../api/authApi";
 import { extractErrorMessage } from "../utils/common";
@@ -32,54 +33,64 @@ export default function ForgotPassword({
   };
 
   return (
-    <Card
-      style={[
-        styles.card,
-        {
-          backgroundColor: colors.surface,
-          shadowColor: colors.shadow,
-        },
-      ]}
+    <KeyboardAwareScrollView
+      contentContainerStyle={{
+        flexGrow: 1,
+        justifyContent: "center",
+      }}
+      extraScrollHeight={50}
+      enableOnAndroid={true}
+      keyboardShouldPersistTaps="handled"
     >
-      <Card.Content>
-        <Text
-          variant="titleLarge"
-          style={[styles.title, { color: colors.onSurface }]}
-        >
-          Forgot Password
-        </Text>
+      <Card
+        style={[
+          styles.card,
+          {
+            backgroundColor: colors.surface,
+            shadowColor: colors.shadow,
+          },
+        ]}
+      >
+        <Card.Content>
+          <Text
+            variant="titleLarge"
+            style={[styles.title, { color: colors.onSurface }]}
+          >
+            Forgot Password
+          </Text>
 
-        <TextInput
-          label="Email"
-          placeholder="Enter your email"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          mode="outlined"
-          style={[styles.input, { backgroundColor: colors.white }]}
-          outlineColor={colors.outline}
-          activeOutlineColor={colors.primary}
-        />
+          <TextInput
+            label="Email"
+            placeholder="Enter your email"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            mode="outlined"
+            style={[styles.input, { backgroundColor: colors.white }]}
+            outlineColor={colors.outline}
+            activeOutlineColor={colors.primary}
+          />
 
-        <Button
-          mode="contained"
-          onPress={handleReset}
-          style={styles.button}
-          contentStyle={{ paddingVertical: 8 }}
-        >
-          Send Reset Link
-        </Button>
+          <Button
+            mode="contained"
+            onPress={handleReset}
+            style={styles.button}
+            contentStyle={{ paddingVertical: 8 }}
+          >
+            Send Reset Link
+          </Button>
 
-        <Button
-          mode="text"
-          onPress={() => setShowSignInPage(true)}
-          labelStyle={{ color: colors.primary }}
-        >
-          ← Back to Login
-        </Button>
-      </Card.Content>
-    </Card>
+          <Button
+            mode="text"
+            onPress={() => setShowSignInPage(true)}
+            labelStyle={{ color: colors.primary }}
+          >
+            ← Back to Login
+          </Button>
+        </Card.Content>
+      </Card>
+    </KeyboardAwareScrollView>
   );
 }
 

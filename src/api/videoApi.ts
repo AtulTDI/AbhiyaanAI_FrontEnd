@@ -34,59 +34,48 @@ export const base64ToBlob = async (base64: string, contentType: string): Promise
 
 export const uploadVideo = async (payload: Video) => {
   const formData = new FormData();
-
-  // --- Upload File ---
   const fileName = payload.file.name || "video.mp4";
   const mimeType = payload.file.mimeType || "video/mp4";
+  let fileUri = payload.file.uri;
 
-  if (payload.file.uri?.startsWith("file://")) {
-    // Mobile (file path)
+  console.log("================URI========", fileUri);
+
+  // --- Check file exists on Mobile ---
+  if (Platform.OS !== "web" && fileUri.startsWith("file://")) {
+    const fileInfo = await FileSystem.getInfoAsync(fileUri);
+    if (!fileInfo.exists) {
+      throw new Error("Video file does not exist at path: " + fileUri);
+    }
+  }
+
+  // --- Append file to FormData ---
+  if (Platform.OS === "web" && payload.file.file instanceof File) {
+    formData.append("file", payload.file.file);
+  } else {
     formData.append("file", {
-      uri: payload.file.uri,
+      uri: fileUri,
       name: fileName,
       type: mimeType,
     } as any);
-  } else if (payload.file.uri?.startsWith("data:")) {
-    // Base64 data
-    const base64 = payload.file.uri.split(",")[1];
-    const blob = await base64ToBlob(base64, mimeType);
-
-    if (Platform.OS === "web") {
-      // Web File from Blob
-      const file = new File([blob], fileName, { type: mimeType });
-      formData.append("file", file);
-    } else {
-      // Native - save to temp file
-      const fs = require("expo-file-system");
-      const tempPath = `${fs.cacheDirectory}${fileName}`;
-      await fs.writeAsStringAsync(tempPath, base64, {
-        encoding: fs.EncodingType.Base64,
-      });
-
-      formData.append("file", {
-        uri: tempPath,
-        name: fileName,
-        type: mimeType,
-      } as any);
-    }
-  } else if (payload.file.file instanceof File) {
-    formData.append("file", payload.file.file);
-  } else {
-    throw new Error("Unsupported file format");
   }
 
-  // --- Generate and Attach Thumbnail ---
-  const thumbnail = await getVideoThumbnail(payload.file.uri, fileName);
-  if (thumbnail) {
-    if (Platform.OS === "web" && thumbnail.file) {
-      formData.append("thumbnail", thumbnail.file);
-    } else {
-      formData.append("thumbnail", {
-        uri: thumbnail.uri,
-        name: thumbnail.name,
-        type: thumbnail.mimeType,
-      } as any);
+  // --- Generate Thumbnail (optional) ---
+  try {
+    const thumbnail = await getVideoThumbnail(fileUri, fileName);
+    if (thumbnail) {
+      if (Platform.OS === "web" && thumbnail.file) {
+        formData.append("thumbnail", thumbnail.file);
+      } else if (thumbnail.uri) {
+        formData.append("thumbnail", {
+          uri: thumbnail.uri,
+          name: thumbnail.name,
+          type: thumbnail.mimeType,
+        } as any);
+      }
     }
+  } catch (err) {
+    console.warn("Thumbnail generation failed:", err);
+    // Continue without thumbnail
   }
 
   // --- Other Form Fields ---
@@ -94,15 +83,14 @@ export const uploadVideo = async (payload: Video) => {
 
   // --- Upload API ---
   const response = await axios.post("/BaseVideos/upload", formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
+    headers: { "Content-Type": "multipart/form-data" },
     useApiPrefix: true,
     transformRequest: (data) => data,
   });
 
   return response.data;
 };
+
 /**
  * Edit video by ID
  */
@@ -169,7 +157,7 @@ export const generateSampleVideo = async (payload: SampleVideo) => {
       useApiPrefix: true,
       headers: {
         Accept: "application/json",
-        "Content-Type": "multipart/form-data", 
+        "Content-Type": "multipart/form-data",
       },
     }
   );

@@ -97,7 +97,6 @@ export default function ProcessingVideosScreen() {
               flexDirection: "row",
               alignItems: "center",
               gap: 6,
-              marginLeft: 8,
             }}
           >
             <MaterialCommunityIcons
@@ -117,7 +116,6 @@ export default function ProcessingVideosScreen() {
               flexDirection: "row",
               alignItems: "center",
               gap: 6,
-              marginLeft: 8,
             }}
           >
             <MaterialCommunityIcons
@@ -142,11 +140,7 @@ export default function ProcessingVideosScreen() {
         );
       case "Completed":
         return (
-          <View
-            style={{
-              marginLeft: 8,
-            }}
-          >
+          <View>
             <IconButton
               style={{ margin: 0 }}
               icon={() => (
@@ -166,7 +160,6 @@ export default function ProcessingVideosScreen() {
               flexDirection: "row",
               alignItems: "center",
               gap: 6,
-              marginLeft: 8,
             }}
           >
             <Ionicons

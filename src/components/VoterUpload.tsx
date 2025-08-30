@@ -1,3 +1,4 @@
+import React from "react";
 import CommonUpload from "./CommonUpload";
 import { uploadVoters } from "../api/voterApi";
 import { extractErrorMessage } from "../utils/common";

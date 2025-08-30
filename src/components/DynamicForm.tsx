@@ -71,27 +71,7 @@ export default function DynamicForm({
         if (value.length < 6) {
           errorsList.push("Passwords must be at least 6 characters");
         }
-
-        if (!/[0-9]/.test(value)) {
-          errorsList.push("Passwords must have at least one digit ('0'-'9')");
-        }
-
-        if (!/[a-z]/.test(value)) {
-          errorsList.push(
-            "Passwords must have at least one lowercase character"
-          );
-        }
-
-        if (!/[A-Z]/.test(value)) {
-          errorsList.push(
-            "Passwords must have at least one uppercase character"
-          );
-        }
-
-        if (!/[^a-zA-Z0-9]/.test(value)) {
-          errorsList.push("Passwords must have at least one special character");
-        }
-
+        
         if (errorsList.length > 0) {
           errors[field.name] = errorsList.join("\n");
         }

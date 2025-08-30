@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FieldConfig, FieldType } from "../types";
 import { getActiveApplications } from "../api/applicationApi";
 import DynamicForm from "./DynamicForm";

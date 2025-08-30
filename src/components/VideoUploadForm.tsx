@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { View, StyleSheet, Platform, Dimensions } from "react-native";
 import {
   Text,
@@ -16,6 +16,7 @@ import {
 } from "expo-av";
 import { Asset } from "expo-asset";
 import * as Sharing from "expo-sharing";
+import * as FileSystem from "expo-file-system";
 import { useToast } from "./ToastProvider";
 import * as DocumentPicker from "expo-document-picker";
 import CommonUpload from "./CommonUpload";
@@ -147,7 +148,9 @@ export default function VideoUploadForm({
         link.click();
         document.body.removeChild(link);
       } else {
-        await Sharing.shareAsync(fileUri);
+        const dest = `${FileSystem.cacheDirectory}sample-video.mp4`;
+        await FileSystem.copyAsync({ from: fileUri, to: dest });
+        await Sharing.shareAsync(dest);
       }
     } catch (error) {
       console.error("Error downloading video:", error);
@@ -186,9 +189,10 @@ export default function VideoUploadForm({
             mode="outlined"
             icon="download"
             onPress={downloadSampleVideo}
+            textColor={colors.greenAccent}
             style={{
               borderRadius: 8,
-              borderColor: colors.primary,
+              borderColor: colors.greenAccent,
             }}
           >
             Download Sample Video

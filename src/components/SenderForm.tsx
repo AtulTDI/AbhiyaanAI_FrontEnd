@@ -1,3 +1,4 @@
+import React from "react";
 import { FieldConfig } from "../types";
 import { Sender } from "../types/Sender";
 import DynamicForm from "./DynamicForm";
@@ -10,7 +11,6 @@ type Props = {
     email: string;
     password?: string;
     phoneNumber: string;
-    role: string;
   }) => void;
   senderToEdit: Sender;
   setSenderToEdit: (sender: Sender | null) => void;
@@ -29,31 +29,26 @@ export default function SenderForm({
       { name: "firstName", label: "First Name", type: "text", required: true },
       { name: "lastName", label: "Last Name", type: "text", required: true },
       {
+        name: "email",
+        label: "Email",
+        type: "email",
+        required: true,
+        disabled: mode === "edit",
+      },
+      {
+        name: "password",
+        label: "Password",
+        type: "password",
+        required: true,
+        disabled: mode === "edit",
+      },
+      {
         name: "phoneNumber",
         label: "Mobile",
         type: "number",
         required: true,
       },
     ];
-
-    if (mode === "create") {
-      fields.push(
-        { name: "email", label: "Email", type: "email", required: true },
-        {
-          name: "password",
-          label: "Password",
-          type: "password",
-          required: true,
-        },
-        {
-          name: "role",
-          label: "Role",
-          type: "dropdown",
-          options: ["Sender"],
-          required: true,
-        }
-      );
-    }
 
     return fields;
   };
@@ -65,9 +60,8 @@ export default function SenderForm({
         firstName: senderToEdit?.firstName || "",
         lastName: senderToEdit?.lastName || "",
         email: senderToEdit?.email || "",
-        password: "",
+        password: mode === "edit" ? "******" : "",
         phoneNumber: senderToEdit?.phoneNumber || "",
-        role: senderToEdit?.role || "Sender",
       }}
       mode={mode}
       onSubmit={(data) =>
@@ -78,7 +72,6 @@ export default function SenderForm({
             email: string;
             password?: string;
             phoneNumber: string;
-            role: string;
           }
         )
       }

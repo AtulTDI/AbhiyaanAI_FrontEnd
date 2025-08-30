@@ -7,6 +7,7 @@ import {
   createApplication,
   editApplicationById,
   getApplications,
+  toggleApplication,
 } from "../api/applicationApi";
 import {
   Application,
@@ -65,7 +66,7 @@ export default function AddApplicationScreen() {
       await editApplicationById(applicationToEdit.id, {
         ...data,
         name: data?.appName,
-        isActive: applicationToEdit?.isActive
+        isActive: applicationToEdit?.isActive,
       });
       await fetchApplications();
       setShowAddApplicationView(false);
@@ -86,10 +87,7 @@ export default function AddApplicationScreen() {
 
   const handleToggle = async (item: Application) => {
     try {
-      await editApplicationById(item.id, {
-        ...item,
-        isActive: !item.isActive,
-      });
+      await toggleApplication(item.id, !item.isActive);
       await fetchApplications();
       showToast("Application updated", "success");
     } catch (error: any) {
@@ -107,7 +105,9 @@ export default function AddApplicationScreen() {
           variant="titleLarge"
           style={[styles.heading, { color: theme.colors.primary }]}
         >
-          {showAddApplicationView ? `${applicationToEdit ? "Edit" : "Add"} Application` : "Applications"}
+          {showAddApplicationView
+            ? `${applicationToEdit ? "Edit" : "Add"} Application`
+            : "Applications"}
         </Text>
         {!showAddApplicationView && (
           <Button

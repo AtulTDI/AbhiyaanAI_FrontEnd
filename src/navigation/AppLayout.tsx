@@ -1,3 +1,4 @@
+import React from "react";
 import { useEffect, useState } from "react";
 import { TouchableOpacity, useWindowDimensions, View } from "react-native";
 import { Avatar, Text, useTheme } from "react-native-paper";
@@ -104,12 +105,8 @@ export default function AppLayout() {
             shadowOpacity: 0.1,
             shadowRadius: 3,
             elevation: 3,
-            cursor: "default",
           }}
           activeOpacity={0.8}
-          onPress={() => {
-            // Optional action
-          }}
         >
           <Ionicons
             name="videocam"
@@ -163,28 +160,76 @@ export default function AppLayout() {
       {(role === "Admin" || role === "SuperAdmin") && (
         <>
           {role === "SuperAdmin" && (
-            <Drawer.Screen
-              name="AddApplication"
-              component={AddApplicationScreen}
-              options={{
-                headerShown: true,
-                headerTitle: "",
-                headerRight: headerRightComponent,
-                drawerLabel: (props) => (
-                  <CustomLabel
-                    {...props}
-                    label="Applications"
-                    icon={
-                      <Ionicons
-                        name="apps"
-                        size={20}
-                        color={props.color || colors.onPrimary}
-                      />
-                    }
-                  />
-                ),
-              }}
-            />
+            <>
+              <Drawer.Screen
+                name="AddDistributor"
+                children={() => <AddUserScreen role="Distributor" />}
+                options={{
+                  headerShown: true,
+                  headerTitle: "",
+                  headerRight: headerRightComponent,
+                  drawerLabel: (props) => (
+                    <CustomLabel
+                      {...props}
+                      label="Distributor(s)"
+                      icon={
+                        <Ionicons
+                          name="people-outline"
+                          size={20}
+                          color={props.color || colors.onPrimary}
+                        />
+                      }
+                    />
+                  ),
+                }}
+              />
+
+              <Drawer.Screen
+                name="AddApplication"
+                component={AddApplicationScreen}
+                options={{
+                  headerShown: true,
+                  headerTitle: "",
+                  headerRight: headerRightComponent,
+                  drawerLabel: (props) => (
+                    <CustomLabel
+                      {...props}
+                      label="Application(s)"
+                      icon={
+                        <Ionicons
+                          name="apps"
+                          size={20}
+                          color={props.color || colors.onPrimary}
+                        />
+                      }
+                    />
+                  ),
+                }}
+              />
+
+              <Drawer.Screen
+                name="AddAdmin"
+                children={() => <AddUserScreen role="Admin" />}
+                options={{
+                  headerShown: true,
+                  headerTitle: "",
+                  headerRight: headerRightComponent,
+                  drawerLabel: (props) => (
+                    <CustomLabel
+                      {...props}
+                      label="Customer Admin(s)"
+                      icon={
+                        <Ionicons
+                          name="people-outline"
+                          size={20}
+                          color={props.color || colors.onPrimary}
+                        />
+                      }
+                    />
+                  ),
+                }}
+              />
+            </>
           )}
 
           {/* {role === "SuperAdmin" && (
@@ -212,28 +257,30 @@ export default function AppLayout() {
             />
           )} */}
 
-          <Drawer.Screen
-            name="AddUser"
-            component={AddUserScreen}
-            options={{
-              headerShown: true,
-              headerTitle: "",
-              headerRight: headerRightComponent,
-              drawerLabel: (props) => (
-                <CustomLabel
-                  {...props}
-                  label="Users"
-                  icon={
-                    <Ionicons
-                      name="people-outline"
-                      size={20}
-                      color={props.color || colors.onPrimary}
-                    />
-                  }
-                />
-              ),
-            }}
-          />
+          {role === "Admin" && (
+            <Drawer.Screen
+              name="AddUser"
+              component={AddUserScreen}
+              options={{
+                headerShown: true,
+                headerTitle: "",
+                headerRight: headerRightComponent,
+                drawerLabel: (props) => (
+                  <CustomLabel
+                    {...props}
+                    label="Users"
+                    icon={
+                      <Ionicons
+                        name="people-outline"
+                        size={20}
+                        color={props.color || colors.onPrimary}
+                      />
+                    }
+                  />
+                ),
+              }}
+            />
+          )}
 
           {/* {role === "Admin" && (
             <Drawer.Screen
@@ -431,29 +478,29 @@ export default function AppLayout() {
         </>
       )}
 
-      {role === "Sender" && (  
-          <Drawer.Screen
-            name="Generated"
-            component={GeneratedVideoScreen}
-            options={{
-              headerShown: true,
-              headerTitle: "",
-              headerRight: headerRightComponent,
-              drawerLabel: (props) => (
-                <CustomLabel
-                  {...props}
-                  label="Generated Video(s)"
-                  icon={
-                    <Ionicons
-                      name="film-outline"
-                      size={20}
-                      color={props.color || colors.onPrimary}
-                    />
-                  }
-                />
-              ),
-            }}
-          />
+      {role === "Sender" && (
+        <Drawer.Screen
+          name="Generated"
+          component={GeneratedVideoScreen}
+          options={{
+            headerShown: true,
+            headerTitle: "",
+            headerRight: headerRightComponent,
+            drawerLabel: (props) => (
+              <CustomLabel
+                {...props}
+                label="Generated Video(s)"
+                icon={
+                  <Ionicons
+                    name="film-outline"
+                    size={20}
+                    color={props.color || colors.onPrimary}
+                  />
+                }
+              />
+            ),
+          }}
+        />
       )}
     </Drawer.Navigator>
   );

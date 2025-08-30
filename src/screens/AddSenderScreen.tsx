@@ -1,12 +1,7 @@
 import React, { useCallback, useState } from "react";
-import {
-  View,
-  StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-} from "react-native";
+import { View, StyleSheet, ScrollView } from "react-native";
 import { Text, useTheme, Button } from "react-native-paper";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { useFocusEffect } from "@react-navigation/native";
 import { Sender } from "../types/Sender";
 import SenderForm from "../components/SenderForm";
@@ -57,11 +52,10 @@ export default function AddSenderScreen() {
     lastName: string;
     email: string;
     phoneNumber: string;
-    role: string;
     password: string;
   }) => {
     try {
-      await createSender(senderData);
+      await createSender({ ...senderData, role: "Sender" });
       await fetchSenders();
       setShowAddSenderView(false);
       setSenderToEdit(null);
@@ -75,10 +69,13 @@ export default function AddSenderScreen() {
     firstName: string;
     lastName: string;
     email: string;
-    role: string;
   }) => {
     try {
-      await editSenderById(senderToEdit.id, senderData);
+      await editSenderById(senderToEdit.id, {
+        ...senderData,
+        password: undefined,
+        role: "Sender",
+      });
       await fetchSenders();
       setShowAddSenderView(false);
       setSenderToEdit(null);
@@ -146,9 +143,13 @@ export default function AddSenderScreen() {
         </View>
 
         {showAddSenderView ? (
-          <KeyboardAvoidingView
-            behavior={Platform.OS === "ios" ? "padding" : undefined}
-            style={{ flex: 1 }}
+          <KeyboardAwareScrollView
+            contentContainerStyle={{
+              flexGrow: 1,
+            }}
+            extraScrollHeight={50}
+            enableOnAndroid={true}
+            keyboardShouldPersistTaps="handled"
           >
             <SenderForm
               mode={senderToEdit ? "edit" : "create"}
@@ -157,7 +158,7 @@ export default function AddSenderScreen() {
               setSenderToEdit={setSenderToEdit}
               setShowAddSenderView={setShowAddSenderView}
             />
-          </KeyboardAvoidingView>
+          </KeyboardAwareScrollView>
         ) : (
           <SenderTable
             senders={senders}

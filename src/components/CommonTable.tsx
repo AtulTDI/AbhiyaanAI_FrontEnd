@@ -12,6 +12,7 @@ import { Menu, useTheme, ActivityIndicator } from "react-native-paper";
 import { MaterialIcons } from "@expo/vector-icons";
 import { AppTheme } from "../theme";
 import { Table, Row } from "react-native-table-component";
+import { EllipsisCell } from "./EllipsisCell";
 
 type Column<T> = {
   label: string | React.ReactNode;
@@ -52,6 +53,7 @@ export default function CommonTable<T>({
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [menuVisible, setMenuVisible] = useState(false);
   const [wrapperWidth, setWrapperWidth] = useState(0);
+  const [visibleTooltip, setVisibleTooltip] = useState<string | null>(null);
   const isWeb = Platform.OS === "web";
 
   const SCROLL_THRESHOLD = 900;
@@ -97,23 +99,19 @@ export default function CommonTable<T>({
     if (isWeb) {
       return (col.flex / totalFlex) * screenWidth;
     } else {
-      if (col?.smallColumn) {
-        return 80;
-      }
+      if (col?.smallColumn) return 80;
       return Math.max(col.flex * 150, 200);
     }
   });
 
-  const enableHorizontalScroll = wrapperWidth < SCROLL_THRESHOLD || columns.length > 7;
+  const enableHorizontalScroll =
+    wrapperWidth < SCROLL_THRESHOLD || columns.length > 7;
 
   return (
     <View style={styles.container}>
       <View
         style={styles.tableWrapper}
-        onLayout={(event) => {
-          const { width } = event.nativeEvent.layout;
-          setWrapperWidth(width);
-        }}
+        onLayout={(event) => setWrapperWidth(event.nativeEvent.layout.width)}
       >
         {loading ? (
           <View style={styles.loaderContainer}>
@@ -138,25 +136,58 @@ export default function CommonTable<T>({
               showsHorizontalScrollIndicator={true}
             >
               <Table borderStyle={{ borderWidth: 0 }}>
+                {/* Header Row */}
                 <Row
-                  data={tableHead}
+                  data={tableHead.map((head, idx) => (
+                    <View
+                      key={idx}
+                      style={{ width: widthArr[idx], justifyContent: "center" }}
+                    >
+                      <Text
+                        style={[
+                          styles.headerCell,
+                          { color: colors.white, width: "100%" },
+                        ]}
+                        numberOfLines={1}
+                        ellipsizeMode="tail"
+                      >
+                        {head}
+                      </Text>
+                    </View>
+                  ))}
                   style={styles.headerRow}
-                  textStyle={[styles.headerCell, { color: colors.white }]}
                   widthArr={widthArr}
                 />
 
+                {/* Data Rows */}
                 {tableData.map((rowData, rowIndex) => (
                   <Row
                     key={rowIndex}
-                    data={rowData}
-                    style={[styles.dataRow]}
-                    textStyle={styles.dataCell}
+                    data={rowData.map((cell, colIndex) => {
+                      const cellKey = `${rowIndex}-${colIndex}`;
+                      const cellWidth = widthArr[colIndex];
+
+                      return (
+                        <EllipsisCell
+                          key={cellKey}
+                          cellKey={cellKey}
+                          width={cellWidth}
+                          value={cell}
+                          visibleTooltip={visibleTooltip}
+                          setVisibleTooltip={setVisibleTooltip}
+                          textStyle={styles.dataCell}
+                          tableWithSelection={tableWithSelection}
+                        />
+                      );
+                    })}
+                    style={styles.dataRow}
                     widthArr={widthArr}
                   />
                 ))}
               </Table>
             </ScrollView>
 
+            {/* Pagination */}
             <View style={styles.divider} />
             <View style={styles.paginationContainer}>
               <View style={styles.rowsPerPageWrapper}>
@@ -264,13 +295,8 @@ const createStyles = (theme: AppTheme) =>
       borderWidth: 1,
       borderColor: theme.colors.borderGray,
     },
-    scrollArea: {
-      flexGrow: 1,
-    },
-    headerRow: {
-      backgroundColor: theme.colors.primary,
-      height: 46,
-    },
+    scrollArea: { flexGrow: 1 },
+    headerRow: { backgroundColor: theme.colors.primary, height: 46 },
     headerCell: {
       fontWeight: "600",
       fontSize: 14,
@@ -287,12 +313,17 @@ const createStyles = (theme: AppTheme) =>
       textAlign: "left",
       color: theme.colors.onSurface,
       paddingHorizontal: 8,
-      ...(Platform.OS === "web" ? { flexShrink: 1, flexWrap: "nowrap" } : {}),
+      lineHeight: 20,
+      ...(Platform.OS === "web"
+        ? {
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+            wordBreak: "break-word",
+          }
+        : {}),
     },
-    divider: {
-      height: 1,
-      backgroundColor: theme.colors.borderGray,
-    },
+    divider: { height: 1, backgroundColor: theme.colors.borderGray },
     emptyContainer: {
       alignItems: "center",
       justifyContent: "center",
@@ -303,7 +334,6 @@ const createStyles = (theme: AppTheme) =>
       flex: 1,
       justifyContent: "center",
       alignItems: "center",
-      paddingVertical: 40,
     },
     emptyText: {
       fontSize: 15,
@@ -319,11 +349,7 @@ const createStyles = (theme: AppTheme) =>
       paddingVertical: 10,
       backgroundColor: theme.colors.white,
     },
-    rowsPerPageWrapper: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 4,
-    },
+    rowsPerPageWrapper: { flexDirection: "row", alignItems: "center", gap: 4 },
     dropdownTrigger: {
       flexDirection: "row",
       alignItems: "center",
@@ -334,15 +360,8 @@ const createStyles = (theme: AppTheme) =>
       borderRadius: 6,
       marginLeft: 4,
     },
-    pageText: {
-      fontSize: 13,
-      color: theme.colors.darkerGrayText,
-    },
-    pageNavWrapper: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 8,
-    },
+    pageText: { fontSize: 13, color: theme.colors.darkerGrayText },
+    pageNavWrapper: { flexDirection: "row", alignItems: "center", gap: 8 },
     navButton: {
       flexDirection: "row",
       alignItems: "center",

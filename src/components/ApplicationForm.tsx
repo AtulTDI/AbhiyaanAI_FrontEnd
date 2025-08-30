@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { FieldConfig } from "../types";
 import { Application } from "../types/Application";
-import { getSalesAgents } from "../api/salesAgentApi";
+import { getDistributors } from "../api/userApi";
 import DynamicForm from "./DynamicForm";
 
 type Props = {
@@ -25,7 +25,7 @@ export default function ApplicationForm({
   useEffect(() => {
     const fetchSalesAgents = async () => {
       try {
-        const response = await getSalesAgents();
+        const response = await getDistributors();
         const agents = response.data || [];
         const agentsArray = Array.isArray(agents) ? agents : [agents];
 
@@ -58,6 +58,7 @@ export default function ApplicationForm({
         },
       ],
       required: true,
+      disabled: mode === "edit",
     },
     {
       name: "videoCount",
@@ -69,10 +70,11 @@ export default function ApplicationForm({
     },
     {
       name: "salesAgent",
-      label: "Sales Agent",
+      label: "Distributor",
       type: "dropdown",
       options: salesAgentOptions,
       required: true,
+      disabled: mode === "edit",
     },
     {
       name: "videoGenerationRate",

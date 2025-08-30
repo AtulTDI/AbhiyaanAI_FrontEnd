@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { View, StyleSheet } from "react-native";
 import {
   Text,
@@ -124,7 +124,7 @@ export default function SignIn({
           {authError ? <Text style={styles.error}>{authError}</Text> : null}
 
           {/* Email Label */}
-          <Text style={[styles.inputLabel, { color: colors.placeholder }]}>
+          <Text style={[styles.inputLabel]}>
             Email
           </Text>
           <TextInput
@@ -158,7 +158,6 @@ export default function SignIn({
             style={[
               styles.inputLabel,
               styles.passwordLabel,
-              { color: colors.placeholder },
             ]}
           >
             Password

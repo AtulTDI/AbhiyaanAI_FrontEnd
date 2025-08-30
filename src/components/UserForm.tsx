@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view"; // ✅ added
+import React, { useEffect, useState } from "react";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { FieldConfig, FieldType } from "../types";
 import { User } from "../types/User";
 import { getActiveApplications } from "../api/applicationApi";
@@ -7,6 +7,7 @@ import { getAuthData } from "../utils/storage";
 import DynamicForm from "./DynamicForm";
 
 type Props = {
+  role: string;
   mode: "create" | "edit";
   onCreate: (data: {
     firstName: string;
@@ -22,6 +23,7 @@ type Props = {
 };
 
 export default function UserForm({
+  role,
   mode,
   onCreate,
   userToEdit,
@@ -65,7 +67,7 @@ export default function UserForm({
       }
     };
 
-    if (loggedInUserRole === "SuperAdmin") {
+    if (loggedInUserRole === "SuperAdmin" && role === "Admin") {
       fetchApplications();
     }
   }, [loggedInUserRole]);
@@ -94,21 +96,10 @@ export default function UserForm({
         type: "number",
         required: true,
       },
-      {
-        name: "role",
-        label: "Role",
-        type: "dropdown",
-        options:
-          loggedInUserRole === "SuperAdmin"
-            ? ["Admin", "Sales Agent"]
-            : ["User"],
-        required: true,
-        disabled: mode === "edit",
-      },
     ];
 
     const shouldShowApplicationField =
-      loggedInUserRole === "SuperAdmin" && formRole === "Admin";
+      loggedInUserRole === "SuperAdmin" && role === "Admin";
 
     if (shouldShowApplicationField) {
       fields.push({
@@ -140,7 +131,6 @@ export default function UserForm({
           password: mode === "edit" ? "******" : "",
           applicationId: userToEdit?.applicationId || "",
           phoneNumber: userToEdit?.phoneNumber || "",
-          role: userToEdit?.role || "User",
         }}
         mode={mode}
         onChange={(field, value) => {
@@ -148,17 +138,11 @@ export default function UserForm({
             setFormRole(value);
           }
         }}
-        onSubmit={(data) =>
-          onCreate(
-            data as {
-              firstName: string;
-              lastName: string;
-              email: string;
-              password?: string;
-              phoneNumber: string;
-              role: string;
-            }
-          )
+        onSubmit={(data: any) =>
+          onCreate({
+            ...data,
+            role: role ? role : "User",
+          })
         }
         onCancel={() => {
           setUserToEdit(null);

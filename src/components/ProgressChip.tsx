@@ -1,3 +1,4 @@
+import React from "react";
 import { Chip } from "react-native-paper";
 import { View } from "react-native";
 import { Feather } from "@expo/vector-icons";

@@ -30,6 +30,13 @@ export const createApplication = (payload: CreateApplicationPayload) =>
 export const editApplicationById = (id: string, payload: EditApplicationPayload) =>
   axios.put<EditApplicationPayload>(`/Application/${id}`, payload, { useApiPrefix: true });
 
+
+/**
+ * Toggle application as active/inactive
+ */
+export const toggleApplication = (id: string, activeStatus: boolean) =>
+  axios.put(`/Application/update-status?id=${id}&isActive=${activeStatus}`, {}, { useApiPrefix: true });
+
 /**
  * Delete application by ID
  */

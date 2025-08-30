@@ -39,7 +39,7 @@ export default function VideoTable({
     {
       label: "Uploaded At",
       key: "createdAt",
-      flex: 0.5,
+      flex: 0.4,
       render: (item) => (
         <Text>{dayjs(item.createdAt).format("DD MMM YYYY, hh:mm A")}</Text>
       ),
@@ -69,7 +69,7 @@ export default function VideoTable({
           style={{
             flexDirection: "row",
             alignItems: "center",
-            gap: 10,
+            gap: 5,
             marginLeft: true,
           }}
         >
@@ -83,9 +83,6 @@ export default function VideoTable({
               size={24}
               color={colors.greenAccent}
             />
-            <Text style={{ fontSize: 12, color: colors.darkerGrayText }}>
-              Play
-            </Text>
           </TouchableOpacity>
 
           {/* Delete */}
@@ -98,9 +95,6 @@ export default function VideoTable({
               size={24}
               color={colors.criticalError}
             />
-            <Text style={{ fontSize: 12, color: colors.darkGrayText }}>
-              Delete
-            </Text>
           </TouchableOpacity>
         </View>
       ),
@@ -157,7 +151,6 @@ const createStyles = (theme: AppTheme) =>
     actions: {
       flexDirection: "row",
       alignItems: "center",
-      gap: 14,
     },
     fullscreenContainer: {
       flex: 1,

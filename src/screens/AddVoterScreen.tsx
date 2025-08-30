@@ -15,6 +15,7 @@ import {
   TabBarItem,
 } from "react-native-tab-view";
 import { Asset } from "expo-asset";
+import * as FileSystem from "expo-file-system";
 import { Voter } from "../types/Voter";
 import * as Sharing from "expo-sharing";
 import VoterForm from "../components/VoterForm";
@@ -139,7 +140,6 @@ export default function AddVoterScreen() {
         require("../assets/sample-voter-upload.xlsx")
       );
       await asset.downloadAsync();
-
       const fileUri = asset.localUri || asset.uri;
 
       if (Platform.OS === "web") {
@@ -150,7 +150,9 @@ export default function AddVoterScreen() {
         link.click();
         document.body.removeChild(link);
       } else {
-        await Sharing.shareAsync(fileUri);
+        const dest = `${FileSystem.cacheDirectory}sample-voter-upload.xlsx`;
+        await FileSystem.copyAsync({ from: fileUri, to: dest });
+        await Sharing.shareAsync(dest);
       }
     } catch (error) {
       console.error("Error sharing/downloading Excel:", error);
@@ -184,7 +186,8 @@ export default function AddVoterScreen() {
                 mode="outlined"
                 icon="download"
                 onPress={downloadSampleExcel}
-                style={{ borderRadius: 8, borderColor: colors.primary }}
+                textColor={colors.greenAccent}
+                style={{ borderRadius: 8, borderColor: colors.greenAccent }}
               >
                 Download Sample
               </Button>

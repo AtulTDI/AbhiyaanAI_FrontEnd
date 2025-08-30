@@ -8,30 +8,37 @@ import CommonTable from "./CommonTable";
 import { AppTheme } from "../theme";
 
 type Props = {
+  role: string;
   users: User[];
   onEdit: (item: any) => void;
   onDelete: (id: string) => void;
+  getHeaderTitle: () => string;
 };
 
-export default function UserTable({ users, onEdit, onDelete }: Props) {
+export default function UserTable({
+  role,
+  users,
+  onEdit,
+  onDelete,
+  getHeaderTitle,
+}: Props) {
   const theme = useTheme<AppTheme>();
   const { colors } = theme;
   const columns = [
     {
       label: "Name",
       key: "fullName",
-      flex: 0.4,
+      flex: role === "Admin" ? 0.4 : 0.5,
       render: (item) => item.firstName + " " + item.lastName,
     },
-    { label: "Mobile", key: "phoneNumber", flex: 0.3 },
-    { label: "Email", key: "email", flex: 0.4 },
-    { label: "Role", key: "role", flex: 0.2 },
+    { label: "Mobile", key: "phoneNumber", flex: 0.2 },
+    { label: "Email", key: "email", flex: role === "Admin" ? 0.3 : 0.5 },
     {
       label: "Created At",
       key: "createdAt",
       flex: 0.4,
       render: (item) => (
-        <Text style={{ marginLeft: 8 }}>
+        <Text>
           {item.createdAt
             ? dayjs(item.createdAt).format("DD MMM YYYY, hh:mm A")
             : "-"}
@@ -62,6 +69,14 @@ export default function UserTable({ users, onEdit, onDelete }: Props) {
     },
   ];
 
+  if (role === "Admin") {
+    columns.splice(3, 0, {
+      label: "Application",
+      key: "applicationName",
+      flex: 0.4,
+    });
+  }
+
   return (
     <CommonTable
       data={users}
@@ -73,7 +88,7 @@ export default function UserTable({ users, onEdit, onDelete }: Props) {
           color={colors.disabledText}
         />
       }
-      emptyText="No users found"
+      emptyText={`No ${getHeaderTitle().toLowerCase()} found`}
     />
   );
 }
@@ -83,6 +98,5 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 5,
-    marginLeft: 8,
   },
 });

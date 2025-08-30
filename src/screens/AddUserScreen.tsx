@@ -6,7 +6,7 @@ import {
   Platform,
   ScrollView,
 } from "react-native";
-import { Text, useTheme, Surface, Button } from "react-native-paper";
+import { Text, useTheme, Button } from "react-native-paper";
 import { useFocusEffect } from "@react-navigation/native";
 import { User } from "../types/User";
 import UserForm from "../components/UserForm";
@@ -17,14 +17,15 @@ import {
   createUser,
   deleteUserById,
   editUserById,
+  getCustomerAdmins,
+  getDistributors,
   getUsers,
 } from "../api/userApi";
-import { createSalesAgent } from "../api/salesAgentApi";
 import { extractErrorMessage } from "../utils/common";
 import { getAuthData } from "../utils/storage";
 import { AppTheme } from "../theme";
 
-export default function AddUserScreen() {
+export default function AddUserScreen({ role }) {
   const theme = useTheme<AppTheme>();
   const styles = createStyles(theme);
   const { showToast } = useToast();
@@ -37,12 +38,23 @@ export default function AddUserScreen() {
 
   const fetchUsers = useCallback(async () => {
     try {
-      const response = await getUsers();
+      let response;
+
+      if (role === "Distributor") {
+        response = await getDistributors();
+      } else if (role === "Admin") {
+        response = await getCustomerAdmins();
+      } else {
+        response = await getUsers();
+      }
       setUsers(
         response?.data && Array.isArray(response.data) ? response.data : []
       );
     } catch (error: any) {
-      showToast(extractErrorMessage(error, "Failed to load users"), "error");
+      showToast(
+        extractErrorMessage(error, `Failed to load ${getHeaderTitle()}`),
+        "error"
+      );
     }
   }, []);
 
@@ -54,32 +66,28 @@ export default function AddUserScreen() {
     }, [fetchUsers])
   );
 
-  const addUser = async (userData: {
-    firstName: string;
-    lastName: string;
-    email: string;
-    phoneNumber: string;
-    role: string;
-    password: string;
-    applicationId?: string;
-  }) => {
+  const addUser = async (userData: any) => {
     try {
       const { applicationId: loggedInUserApplicationId } = await getAuthData();
 
-      userData?.role === "Sales Agent"
-        ? await createSalesAgent(userData)
-        : await createUser({
-            ...userData,
-            applicationId: userData?.applicationId
-              ? userData?.applicationId
-              : loggedInUserApplicationId,
-          });
+      await createUser({
+        ...userData,
+        applicationId: userData?.applicationId
+          ? userData?.applicationId
+          : loggedInUserApplicationId,
+      });
       await fetchUsers();
       setShowAddUserView(false);
       setUserToEdit(null);
-      showToast("User registered successfully!", "success");
+      showToast(`${getRoleLabel()} registered successfully!`, "success");
     } catch (error: any) {
-      showToast(extractErrorMessage(error, "Failed to create user"), "error");
+      showToast(
+        extractErrorMessage(
+          error,
+          `Failed to create ${getRoleLabel().toLowerCase()}`
+        ),
+        "error"
+      );
     }
   };
 
@@ -96,9 +104,15 @@ export default function AddUserScreen() {
       await fetchUsers();
       setShowAddUserView(false);
       setUserToEdit(null);
-      showToast("User updated successfully!", "success");
+      showToast(`${getRoleLabel()} updated successfully!`, "success");
     } catch (error: any) {
-      showToast(extractErrorMessage(error, "Failed to update user"), "error");
+      showToast(
+        extractErrorMessage(
+          error,
+          `Failed to update ${getRoleLabel().toLowerCase()}`
+        ),
+        "error"
+      );
     }
   };
 
@@ -117,13 +131,41 @@ export default function AddUserScreen() {
       try {
         await deleteUserById(selectedUserId);
         await fetchUsers();
-        showToast("User deleted successfully!", "success");
+        showToast(`${getRoleLabel()} deleted successfully!`, "success");
       } catch (error: any) {
-        showToast(extractErrorMessage(error, "Failed to delete user"), "error");
+        showToast(
+          extractErrorMessage(
+            error,
+            `Failed to delete ${getRoleLabel().toLowerCase()}`
+          ),
+          "error"
+        );
       }
       setSelectedUserId(null);
       setDeleteDialogVisible(false);
     }
+  };
+
+  const getRoleLabel = () =>
+    role === "Distributor"
+      ? "Distributor"
+      : role === "Admin"
+      ? "Customer Admin"
+      : "User";
+
+  const getHeaderTitle = () => {
+    const roleLabel =
+      role === "Distributor"
+        ? "Distributor"
+        : role === "Admin"
+        ? "Customer Admin"
+        : "User";
+
+    if (showAddUserView) {
+      return `${userToEdit ? "Edit" : "Add"} ${roleLabel}`;
+    }
+
+    return `${roleLabel}s`;
   };
 
   return (
@@ -134,9 +176,7 @@ export default function AddUserScreen() {
             variant="titleLarge"
             style={[styles.heading, { color: theme.colors.primary }]}
           >
-            {showAddUserView
-              ? `${userToEdit ? "Edit" : "Add"} User`
-              : "Users"}
+            {getHeaderTitle()}
           </Text>
           {!showAddUserView && (
             <Button
@@ -151,7 +191,7 @@ export default function AddUserScreen() {
               buttonColor={theme.colors.primary}
               style={{ borderRadius: 5 }}
             >
-              Add User
+              Add {getRoleLabel()}
             </Button>
           )}
         </View>
@@ -162,6 +202,7 @@ export default function AddUserScreen() {
             style={{ flex: 1 }}
           >
             <UserForm
+              role={role}
               mode={userToEdit ? "edit" : "create"}
               onCreate={userToEdit ? editUser : addUser}
               userToEdit={userToEdit}
@@ -171,17 +212,19 @@ export default function AddUserScreen() {
           </KeyboardAvoidingView>
         ) : (
           <UserTable
+            role={role}
             users={users}
             onEdit={handleEdit}
             onDelete={handleDeleteRequest}
+            getHeaderTitle={getHeaderTitle}
           />
         )}
       </ScrollView>
 
       <DeleteConfirmationDialog
         visible={deleteDialogVisible}
-        title="Delete User"
-        message="Are you sure you want to delete this user?"
+        title={`Delete ${getRoleLabel()}`}
+        message={`Are you sure you want to delete this ${getRoleLabel().toLowerCase()} ?`}
         onCancel={() => setDeleteDialogVisible(false)}
         onConfirm={confirmDeleteUser}
       />

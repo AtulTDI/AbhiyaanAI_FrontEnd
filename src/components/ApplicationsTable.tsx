@@ -33,7 +33,6 @@ export default function ApplicationsTable({
       flex: 0.8,
       render: (item: Application) => (
         <Text
-          style={{ marginLeft: 8 }}
         >{`${item.remainingVideoCount} / ${item.totalVideoCount}`}</Text>
       ),
     },
@@ -43,7 +42,7 @@ export default function ApplicationsTable({
       flex: 0.8,
     },
     {
-      label: "Sales Agent",
+      label: "Distributor",
       key: "salesAgentName",
       flex: 1,
     },
@@ -57,7 +56,7 @@ export default function ApplicationsTable({
       key: "createdAt",
       flex: 1,
       render: (item: Application) => (
-        <Text style={{ marginLeft: 8 }}>
+        <Text>
           {dayjs(item.createdAt).format("DD MMM YYYY, hh:mm A")}
         </Text>
       ),
@@ -124,6 +123,5 @@ const styles = StyleSheet.create({
   statusToggle: {
     flexDirection: "row",
     alignItems: "center",
-    marginLeft: 8,
   },
 });
