@@ -2,16 +2,21 @@ import { Platform } from "react-native";
 import { Thumbnail } from "../types";
 import { getFileNameWithoutExtension } from "./common";
 
-export const getVideoThumbnail = async (videoUri: string, fileName: string): Promise<Thumbnail | null> => {
+export const getVideoThumbnail = async (
+  videoUri: string,
+  fileName: string
+): Promise<Thumbnail | null> => {
   if (Platform.OS === "web") {
-    return await getWebThumbnail(videoUri, fileName);
+    return getWebThumbnail(videoUri, fileName);
   } else {
-    const { getMobileThumbnail } = await import("./getVideoThumbnail.native");
-    return await getMobileThumbnail(videoUri, fileName);
+    return getMobileThumbnail(videoUri, fileName);
   }
 };
 
-const getWebThumbnail = async (videoUri: string, fileName: string): Promise<Thumbnail | null> => {
+const getWebThumbnail = async (
+  videoUri: string,
+  fileName: string
+): Promise<Thumbnail | null> => {
   return new Promise((resolve, reject) => {
     try {
       const video = document.createElement("video");
@@ -33,9 +38,7 @@ const getWebThumbnail = async (videoUri: string, fileName: string): Promise<Thum
         canvas.toBlob((blob) => {
           if (!blob) return reject("Failed to create blob");
 
-          const file = new File([blob], "thumbnail.jpg", {
-            type: blob.type,
-          });
+          const file = new File([blob], "thumbnail.jpg", { type: blob.type });
 
           resolve({
             uri: URL.createObjectURL(blob),
@@ -51,4 +54,31 @@ const getWebThumbnail = async (videoUri: string, fileName: string): Promise<Thum
       reject(error);
     }
   });
+};
+
+const getMobileThumbnail = async (
+  videoUri: string,
+  fileName: string
+): Promise<Thumbnail | null> => {
+  try {
+    const { createThumbnail } = await import("react-native-create-thumbnail");
+
+    const response = await createThumbnail({
+      url: videoUri,
+      timeStamp: 1000,
+    });
+
+    const baseName = getFileNameWithoutExtension(fileName);
+
+    return {
+      uri: response.path.startsWith("file://")
+        ? response.path
+        : `file://${response.path}`,
+      mimeType: "image/jpeg",
+      name: `${baseName}_thumbnail.jpg`,
+    };
+  } catch (error) {
+    console.error("❌ Thumbnail generation error:", error);
+    return null;
+  }
 };
