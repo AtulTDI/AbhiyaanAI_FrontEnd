@@ -1,32 +1,34 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { View, StyleSheet, Platform } from "react-native";
+import { View, StyleSheet, ActivityIndicator } from "react-native";
 import { IconButton, Surface, Text, useTheme } from "react-native-paper";
 import dayjs from "dayjs";
 import { useFocusEffect } from "@react-navigation/native";
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
-import * as Linking from "expo-linking";
 import CommonTable from "../components/CommonTable";
 import { Voter } from "../types/Voter";
 import { extractErrorMessage } from "../utils/common";
 import { useToast } from "../components/ToastProvider";
 import FormDropdown from "../components/FormDropdown";
 import { getVotersWithCompletedVideoId } from "../api/voterApi";
-import { getCustomisedVideoLink, getVideos } from "../api/videoApi";
+import { getVideos } from "../api/videoApi";
 import { AppTheme } from "../theme";
+import { sendVideo } from "../api/whatsappApi";
 
 export default function GeneratedVideoScreen() {
   const theme = useTheme<AppTheme>();
   const styles = createStyles(theme);
   const { colors } = theme;
   const { showToast } = useToast();
+
   const [baseVideos, setBaseVideos] = useState<any[]>([]);
   const [selectedVideoId, setSelectedVideoId] = useState(null);
   const [voters, setVoters] = useState<Voter[]>([]);
   const [loading, setLoading] = useState(false);
+  const [sendingId, setSendingId] = useState<string | null>(null);
+  const [sentIds, setSentIds] = useState<Set<string>>(new Set());
 
   const fetchVoters = async () => {
     setLoading(true);
-
     try {
       const response = await getVotersWithCompletedVideoId(selectedVideoId);
       setVoters(
@@ -42,7 +44,6 @@ export default function GeneratedVideoScreen() {
   const fetchVideos = useCallback(async () => {
     try {
       const response = await getVideos();
-
       const videosData =
         response?.data && Array.isArray(response.data) ? response.data : [];
 
@@ -66,11 +67,7 @@ export default function GeneratedVideoScreen() {
           .finally(() => setLoading(false));
       }
     } catch (error: any) {
-      if (error?.response || error?.message) {
-        showToast(extractErrorMessage(error, "Failed to load videos"), "error");
-      } else {
-        console.warn("No response received or unknown error:", error);
-      }
+      showToast(extractErrorMessage(error, "Failed to load videos"), "error");
     }
   }, []);
 
@@ -86,34 +83,19 @@ export default function GeneratedVideoScreen() {
     }
   }, [selectedVideoId]);
 
-  const handleSendVideo = async (whatsappLink: string) => {
+  const handleSendVideo = async (item: Voter) => {
+    setSendingId(item.id);
     try {
-      const canOpen = await Linking.canOpenURL(whatsappLink);
-      if (canOpen) {
-        await Linking.openURL(whatsappLink);
-      } else {
-        showToast("Unable to open WhatsApp", "error");
-      }
-    } catch (error) {
-      showToast("Error sending video", "error");
-    }
-  };
-
-  const handleGetVideoLink = async (item) => {
-    try {
-      const response = await getCustomisedVideoLink({
+      await sendVideo({
         recipientId: item.id,
         baseVideoID: selectedVideoId,
-        platformType: "WhatsApp",
       });
-
-      if (response?.data?.sharableLink) {
-        await handleSendVideo(response.data.sharableLink);
-      } else {
-        showToast("Failed to get video link", "error");
-      }
+      showToast("Video sent successfully", "success");
+      setSentIds((prev) => new Set(prev).add(item.id));
     } catch (error) {
-      showToast("Error sending video link", "error");
+      showToast("Error sending video", "error");
+    } finally {
+      setSendingId(null);
     }
   };
 
@@ -139,6 +121,27 @@ export default function GeneratedVideoScreen() {
       flex: 1,
       smallColumn: true,
       render: (item: Voter) => {
+        if (sentIds.has(item.id)) {
+          return (
+            <Ionicons
+              name="checkmark-circle"
+              size={24}
+              color={colors.success}
+              style={{ marginLeft: 8 }}
+            />
+          );
+        }
+
+        if (sendingId === item.id) {
+          return (
+            <ActivityIndicator
+              size="small"
+              color={colors.primary}
+              style={{ marginLeft: 8 }}
+            />
+          );
+        }
+
         return (
           <View style={{ justifyContent: "flex-start", marginLeft: 8 }}>
             <IconButton
@@ -150,7 +153,7 @@ export default function GeneratedVideoScreen() {
                   color={colors.whatsappGreen}
                 />
               )}
-              onPress={() => handleGetVideoLink(item)}
+              onPress={() => handleSendVideo(item)}
             />
           </View>
         );
@@ -172,12 +175,7 @@ export default function GeneratedVideoScreen() {
           value={selectedVideoId}
           options={
             Array.isArray(baseVideos)
-              ? typeof (baseVideos as unknown[])[0] === "string"
-                ? (baseVideos as string[]).map((opt) => ({
-                    label: opt,
-                    value: opt,
-                  }))
-                : (baseVideos as { label: string; value: string }[])
+              ? (baseVideos as { label: string; value: string }[])
               : []
           }
           onSelect={(val) => setSelectedVideoId(val)}
