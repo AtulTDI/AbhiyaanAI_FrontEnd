@@ -12,11 +12,6 @@ import { base64ToBlob } from "../utils/common";
 export const getUsers = () =>
   axios.get<User>("/Users/get-users", { useApiPrefix: true });
 
-/**
- * Get paginated distributors with optional search
- */
-export const getDistributors = () =>
-  axios.get<User>("/Users/get-distributors", { useApiPrefix: true });
 
 /**
  * Get paginated customer admins with optional search

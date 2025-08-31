@@ -1,14 +1,26 @@
 import axios from "./axiosInstance";
-import { CreateSalesAgentPayload, SalesAgent } from "../types/SalesAgents";
+import { CreateDistributorPayload, Distributor, EditDistributorPayload } from "../types/SalesAgents";
 
 /**
- * Get paginated sales agents with optional search
+ * Get paginated distributor with optional search
  */
-export const getSalesAgents = () =>
-  axios.get<SalesAgent>("/SalesAgent/getsalesAgent", { useApiPrefix: true });
+export const getDistributors = () =>
+  axios.get<Distributor>("/SalesAgent/get-distributors", { useApiPrefix: true });
 
 /**
- * Add new sales agent
+ * Add new distributor
  */
-export const createSalesAgent = (payload: CreateSalesAgentPayload) =>
-  axios.post<SalesAgent>("/SalesAgent/register", payload, { useApiPrefix: true });
+export const createDistributor = (payload: CreateDistributorPayload) =>
+  axios.post<Distributor>("/SalesAgent/register", payload, { useApiPrefix: true });
+
+/**
+ * Update distributor
+ */
+export const editDistributorById = (id: string, payload: EditDistributorPayload) =>
+  axios.put<Distributor>(`/SalesAgent/${id}`, payload, { useApiPrefix: true });
+
+/**
+ * Delete distributor
+ */
+export const deleteDistributor = (id: string) =>
+  axios.delete<Distributor>(`/SalesAgent/delete/${id}`, { useApiPrefix: true });

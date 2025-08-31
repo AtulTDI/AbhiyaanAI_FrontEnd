@@ -34,7 +34,6 @@ export default function WhatsAppRegisterScreen() {
         const base64Qr = JSON.parse(response.data)?.qr;
         if (base64Qr) {
           setQrImageUrl(base64Qr);
-          setRegistered(true);
         } else {
           setQrImageUrl(null);
         }

@@ -1,4 +1,4 @@
-export type SalesAgent = {
+export type Distributor = {
   id?: string;
   firstName: string;
   lastName: string;
@@ -6,11 +6,17 @@ export type SalesAgent = {
   phoneNumber: string;
 }
 
-export type CreateSalesAgentPayload = {
+export type CreateDistributorPayload = {
   firstName: string;
   lastName: string;
   email: string;
   password: string;
   phoneNumber: string;
   role: string;
+}
+
+export type EditDistributorPayload = {
+  firstName: string;
+  lastName: string;
+  phoneNumber: string;
 }

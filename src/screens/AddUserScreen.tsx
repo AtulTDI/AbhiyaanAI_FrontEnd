@@ -18,9 +18,14 @@ import {
   deleteUserById,
   editUserById,
   getCustomerAdmins,
-  getDistributors,
   getUsers,
 } from "../api/userApi";
+import {
+  createDistributor,
+  deleteDistributor,
+  editDistributorById,
+  getDistributors,
+} from "../api/salesAgentApi";
 import { extractErrorMessage } from "../utils/common";
 import { getAuthData } from "../utils/storage";
 import { AppTheme } from "../theme";
@@ -70,12 +75,14 @@ export default function AddUserScreen({ role }) {
     try {
       const { applicationId: loggedInUserApplicationId } = await getAuthData();
 
-      await createUser({
-        ...userData,
-        applicationId: userData?.applicationId
-          ? userData?.applicationId
-          : loggedInUserApplicationId,
-      });
+      userData?.role === "Distributor"
+        ? await createDistributor(userData)
+        : await createUser({
+            ...userData,
+            applicationId: userData?.applicationId
+              ? userData?.applicationId
+              : loggedInUserApplicationId,
+          });
       await fetchUsers();
       setShowAddUserView(false);
       setUserToEdit(null);
@@ -100,7 +107,9 @@ export default function AddUserScreen({ role }) {
     password: string;
   }) => {
     try {
-      await editUserById(userToEdit.id, userData);
+      userData?.role === "Distributor"
+        ? await editDistributorById(userToEdit.id, userData)
+        : await editUserById(userToEdit.id, userData);
       await fetchUsers();
       setShowAddUserView(false);
       setUserToEdit(null);
@@ -129,7 +138,9 @@ export default function AddUserScreen({ role }) {
   const confirmDeleteUser = async () => {
     if (selectedUserId) {
       try {
-        await deleteUserById(selectedUserId);
+        role === "Distributor"
+          ? await deleteDistributor(selectedUserId)
+          : await deleteUserById(selectedUserId);
         await fetchUsers();
         showToast(`${getRoleLabel()} deleted successfully!`, "success");
       } catch (error: any) {
