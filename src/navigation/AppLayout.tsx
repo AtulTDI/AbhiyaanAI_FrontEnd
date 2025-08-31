@@ -502,28 +502,53 @@ export default function AppLayout() {
       )}
 
       {role === "Sender" && (
-        <Drawer.Screen
-          name="Generated"
-          component={GeneratedVideoScreen}
-          options={{
-            headerShown: true,
-            headerTitle: "",
-            headerRight: headerRightComponent,
-            drawerLabel: (props) => (
-              <CustomLabel
-                {...props}
-                label="Generated Video(s)"
-                icon={
-                  <Ionicons
-                    name="film-outline"
-                    size={20}
-                    color={props.color || colors.onPrimary}
-                  />
-                }
-              />
-            ),
-          }}
-        />
+        <>
+          <Drawer.Screen
+            name="Generated"
+            component={GeneratedVideoScreen}
+            options={{
+              headerShown: true,
+              headerTitle: "",
+              headerRight: headerRightComponent,
+              drawerLabel: (props) => (
+                <CustomLabel
+                  {...props}
+                  label="Generated Video(s)"
+                  icon={
+                    <Ionicons
+                      name="film-outline"
+                      size={20}
+                      color={props.color || colors.onPrimary}
+                    />
+                  }
+                />
+              ),
+            }}
+          />
+          
+          <Drawer.Screen
+            name="WhatsAppRegister"
+            component={WhatsAppRegisterScreen}
+            options={{
+              headerShown: true,
+              headerTitle: "",
+              headerRight: headerRightComponent,
+              drawerLabel: (props) => (
+                <CustomLabel
+                  {...props}
+                  label="WhatsApp Registration"
+                  icon={
+                    <Ionicons
+                      name="logo-whatsapp"
+                      size={20}
+                      color={props.color || colors.onPrimary}
+                    />
+                  }
+                />
+              ),
+            }}
+          />
+        </>
       )}
     </Drawer.Navigator>
   );
