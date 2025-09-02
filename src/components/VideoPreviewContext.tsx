@@ -30,15 +30,17 @@ export const VideoPreviewProvider = ({ children }: { children: ReactNode }) => {
       {children}
       <Modal visible={!!uri} animationType="slide" transparent={false}>
         <View style={styles.fullscreenContainer}>
-          {uri && (
-            <ExpoVideo
-              source={{ uri }}
-              useNativeControls
-              resizeMode={ResizeMode.CONTAIN}
-              shouldPlay
-              style={styles.video}
-            />
-          )}
+          <View style={styles.videoContainer}>
+            {uri && (
+              <ExpoVideo
+                source={{ uri }}
+                useNativeControls
+                resizeMode={ResizeMode.CONTAIN}
+                shouldPlay
+                style={styles.video}
+              />
+            )}
+          </View>
           <Button mode="contained" onPress={close} style={styles.closeButton}>
             Close
           </Button>
@@ -53,16 +55,18 @@ const createStyles = (theme: AppTheme) =>
     fullscreenContainer: {
       flex: 1,
       backgroundColor: theme.colors.black,
+    },
+    videoContainer: {
+      flex: 1,
       justifyContent: "center",
       alignItems: "center",
-      paddingTop: 40,
     },
     video: {
       width: "100%",
       height: "100%",
     },
     closeButton: {
-      marginTop: 20,
+      margin: 16,
       alignSelf: "center",
     },
   });

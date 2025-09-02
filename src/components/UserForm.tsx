@@ -108,6 +108,7 @@ export default function UserForm({
         type: "dropdown" as FieldType,
         options: applicationOptions,
         required: true,
+        disabled: mode === "edit",
       });
     }
 

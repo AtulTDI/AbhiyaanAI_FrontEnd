@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { FieldConfig } from "../types";
 import { Application } from "../types/Application";
-import { getDistributors } from "../api/userApi";
+import { getDistributors } from "../api/salesAgentApi";
 import DynamicForm from "./DynamicForm";
 
 type Props = {

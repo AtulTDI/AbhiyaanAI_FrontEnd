@@ -7,12 +7,13 @@ import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import CommonTable from "../components/CommonTable";
 import { Voter } from "../types/Voter";
 import { extractErrorMessage } from "../utils/common";
+import { getAuthData } from "../utils/storage";
 import { useToast } from "../components/ToastProvider";
 import FormDropdown from "../components/FormDropdown";
 import { getVotersWithCompletedVideoId } from "../api/voterApi";
 import { getVideos } from "../api/videoApi";
-import { AppTheme } from "../theme";
 import { sendVideo } from "../api/whatsappApi";
+import { AppTheme } from "../theme";
 
 export default function GeneratedVideoScreen() {
   const theme = useTheme<AppTheme>();
@@ -84,9 +85,12 @@ export default function GeneratedVideoScreen() {
   }, [selectedVideoId]);
 
   const handleSendVideo = async (item: Voter) => {
+    const { userId } = await getAuthData();
+    
     setSendingId(item.id);
     try {
       await sendVideo({
+        userId: userId,
         recipientId: item.id,
         baseVideoID: selectedVideoId,
       });
