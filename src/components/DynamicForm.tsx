@@ -333,13 +333,13 @@ const createStyles = (theme: AppTheme) =>
       marginBottom: 20,
     },
     fieldsRowWrapper: {
-      flexDirection: "row",
+      flexDirection: Platform.OS === "web" ? "row" : "column",
       flexWrap: "wrap",
       justifyContent: "space-between",
     },
     inputWrapper: {
-      width: "48%",
-      marginBottom: 12,
+      width: Platform.OS === "web" ? "48%" : "100%",
+      marginBottom: Platform.OS === "web" ? 8 : 0,
     },
     buttonRow: {
       flexDirection: "row",

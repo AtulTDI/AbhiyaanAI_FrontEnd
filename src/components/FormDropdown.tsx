@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, View, Text } from "react-native";
+import { StyleSheet, View, Text, Platform } from "react-native";
 import { TextInput, useTheme, List } from "react-native-paper";
 import { Dropdown } from "react-native-paper-dropdown";
 import { AppTheme } from "../theme";
@@ -101,7 +101,7 @@ export default function FormDropdown({
 const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
     container: {
-      marginBottom: 12,
+      marginBottom: Platform.OS === "web" ? 12 : 20,
     },
     input: {
       fontSize: 16,

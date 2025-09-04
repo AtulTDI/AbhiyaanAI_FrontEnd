@@ -47,7 +47,7 @@ export default function CommonTable<T>({
   const theme = useTheme<AppTheme>();
   const styles = createStyles(theme);
   const { colors } = theme;
-  const { width: screenWidth } = useWindowDimensions();
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
 
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -106,6 +106,8 @@ export default function CommonTable<T>({
 
   const enableHorizontalScroll =
     wrapperWidth < SCROLL_THRESHOLD || columns.length > 7;
+    
+  const availableHeight = screenHeight * 0.66;
 
   return (
     <View style={styles.container}>
@@ -130,13 +132,15 @@ export default function CommonTable<T>({
           </View>
         ) : (
           <>
+            {/* ✅ Outer horizontal scroll */}
             <ScrollView
+              horizontal={enableHorizontalScroll}
+              nestedScrollEnabled
+              showsHorizontalScrollIndicator={enableHorizontalScroll}
               style={styles.scrollArea}
-              horizontal={!isWeb || enableHorizontalScroll}
-              showsHorizontalScrollIndicator={true}
             >
-              <Table borderStyle={{ borderWidth: 0 }}>
-                {/* Header Row */}
+              <View>
+                {/* ✅ Fixed Header Row */}
                 <Row
                   data={tableHead.map((head, idx) => (
                     <View
@@ -159,118 +163,201 @@ export default function CommonTable<T>({
                   widthArr={widthArr}
                 />
 
-                {/* Data Rows */}
-                {tableData.map((rowData, rowIndex) => (
-                  <Row
-                    key={rowIndex}
-                    data={rowData.map((cell, colIndex) => {
-                      const cellKey = `${rowIndex}-${colIndex}`;
-                      const cellWidth = widthArr[colIndex];
+                {/* ✅ Vertical scroll for data rows */}
+                <ScrollView
+                  style={{ maxHeight: availableHeight }}
+                  nestedScrollEnabled
+                  showsVerticalScrollIndicator
+                >
+                  {tableData.map((rowData, rowIndex) => (
+                    <Row
+                      key={rowIndex}
+                      data={rowData.map((cell, colIndex) => {
+                        const cellKey = `${rowIndex}-${colIndex}`;
+                        const cellWidth = widthArr[colIndex];
 
-                      return (
-                        <EllipsisCell
-                          key={cellKey}
-                          cellKey={cellKey}
-                          width={cellWidth}
-                          value={cell}
-                          visibleTooltip={visibleTooltip}
-                          setVisibleTooltip={setVisibleTooltip}
-                          textStyle={styles.dataCell}
-                          tableWithSelection={tableWithSelection}
-                        />
-                      );
-                    })}
-                    style={styles.dataRow}
-                    widthArr={widthArr}
-                  />
-                ))}
-              </Table>
+                        return (
+                          <EllipsisCell
+                            key={cellKey}
+                            cellKey={cellKey}
+                            width={cellWidth}
+                            value={cell}
+                            visibleTooltip={visibleTooltip}
+                            setVisibleTooltip={setVisibleTooltip}
+                            textStyle={styles.dataCell}
+                            tableWithSelection={tableWithSelection}
+                          />
+                        );
+                      })}
+                      style={styles.dataRow}
+                      widthArr={widthArr}
+                    />
+                  ))}
+                </ScrollView>
+              </View>
             </ScrollView>
 
             {/* Pagination */}
             <View style={styles.divider} />
             <View style={styles.paginationContainer}>
-              <View style={styles.rowsPerPageWrapper}>
-                <Text style={styles.pageText}>Rows per page:</Text>
-                <Menu
-                  visible={menuVisible}
-                  onDismiss={() => setMenuVisible(false)}
-                  anchor={
-                    <TouchableOpacity onPress={() => setMenuVisible(true)}>
-                      <View style={styles.dropdownTrigger}>
+              {isWeb ? (
+                // -------- Web Pagination --------
+                <>
+                  <View style={styles.rowsPerPageWrapper}>
+                    <Text style={styles.pageText}>Rows per page:</Text>
+                    <Menu
+                      visible={menuVisible}
+                      onDismiss={() => setMenuVisible(false)}
+                      anchor={
+                        <TouchableOpacity onPress={() => setMenuVisible(true)}>
+                          <View style={styles.dropdownTrigger}>
+                            <Text style={styles.pageText}>{rowsPerPage}</Text>
+                            <MaterialIcons
+                              name="arrow-drop-down"
+                              size={20}
+                              color={colors.textTertiary}
+                            />
+                          </View>
+                        </TouchableOpacity>
+                      }
+                    >
+                      {ROWS_PER_PAGE_OPTIONS.map((option) => (
+                        <Menu.Item
+                          key={option}
+                          onPress={() => {
+                            setRowsPerPage(option);
+                            setPage(0);
+                            setMenuVisible(false);
+                          }}
+                          title={`${option}`}
+                        />
+                      ))}
+                    </Menu>
+                  </View>
+
+                  <Text style={styles.pageText}>
+                    {startIndex + 1}-{Math.min(endIndex, data.length)} of{" "}
+                    {data.length}
+                  </Text>
+
+                  <View style={styles.pageNavWrapper}>
+                    <TouchableOpacity
+                      style={styles.navButton}
+                      disabled={page === 0}
+                      onPress={() => setPage((prev) => Math.max(prev - 1, 0))}
+                    >
+                      <MaterialIcons
+                        name="chevron-left"
+                        size={22}
+                        color={page === 0 ? colors.borderGray : colors.black}
+                      />
+                      <Text
+                        style={[
+                          styles.pageText,
+                          page === 0 && { color: colors.borderGray },
+                        ]}
+                      >
+                        Previous
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.navButton}
+                      disabled={page >= totalPages - 1}
+                      onPress={() =>
+                        setPage((prev) => Math.min(prev + 1, totalPages - 1))
+                      }
+                    >
+                      <Text
+                        style={[
+                          styles.pageText,
+                          page >= totalPages - 1 && {
+                            color: colors.borderGray,
+                          },
+                        ]}
+                      >
+                        Next
+                      </Text>
+                      <MaterialIcons
+                        name="chevron-right"
+                        size={22}
+                        color={
+                          page >= totalPages - 1
+                            ? colors.borderGray
+                            : colors.black
+                        }
+                      />
+                    </TouchableOpacity>
+                  </View>
+                </>
+              ) : (
+                // -------- Mobile Pagination --------
+                <View style={styles.mobilePaginationWrapper}>
+                  <TouchableOpacity
+                    style={styles.iconButton}
+                    disabled={page === 0}
+                    onPress={() => setPage((prev) => Math.max(prev - 1, 0))}
+                  >
+                    <MaterialIcons
+                      name="chevron-left"
+                      size={24}
+                      color={page === 0 ? colors.borderGray : colors.primary}
+                    />
+                  </TouchableOpacity>
+
+                  <Text style={styles.pageText}>
+                    {startIndex + 1}-{Math.min(endIndex, data.length)} /{" "}
+                    {data.length}
+                  </Text>
+
+                  <TouchableOpacity
+                    style={styles.iconButton}
+                    disabled={page >= totalPages - 1}
+                    onPress={() =>
+                      setPage((prev) => Math.min(prev + 1, totalPages - 1))
+                    }
+                  >
+                    <MaterialIcons
+                      name="chevron-right"
+                      size={24}
+                      color={
+                        page >= totalPages - 1
+                          ? colors.borderGray
+                          : colors.primary
+                      }
+                    />
+                  </TouchableOpacity>
+
+                  <Menu
+                    visible={menuVisible}
+                    onDismiss={() => setMenuVisible(false)}
+                    anchor={
+                      <TouchableOpacity
+                        style={styles.rowsPerPageButton}
+                        onPress={() => setMenuVisible(true)}
+                      >
                         <Text style={styles.pageText}>{rowsPerPage}</Text>
                         <MaterialIcons
                           name="arrow-drop-down"
-                          size={20}
+                          size={18}
                           color={colors.textTertiary}
                         />
-                      </View>
-                    </TouchableOpacity>
-                  }
-                >
-                  {ROWS_PER_PAGE_OPTIONS.map((option) => (
-                    <Menu.Item
-                      key={option}
-                      onPress={() => {
-                        setRowsPerPage(option);
-                        setPage(0);
-                        setMenuVisible(false);
-                      }}
-                      title={`${option}`}
-                    />
-                  ))}
-                </Menu>
-              </View>
-
-              <Text style={styles.pageText}>
-                {startIndex + 1}-{Math.min(endIndex, data.length)} of{" "}
-                {data.length}
-              </Text>
-
-              <View style={styles.pageNavWrapper}>
-                <TouchableOpacity
-                  style={styles.navButton}
-                  disabled={page === 0}
-                  onPress={() => setPage((prev) => Math.max(prev - 1, 0))}
-                >
-                  <MaterialIcons
-                    name="chevron-left"
-                    size={20}
-                    color={page === 0 ? colors.borderGray : colors.black}
-                  />
-                  <Text
-                    style={[
-                      styles.pageText,
-                      page === 0 && { color: colors.borderGray },
-                    ]}
-                  >
-                    Previous
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.navButton}
-                  disabled={page >= totalPages - 1}
-                  onPress={() =>
-                    setPage((prev) => Math.min(prev + 1, totalPages - 1))
-                  }
-                >
-                  <Text
-                    style={[
-                      styles.pageText,
-                      page >= totalPages - 1 && { color: colors.borderGray },
-                    ]}
-                  >
-                    Next
-                  </Text>
-                  <MaterialIcons
-                    name="chevron-right"
-                    size={20}
-                    color={
-                      page >= totalPages - 1 ? colors.borderGray : colors.black
+                      </TouchableOpacity>
                     }
-                  />
-                </TouchableOpacity>
-              </View>
+                  >
+                    {ROWS_PER_PAGE_OPTIONS.map((option) => (
+                      <Menu.Item
+                        key={option}
+                        onPress={() => {
+                          setRowsPerPage(option);
+                          setPage(0);
+                          setMenuVisible(false);
+                        }}
+                        title={`${option}`}
+                      />
+                    ))}
+                  </Menu>
+                </View>
+              )}
             </View>
           </>
         )}
@@ -295,7 +382,7 @@ const createStyles = (theme: AppTheme) =>
       borderWidth: 1,
       borderColor: theme.colors.borderGray,
     },
-    scrollArea: { flexGrow: 1 },
+    scrollArea: { flex: 1 },
     headerRow: { backgroundColor: theme.colors.primary, height: 46 },
     headerCell: {
       fontWeight: "600",
@@ -349,7 +436,25 @@ const createStyles = (theme: AppTheme) =>
       paddingVertical: 10,
       backgroundColor: theme.colors.white,
     },
+    mobilePaginationWrapper: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      flex: 1,
+      paddingHorizontal: 10,
+    },
+    iconButton: { padding: 6 },
     rowsPerPageWrapper: { flexDirection: "row", alignItems: "center", gap: 4 },
+    rowsPerPageButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingHorizontal: 6,
+      paddingVertical: 2,
+      borderWidth: 1,
+      borderColor: theme.colors.borderGray,
+      borderRadius: 6,
+      marginHorizontal: 6,
+    },
     dropdownTrigger: {
       flexDirection: "row",
       alignItems: "center",

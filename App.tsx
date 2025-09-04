@@ -12,6 +12,7 @@ import LoginScreen from "./src/screens/LoginScreen";
 import AppLayout from "./src/navigation/AppLayout";
 import AuthLoadingScreen from "./src/screens/AuthLoadingScreen";
 import ResetPasswordScreen from "./src/screens/ResetPasswordScreen";
+import './App.css';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 

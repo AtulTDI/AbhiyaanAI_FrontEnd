@@ -202,7 +202,10 @@ export default function AddUserScreen({ role }) {
               buttonColor={theme.colors.primary}
               style={{ borderRadius: 5 }}
             >
-              Add {getRoleLabel()}
+              Add{" "}
+              {role === "Admin" && Platform.OS !== "web"
+                ? "Admin"
+                : getRoleLabel()}
             </Button>
           )}
         </View>
