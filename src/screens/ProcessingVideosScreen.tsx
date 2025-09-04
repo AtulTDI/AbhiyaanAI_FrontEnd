@@ -240,5 +240,5 @@ export default function ProcessingVideosScreen() {
 const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
     container: { padding: 16, flex: 1, backgroundColor: theme.colors.white },
-    heading: { fontWeight: "bold", marginBottom: 16 },
+    heading: { fontWeight: "bold" }
   });
