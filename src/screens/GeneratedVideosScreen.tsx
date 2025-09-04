@@ -86,14 +86,17 @@ export default function GeneratedVideoScreen() {
 
   const handleSendVideo = async (item: Voter) => {
     const { userId } = await getAuthData();
-    
+
     setSendingId(item.id);
     try {
-      await sendVideo({
-        userId: userId,
-        recipientId: item.id,
-        baseVideoID: selectedVideoId,
-      });
+      await sendVideo(
+        {
+          userId: userId,
+          recipientId: item.id,
+          baseVideoID: selectedVideoId,
+        },
+        userId
+      );
       showToast("Video sent successfully", "success");
       setSentIds((prev) => new Set(prev).add(item.id));
     } catch (error) {

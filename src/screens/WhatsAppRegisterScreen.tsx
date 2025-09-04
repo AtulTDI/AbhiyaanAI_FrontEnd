@@ -5,6 +5,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useToast } from "../components/ToastProvider";
 import { extractErrorMessage } from "../utils/common";
 import { AppTheme } from "../theme";
+import { getAuthData } from "../utils/storage";
 import {
   generateQr,
   getRegistrationStatus,
@@ -21,16 +22,17 @@ export default function WhatsAppRegisterScreen() {
   const [qrImageUrl, setQrImageUrl] = useState<string | null>(null);
 
   const loadStatus = useCallback(async () => {
+    const { userId } = await getAuthData();
     setLoading(true);
     try {
-      const response = await getRegistrationStatus();
+      const response = await getRegistrationStatus(userId);
       const isRegistered = JSON.parse(response.data)?.isReady;
       setRegistered(isRegistered);
 
       if (isRegistered) {
         setQrImageUrl(null);
       } else {
-        const response = await generateQr();
+        const response = await generateQr(userId);
         const base64Qr = JSON.parse(response.data)?.qr;
         if (base64Qr) {
           setQrImageUrl(base64Qr);
@@ -46,7 +48,8 @@ export default function WhatsAppRegisterScreen() {
   }, []);
 
   const handleLogout = async () => {
-    const response = await whatsAppLogout();
+    const { userId } = await getAuthData();
+    const response = await whatsAppLogout(userId);
 
     if (response.data?.success) {
       showToast("User logged out successfully", "success");
@@ -78,10 +81,6 @@ export default function WhatsAppRegisterScreen() {
         <ActivityIndicator size="large" color={colors.primary} />
       ) : registered ? (
         <View style={styles.centerBox}>
-          {/* <Image
-            source={require("../assets/success.png")}
-            style={styles.successIcon}
-          /> */}
           <Text variant="titleMedium" style={styles.successText}>
             Your device is already registered with WhatsApp 🎉
           </Text>

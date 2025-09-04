@@ -144,7 +144,7 @@ export default function AddVoterScreen() {
 
       if (Platform.OS === "web") {
         const link = document.createElement("a");
-        link.href = asset.uri;
+        link.href = fileUri;
         link.download = "sample-voter-upload.xlsx";
         document.body.appendChild(link);
         link.click();
