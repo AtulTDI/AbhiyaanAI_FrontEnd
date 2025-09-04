@@ -5,7 +5,7 @@ export default ({ config }) => {
     ...config,
     expo: {
       ...config.expo,
-      name: "abhiyaanAI",
+      name: "AbhiyaanAI",
       slug: "abhiyanai",
       version: "1.0.0",
       orientation: "default",

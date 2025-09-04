@@ -142,7 +142,7 @@ export default function CommonUpload({
             buttonColor={colors.primary}
             textColor={colors.onPrimary}
           >
-            Upload File
+            Import Voters
           </Button>
         </View>
       )}

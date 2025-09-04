@@ -133,6 +133,7 @@ export default function VideoTable({
               style={styles.video}
             />
           )}
+
           <Button
             mode="contained"
             onPress={() => setSelectedVideoUri(null)}
@@ -161,10 +162,10 @@ const createStyles = (theme: AppTheme) =>
     },
     video: {
       width: "100%",
-      height: "100%",
+      flex: 1,
     },
     closeButton: {
-      marginTop: 20,
+      margin: 16,
       alignSelf: "center",
     },
   });

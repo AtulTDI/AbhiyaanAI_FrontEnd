@@ -131,7 +131,7 @@ export default function ActivateSenderScreen() {
       <View style={styles.content}>
         <Text
           variant="titleLarge"
-          style={[styles.heading, { color: theme.colors.primary }]}
+          style={[styles.heading, { color: theme.colors.primary, marginBottom: 10 }]}
         >
           Approve Senders
         </Text>
