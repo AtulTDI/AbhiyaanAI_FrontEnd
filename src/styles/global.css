@@ -1,3 +1,4 @@
+/* Chrome, Edge, Safari */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -18,6 +19,7 @@
   scrollbar-color: #c1c1c1 transparent;
 }
 
+/* Your menu overrides */
 div[data-testid="menu-view"],
 div[data-testid="menu-surface"] {
   background-color: #fff !important;

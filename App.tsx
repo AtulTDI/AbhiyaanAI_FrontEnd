@@ -1,3 +1,4 @@
+import { Platform } from "react-native";
 import { Provider as PaperProvider } from "react-native-paper";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -12,9 +13,12 @@ import LoginScreen from "./src/screens/LoginScreen";
 import AppLayout from "./src/navigation/AppLayout";
 import AuthLoadingScreen from "./src/screens/AuthLoadingScreen";
 import ResetPasswordScreen from "./src/screens/ResetPasswordScreen";
-import './App.css';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
+
+if (Platform.OS === "web") {
+  require("./src/styles/global.css");
+}
 
 const linking = {
   prefixes,
