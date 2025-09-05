@@ -136,22 +136,19 @@ export default function AddVoterScreen() {
 
   const downloadSampleExcel = async () => {
     try {
-      const asset = Asset.fromModule(
-        require("../assets/sample-voter-upload.xlsx")
-      );
-      await asset.downloadAsync();
-      const fileUri = asset.localUri || asset.uri;
-
       if (Platform.OS === "web") {
         const link = document.createElement("a");
-        link.href = fileUri;
+        link.href = "/sample-voter-upload.xlsx";
         link.download = "sample-voter-upload.xlsx";
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
       } else {
+        const asset = require("../assets/sample-voter-upload.xlsx");
+        const fileUri = Asset.fromModule(asset).uri;
+
         const dest = `${FileSystem.cacheDirectory}sample-voter-upload.xlsx`;
-        await FileSystem.copyAsync({ from: fileUri, to: dest });
+        await FileSystem.downloadAsync(fileUri, dest);
         await Sharing.shareAsync(dest);
       }
     } catch (error) {
