@@ -1,0 +1,18 @@
+services:
+  prod:
+    build:
+      context: .
+      target: prod
+      args:
+        APP_ENV: production
+        PROD_API: http://13.51.244.195:5000
+        PROD_ALT_API: http://13.51.244.195:5000
+    image: abhiyaan_ai_frontend:latest
+    container_name: abhiyaanai_frontend
+    ports:
+      - "80:80"
+    environment:
+      - APP_ENV=production
+    restart: always
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro

@@ -15,12 +15,17 @@
     "ios:prod": "cross-env APP_ENV=production expo run:ios --clear",
     "ios:build:dev": "cross-env APP_ENV=development expo run:ios --configuration Debug --clear",
     "ios:build:prod": "cross-env APP_ENV=production expo run:ios --configuration Release --clear",
-    "docker:dev": "docker compose up --build dev",
-    "docker:prod": "docker compose up -d --build prod",
-    "docker:down": "docker compose down",
-    "docker:logs:dev": "docker compose logs -f dev",
-    "docker:logs:prod": "docker compose logs -f prod",
-    "docker:build:tar:prod": "node ./scripts/createTarDir.js && docker compose -f docker-compose.yml -p prod build && docker save -o tar/abhiyaan_ai_frontend.tar abhiyaan_ai_frontend"
+    "docker:dev:build": "docker compose -f docker-compose.yml build --no-cache",
+    "docker:dev:up": "docker compose -f docker-compose.yml up -d",
+    "docker:dev:down": "docker compose -f docker-compose.yml down",
+    "docker:dev:logs": "docker compose -f docker-compose.yml logs",
+    "docker:dev:restart": "npm run docker:dev:down && npm run docker:dev:up",
+    "docker:prod:build": "docker compose -f docker-compose.prod.yml build --no-cache",
+    "docker:prod:up": "docker compose -f docker-compose.prod.yml up -d",
+    "docker:prod:down": "docker compose -f docker-compose.prod.yml down",
+    "docker:prod:logs": "docker compose -f docker-compose.prod.yml logs",
+    "docker:prod:restart": "npm run docker:prod:down && npm run docker:prod:up",
+    "docker:build:tar:prod": "node ./scripts/createTarDir.js && docker compose -f docker-compose.prod.yml build --no-cache && docker save -o tar/abhiyaan_ai_frontend.tar abhiyaan_ai_frontend:latest"
   },
   "dependencies": {
     "@expo/metro-runtime": "~5.0.4",
