@@ -25,7 +25,6 @@ coverage/
 
 # Expo & Metro
 packager-info.json
-metro.config.js
 index.js
 
 # Logs
