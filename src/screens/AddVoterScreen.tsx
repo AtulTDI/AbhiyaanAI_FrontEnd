@@ -144,11 +144,18 @@ export default function AddVoterScreen() {
         link.click();
         document.body.removeChild(link);
       } else {
-        const asset = require("../assets/sample-voter-upload.xlsx");
-        const fileUri = Asset.fromModule(asset).uri;
+        const asset = Asset.fromModule(
+          require("../assets/sample-voter-upload.xlsx")
+        );
+        await asset.downloadAsync();
 
         const dest = `${FileSystem.cacheDirectory}sample-voter-upload.xlsx`;
-        await FileSystem.downloadAsync(fileUri, dest);
+
+        await FileSystem.copyAsync({
+          from: asset.localUri || asset.uri,
+          to: dest,
+        });
+
         await Sharing.shareAsync(dest);
       }
     } catch (error) {
