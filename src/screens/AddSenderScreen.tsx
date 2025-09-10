@@ -16,35 +16,36 @@ import {
 } from "../api/senderApi";
 import { extractErrorMessage } from "../utils/common";
 import { AppTheme } from "../theme";
+import { useServerTable } from "../hooks/useServerTable";
 
 export default function AddSenderScreen() {
   const theme = useTheme<AppTheme>();
   const styles = createStyles(theme);
   const { showToast } = useToast();
 
-  const [senders, setSenders] = useState<Sender[]>([]);
   const [showAddSenderView, setShowAddSenderView] = useState(false);
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
   const [selectedSenderId, setSelectedSenderId] = useState<string | null>(null);
   const [senderToEdit, setSenderToEdit] = useState<Sender | null>(null);
 
-  const fetchSenders = useCallback(async () => {
-    try {
-      const response = await getSenders();
-      setSenders(
-        response?.data && Array.isArray(response.data) ? response.data : []
-      );
-    } catch (error: any) {
-      showToast(extractErrorMessage(error, "Failed to load senders"), "error");
-    }
+  const fetchSenders = useCallback(async (page: number, pageSize: number) => {
+    return getSenders(page, pageSize).then((response) => ({
+      items: Array.isArray(response?.data?.items) ? response.data.items : [],
+      totalCount: response?.data?.totalRecords ?? 0,
+    }));
   }, []);
+
+  const table = useServerTable<Sender, string>(fetchSenders, {
+    initialPage: 0,
+    initialRowsPerPage: 10,
+  });
 
   useFocusEffect(
     useCallback(() => {
       setShowAddSenderView(false);
       setSenderToEdit(null);
-      fetchSenders();
-    }, [fetchSenders])
+      table.fetchData(0, 10);
+    }, [])
   );
 
   const addSender = async (senderData: {
@@ -56,7 +57,7 @@ export default function AddSenderScreen() {
   }) => {
     try {
       await createSender({ ...senderData, role: "Sender" });
-      await fetchSenders();
+      await table.fetchData(0, table.rowsPerPage);
       setShowAddSenderView(false);
       setSenderToEdit(null);
       showToast("Sender registered successfully!", "success");
@@ -76,7 +77,7 @@ export default function AddSenderScreen() {
         password: undefined,
         role: "Sender",
       });
-      await fetchSenders();
+      await table.fetchData(table.page, table.rowsPerPage);
       setShowAddSenderView(false);
       setSenderToEdit(null);
       showToast("Sender updated successfully!", "success");
@@ -99,7 +100,7 @@ export default function AddSenderScreen() {
     if (selectedSenderId) {
       try {
         await deleteSenderById(selectedSenderId);
-        await fetchSenders();
+        await table.fetchData(table.page, table.rowsPerPage);
         showToast("Sender deleted successfully!", "success");
       } catch (error: any) {
         showToast(
@@ -161,7 +162,16 @@ export default function AddSenderScreen() {
           </KeyboardAwareScrollView>
         ) : (
           <SenderTable
-            senders={senders}
+            data={table.data}
+            page={table.page}
+            rowsPerPage={table.rowsPerPage}
+            totalCount={table.total}
+            loading={table.loading}
+            onPageChange={table.setPage}
+            onRowsPerPageChange={(size) => {
+              table.setRowsPerPage(size);
+              table.setPage(0);
+            }}
             onEdit={handleEdit}
             onDelete={handleDeleteRequest}
           />

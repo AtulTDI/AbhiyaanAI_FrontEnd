@@ -268,7 +268,7 @@ export default function AppLayout() {
                 drawerLabel: (props) => (
                   <CustomLabel
                     {...props}
-                    label="Users"
+                    label="User(s)"
                     icon={
                       <Ionicons
                         name="people-outline"
@@ -318,7 +318,7 @@ export default function AppLayout() {
                 drawerLabel: (props) => (
                   <CustomLabel
                     {...props}
-                    label="Activate Sender"
+                    label="Activate Sender(s)"
                     icon={
                       <Ionicons
                         name="checkmark-circle-outline"
@@ -371,7 +371,7 @@ export default function AppLayout() {
               drawerLabel: (props) => (
                 <CustomLabel
                   {...props}
-                  label="Voters"
+                  label="Voter(s)"
                   icon={
                     <Ionicons
                       name="people-outline"
@@ -394,7 +394,7 @@ export default function AppLayout() {
               drawerLabel: (props) => (
                 <CustomLabel
                   {...props}
-                  label="Senders"
+                  label="Sender(s)"
                   icon={
                     <Ionicons
                       name="paper-plane-outline"

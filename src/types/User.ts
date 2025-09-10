@@ -11,11 +11,12 @@ export type User = {
   createdBy?: string;
 }
 
-export type GetUsersResponse = {
-  users: User[];
-  total: number;
-  page: number;
+export type GetPaginatedUsers = {
+  items: User[];
+  pageNumber: number;
   pageSize: number;
+  totalPages: number;
+  totalRecords: number;
 }
 
 export type CreateUserPayload = {

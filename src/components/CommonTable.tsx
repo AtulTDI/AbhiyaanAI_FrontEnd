@@ -31,9 +31,14 @@ type Props<T> = {
   emptyIcon?: React.ReactNode;
   loading?: boolean;
   tableWithSelection?: boolean;
+  page?: number;
+  rowsPerPage?: number;
+  totalCount?: number;
+  onPageChange?: (page: number) => void;
+  onRowsPerPageChange?: (size: number) => void;
 };
 
-const ROWS_PER_PAGE_OPTIONS = [5, 10, 20];
+const ROWS_PER_PAGE_OPTIONS = [5, 10, 20, 50];
 
 export default function CommonTable<T>({
   data,
@@ -43,24 +48,33 @@ export default function CommonTable<T>({
   emptyIcon,
   loading = false,
   tableWithSelection,
+  page: controlledPage,
+  rowsPerPage: controlledRowsPerPage,
+  totalCount,
+  onPageChange,
+  onRowsPerPageChange,
 }: Props<T>) {
   const theme = useTheme<AppTheme>();
   const styles = createStyles(theme);
   const { colors } = theme;
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
+  const isWeb = Platform.OS === "web";
 
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [internalPage, setInternalPage] = useState(0);
+  const [internalRowsPerPage, setInternalRowsPerPage] = useState(10);
   const [menuVisible, setMenuVisible] = useState(false);
   const [wrapperWidth, setWrapperWidth] = useState(0);
   const [visibleTooltip, setVisibleTooltip] = useState<string | null>(null);
-  const isWeb = Platform.OS === "web";
 
-  const SCROLL_THRESHOLD = 900;
+  const page = controlledPage ?? internalPage;
+  const rowsPerPage = controlledRowsPerPage ?? internalRowsPerPage;
   const startIndex = page * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
-  const paginatedData = data.slice(startIndex, endIndex);
-  const totalPages = Math.ceil(data.length / rowsPerPage);
+  const paginatedData =
+    controlledPage != null ? data : data.slice(startIndex, endIndex);
+  const totalPages = Math.ceil(
+    totalCount > 0 ? totalCount / rowsPerPage : data.length / rowsPerPage
+  );
 
   const enhancedColumns: Column<T>[] = [
     ...(!tableWithSelection
@@ -96,18 +110,31 @@ export default function CommonTable<T>({
   const totalFlex = enhancedColumns.reduce((sum, col) => sum + col.flex, 0);
 
   const widthArr = enhancedColumns.map((col) => {
-    if (isWeb) {
-      return (col.flex / totalFlex) * screenWidth;
-    } else {
-      if (col?.smallColumn) return 80;
-      return Math.max(col.flex * 150, 200);
-    }
+    if (isWeb) return (col.flex / totalFlex) * screenWidth;
+    if (col?.smallColumn) return 80;
+    return Math.max(col.flex * 150, 200);
   });
 
-  const enableHorizontalScroll =
-    wrapperWidth < SCROLL_THRESHOLD || columns.length > 7;
-    
+  const enableHorizontalScroll = wrapperWidth < 900 || columns.length > 7;
   const availableHeight = screenHeight * 0.66;
+
+  const handlePageChange = (newPage: number) => {
+    if (onPageChange) {
+      onPageChange(newPage);
+    } else {
+      setInternalPage(newPage);
+    }
+  };
+
+  const handleRowsPerPageChange = (newSize: number) => {
+    if (onRowsPerPageChange) {
+      onRowsPerPageChange(newSize);
+    } else {
+      setInternalRowsPerPage(newSize);
+    }
+    handlePageChange(0);
+    setMenuVisible(false);
+  };
 
   return (
     <View style={styles.container}>
@@ -132,7 +159,6 @@ export default function CommonTable<T>({
           </View>
         ) : (
           <>
-            {/* ✅ Outer horizontal scroll */}
             <ScrollView
               horizontal={enableHorizontalScroll}
               nestedScrollEnabled
@@ -140,7 +166,7 @@ export default function CommonTable<T>({
               style={styles.scrollArea}
             >
               <View>
-                {/* ✅ Fixed Header Row */}
+                {/* Header Row */}
                 <Row
                   data={tableHead.map((head, idx) => (
                     <View
@@ -163,7 +189,7 @@ export default function CommonTable<T>({
                   widthArr={widthArr}
                 />
 
-                {/* ✅ Vertical scroll for data rows */}
+                {/* Data Rows */}
                 <ScrollView
                   style={{ maxHeight: availableHeight }}
                   nestedScrollEnabled
@@ -175,7 +201,6 @@ export default function CommonTable<T>({
                       data={rowData.map((cell, colIndex) => {
                         const cellKey = `${rowIndex}-${colIndex}`;
                         const cellWidth = widthArr[colIndex];
-
                         return (
                           <EllipsisCell
                             key={cellKey}
@@ -201,7 +226,6 @@ export default function CommonTable<T>({
             <View style={styles.divider} />
             <View style={styles.paginationContainer}>
               {isWeb ? (
-                // -------- Web Pagination --------
                 <>
                   <View style={styles.rowsPerPageWrapper}>
                     <Text style={styles.pageText}>Rows per page:</Text>
@@ -224,11 +248,7 @@ export default function CommonTable<T>({
                       {ROWS_PER_PAGE_OPTIONS.map((option) => (
                         <Menu.Item
                           key={option}
-                          onPress={() => {
-                            setRowsPerPage(option);
-                            setPage(0);
-                            setMenuVisible(false);
-                          }}
+                          onPress={() => handleRowsPerPageChange(option)}
                           title={`${option}`}
                         />
                       ))}
@@ -236,15 +256,16 @@ export default function CommonTable<T>({
                   </View>
 
                   <Text style={styles.pageText}>
-                    {startIndex + 1}-{Math.min(endIndex, data.length)} of{" "}
-                    {data.length}
+                    {startIndex + 1}-
+                    {Math.min(endIndex, totalCount || data.length)} of{" "}
+                    {totalCount || data.length}
                   </Text>
 
                   <View style={styles.pageNavWrapper}>
                     <TouchableOpacity
                       style={styles.navButton}
                       disabled={page === 0}
-                      onPress={() => setPage((prev) => Math.max(prev - 1, 0))}
+                      onPress={() => handlePageChange(Math.max(page - 1, 0))}
                     >
                       <MaterialIcons
                         name="chevron-left"
@@ -264,7 +285,7 @@ export default function CommonTable<T>({
                       style={styles.navButton}
                       disabled={page >= totalPages - 1}
                       onPress={() =>
-                        setPage((prev) => Math.min(prev + 1, totalPages - 1))
+                        handlePageChange(Math.min(page + 1, totalPages - 1))
                       }
                     >
                       <Text
@@ -290,12 +311,11 @@ export default function CommonTable<T>({
                   </View>
                 </>
               ) : (
-                // -------- Mobile Pagination --------
                 <View style={styles.mobilePaginationWrapper}>
                   <TouchableOpacity
                     style={styles.iconButton}
                     disabled={page === 0}
-                    onPress={() => setPage((prev) => Math.max(prev - 1, 0))}
+                    onPress={() => handlePageChange(Math.max(page - 1, 0))}
                   >
                     <MaterialIcons
                       name="chevron-left"
@@ -305,15 +325,16 @@ export default function CommonTable<T>({
                   </TouchableOpacity>
 
                   <Text style={styles.pageText}>
-                    {startIndex + 1}-{Math.min(endIndex, data.length)} /{" "}
-                    {data.length}
+                    {startIndex + 1}-
+                    {Math.min(endIndex, totalCount || data.length)} /{" "}
+                    {totalCount || data.length}
                   </Text>
 
                   <TouchableOpacity
                     style={styles.iconButton}
                     disabled={page >= totalPages - 1}
                     onPress={() =>
-                      setPage((prev) => Math.min(prev + 1, totalPages - 1))
+                      handlePageChange(Math.min(page + 1, totalPages - 1))
                     }
                   >
                     <MaterialIcons
@@ -347,11 +368,7 @@ export default function CommonTable<T>({
                     {ROWS_PER_PAGE_OPTIONS.map((option) => (
                       <Menu.Item
                         key={option}
-                        onPress={() => {
-                          setRowsPerPage(option);
-                          setPage(0);
-                          setMenuVisible(false);
-                        }}
+                        onPress={() => handleRowsPerPageChange(option)}
                         title={`${option}`}
                       />
                     ))}

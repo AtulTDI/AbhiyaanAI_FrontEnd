@@ -1,20 +1,27 @@
 import { Platform } from "react-native";
 import * as FileSystem from "expo-file-system";
 import axios from "./axiosInstance";
-import { GenerateVideo, GetVideoLink, SampleVideo, Video } from "../types/Video";
+import { GenerateVideo, GetPaginatedVideos, GetVideoLink, SampleVideo, Video } from "../types/Video";
 import { getVideoThumbnail } from "../utils/getVideoThumbnail";
 import { getAuthData } from "../utils/storage";
 
 /**
  * Get paginated videos with optional search
  */
-export const getVideos = async () => {
+export const getVideos = async (pageNumber, pageSize) => {
   const { role } = await getAuthData();
 
-  const response = await axios.get<Video>(`/BaseVideos/${role === "User" || role === "Sender" ? "getsharedvideos" : "getmyvideos"}`, { useApiPrefix: true });
+  const response = await axios.get<GetPaginatedVideos>(`/BaseVideos/${role === "User" || role === "Sender" ? `getsharedvideos?page=${pageNumber + 1}&pageSize=${pageSize}` : `getmyvideos?page=${pageNumber + 1}&pageSize=${pageSize}`}`, { useApiPrefix: true });
 
   return response;
 }
+
+/**
+ * Get in progress video count
+ */
+export const getInProgressVideoCount = () =>
+  axios.get(`/CustomizedAIVideo/get-inprogress-video-count`, { useApiPrefix: true });
+
 
 /**
  * Get video by ID
@@ -108,6 +115,8 @@ export const deleteVideoById = (id: string) =>
  */
 export const generateCustomisedVideo = (payload: GenerateVideo) =>
   axios.post<GenerateVideo>(`/CustomizedAIVideo/createcustomized-aivideo`, payload, { useApiPrefix: true });
+
+
 
 /**
  * Generate customised video

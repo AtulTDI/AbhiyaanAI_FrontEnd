@@ -5,7 +5,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { StyleSheet, Animated, View } from "react-native";
+import { StyleSheet, Animated, View, Dimensions, Platform } from "react-native";
 import { Text, useTheme } from "react-native-paper";
 import { Ionicons, MaterialIcons, FontAwesome } from "@expo/vector-icons";
 import { registerToastTrigger } from "../services/toastService";
@@ -18,6 +18,9 @@ type ToastContextType = {
 };
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
+
+const { width: screenWidth } = Dimensions.get("window");
+const isWeb = Platform.OS === "web";
 
 export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -139,27 +142,27 @@ const createStyles = (theme: AppTheme) =>
     toast: {
       alignSelf: "center",
       position: "absolute",
-      top: -20,
+      top: isWeb ? 20 : 10,
       paddingVertical: 12,
       paddingHorizontal: 16,
-      borderRadius: 10,
-      maxWidth: 360,
-      minWidth: 200,
+      borderRadius: 12,
+      maxWidth: isWeb ? 400 : screenWidth * 0.9,
+      width: "auto",
       elevation: 5,
       shadowColor: theme.colors.black,
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.2,
-      shadowRadius: 4,
+      shadowRadius: 6,
       zIndex: 9999,
     },
     toastContent: {
       flexDirection: "row",
       alignItems: "center",
+      flexWrap: "nowrap",
       gap: 10,
     },
     toastText: {
-      flexShrink: 1,
-      flex: 1,
+      flexGrow: 1,
       fontSize: 14,
     },
   });

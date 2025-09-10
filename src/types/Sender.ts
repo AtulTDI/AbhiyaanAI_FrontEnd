@@ -12,6 +12,14 @@ export type Sender = {
   emailConfirmed?: boolean;
 }
 
+export type GetPaginatedSenders = {
+  items: Sender[];
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
+  totalRecords: number;
+} 
+
 export type GetSendersResponse = {
   users: Sender[];
   total: number;

@@ -3,19 +3,20 @@ import {
   Application,
   CreateApplicationPayload,
   EditApplicationPayload,
+  GetPaginatedApplications,
 } from "../types/Application";
 
 /**
  * Get paginated applications with optional search
  */
-export const getApplications = () =>
-  axios.get<Application>("/Application/all", { useApiPrefix: true });
+export const getApplications = (pageNumber, pageSize) =>
+  axios.get<GetPaginatedApplications>(`/Application/all?page=${pageNumber + 1}&pageSize=${pageSize}`, { useApiPrefix: true });
 
 /**
  * Get paginated active applications with optional search
  */
-export const getActiveApplications = () =>
-  axios.get<Application>("/Application/get-active-applications", { useApiPrefix: true });
+export const getActiveApplications = (pageNumber, pageSize) =>
+  axios.get<GetPaginatedApplications>(`/Application/get-active-applications?page=${pageNumber + 1}&pageSize=${pageSize}`, { useApiPrefix: true });
 
 /**
  * Add new application

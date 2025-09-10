@@ -1,30 +1,30 @@
 import { Platform } from "react-native";
 import * as FileSystem from "expo-file-system";
 import axios from "./axiosInstance";
-import { CreateVoterPayload, EditVoterPayload, Voter } from "../types/Voter";
+import { CreateVoterPayload, EditVoterPayload, GetPaginatedVoters, Voter } from "../types/Voter";
 import { base64ToBlob } from "../utils/common";
 
 /**
  * Get paginated voters with optional search
  */
-export const getVoters = () =>
-  axios.get<Voter>("/Recipients/getrecipients", { useApiPrefix: true });
+export const getVoters = (pageNumber, pageSize) =>
+  axios.get<GetPaginatedVoters>(`/Recipients/getrecipients?page=${pageNumber + 1}&pageSize=${pageSize}`, { useApiPrefix: true });
 
 
 /**
  * Get paginated voters without processing videos
  */
-export const getVotersForProcessing = (id: string) =>
-  axios.get<Voter>("/Recipients/getrecipientsforprocessing", {
-    params: { baseVideoID: id },
+export const getVotersForProcessing = (id: string, pageNumber, pageSize) =>
+  axios.get<GetPaginatedVoters>(`/Recipients/getrecipientsforprocessing`, {
+    params: { baseVideoID: id, page: pageNumber + 1, pageSize: pageSize },
     useApiPrefix: true,
   });
 
 /**
  * Get paginated voters with in progress vidoes using base video id
  */
-export const getVotersWithInProgressVidoes = () =>
-  axios.get('/Recipients/getinProgressaivideos', {
+export const getVotersWithInProgressVidoes = (pageNumber, pageSize) =>
+  axios.get(`/Recipients/getinProgressaivideos?page=${pageNumber + 1}&pageSize=${pageSize}`, {
     useApiPrefix: true,
   });
 
@@ -32,10 +32,10 @@ export const getVotersWithInProgressVidoes = () =>
 /**
 * Get paginated voters with completed vidoes using base video id
 */
-export const getVotersWithCompletedVideoId = (id: string) =>
+export const getVotersWithCompletedVideoId = (id: string, pageNumber, pageSize) =>
   axios.get('/Recipients/getcompletedaivideoswithbaseid',
     {
-      params: { baseVideoID: id },
+      params: { baseVideoID: id, page: pageNumber + 1, pageSize: pageSize },
       useApiPrefix: true
     });
 

@@ -1,11 +1,10 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { Surface, Text, useTheme } from "react-native-paper";
 import { useFocusEffect } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import dayjs from "dayjs";
 import CommonTable from "../components/CommonTable";
-import { User } from "../types/User";
 import { Sender } from "../types/Sender";
 import { extractErrorMessage } from "../utils/common";
 import { useToast } from "../components/ToastProvider";
@@ -14,66 +13,63 @@ import ApprovalToggle from "../components/ApprovalToggle";
 import { getUsers } from "../api/userApi";
 import { activateSender, getSenderByUserId } from "../api/senderApi";
 import { AppTheme } from "../theme";
+import { useServerTable } from "../hooks/useServerTable";
 
 export default function ActivateSenderScreen() {
   const theme = useTheme<AppTheme>();
   const styles = createStyles(theme);
   const { colors } = theme;
   const { showToast } = useToast();
-  const [selectedUserId, setSelectedUserId] = useState(null);
-  const [users, setUsers] = useState<User[]>([]);
-  const [senders, setSenders] = useState<User[]>([]);
-  const [loading, setLoading] = useState(false);
 
-  const fetchUsers = async () => {
-    setLoading(true);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [users, setUsers] = useState<{ label: string; value: string }[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
 
+  const fetchUsers = useCallback(async () => {
+    setLoadingUsers(true);
     try {
-      const response = await getUsers();
-      const transformedUsers = response?.data?.map((user) => ({
-        label: `${user.firstName} ${user.lastName}`,
-        value: user.id,
-      }));
+      const response = await getUsers(0, 100000);
+      const transformedUsers =
+        response?.data?.items?.map((user) => ({
+          label: `${user.firstName} ${user.lastName}`,
+          value: user.id,
+        })) || [];
 
       setUsers(transformedUsers);
-
       if (transformedUsers.length) {
-        setSelectedUserId(transformedUsers?.[0]?.value);
+        setSelectedUserId(transformedUsers[0].value);
       }
     } catch (error: any) {
       showToast(extractErrorMessage(error, "Failed to load users"), "error");
     } finally {
-      setLoading(false);
+      setLoadingUsers(false);
     }
-  };
+  }, [showToast]);
 
-  const fetchSenderByUserId = useCallback(async (userId: string | null) => {
-    if (!userId) return;
+  const fetchSendersByUser = useCallback(
+    (page: number, pageSize: number, userId: string | null) => {
+      if (!userId) return Promise.resolve({ items: [], totalCount: 0 });
+      return getSenderByUserId(userId, page, pageSize).then((response) => ({
+        items: Array.isArray(response?.data?.items) ? response.data.items : [],
+        totalCount: response?.data?.totalRecords ?? 0,
+      }));
+    },
+    []
+  );
 
-    try {
-      setLoading(true);
-      const res = await getSenderByUserId(userId);
-      setSenders(res?.data ?? []);
-    } catch (error: any) {
-      showToast(extractErrorMessage(error, "Failed to load senders"), "error");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const table = useServerTable<Sender, string>(
+    fetchSendersByUser,
+    { initialPage: 0, initialRowsPerPage: 10 },
+    selectedUserId
+  );
 
   useFocusEffect(
     useCallback(() => {
       fetchUsers();
-    }, [])
+    }, [fetchUsers])
   );
 
-  useEffect(() => {
-    if (selectedUserId) {
-      fetchSenderByUserId(selectedUserId);
-    }
-  }, [selectedUserId]);
-
-  const handleToggleSender = async (item) => {
+  const handleToggleSender = async (item: Sender) => {
     try {
       await activateSender(item.id);
       showToast(
@@ -82,7 +78,7 @@ export default function ActivateSenderScreen() {
         } successfully`,
         "success"
       );
-      fetchSenderByUserId(selectedUserId);
+      table.fetchData(table.page, table.rowsPerPage, selectedUserId);
     } catch (error) {
       showToast("Failed to update sender status", "error");
     }
@@ -93,7 +89,7 @@ export default function ActivateSenderScreen() {
       label: "Name",
       key: "fullName",
       flex: 0.5,
-      render: (item) => item.firstName + " " + item.lastName,
+      render: (item) => `${item.firstName} ${item.lastName}`,
     },
     { label: "Mobile", key: "phoneNumber", flex: 0.2 },
     { label: "Email", key: "email", flex: 0.4 },
@@ -101,7 +97,7 @@ export default function ActivateSenderScreen() {
       label: "Created At",
       key: "createdAt",
       flex: 0.4,
-      render: (item) => (
+      render: (item: Sender) => (
         <Text>
           {item.createdAt
             ? dayjs(item.createdAt).format("DD MMM YYYY, hh:mm A")
@@ -113,16 +109,14 @@ export default function ActivateSenderScreen() {
       key: "actions",
       label: "Activation",
       flex: 1,
-      render: (item: Sender) => {
-        return (
-          <ApprovalToggle
-            isApproved={item.emailConfirmed}
-            onToggle={() => handleToggleSender(item)}
-            approvedText="Activated"
-            pendingText="Click to Activate"
-          />
-        );
-      },
+      render: (item: Sender) => (
+        <ApprovalToggle
+          isApproved={item.emailConfirmed}
+          onToggle={() => handleToggleSender(item)}
+          approvedText="Activated"
+          pendingText="Click to Activate"
+        />
+      ),
     },
   ];
 
@@ -131,21 +125,26 @@ export default function ActivateSenderScreen() {
       <View style={styles.content}>
         <Text
           variant="titleLarge"
-          style={[styles.heading, { color: theme.colors.primary, marginBottom: 10 }]}
+          style={[
+            styles.heading,
+            { color: theme.colors.primary, marginBottom: 15 },
+          ]}
         >
-          Approve Senders
+          Activate Senders
         </Text>
+
         <FormDropdown
           label="Select User"
           value={selectedUserId}
           options={users}
-          onSelect={(val) => setSelectedUserId(val)}
+          onSelect={setSelectedUserId}
         />
+
         <View style={{ flex: 1 }}>
           <CommonTable
-            data={senders}
+            data={table.data}
             columns={columns}
-            loading={loading}
+            loading={table.loading}
             emptyIcon={
               <Ionicons
                 name="people-outline"
@@ -154,6 +153,14 @@ export default function ActivateSenderScreen() {
               />
             }
             emptyText="No senders found"
+            onPageChange={table.setPage}
+            onRowsPerPageChange={(size) => {
+              table.setRowsPerPage(size);
+              table.setPage(0);
+            }}
+            page={table.page}
+            rowsPerPage={table.rowsPerPage}
+            totalCount={table.total}
           />
         </View>
       </View>

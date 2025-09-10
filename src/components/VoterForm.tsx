@@ -1,5 +1,6 @@
 import React from "react";
 import { FieldConfig } from "../types";
+import { CreateVoterPayload } from "../types/Voter";
 import DynamicForm from "./DynamicForm";
 
 type Voter = {
@@ -9,7 +10,7 @@ type Voter = {
 
 type Props = {
   mode: "create" | "edit";
-  onCreate: (data: Voter) => void;
+  onCreate: (data: CreateVoterPayload) => void;
   voterToEdit: Voter;
   setVoterToEdit: (voter: Voter | null) => void;
   setShowAddVoterView: (visible: boolean) => void;

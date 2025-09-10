@@ -3,19 +3,20 @@ import {
   Sender,
   CreateSenderPayload,
   EditSenderPayload,
+  GetPaginatedSenders,
 } from "../types/Sender";
 
 /**
  * Get paginated senders with optional search
  */
-export const getSenders = () =>
-  axios.get<Sender>("/Sender/getusersender", { useApiPrefix: true });
+export const getSenders = (pageNumber, pageSize) =>
+  axios.get<GetPaginatedSenders>(`/Sender/getusersender?page=${pageNumber + 1}&pageSize=${pageSize}`, { useApiPrefix: true });
 
 /**
  * Get sender by ID
  */
-export const getSenderByUserId = (id: string) =>
-  axios.get<Sender>(`/Sender/getsenderbyuserid/${id}`, { useApiPrefix: true });
+export const getSenderByUserId = (id: string, pageNumber, pageSize) =>
+  axios.get<GetPaginatedSenders>(`/Sender/getsenderbyuserid/${id}?page=${pageNumber + 1}&pageSize=${pageSize}`, { useApiPrefix: true });
 
 /**
  * Add new sender

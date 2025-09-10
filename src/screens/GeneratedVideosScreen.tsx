@@ -14,6 +14,7 @@ import { getVotersWithCompletedVideoId } from "../api/voterApi";
 import { getVideos } from "../api/videoApi";
 import { sendVideo } from "../api/whatsappApi";
 import { AppTheme } from "../theme";
+import { useServerTable } from "../hooks/useServerTable";
 
 export default function GeneratedVideoScreen() {
   const theme = useTheme<AppTheme>();
@@ -28,25 +29,13 @@ export default function GeneratedVideoScreen() {
   const [sendingId, setSendingId] = useState<string | null>(null);
   const [sentIds, setSentIds] = useState<Set<string>>(new Set());
 
-  const fetchVoters = async () => {
-    setLoading(true);
-    try {
-      const response = await getVotersWithCompletedVideoId(selectedVideoId);
-      setVoters(
-        response?.data && Array.isArray(response.data) ? response.data : []
-      );
-    } catch (error: any) {
-      showToast(extractErrorMessage(error, "Failed to load voters"), "error");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const fetchVideos = useCallback(async () => {
     try {
-      const response = await getVideos();
+      const response = await getVideos(0, 100000);
       const videosData =
-        response?.data && Array.isArray(response.data) ? response.data : [];
+        response?.data && Array.isArray(response.data.videos.items)
+          ? response.data.videos.items
+          : [];
 
       const transformedVideos = videosData.map((video) => ({
         label: video.campaignName,
@@ -58,31 +47,46 @@ export default function GeneratedVideoScreen() {
       if (transformedVideos?.length) {
         const firstId = transformedVideos?.[0]?.value;
         setSelectedVideoId(firstId);
-
-        setLoading(true);
-        await getVotersWithCompletedVideoId(firstId)
-          .then((res) => setVoters(res?.data ?? []))
-          .catch((e) =>
-            showToast(extractErrorMessage(e, "Failed to load voters"), "error")
-          )
-          .finally(() => setLoading(false));
       }
     } catch (error: any) {
       showToast(extractErrorMessage(error, "Failed to load videos"), "error");
     }
   }, []);
 
+  const fetchVoters = useCallback(
+    async (page: number, pageSize: number, videoId: string | null) => {
+      if (!videoId) return Promise.resolve({ items: [], totalCount: 0 });
+
+      try {
+        setLoading(true);
+        return getVotersWithCompletedVideoId(videoId, page, pageSize).then(
+          (response) => ({
+            items: Array.isArray(response?.data?.items)
+              ? response.data.items
+              : [],
+            totalCount: response?.data?.totalRecords ?? 0,
+          })
+        );
+      } catch (error: any) {
+        showToast(extractErrorMessage(error, "Failed to load voters"), "error");
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
+
+  const table = useServerTable<Voter, string>(
+    fetchVoters,
+    { initialPage: 0, initialRowsPerPage: 10 },
+    selectedVideoId
+  );
+
   useFocusEffect(
     useCallback(() => {
       fetchVideos();
-    }, [])
+    }, [fetchVideos])
   );
-
-  useEffect(() => {
-    if (selectedVideoId) {
-      fetchVoters();
-    }
-  }, [selectedVideoId]);
 
   const handleSendVideo = async (item: Voter) => {
     const { userId } = await getAuthData();
@@ -189,7 +193,7 @@ export default function GeneratedVideoScreen() {
         />
         <View style={{ flex: 1 }}>
           <CommonTable
-            data={voters}
+            data={table.data}
             columns={columns}
             loading={loading}
             emptyIcon={
@@ -200,6 +204,14 @@ export default function GeneratedVideoScreen() {
               />
             }
             emptyText="No voters found"
+            onPageChange={table.setPage}
+            onRowsPerPageChange={(size) => {
+              table.setRowsPerPage(size);
+              table.setPage(0);
+            }}
+            page={table.page}
+            rowsPerPage={table.rowsPerPage}
+            totalCount={table.total}
           />
         </View>
       </View>

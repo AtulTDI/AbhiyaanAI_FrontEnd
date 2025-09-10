@@ -2,18 +2,34 @@ import React from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { StyleSheet, View } from "react-native";
 import { useTheme } from "react-native-paper";
+import dayjs from "dayjs";
 import { Voter } from "../types/Voter";
 import CommonTable from "./CommonTable";
 import { AppTheme } from "../theme";
-import dayjs from "dayjs";
 
 type Props = {
-  voters: Voter[];
+  data: Voter[];
+  page: number;
+  rowsPerPage: number;
+  totalCount: number;
+  loading: boolean;
+  onPageChange: (page: number) => void;
+  onRowsPerPageChange: (size: number) => void;
   onEdit: (item: Voter) => void;
   onDelete: (id: string) => void;
 };
 
-export default function VoterTable({ voters, onEdit, onDelete }: Props) {
+export default function VoterTable({
+  data,
+  page,
+  rowsPerPage,
+  totalCount,
+  loading,
+  onPageChange,
+  onRowsPerPageChange,
+  onEdit,
+  onDelete,
+}: Props) {
   const theme = useTheme<AppTheme>();
   const { colors } = theme;
 
@@ -32,7 +48,7 @@ export default function VoterTable({ voters, onEdit, onDelete }: Props) {
       label: "Created At",
       key: "createdAt",
       flex: 0.4,
-      render: (item) =>
+      render: (item: Voter) =>
         item.createdAt
           ? dayjs(item.createdAt).format("DD MMM YYYY, hh:mm A")
           : "-",
@@ -63,12 +79,20 @@ export default function VoterTable({ voters, onEdit, onDelete }: Props) {
 
   return (
     <CommonTable
-      data={voters}
+      data={data}
       columns={columns}
+      loading={loading}
+      tableWithSelection={false}
+      keyExtractor={(item) => item.id}
       emptyIcon={
         <Ionicons name="people-outline" size={48} color={colors.disabledText} />
       }
       emptyText="No voters found"
+      page={page}
+      rowsPerPage={rowsPerPage}
+      totalCount={totalCount}
+      onPageChange={onPageChange}
+      onRowsPerPageChange={onRowsPerPageChange}
     />
   );
 }

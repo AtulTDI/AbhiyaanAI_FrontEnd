@@ -25,8 +25,8 @@ export default function ApplicationForm({
   useEffect(() => {
     const fetchSalesAgents = async () => {
       try {
-        const response = await getDistributors();
-        const agents = response.data || [];
+        const response = await getDistributors(0, 100000);
+        const agents = response.data.items || [];
         const agentsArray = Array.isArray(agents) ? agents : [agents];
 
         const formatted = agentsArray.map((app) => ({

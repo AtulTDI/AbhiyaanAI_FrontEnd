@@ -1,11 +1,11 @@
 import axios from "./axiosInstance";
-import { CreateDistributorPayload, Distributor, EditDistributorPayload } from "../types/SalesAgents";
+import { CreateDistributorPayload, Distributor, EditDistributorPayload, GetPaginatedDistributors } from "../types/SalesAgents";
 
 /**
  * Get paginated distributor with optional search
  */
-export const getDistributors = () =>
-  axios.get<Distributor>("/SalesAgent/get-distributors", { useApiPrefix: true });
+export const getDistributors = (pageNumber, pageSize) =>
+  axios.get<GetPaginatedDistributors>(`/SalesAgent/get-distributors?page=${pageNumber + 1}&pageSize=${pageSize}`, { useApiPrefix: true });
 
 /**
  * Add new distributor

@@ -13,6 +13,7 @@ import UserForm from "../components/UserForm";
 import UserTable from "../components/UserTable";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 import { useToast } from "../components/ToastProvider";
+import { useServerTable } from "../hooks/useServerTable";
 import {
   createUser,
   deleteUserById,
@@ -35,26 +36,27 @@ export default function AddUserScreen({ role }) {
   const styles = createStyles(theme);
   const { showToast } = useToast();
 
-  const [users, setUsers] = useState<User[]>([]);
   const [showAddUserView, setShowAddUserView] = useState(false);
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [userToEdit, setUserToEdit] = useState<User | null>(null);
 
-  const fetchUsers = useCallback(async () => {
+  const fetchUsers = useCallback(async (page: number, pageSize: number) => {
     try {
       let response;
 
       if (role === "Distributor") {
-        response = await getDistributors();
+        response = await getDistributors(page, pageSize);
       } else if (role === "Admin") {
-        response = await getCustomerAdmins();
+        response = await getCustomerAdmins(page, pageSize);
       } else {
-        response = await getUsers();
+        response = await getUsers(page, pageSize);
       }
-      setUsers(
-        response?.data && Array.isArray(response.data) ? response.data : []
-      );
+
+      return {
+        items: Array.isArray(response?.data?.items) ? response.data.items : [],
+        totalCount: response?.data?.totalRecords ?? 0,
+      };
     } catch (error: any) {
       showToast(
         extractErrorMessage(error, `Failed to load ${getHeaderTitle()}`),
@@ -63,12 +65,17 @@ export default function AddUserScreen({ role }) {
     }
   }, []);
 
+  const table = useServerTable<User>(fetchUsers, {
+    initialPage: 0,
+    initialRowsPerPage: 10,
+  });
+
   useFocusEffect(
     useCallback(() => {
       setShowAddUserView(false);
       setUserToEdit(null);
-      fetchUsers();
-    }, [fetchUsers])
+      table.fetchData(0, 10);
+    }, [])
   );
 
   const addUser = async (userData: any) => {
@@ -83,7 +90,7 @@ export default function AddUserScreen({ role }) {
               ? userData?.applicationId
               : loggedInUserApplicationId,
           });
-      await fetchUsers();
+      await table.fetchData(0, table.rowsPerPage);
       setShowAddUserView(false);
       setUserToEdit(null);
       showToast(`${getRoleLabel()} registered successfully!`, "success");
@@ -110,7 +117,7 @@ export default function AddUserScreen({ role }) {
       userData?.role === "Distributor"
         ? await editDistributorById(userToEdit.id, userData)
         : await editUserById(userToEdit.id, userData);
-      await fetchUsers();
+      await table.fetchData(table.page, table.rowsPerPage);
       setShowAddUserView(false);
       setUserToEdit(null);
       showToast(`${getRoleLabel()} updated successfully!`, "success");
@@ -141,7 +148,7 @@ export default function AddUserScreen({ role }) {
         role === "Distributor"
           ? await deleteDistributor(selectedUserId)
           : await deleteUserById(selectedUserId);
-        await fetchUsers();
+        table.fetchData(table.page, table.rowsPerPage);
         showToast(`${getRoleLabel()} deleted successfully!`, "success");
       } catch (error: any) {
         showToast(
@@ -227,7 +234,16 @@ export default function AddUserScreen({ role }) {
         ) : (
           <UserTable
             role={role}
-            users={users}
+            data={table.data}
+            page={table.page}
+            rowsPerPage={table.rowsPerPage}
+            totalCount={table.total}
+            loading={table.loading}
+            onPageChange={table.setPage}
+            onRowsPerPageChange={(size) => {
+              table.setRowsPerPage(size);
+              table.setPage(0);
+            }}
             onEdit={handleEdit}
             onDelete={handleDeleteRequest}
             getHeaderTitle={getHeaderTitle}

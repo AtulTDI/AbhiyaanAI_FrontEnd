@@ -17,14 +17,26 @@ type Video = {
 };
 
 type Props = {
-  videos: Video[];
+  data: Video[];
+  page: number;
+  rowsPerPage: number;
+  totalCount: number;
+  loading?: boolean;
+  onPageChange: (page: number) => void;
+  onRowsPerPageChange: (size: number) => void;
   onShare: (id: string) => void;
   onUnshare: (id: string) => void;
   onDelete: (id: string) => void;
 };
 
 export default function VideoTable({
-  videos,
+  data,
+  page,
+  rowsPerPage,
+  totalCount,
+  loading,
+  onPageChange,
+  onRowsPerPageChange,
   onShare,
   onUnshare,
   onDelete,
@@ -104,8 +116,9 @@ export default function VideoTable({
   return (
     <>
       <CommonTable
-        data={videos}
+        data={data}
         columns={columns}
+        loading={loading}
         emptyIcon={
           <Ionicons
             name="videocam-outline"
@@ -115,6 +128,11 @@ export default function VideoTable({
         }
         emptyText="No videos found"
         keyExtractor={(item) => item.id}
+        page={page}
+        rowsPerPage={rowsPerPage}
+        totalCount={totalCount}
+        onPageChange={onPageChange}
+        onRowsPerPageChange={onRowsPerPageChange}
       />
 
       {/* Video Player Modal */}

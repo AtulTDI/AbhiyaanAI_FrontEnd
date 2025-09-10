@@ -8,13 +8,25 @@ import CommonTable from "./CommonTable";
 import { AppTheme } from "../theme";
 
 type Props = {
-  applications: Application[];
+  data: Application[];
+  page: number;
+  rowsPerPage: number;
+  totalCount: number;
+  loading: boolean;
+  onPageChange: (page: number) => void;
+  onRowsPerPageChange: (size: number) => void;
   onEdit: (item: Application) => void;
   onToggleStatus: (item: Application) => void;
 };
 
 export default function ApplicationsTable({
-  applications,
+  data,
+  page,
+  rowsPerPage,
+  totalCount,
+  loading,
+  onPageChange,
+  onRowsPerPageChange,
   onEdit,
   onToggleStatus,
 }: Props) {
@@ -32,8 +44,7 @@ export default function ApplicationsTable({
       key: "videoCount",
       flex: 0.8,
       render: (item: Application) => (
-        <Text
-        >{`${item.remainingVideoCount} / ${item.totalVideoCount}`}</Text>
+        <Text>{`${item.remainingVideoCount} / ${item.totalVideoCount}`}</Text>
       ),
     },
     {
@@ -56,9 +67,7 @@ export default function ApplicationsTable({
       key: "createdAt",
       flex: 1,
       render: (item: Application) => (
-        <Text>
-          {dayjs(item.createdAt).format("DD MMM YYYY, hh:mm A")}
-        </Text>
+        <Text>{dayjs(item.createdAt).format("DD MMM YYYY, hh:mm A")}</Text>
       ),
     },
     {
@@ -105,10 +114,16 @@ export default function ApplicationsTable({
 
   return (
     <CommonTable
-      data={applications}
+      data={data}
       columns={columns}
+      loading={loading}
       emptyIcon={<Ionicons name="apps" size={48} color={colors.disabledText} />}
       emptyText="No applications found"
+      page={page}
+      rowsPerPage={rowsPerPage}
+      totalCount={totalCount}
+      onPageChange={onPageChange}
+      onRowsPerPageChange={onRowsPerPageChange}
     />
   );
 }

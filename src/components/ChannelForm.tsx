@@ -19,8 +19,8 @@ export default function CreateChannelForm({
   useEffect(() => {
     const fetchApplications = async () => {
       try {
-        const response = await getActiveApplications();
-        const apps = response.data || [];
+        const response = await getActiveApplications(0, 100000);
+        const apps = response.data.items || [];
         const appArray = Array.isArray(apps) ? apps : [apps];
 
         const formatted = appArray.map((app) => ({

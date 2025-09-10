@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from "react";
-import { View, StyleSheet, Dimensions } from "react-native";
+import { View, StyleSheet, Dimensions, Platform } from "react-native";
 import { Surface, Text, Button, useTheme } from "react-native-paper";
 import { useFocusEffect } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
@@ -10,7 +10,10 @@ import { navigate } from "../navigation/NavigationService";
 import { getAuthData } from "../utils/storage";
 import { extractErrorMessage } from "../utils/common";
 import { joinGroups, startConnection } from "../services/signalrService";
-import { generateCustomisedVideo } from "../api/videoApi";
+import {
+  generateCustomisedVideo,
+  getInProgressVideoCount,
+} from "../api/videoApi";
 import { AppTheme } from "../theme";
 
 const steps = ["Select Base Video", "Select Voters"];
@@ -27,15 +30,35 @@ export default function GenerateVideoScreen() {
     1: [],
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [showOverlay, setShowOverlay] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
-      setActiveStep(0);
-      setStepData({ 0: null, 1: [] });
+      let active = true;
+
+      async function checkCountAndReset() {
+        try {
+          const response = await getInProgressVideoCount();
+          if (active) {
+            setShowOverlay((response?.data?.count ?? 0) > 0);
+            if ((response?.data?.count ?? 0) === 0) {
+              setActiveStep(0);
+              setStepData({ 0: null, 1: [] });
+            }
+          }
+        } catch (error) {
+          if (active) {
+            setShowOverlay(false);
+            setActiveStep(0);
+            setStepData({ 0: null, 1: [] });
+          }
+        }
+      }
+
+      checkCountAndReset();
 
       return () => {
-        setActiveStep(0);
-        setStepData({ 0: null, 1: [] });
+        active = false;
       };
     }, [])
   );
@@ -196,6 +219,29 @@ export default function GenerateVideoScreen() {
             : "Next"}
         </Button>
       </View>
+
+      {/* Blocking Overlay */}
+      {showOverlay && (
+        <View style={styles.overlay}>
+          <View style={styles.overlayMessageContainer}>
+            <Ionicons
+              name="time-outline"
+              size={50}
+              color={colors.primary}
+              style={{ marginBottom: 20, opacity: 0.85 }}
+            />
+            <Text style={styles.overlayMessageTitle}>
+              Processing in Progress
+            </Text>
+            <Text style={styles.overlayMessageText}>
+              Video generation for one campaign is currently running.
+            </Text>
+            <Text style={styles.overlayMessageText}>
+              Please wait until it completes
+            </Text>
+          </View>
+        </View>
+      )}
     </Surface>
   );
 }
@@ -248,5 +294,44 @@ const createStyles = (theme: AppTheme) =>
       flex: 1,
       marginHorizontal: 6,
       borderRadius: 8,
+    },
+    overlay: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: "rgba(0,0,0,0.6)",
+      justifyContent: "center",
+      alignItems: "center",
+      zIndex: 10,
+      paddingHorizontal: 20,
+    },
+    overlayMessageContainer: {
+      backgroundColor: theme.colors.white,
+      borderRadius: 20,
+      paddingVertical: 30,
+      paddingHorizontal: 25,
+      width: Platform.OS === "web" ? "50%" : "100%",
+      alignItems: "center",
+      shadowColor: theme.colors.black,
+      shadowOffset: { width: 0, height: 6 },
+      shadowOpacity: 0.25,
+      shadowRadius: 12,
+      elevation: 12,
+    },
+    overlayMessageTitle: {
+      fontSize: 20,
+      fontWeight: "700",
+      color: theme.colors.primary,
+      marginBottom: 12,
+      textAlign: "center",
+    },
+    overlayMessageText: {
+      fontSize: 16,
+      color: theme.colors.darkGrayText,
+      textAlign: "center",
+      marginBottom: 6,
+      lineHeight: 22,
     },
   });

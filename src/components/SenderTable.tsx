@@ -2,18 +2,34 @@ import React from "react";
 import dayjs from "dayjs";
 import { Ionicons } from "@expo/vector-icons";
 import { View, StyleSheet } from "react-native";
-import { Text, useTheme } from "react-native-paper";
+import { useTheme } from "react-native-paper";
 import { Sender } from "../types/Sender";
 import CommonTable from "./CommonTable";
 import { AppTheme } from "../theme";
 
 type Props = {
-  senders: Sender[];
+  data: Sender[];
+  page: number;
+  rowsPerPage: number;
+  totalCount: number;
+  loading: boolean;
+  onPageChange: (page: number) => void;
+  onRowsPerPageChange: (size: number) => void;
   onEdit: (item: any) => void;
   onDelete: (id: string) => void;
 };
 
-export default function SenderTable({ senders, onEdit, onDelete }: Props) {
+export default function SenderTable({
+  data,
+  page,
+  rowsPerPage,
+  totalCount,
+  loading,
+  onPageChange,
+  onRowsPerPageChange,
+  onEdit,
+  onDelete,
+}: Props) {
   const theme = useTheme<AppTheme>();
   const { colors } = theme;
   const columns = [
@@ -60,7 +76,7 @@ export default function SenderTable({ senders, onEdit, onDelete }: Props) {
 
   return (
     <CommonTable
-      data={senders}
+      data={data}
       columns={columns}
       emptyIcon={
         <Ionicons
@@ -70,6 +86,12 @@ export default function SenderTable({ senders, onEdit, onDelete }: Props) {
         />
       }
       emptyText="No senders found"
+      loading={loading}
+      page={page}
+      rowsPerPage={rowsPerPage}
+      totalCount={totalCount}
+      onPageChange={onPageChange}
+      onRowsPerPageChange={onRowsPerPageChange}
     />
   );
 }
@@ -79,6 +101,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 5,
-    marginLeft: 10
+    marginLeft: 10,
   },
 });

@@ -9,7 +9,13 @@ import { AppTheme } from "../theme";
 
 type Props = {
   role: string;
-  users: User[];
+  data: User[];
+  page: number;
+  rowsPerPage: number;
+  totalCount: number;
+  loading: boolean;
+  onPageChange: (page: number) => void;
+  onRowsPerPageChange: (size: number) => void;
   onEdit: (item: any) => void;
   onDelete: (id: string) => void;
   getHeaderTitle: () => string;
@@ -17,7 +23,13 @@ type Props = {
 
 export default function UserTable({
   role,
-  users,
+  data,
+  page,
+  rowsPerPage,
+  totalCount,
+  loading,
+  onPageChange,
+  onRowsPerPageChange,
   onEdit,
   onDelete,
   getHeaderTitle,
@@ -79,8 +91,9 @@ export default function UserTable({
 
   return (
     <CommonTable
-      data={users}
+      data={data}
       columns={columns}
+      loading={loading}
       emptyIcon={
         <Ionicons
           name="person-remove-outline"
@@ -89,6 +102,11 @@ export default function UserTable({
         />
       }
       emptyText={`No ${getHeaderTitle().toLowerCase()} found`}
+      page={page}
+      rowsPerPage={rowsPerPage}
+      totalCount={totalCount}
+      onPageChange={onPageChange}
+      onRowsPerPageChange={onRowsPerPageChange}
     />
   );
 }

@@ -1,19 +1,26 @@
 export type Voter = {
   id?: string;
-  firstName: string;
-  lastName: string;
+  fullName: string;
   phoneNumber: string;
+  createdAt?: string;
   createdBy?: string;
+  baseVideoId?: string;
+}
+
+export type GetPaginatedVoters = {
+  items: Voter[];
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
+  totalRecords: number;
 }
 
 export type CreateVoterPayload = {
-  firstName: string;
-  lastName: string;
+  fullName: string;
   phoneNumber: string;
 }
 
 export type EditVoterPayload = {
-  firstName: string;
-  lastName: string;
-  phoneNumber: string;
+  fullName?: string;
+  phoneNumber?: string;
 }

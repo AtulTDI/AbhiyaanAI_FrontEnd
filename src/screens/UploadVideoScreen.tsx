@@ -12,6 +12,8 @@ import {
   shareVideoById,
   uploadVideo,
 } from "../api/videoApi";
+import { useServerTable } from "../hooks/useServerTable";
+import { GetPaginatedVideos } from "../types/Video";
 import { extractErrorMessage, sortByDateDesc } from "../utils/common";
 import { AppTheme } from "../theme";
 
@@ -20,30 +22,40 @@ export default function UploadVideoScreen() {
   const { colors } = theme;
   const { showToast } = useToast();
 
-  const [videos, setVideos] = useState<any[]>([]);
   const [showAddView, setShowAddView] = useState(false);
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
   const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
 
-  const fetchVideos = useCallback(async () => {
+  const fetchVideos = useCallback(async (page: number, pageSize: number) => {
     try {
-      const response = await getVideos();
+      const response = await getVideos(page, pageSize);
       const sortedVideos = sortByDateDesc(
-        response?.data && Array.isArray(response.data) ? response.data : [],
+        response?.data && Array.isArray(response.data.items)
+          ? response.data.items
+          : [],
         "createdAt"
       );
-      setVideos(sortedVideos);
+
+      return {
+        items: sortedVideos ?? [],
+        totalCount: response?.data?.totalRecords ?? 0,
+      };
     } catch (error: any) {
       showToast(extractErrorMessage(error, "Failed to load videos"), "error");
     }
   }, []);
 
+  const table = useServerTable<GetPaginatedVideos>(fetchVideos, {
+    initialPage: 0,
+    initialRowsPerPage: 10,
+  });
+
   useFocusEffect(
     useCallback(() => {
       setShowAddView(false);
-      fetchVideos();
-    }, [fetchVideos])
+      table.fetchData(0, 10);
+    }, [])
   );
 
   const handleAddVideo = async (videoData: any) => {
@@ -51,7 +63,7 @@ export default function UploadVideoScreen() {
       setUploading(true);
       await uploadVideo(videoData);
       setUploading(false);
-      await fetchVideos();
+      await table.fetchData(0, table.rowsPerPage);
       setShowAddView(false);
     } catch (error) {
       showToast(extractErrorMessage(error, "Failed to add video"), "error");
@@ -68,7 +80,7 @@ export default function UploadVideoScreen() {
   const handleShareRequest = async (id: string) => {
     try {
       await shareVideoById(id, true);
-      await fetchVideos();
+      await table.fetchData(table.page, table.rowsPerPage);
     } catch (error) {
       showToast(extractErrorMessage(error, "Failed to share video"), "error");
     }
@@ -77,7 +89,7 @@ export default function UploadVideoScreen() {
   const handleUnShareRequest = async (id: string) => {
     try {
       await shareVideoById(id, false);
-      await fetchVideos();
+      await table.fetchData(table.page, table.rowsPerPage);
     } catch (error) {
       showToast(extractErrorMessage(error, "Failed to share video"), "error");
     }
@@ -87,7 +99,7 @@ export default function UploadVideoScreen() {
     if (selectedVideoId) {
       try {
         await deleteVideoById(selectedVideoId);
-        await fetchVideos();
+        await table.fetchData(table.page, table.rowsPerPage);
         showToast("Video deleted successfully!", "success");
       } catch (error: any) {
         showToast(
@@ -125,13 +137,21 @@ export default function UploadVideoScreen() {
                   buttonColor={colors.primary}
                   textColor={colors.onPrimary}
                 >
-                  Add Video(s)
+                  Add Video
                 </Button>
               </View>
 
               {/* Video Listing */}
               <VideoTable
-                videos={videos}
+                data={table.data}
+                page={table.page}
+                rowsPerPage={table.rowsPerPage}
+                totalCount={table.total}
+                onPageChange={table.setPage}
+                onRowsPerPageChange={(size) => {
+                  table.setRowsPerPage(size);
+                  table.setPage(0);
+                }}
                 onShare={handleShareRequest}
                 onUnshare={handleUnShareRequest}
                 onDelete={handleDeleteRequest}

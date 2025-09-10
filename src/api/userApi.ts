@@ -3,21 +3,22 @@ import {
   User,
   CreateUserPayload,
   EditUserPayload,
+  GetPaginatedUsers,
 } from "../types/User";
 import { base64ToBlob } from "../utils/common";
 
 /**
  * Get paginated users with optional search
  */
-export const getUsers = () =>
-  axios.get<User>("/Users/get-users", { useApiPrefix: true });
+export const getUsers = (pageNumber, pageSize) =>
+  axios.get<GetPaginatedUsers>(`/Users/users?page=${pageNumber + 1}&pageSize=${pageSize}`, { useApiPrefix: true });
 
 
 /**
  * Get paginated customer admins with optional search
  */
-export const getCustomerAdmins = () =>
-  axios.get<User>("/Users/get-admins", { useApiPrefix: true });
+export const getCustomerAdmins = (pageNumber, pageSize) =>
+  axios.get<GetPaginatedUsers>(`/Users/get-admins?page=${pageNumber + 1}&pageSize=${pageSize}`, { useApiPrefix: true });
 
 /**
  * Add new user

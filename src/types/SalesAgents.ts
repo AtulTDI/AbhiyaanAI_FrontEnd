@@ -6,6 +6,14 @@ export type Distributor = {
   phoneNumber: string;
 }
 
+export type GetPaginatedDistributors = {
+  items: Distributor[];
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
+  totalRecords: number;
+}
+
 export type CreateDistributorPayload = {
   firstName: string;
   lastName: string;

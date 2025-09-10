@@ -11,18 +11,19 @@ import { useFocusEffect } from "@react-navigation/native";
 import {
   TabView,
   TabBar,
-  SceneRendererProps,
   TabBarItem,
+  SceneRendererProps,
 } from "react-native-tab-view";
 import { Asset } from "expo-asset";
 import * as FileSystem from "expo-file-system";
-import { Voter } from "../types/Voter";
 import * as Sharing from "expo-sharing";
 import VoterForm from "../components/VoterForm";
 import VoterUpload from "../components/VoterUpload";
 import VoterTable from "../components/VoterTable";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 import { useToast } from "../components/ToastProvider";
+import { CreateVoterPayload, EditVoterPayload, Voter } from "../types/Voter";
+import { useServerTable } from "../hooks/useServerTable";
 import {
   createVoter,
   deleteVoterById,
@@ -40,11 +41,9 @@ type TabRoute = {
 export default function AddVoterScreen() {
   const theme = useTheme<AppTheme>();
   const { colors } = theme;
-
   const layout = useWindowDimensions();
   const { showToast } = useToast();
 
-  const [voters, setVoters] = useState<Voter[]>([]);
   const [index, setIndex] = useState(0);
   const [showAddVoterView, setShowAddVoterView] = useState(false);
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
@@ -56,52 +55,47 @@ export default function AddVoterScreen() {
     { key: "excel", title: "Bulk Register" },
   ]);
 
-  const fetchVoters = useCallback(async () => {
-    try {
-      const response = await getVoters();
-      setVoters(
-        response?.data && Array.isArray(response.data) ? response.data : []
-      );
-    } catch (error: any) {
-      showToast(extractErrorMessage(error, "Failed to load voters"), "error");
-    }
+  const fetchVoters = useCallback(async (page: number, pageSize: number) => {
+    const response = await getVoters(page, pageSize);
+    return {
+      items: Array.isArray(response?.data?.items) ? response.data.items : [],
+      totalCount: response?.data?.totalRecords ?? 0,
+    };
   }, []);
+
+  const table = useServerTable<Voter>(fetchVoters, {
+    initialPage: 0,
+    initialRowsPerPage: 10,
+  });
 
   useFocusEffect(
     useCallback(() => {
       setShowAddVoterView(false);
       setVoterToEdit(null);
-      fetchVoters();
-    }, [fetchVoters])
+      table.fetchData(0, 10);
+    }, [])
   );
 
-  const addVoter = async (voterData: {
-    firstName: string;
-    lastName: string;
-    phoneNumber: string;
-  }) => {
+  const addVoter = async (voterData: CreateVoterPayload) => {
     try {
       await createVoter(voterData);
-      await fetchVoters();
+      table.fetchData(0, table.rowsPerPage);
+      showToast("Voter registered successfully!", "success");
       setShowAddVoterView(false);
       setVoterToEdit(null);
-      showToast("Voter registered successfully!", "success");
     } catch (error: any) {
       showToast(extractErrorMessage(error, "Failed to create voter"), "error");
     }
   };
 
-  const editVoter = async (voterData: {
-    firstName: string;
-    lastName: string;
-    phoneNumber: string;
-  }) => {
+  const editVoter = async (voterData: EditVoterPayload) => {
+    if (!voterToEdit) return;
     try {
       await editVoterById(voterToEdit.id, voterData);
-      await fetchVoters();
+      await table.fetchData(table.page, table.rowsPerPage);
+      showToast("Voter updated successfully!", "success");
       setShowAddVoterView(false);
       setVoterToEdit(null);
-      showToast("Voter updated successfully!", "success");
     } catch (error: any) {
       showToast(extractErrorMessage(error, "Failed to update voter"), "error");
     }
@@ -121,7 +115,7 @@ export default function AddVoterScreen() {
     if (selectedVoterId) {
       try {
         await deleteVoterById(selectedVoterId);
-        await fetchVoters();
+        table.fetchData(table.page, table.rowsPerPage);
         showToast("Voter deleted successfully!", "success");
       } catch (error: any) {
         showToast(
@@ -148,14 +142,11 @@ export default function AddVoterScreen() {
           require("../assets/sample-voter-upload.xlsx")
         );
         await asset.downloadAsync();
-
         const dest = `${FileSystem.cacheDirectory}sample-voter-upload.xlsx`;
-
         await FileSystem.copyAsync({
           from: asset.localUri || asset.uri,
           to: dest,
         });
-
         await Sharing.shareAsync(dest);
       }
     } catch (error) {
@@ -196,9 +187,8 @@ export default function AddVoterScreen() {
                 Download Sample
               </Button>
             </View>
-
             <VoterUpload
-              fetchVoters={fetchVoters}
+              fetchVoters={() => table.fetchData(0, table.rowsPerPage)}
               setShowAddVoterView={setShowAddVoterView}
             />
           </View>
@@ -272,7 +262,6 @@ export default function AddVoterScreen() {
             </Button>
           )}
         </View>
-
         {showAddVoterView ? (
           <KeyboardAvoidingView
             behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -300,13 +289,21 @@ export default function AddVoterScreen() {
           </KeyboardAvoidingView>
         ) : (
           <VoterTable
-            voters={voters}
+            data={table.data}
+            page={table.page}
+            rowsPerPage={table.rowsPerPage}
+            totalCount={table.total}
+            loading={table.loading}
+            onPageChange={table.setPage}
+            onRowsPerPageChange={(size) => {
+              table.setRowsPerPage(size);
+              table.setPage(0);
+            }}
             onEdit={handleEdit}
             onDelete={handleDeleteRequest}
           />
         )}
       </Surface>
-
       <DeleteConfirmationDialog
         visible={deleteDialogVisible}
         title="Delete Voter"

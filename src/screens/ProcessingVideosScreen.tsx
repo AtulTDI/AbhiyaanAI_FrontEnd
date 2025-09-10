@@ -10,7 +10,7 @@ import {
 import { useFocusEffect } from "@react-navigation/native";
 import dayjs from "dayjs";
 import { Feather, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { Voter } from "../types/Voter";
+import { GetPaginatedVoters, Voter } from "../types/Voter";
 import { extractErrorMessage } from "../utils/common";
 import { useToast } from "../components/ToastProvider";
 import ProgressChip from "../components/ProgressChip";
@@ -24,6 +24,8 @@ import {
   onEvent,
 } from "../services/signalrService";
 import { AppTheme } from "../theme";
+import { useServerTable } from "../hooks/useServerTable";
+import { generateCustomisedVideo } from "../api/videoApi";
 
 type VoterStatus =
   | "InQueue"
@@ -44,49 +46,78 @@ export default function ProcessingVideosScreen() {
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  const completedCount = useMemo(() => {
-    return totalCount - voters.length;
-  }, [totalCount, voters]);
-
-  useEffect(() => {
-    const handleProgressUpdate = (recipientId: string, status: VoterStatus) => {
-      console.log("📩 Update:", recipientId, status);
-
-      setVoterStatuses((prev) => ({ ...prev, [recipientId]: status }));
-
-      if (status === "Completed") {
-        setVoters((prev) => prev.filter((v) => v.id !== recipientId));
-        leaveGroups(recipientId);
-      }
-    };
-
-    onEvent("ReceiveVideoUpdate", handleProgressUpdate);
-  }, []);
-
-  const fetchVoters = async () => {
+  const fetchVoters = useCallback(async (page: number, pageSize: number) => {
     setLoading(true);
     try {
-      const response = await getVotersWithInProgressVidoes();
-      const voterList = Array.isArray(response?.data) ? response.data : [];
+      const response = await getVotersWithInProgressVidoes(page, pageSize);
+      const voterList = Array.isArray(response?.data?.items)
+        ? response.data.items
+        : [];
 
-      setVoters(voterList);
-      setTotalCount(voterList.length);
+      setTotalCount(response?.data?.totalRecords);
 
       const { accessToken } = await getAuthData();
       await startConnection(accessToken);
       await joinGroups(voterList.map((v) => v.id));
+
+      return {
+        items: voterList ?? [],
+        totalCount: response?.data?.totalRecords ?? 0,
+      };
     } catch (error: any) {
       showToast(extractErrorMessage(error, "Failed to load voters"), "error");
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  const table = useServerTable<GetPaginatedVoters>(fetchVoters, {
+    initialPage: 0,
+    initialRowsPerPage: 10,
+  });
+
+  const completedCount = useMemo(() => {
+    return table.total - table.data.length;
+  }, [table.total, table.data.length]);
+
+  useEffect(() => {
+    const handleProgressUpdate = (recipientId: string, status: VoterStatus) => {
+      setVoterStatuses((prev) => ({ ...prev, [recipientId]: status }));
+
+      if (status === "Completed") {
+        table.fetchData(table.page, table.rowsPerPage);
+        leaveGroups(recipientId);
+      }
+    };
+
+    onEvent("ReceiveVideoUpdate", handleProgressUpdate);
+  }, [table.page, table.rowsPerPage, table.fetchData]);
 
   useFocusEffect(
     useCallback(() => {
-      fetchVoters();
+      table.fetchData(0, 10);
     }, [])
   );
+
+  const handleRerun = async (voter: Voter) => {
+    const payload = {
+      baseVideoId: voter.baseVideoId,
+      recipientIds: [voter.id],
+    };
+
+    try {
+      await generateCustomisedVideo(payload);
+      setTimeout(() => {
+        table.fetchData(table.page, table.rowsPerPage);
+      }, 1000);
+      showToast(`Re-running video for ${voter.fullName}`, "info");
+    } catch (error: any) {
+      showToast(
+        extractErrorMessage(error, "Failed to generate videos"),
+        "error"
+      );
+    }
+  };
 
   const getStatusView = (status: VoterStatus, item: Voter) => {
     switch (status) {
@@ -170,6 +201,14 @@ export default function ProcessingVideosScreen() {
             <Text style={{ fontSize: 12, color: colors.criticalError }}>
               Failed
             </Text>
+            <IconButton
+              icon={() => (
+                <Feather name="rotate-cw" size={15} color={colors.primary} />
+              )}
+              onPress={() => handleRerun(item)}
+              accessibilityLabel="Rerun processing"
+              style={{ margin: 0, width: 15 }}
+            />
           </View>
         );
       default:
@@ -221,7 +260,7 @@ export default function ProcessingVideosScreen() {
       </View>
 
       <CommonTable
-        data={voters}
+        data={table.data}
         columns={columns}
         emptyIcon={
           <Ionicons
@@ -232,6 +271,14 @@ export default function ProcessingVideosScreen() {
         }
         emptyText="No voters found"
         loading={loading}
+        page={table.page}
+        rowsPerPage={table.rowsPerPage}
+        totalCount={table.total}
+        onPageChange={table.setPage}
+        onRowsPerPageChange={(size) => {
+          table.setRowsPerPage(size);
+          table.setPage(0);
+        }}
       />
     </Surface>
   );
@@ -240,5 +287,5 @@ export default function ProcessingVideosScreen() {
 const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
     container: { padding: 16, flex: 1, backgroundColor: theme.colors.white },
-    heading: { fontWeight: "bold" }
+    heading: { fontWeight: "bold" },
   });

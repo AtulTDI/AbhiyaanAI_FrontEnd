@@ -6,6 +6,14 @@ export type Video = {
   file: any;
 }
 
+export type GetPaginatedVideos = {
+  items: Video[];
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
+  totalRecords: number;
+}
+
 export type GenerateVideo = {
   baseVideoId: string;
   recipientIds: string[];

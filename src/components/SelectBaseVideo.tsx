@@ -1,14 +1,16 @@
 import React, { useCallback, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { RadioButton, useTheme } from "react-native-paper";
+import { useFocusEffect } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import CommonTable from "./CommonTable";
 import { getVideos } from "../api/videoApi";
 import { useToast } from "./ToastProvider";
 import { useVideoPreview } from "./VideoPreviewContext";
-import { extractErrorMessage } from "../utils/common";
-import { useFocusEffect } from "@react-navigation/native";
+import { extractErrorMessage, sortByDateDesc } from "../utils/common";
 import { AppTheme } from "../theme";
+import { useServerTable } from "../hooks/useServerTable";
+import { GetPaginatedVideos } from "../types/Video";
 
 type BaseVideo = {
   id: string;
@@ -20,35 +22,45 @@ export default function SelectBaseVideo({ stepData, setStepData }) {
   const styles = createStyles(theme);
   const { colors } = theme;
   const { open } = useVideoPreview();
-  const [videos, setVideos] = useState<any[]>([]);
   const { showToast } = useToast();
 
-  const fetchVideos = useCallback(async () => {
+  const fetchVideos = useCallback(async (page: number, pageSize: number) => {
     try {
-      const response = await getVideos();
-
-      const videosData =
-        response?.data && Array.isArray(response.data) ? response.data : [];
-
-      setVideos(videosData);
+      const response = await getVideos(page, pageSize);
+      const sortedVideos = sortByDateDesc(
+        response?.data && Array.isArray(response.data.videos.items)
+          ? response.data.videos.items
+          : [],
+        "createdAt"
+      );
 
       setStepData((prev) => ({
         ...prev,
-        0: prev[0] ? prev[0] : videosData.length > 0 ? videosData[0].id : null,
+        0: prev[0]
+          ? prev[0]
+          : sortedVideos.length > 0
+          ? sortedVideos[0].id
+          : null,
       }));
+
+      return {
+        items: sortedVideos ?? [],
+        totalCount: response?.data?.totalRecords ?? 0,
+      };
     } catch (error: any) {
-      if (error?.response || error?.message) {
-        showToast(extractErrorMessage(error, "Failed to load videos"), "error");
-      } else {
-        console.warn("No response received or unknown error:", error);
-      }
+      showToast(extractErrorMessage(error, "Failed to load videos"), "error");
     }
   }, []);
 
+  const table = useServerTable<GetPaginatedVideos>(fetchVideos, {
+    initialPage: 0,
+    initialRowsPerPage: 10,
+  });
+
   useFocusEffect(
     useCallback(() => {
-      fetchVideos();
-    }, [fetchVideos])
+      table.fetchData(0, 10);
+    }, [])
   );
 
   const columns = [
@@ -120,7 +132,7 @@ export default function SelectBaseVideo({ stepData, setStepData }) {
   return (
     <View style={{ flex: 1 }}>
       <CommonTable
-        data={videos}
+        data={table.data}
         columns={customColumns}
         keyExtractor={(item) => item.id}
         emptyIcon={
@@ -132,6 +144,14 @@ export default function SelectBaseVideo({ stepData, setStepData }) {
         }
         emptyText="No videos found"
         tableWithSelection={true}
+        page={table.page}
+        rowsPerPage={table.rowsPerPage}
+        totalCount={table.total}
+        onPageChange={table.setPage}
+        onRowsPerPageChange={(size) => {
+          table.setRowsPerPage(size);
+          table.setPage(0);
+        }}
       />
     </View>
   );

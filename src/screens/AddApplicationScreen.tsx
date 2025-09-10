@@ -13,45 +13,60 @@ import {
   Application,
   CreateApplicationPayload,
   EditApplicationPayload,
+  GetPaginatedApplications,
 } from "../types/Application";
 import { useToast } from "../components/ToastProvider";
 import ApplicationsTable from "../components/ApplicationsTable";
 import ApplicationForm from "../components/ApplicationForm";
 import { extractErrorMessage, sortByDateDesc } from "../utils/common";
 import { AppTheme } from "../theme";
+import { useServerTable } from "../hooks/useServerTable";
 
 export default function AddApplicationScreen() {
   const theme = useTheme<AppTheme>();
   const styles = createStyles(theme);
   const { showToast } = useToast();
 
-  const [applications, setApplications] = useState([]);
   const [showAddApplicationView, setShowAddApplicationView] = useState(false);
   const [applicationToEdit, setApplicationToEdit] =
     useState<Application | null>(null);
 
-  const fetchApplications = useCallback(async () => {
-    try {
-      const response = await getApplications();
-      const sortedApps = sortByDateDesc(response?.data || [], "createdAt");
-      setApplications(sortedApps);
-    } catch (error) {
-      showToast("Failed to load applications", "error");
-    }
-  }, []);
+  const fetchApplications = useCallback(
+    async (page: number, pageSize: number) => {
+      try {
+        const response = await getApplications(page, pageSize);
+        const sortedApps = sortByDateDesc(
+          response?.data?.items || [],
+          "createdAt"
+        );
+        return {
+          items: sortedApps ?? [],
+          totalCount: response?.data?.totalRecords ?? 0,
+        };
+      } catch (error) {
+        showToast("Failed to load applications", "error");
+      }
+    },
+    []
+  );
+
+  const table = useServerTable<GetPaginatedApplications>(fetchApplications, {
+    initialPage: 0,
+    initialRowsPerPage: 10,
+  });
 
   useFocusEffect(
     useCallback(() => {
       setShowAddApplicationView(false);
       setApplicationToEdit(null);
-      fetchApplications();
-    }, [fetchApplications])
+      table.fetchData(0, 10);
+    }, [])
   );
 
   const addApplication = async (data: CreateApplicationPayload) => {
     try {
       await createApplication(data);
-      await fetchApplications();
+      await table.fetchData(0, table.rowsPerPage);
       setShowAddApplicationView(false);
       setApplicationToEdit(null);
       showToast("Application added", "success");
@@ -68,7 +83,7 @@ export default function AddApplicationScreen() {
         name: data?.appName,
         isActive: applicationToEdit?.isActive,
       });
-      await fetchApplications();
+      await table.fetchData(table.page, table.rowsPerPage);
       setShowAddApplicationView(false);
       setApplicationToEdit(null);
       showToast("Application updated", "success");
@@ -88,7 +103,7 @@ export default function AddApplicationScreen() {
   const handleToggle = async (item: Application) => {
     try {
       await toggleApplication(item.id, !item.isActive);
-      await fetchApplications();
+      await table.fetchData(table.page, table.rowsPerPage);
       showToast("Application updated", "success");
     } catch (error: any) {
       showToast(
@@ -137,7 +152,16 @@ export default function AddApplicationScreen() {
         />
       ) : (
         <ApplicationsTable
-          applications={applications}
+          data={table.data}
+          page={table.page}
+          rowsPerPage={table.rowsPerPage}
+          totalCount={table.total}
+          loading={table.loading}
+          onPageChange={table.setPage}
+          onRowsPerPageChange={(size) => {
+            table.setRowsPerPage(size);
+            table.setPage(0);
+          }}
           onEdit={handleEdit}
           onToggleStatus={handleToggle}
         />
