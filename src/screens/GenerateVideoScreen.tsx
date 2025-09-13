@@ -195,6 +195,23 @@ export default function GenerateVideoScreen() {
         })}
       </View>
 
+      {/* Count Section */}
+      {activeStep === 1 && (
+        <Surface style={styles.countContainer} elevation={1}>
+          <Ionicons
+            name="people-circle-outline"
+            size={28}
+            color={colors.primary}
+            style={{ marginRight: 10 }}
+          />
+          <Text style={styles.countText}>
+            Selected:{" "}
+            <Text style={styles.countHighlight}>{selectedVoterCount} / </Text>
+            {totalVoterCount}
+          </Text>
+        </Surface>
+      )}
+
       {/* Step Content */}
       <View style={styles.content}>{renderStepContent()}</View>
 
@@ -224,7 +241,7 @@ export default function GenerateVideoScreen() {
           {activeStep === steps.length - 1
             ? isLoading
               ? "Generating..."
-              : `Generate Video (${selectedVoterCount}/${totalVoterCount})`
+              : "Generate Video"
             : "Next"}
         </Button>
       </View>
@@ -342,5 +359,22 @@ const createStyles = (theme: AppTheme) =>
       textAlign: "center",
       marginBottom: 6,
       lineHeight: 22,
+    },
+    countContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+      alignSelf: "center",
+      paddingVertical: 8,
+      paddingHorizontal: 14,
+      borderRadius: 12,
+      backgroundColor: theme.colors.background,
+    },
+    countText: {
+      fontSize: 16,
+      color: theme.colors.textPrimary,
+    },
+    countHighlight: {
+      fontWeight: "700",
+      color: theme.colors.textPrimary,
     },
   });

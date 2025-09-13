@@ -101,6 +101,5 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 5,
-    marginLeft: 10,
   },
 });

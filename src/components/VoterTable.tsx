@@ -56,7 +56,7 @@ export default function VoterTable({
     {
       label: "Actions",
       key: "actions",
-      flex: 1,
+      flex: 0.9,
       smallColumn: true,
       render: (item: Voter) => (
         <View style={styles.actions}>

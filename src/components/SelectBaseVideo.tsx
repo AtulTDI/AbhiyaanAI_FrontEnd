@@ -168,7 +168,7 @@ const createStyles = (theme: AppTheme) =>
       flexDirection: "row",
       alignItems: "center",
       gap: 5,
-      marginLeft: 20,
+      marginLeft: 10,
     },
     fullscreenContainer: {
       flex: 1,

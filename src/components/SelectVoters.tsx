@@ -149,7 +149,7 @@ export default function SelectVoters({
         keyExtractor={(item) => item.id}
         loading={loading}
         tableWithSelection={true}
-        tableHeight="calc(100vh - 365px)"
+        tableHeight="calc(100vh - 410px)"
         onPageChange={table.setPage}
         onRowsPerPageChange={(size) => {
           table.setRowsPerPage(size);
