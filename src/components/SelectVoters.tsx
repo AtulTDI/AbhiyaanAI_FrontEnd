@@ -1,12 +1,10 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { Checkbox, useTheme } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import CommonTable from "../components/CommonTable";
 import { GetPaginatedVoters, Voter } from "../types/Voter";
 import { getVotersForProcessing } from "../api/voterApi";
-import { extractErrorMessage } from "../utils/common";
-import { useToast } from "./ToastProvider";
 import { useFocusEffect } from "@react-navigation/native";
 import { AppTheme } from "../theme";
 import { useServerTable } from "../hooks/useServerTable";
@@ -27,11 +25,18 @@ const columns = [
   { label: "Mobile", key: "phoneNumber", flex: 0.8 },
 ];
 
-export default function SelectVoters({ stepData, setStepData }) {
+export default function SelectVoters({
+  stepData,
+  setStepData,
+  getTotalVotersCount,
+  getSelectedVotersCount,
+}) {
   const theme = useTheme<AppTheme>();
   const { colors } = theme;
+  const [loading, setLoading] = useState(false);
 
   const isSelected = (id: string) => stepData[1]?.includes(id);
+
   const toggleSelection = (id: string) => {
     setStepData((prev) => {
       const current = prev[1] || [];
@@ -39,24 +44,31 @@ export default function SelectVoters({ stepData, setStepData }) {
         ? current.filter((x) => x !== id)
         : [...current, id];
 
-      return {
-        ...prev,
-        1: updated,
-      };
+      return { ...prev, 1: updated };
     });
   };
 
   const fetchVoters = useCallback(
     (page: number, pageSize: number, baseVideoId: string | null) => {
-      if (!baseVideoId) return Promise.resolve({ items: [], totalCount: 0 });
-      return getVotersForProcessing(baseVideoId, page, pageSize).then(
-        (response) => ({
+      setLoading(true);
+
+      if (!baseVideoId) {
+        setLoading(false);
+        return Promise.resolve({ items: [], totalCount: 0 });
+      }
+
+      return getVotersForProcessing(baseVideoId, page, pageSize)
+        .then((response) => ({
           items: Array.isArray(response?.data?.items)
             ? response.data.items
             : [],
           totalCount: response?.data?.totalRecords ?? 0,
+        }))
+        .catch((error) => {
+          console.error("Failed to fetch voters:", error);
+          return { items: [], totalCount: 0 };
         })
-      );
+        .finally(() => setLoading(false));
     },
     []
   );
@@ -72,6 +84,19 @@ export default function SelectVoters({ stepData, setStepData }) {
       table.fetchData(0, 10);
     }, [])
   );
+
+  // 🔹 Keep parent updated with total voters count
+  useEffect(() => {
+    if (getTotalVotersCount) {
+      getTotalVotersCount(table.total ?? 0);
+    }
+  }, [table.total, getTotalVotersCount]);
+
+  useEffect(() => {
+    if (getSelectedVotersCount) {
+      getSelectedVotersCount(stepData[1]?.length ?? 0);
+    }
+  }, [stepData[1], getSelectedVotersCount]);
 
   const toggleSelectAll = () => {
     if (stepData[1].length === table.data.length) {
@@ -122,7 +147,9 @@ export default function SelectVoters({ stepData, setStepData }) {
         }
         emptyText="No voters found"
         keyExtractor={(item) => item.id}
+        loading={loading}
         tableWithSelection={true}
+        tableHeight="calc(100vh - 365px)"
         onPageChange={table.setPage}
         onRowsPerPageChange={(size) => {
           table.setRowsPerPage(size);
@@ -141,14 +168,5 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 12,
     paddingTop: 8,
-  },
-  generateContainer: {
-    marginTop: 12,
-    alignItems: "flex-end",
-  },
-  btn: {
-    flex: 1,
-    marginHorizontal: 6,
-    borderRadius: 8,
   },
 });

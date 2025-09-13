@@ -39,7 +39,6 @@ export default function ProcessingVideosScreen() {
   const styles = createStyles(theme);
   const { colors } = theme;
   const { showToast } = useToast();
-  const [voters, setVoters] = useState<Voter[]>([]);
   const [voterStatuses, setVoterStatuses] = useState<
     Record<string, VoterStatus>
   >({});
@@ -264,12 +263,12 @@ export default function ProcessingVideosScreen() {
         columns={columns}
         emptyIcon={
           <Ionicons
-            name="people-outline"
+            name="videocam-outline"
             size={48}
             color={colors.disabledText}
           />
         }
-        emptyText="No voters found"
+        emptyText="No vides found"
         loading={loading}
         page={table.page}
         rowsPerPage={table.rowsPerPage}

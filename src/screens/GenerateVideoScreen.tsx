@@ -31,6 +31,8 @@ export default function GenerateVideoScreen() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [showOverlay, setShowOverlay] = useState(false);
+  const [totalVoterCount, setTotalVoterCount] = useState(0);
+  const [selectedVoterCount, setSelectedVoterCount] = useState(0);
 
   useFocusEffect(
     useCallback(() => {
@@ -120,7 +122,14 @@ export default function GenerateVideoScreen() {
           <SelectBaseVideo stepData={stepData} setStepData={setStepData} />
         );
       case 1:
-        return <SelectVoters stepData={stepData} setStepData={setStepData} />;
+        return (
+          <SelectVoters
+            stepData={stepData}
+            setStepData={setStepData}
+            getTotalVotersCount={(count) => setTotalVoterCount(count)}
+            getSelectedVotersCount={(count) => setSelectedVoterCount(count)}
+          />
+        );
       default:
         return null;
     }
@@ -215,7 +224,7 @@ export default function GenerateVideoScreen() {
           {activeStep === steps.length - 1
             ? isLoading
               ? "Generating..."
-              : "Generate Video"
+              : `Generate Video (${selectedVoterCount}/${totalVoterCount})`
             : "Next"}
         </Button>
       </View>

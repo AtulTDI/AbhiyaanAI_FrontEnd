@@ -26,8 +26,10 @@ export default function UploadVideoScreen() {
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
   const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const fetchVideos = useCallback(async (page: number, pageSize: number) => {
+    setLoading(true);
     try {
       const response = await getVideos(page, pageSize);
       const sortedVideos = sortByDateDesc(
@@ -43,6 +45,8 @@ export default function UploadVideoScreen() {
       };
     } catch (error: any) {
       showToast(extractErrorMessage(error, "Failed to load videos"), "error");
+    } finally {
+      setLoading(false);
     }
   }, []);
 
@@ -147,6 +151,7 @@ export default function UploadVideoScreen() {
                 page={table.page}
                 rowsPerPage={table.rowsPerPage}
                 totalCount={table.total}
+                loading={loading}
                 onPageChange={table.setPage}
                 onRowsPerPageChange={(size) => {
                   table.setRowsPerPage(size);

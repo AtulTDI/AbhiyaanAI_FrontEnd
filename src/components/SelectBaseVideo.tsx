@@ -23,8 +23,10 @@ export default function SelectBaseVideo({ stepData, setStepData }) {
   const { colors } = theme;
   const { open } = useVideoPreview();
   const { showToast } = useToast();
+  const [loading, showLoading] = useState(false);
 
   const fetchVideos = useCallback(async (page: number, pageSize: number) => {
+    showLoading(true);
     try {
       const response = await getVideos(page, pageSize);
       const sortedVideos = sortByDateDesc(
@@ -49,6 +51,8 @@ export default function SelectBaseVideo({ stepData, setStepData }) {
       };
     } catch (error: any) {
       showToast(extractErrorMessage(error, "Failed to load videos"), "error");
+    } finally {
+      showLoading(false);
     }
   }, []);
 
@@ -143,6 +147,7 @@ export default function SelectBaseVideo({ stepData, setStepData }) {
           />
         }
         emptyText="No videos found"
+        loading={loading}
         tableWithSelection={true}
         page={table.page}
         rowsPerPage={table.rowsPerPage}

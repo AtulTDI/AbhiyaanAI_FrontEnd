@@ -144,7 +144,7 @@ export default function ActivateSenderScreen() {
           <CommonTable
             data={table.data}
             columns={columns}
-            loading={table.loading}
+            loading={table.loading || loadingUsers}
             emptyIcon={
               <Ionicons
                 name="people-outline"
@@ -153,6 +153,7 @@ export default function ActivateSenderScreen() {
               />
             }
             emptyText="No senders found"
+            tableHeight="calc(100vh - 320px)"
             onPageChange={table.setPage}
             onRowsPerPageChange={(size) => {
               table.setRowsPerPage(size);

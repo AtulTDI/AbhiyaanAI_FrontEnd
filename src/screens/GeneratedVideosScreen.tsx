@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { View, StyleSheet, ActivityIndicator } from "react-native";
 import { IconButton, Surface, Text, useTheme } from "react-native-paper";
 import dayjs from "dayjs";
@@ -24,7 +24,6 @@ export default function GeneratedVideoScreen() {
 
   const [baseVideos, setBaseVideos] = useState<any[]>([]);
   const [selectedVideoId, setSelectedVideoId] = useState(null);
-  const [voters, setVoters] = useState<Voter[]>([]);
   const [loading, setLoading] = useState(false);
   const [sendingId, setSendingId] = useState<string | null>(null);
   const [sentIds, setSentIds] = useState<Set<string>>(new Set());
@@ -55,20 +54,27 @@ export default function GeneratedVideoScreen() {
 
   const fetchVoters = useCallback(
     async (page: number, pageSize: number, videoId: string | null) => {
-      if (!videoId) return Promise.resolve({ items: [], totalCount: 0 });
+      if (!videoId) {
+        return { items: [], totalCount: 0 };
+      }
 
+      setLoading(true);
       try {
-        setLoading(true);
-        return getVotersWithCompletedVideoId(videoId, page, pageSize).then(
-          (response) => ({
-            items: Array.isArray(response?.data?.items)
-              ? response.data.items
-              : [],
-            totalCount: response?.data?.totalRecords ?? 0,
-          })
+        const response = await getVotersWithCompletedVideoId(
+          videoId,
+          page,
+          pageSize
         );
+
+        return {
+          items: Array.isArray(response?.data?.items)
+            ? response.data.items
+            : [],
+          totalCount: response?.data?.totalRecords ?? 0,
+        };
       } catch (error: any) {
         showToast(extractErrorMessage(error, "Failed to load voters"), "error");
+        return { items: [], totalCount: 0 }; // safe fallback
       } finally {
         setLoading(false);
       }
@@ -198,12 +204,13 @@ export default function GeneratedVideoScreen() {
             loading={loading}
             emptyIcon={
               <Ionicons
-                name="people-outline"
+                name="videocam-outline"
                 size={48}
                 color={colors.disabledText}
               />
             }
-            emptyText="No voters found"
+            emptyText="No videos found"
+            tableHeight="calc(100vh - 320px)"
             onPageChange={table.setPage}
             onRowsPerPageChange={(size) => {
               table.setRowsPerPage(size);

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -11,7 +11,7 @@ import {
 import { Menu, useTheme, ActivityIndicator } from "react-native-paper";
 import { MaterialIcons } from "@expo/vector-icons";
 import { AppTheme } from "../theme";
-import { Table, Row } from "react-native-table-component";
+import { Row } from "react-native-table-component";
 import { EllipsisCell } from "./EllipsisCell";
 
 type Column<T> = {
@@ -31,6 +31,7 @@ type Props<T> = {
   emptyIcon?: React.ReactNode;
   loading?: boolean;
   tableWithSelection?: boolean;
+  tableHeight?: string;
   page?: number;
   rowsPerPage?: number;
   totalCount?: number;
@@ -48,6 +49,7 @@ export default function CommonTable<T>({
   emptyIcon,
   loading = false,
   tableWithSelection,
+  tableHeight,
   page: controlledPage,
   rowsPerPage: controlledRowsPerPage,
   totalCount,
@@ -65,6 +67,7 @@ export default function CommonTable<T>({
   const [menuVisible, setMenuVisible] = useState(false);
   const [wrapperWidth, setWrapperWidth] = useState(0);
   const [visibleTooltip, setVisibleTooltip] = useState<string | null>(null);
+  const [showLoading, setShowLoading] = useState(loading);
 
   const page = controlledPage ?? internalPage;
   const rowsPerPage = controlledRowsPerPage ?? internalRowsPerPage;
@@ -82,7 +85,7 @@ export default function CommonTable<T>({
           {
             key: "__sno__",
             label: "S.No.",
-            flex: columns?.length > 7 ? 0.3 : 0.1,
+            flex: columns?.length > 7 ? 0.3 : totalCount >= 100 ? 0.2 : 0.1,
             smallColumn: true,
             render: (_: T, index: number) => (
               <Text style={styles.dataCell}>{startIndex + index + 1}</Text>
@@ -116,7 +119,42 @@ export default function CommonTable<T>({
   });
 
   const enableHorizontalScroll = wrapperWidth < 900 || columns.length > 7;
-  const availableHeight = screenHeight * 0.66;
+  const availableHeight =
+    Platform.OS === "web"
+      ? tableHeight
+        ? tableHeight
+        : "calc(100vh - 260px)"
+      : screenHeight * 0.66;
+
+  const skeletonRows = Array.from({ length: 8 }).map((_, idx) => (
+    <View key={idx} style={[styles.dataRow, { flexDirection: "row" }]}>
+      {enhancedColumns.map((col, colIndex) => (
+        <View
+          key={colIndex}
+          style={{
+            width: widthArr[colIndex],
+            height: 20,
+            backgroundColor: theme.colors.borderGray,
+            marginVertical: 12,
+            borderRadius: 4,
+          }}
+        />
+      ))}
+    </View>
+  ));
+
+  useEffect(() => {
+    let timer;
+    if (loading) {
+      setShowLoading(true);
+    } else {
+      timer = setTimeout(() => setShowLoading(false), 500);
+    }
+
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [loading]);
 
   const handlePageChange = (newPage: number) => {
     if (onPageChange) {
@@ -142,10 +180,35 @@ export default function CommonTable<T>({
         style={styles.tableWrapper}
         onLayout={(event) => setWrapperWidth(event.nativeEvent.layout.width)}
       >
-        {loading ? (
-          <View style={styles.loaderContainer}>
-            <ActivityIndicator size="large" />
-          </View>
+        {showLoading ? (
+          <>
+            <Row
+              data={tableHead.map((head, idx) => (
+                <View
+                  key={idx}
+                  style={{ width: widthArr[idx], justifyContent: "center" }}
+                >
+                  <Text
+                    style={[
+                      styles.headerCell,
+                      { color: colors.white, width: "100%" },
+                    ]}
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                  >
+                    {head}
+                  </Text>
+                </View>
+              ))}
+              style={styles.headerRow}
+              widthArr={widthArr}
+            />
+
+            <View style={styles.loaderContainer}>
+              <ActivityIndicator size="large" color={colors.primary} />
+              <Text style={styles.loaderText}>Loading data...</Text>
+            </View>
+          </>
         ) : data.length === 0 ? (
           <View style={styles.emptyContainer}>
             {emptyIcon ?? (
@@ -438,6 +501,11 @@ const createStyles = (theme: AppTheme) =>
       flex: 1,
       justifyContent: "center",
       alignItems: "center",
+    },
+    loaderText: {
+      marginTop: 10,
+      fontSize: 14,
+      color: theme.colors.darkerGrayText,
     },
     emptyText: {
       fontSize: 15,
