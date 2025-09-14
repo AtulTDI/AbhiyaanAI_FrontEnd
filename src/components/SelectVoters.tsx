@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { View, StyleSheet } from "react-native";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { View, StyleSheet, Pressable } from "react-native";
 import { Checkbox, useTheme } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import CommonTable from "../components/CommonTable";
@@ -35,18 +35,21 @@ export default function SelectVoters({
   const { colors } = theme;
   const [loading, setLoading] = useState(false);
 
-  const isSelected = (id: string) => stepData[1]?.includes(id);
+  const selectedIds: string[] = stepData[1] || [];
 
-  const toggleSelection = (id: string) => {
-    setStepData((prev) => {
-      const current = prev[1] || [];
-      const updated = current.includes(id)
-        ? current.filter((x) => x !== id)
-        : [...current, id];
+  const isSelected = (id: string) => selectedIds.includes(id);
 
-      return { ...prev, 1: updated };
-    });
-  };
+  const toggleSelection = useCallback(
+    (id: string) => {
+      setStepData((prev) => {
+        const current = prev[1] || [];
+        return current.includes(id)
+          ? { ...prev, 1: current.filter((x) => x !== id) }
+          : { ...prev, 1: [...current, id] };
+      });
+    },
+    [setStepData]
+  );
 
   const fetchVoters = useCallback(
     (page: number, pageSize: number, baseVideoId: string | null) => {
@@ -79,13 +82,32 @@ export default function SelectVoters({
     stepData[0]
   );
 
+  const toggleSelectAll = () => {
+    const currentPageIds = table.data.map((v) => v.id);
+    setStepData((prev) => {
+      const current = prev[1] || [];
+      const allSelectedOnPage =
+        currentPageIds.length > 0 &&
+        currentPageIds.every((id) => current.includes(id));
+
+      if (allSelectedOnPage) {
+        return {
+          ...prev,
+          1: current.filter((id) => !currentPageIds.includes(id)),
+        };
+      } else {
+        const merged = Array.from(new Set([...current, ...currentPageIds]));
+        return { ...prev, 1: merged };
+      }
+    });
+  };
+
   useFocusEffect(
     useCallback(() => {
       table.fetchData(0, 10);
     }, [])
   );
 
-  // 🔹 Keep parent updated with total voters count
   useEffect(() => {
     if (getTotalVotersCount) {
       getTotalVotersCount(table.total ?? 0);
@@ -94,44 +116,53 @@ export default function SelectVoters({
 
   useEffect(() => {
     if (getSelectedVotersCount) {
-      getSelectedVotersCount(stepData[1]?.length ?? 0);
+      getSelectedVotersCount(selectedIds.length ?? 0);
     }
-  }, [stepData[1], getSelectedVotersCount]);
+  }, [selectedIds, getSelectedVotersCount]);
 
-  const toggleSelectAll = () => {
-    if (stepData[1].length === table.data.length) {
-      setStepData({ ...stepData, 1: [] });
-    } else {
-      setStepData({ ...stepData, 1: table.data.map((v) => v.id) });
+  useEffect(() => {
+    if (stepData[0]) {
+      table.setPage(0);
+      table.setRowsPerPage(10);
+      table.fetchData(0, 10);
+      setStepData((prev) => ({ ...prev, 1: [] }));
     }
-  };
+  }, [stepData[0]]);
 
-  const tableColumns = [
-    {
-      ...columns[0],
-      render: (item: Voter) => (
-        <Checkbox
-          status={isSelected(item.id) ? "checked" : "unchecked"}
-          onPress={() => toggleSelection(item.id)}
-        />
-      ),
-      label: (
-        <Checkbox
-          status={
-            table.data.length > 0 && stepData[1]?.length === table.data.length
-              ? "checked"
-              : stepData[1]?.length === 0
-              ? "unchecked"
-              : "indeterminate"
-          }
-          onPress={toggleSelectAll}
-          color={colors.white}
-          uncheckedColor={colors.white}
-        />
-      ),
-    },
-    ...columns.slice(1),
-  ];
+  const headerCheckboxStatus = (() => {
+    const currentPageIds = table.data.map((v) => v.id);
+    if (currentPageIds.length === 0) return "unchecked";
+    const allSelected = currentPageIds.every((id) => selectedIds.includes(id));
+    const someSelected = currentPageIds.some((id) => selectedIds.includes(id));
+    return allSelected
+      ? "checked"
+      : someSelected
+      ? "indeterminate"
+      : "unchecked";
+  })();
+
+  const tableColumns = useMemo(
+    () => [
+      {
+        ...columns[0],
+        render: (item: Voter) => (
+          <Pressable onPress={() => toggleSelection(item.id)}>
+            <Checkbox status={isSelected(item.id) ? "checked" : "unchecked"} />
+          </Pressable>
+        ),
+        label: (
+          <Checkbox
+            status={headerCheckboxStatus}
+            onPress={toggleSelectAll}
+            color={colors.white}
+            uncheckedColor={colors.white}
+          />
+        ),
+      },
+      ...columns.slice(1),
+    ],
+    [isSelected, headerCheckboxStatus, toggleSelection, toggleSelectAll]
+  );
 
   return (
     <View style={styles.container}>

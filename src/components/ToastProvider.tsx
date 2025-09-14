@@ -45,13 +45,13 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
         Animated.timing(translateY, {
           toValue: 60,
           duration: 300,
-          useNativeDriver: true,
+          useNativeDriver: Platform.OS !== "web",
         }),
         Animated.delay(duration),
         Animated.timing(translateY, {
           toValue: -100,
           duration: 300,
-          useNativeDriver: true,
+          useNativeDriver: Platform.OS !== "web",
         }),
       ]).start(() => {
         setVisible(false);
@@ -108,7 +108,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
     <ToastContext.Provider value={{ showToast }}>
       {children}
       {visible && (
-        <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
+        <View style={[StyleSheet.absoluteFill, { pointerEvents: "box-none" }]}>
           <Animated.View
             style={[
               styles.toast,

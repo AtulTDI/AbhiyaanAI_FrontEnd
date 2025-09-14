@@ -7,6 +7,7 @@ export type Video = {
 }
 
 export type GetPaginatedVideos = {
+  videos: { items: Video[] };
   items: Video[];
   pageNumber: number;
   pageSize: number;

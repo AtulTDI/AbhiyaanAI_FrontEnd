@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { TouchableOpacity, StyleSheet, Animated, Easing } from "react-native";
+import { TouchableOpacity, StyleSheet, Animated, Easing, Platform } from "react-native";
 import { useTheme } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import CommonTable from "./CommonTable";
@@ -25,7 +25,7 @@ export default function ChannelsTable({
         toValue: 1,
         duration: 800,
         easing: Easing.linear,
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== "web",
       })
     );
     loopAnimation.current.start();
