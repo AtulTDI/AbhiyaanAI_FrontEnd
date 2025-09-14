@@ -151,7 +151,7 @@ export default function GeneratedVideoScreen() {
 
         if (sendStatus === "pending") {
           return (
-            <View style={{ justifyContent: "flex-start", marginLeft: 8 }}>
+            <View style={{ justifyContent: "flex-start" }}>
               <IconButton
                 style={{ margin: 0 }}
                 icon={() => (
