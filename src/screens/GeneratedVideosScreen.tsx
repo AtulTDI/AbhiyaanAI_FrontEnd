@@ -26,7 +26,6 @@ export default function GeneratedVideoScreen() {
   const [selectedVideoId, setSelectedVideoId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [sendingId, setSendingId] = useState<string | null>(null);
-  const [sentIds, setSentIds] = useState<Set<string>>(new Set());
 
   const fetchVideos = useCallback(async () => {
     try {
@@ -74,7 +73,7 @@ export default function GeneratedVideoScreen() {
         };
       } catch (error: any) {
         showToast(extractErrorMessage(error, "Failed to load voters"), "error");
-        return { items: [], totalCount: 0 }; // safe fallback
+        return { items: [], totalCount: 0 };
       } finally {
         setLoading(false);
       }
@@ -108,7 +107,7 @@ export default function GeneratedVideoScreen() {
         userId
       );
       showToast("Video sent successfully", "success");
-      setSentIds((prev) => new Set(prev).add(item.id));
+      await table.fetchData(table.page, table.rowsPerPage);
     } catch (error) {
       showToast("Error sending video", "error");
     } finally {
@@ -138,16 +137,7 @@ export default function GeneratedVideoScreen() {
       flex: 1,
       smallColumn: true,
       render: (item: Voter) => {
-        if (sentIds.has(item.id)) {
-          return (
-            <Ionicons
-              name="checkmark-circle"
-              size={24}
-              color={colors.success}
-              style={{ marginLeft: 8 }}
-            />
-          );
-        }
+        const sendStatus = item?.sendStatus?.toLowerCase?.() ?? "pending";
 
         if (sendingId === item.id) {
           return (
@@ -159,20 +149,31 @@ export default function GeneratedVideoScreen() {
           );
         }
 
+        if (sendStatus === "pending") {
+          return (
+            <View style={{ justifyContent: "flex-start", marginLeft: 8 }}>
+              <IconButton
+                style={{ margin: 0 }}
+                icon={() => (
+                  <FontAwesome
+                    name="whatsapp"
+                    size={20}
+                    color={colors.whatsappGreen}
+                  />
+                )}
+                onPress={() => handleSendVideo(item)}
+              />
+            </View>
+          );
+        }
+
         return (
-          <View style={{ justifyContent: "flex-start", marginLeft: 8 }}>
-            <IconButton
-              style={{ margin: 0 }}
-              icon={() => (
-                <FontAwesome
-                  name="whatsapp"
-                  size={20}
-                  color={colors.whatsappGreen}
-                />
-              )}
-              onPress={() => handleSendVideo(item)}
-            />
-          </View>
+          <Ionicons
+            name="checkmark-circle"
+            size={24}
+            color={colors.success}
+            style={{ marginLeft: 8 }}
+          />
         );
       },
     },

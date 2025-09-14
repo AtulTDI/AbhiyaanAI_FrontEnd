@@ -5,6 +5,7 @@ export type Voter = {
   createdAt?: string;
   createdBy?: string;
   baseVideoId?: string;
+  sendStatus?: string;
 }
 
 export type GetPaginatedVoters = {
