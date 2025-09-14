@@ -4,7 +4,8 @@ const ENV = process.env.APP_ENV || "development";
 const prefixes =
   ENV === "production"
     ? [
-        "http://13.51.244.195:5000",
+        "http://3.6.255.8:5000",
+        "http://3.6.255.8:5002",
         "abhiyanai://",
       ]
     : [

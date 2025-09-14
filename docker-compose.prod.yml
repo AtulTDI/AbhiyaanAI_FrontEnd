@@ -5,8 +5,8 @@ services:
       target: prod
       args:
         APP_ENV: production
-        PROD_API: http://13.51.244.195:5000
-        PROD_ALT_API: http://13.51.244.195:5000
+        PROD_API: http://3.6.255.8:5000
+        PROD_ALT_API: http://3.6.255.8:5002
     image: abhiyaan_ai_frontend:latest
     container_name: abhiyaanai_frontend
     ports:
