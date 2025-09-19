@@ -261,6 +261,7 @@ export default function GeneratedVideoScreen() {
           whatsAppNumber: `91${item.phoneNumber}`,
           message: whatsAppVideoDetails?.message,
         });
+        updateRowStatus(item.id, { sendStatus: "sent" });
       } catch (err) {
         console.error("Error sending video:", err);
       }
@@ -269,7 +270,7 @@ export default function GeneratedVideoScreen() {
 
   const columns = [
     { label: "Name", key: "fullName", flex: 0.8 },
-    { key: "phoneNumber", label: "Mobile", flex: 0.4 },
+    { label: "Mobile", key: "phoneNumber", flex: 0.4 },
     {
       label: "Created At",
       key: "createdAt",
@@ -547,9 +548,9 @@ const createStyles = (theme: AppTheme) =>
       alignItems: "center",
       padding: 8,
       borderRadius: 4,
-      backgroundColor: "#fafafa",
+      backgroundColor: theme.colors.paperBackground,
       borderWidth: 1,
-      borderColor: "#eaeaea",
+      borderColor: theme.colors.subtleBorder,
       marginBottom: 12,
       justifyContent: "space-between",
     },
@@ -584,7 +585,7 @@ const createStyles = (theme: AppTheme) =>
       right: 20,
       borderRadius: 28,
       elevation: 5,
-      shadowColor: "#000",
+      shadowColor: theme.colors.black,
       shadowOpacity: 0.15,
       shadowRadius: 6,
     },

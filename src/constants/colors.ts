@@ -14,6 +14,8 @@ const colors = {
   mutedBorder: "#dddddd",
   softGray: "#d1d5db",
   lightBackground: "#efefef",
+  paperBackground: "#fafafa",
+  subtleBorder: "#eaeaea", 
 
   // === Text Colors ===
   textPrimary: "#111111",

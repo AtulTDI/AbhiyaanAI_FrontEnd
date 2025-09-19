@@ -282,31 +282,6 @@ export default function AppLayout() {
             />
           )}
 
-          {/* {role === "Admin" && (
-            <Drawer.Screen
-              name="Register"
-              component={WhatsAppRegisterScreen}
-              options={{
-                headerShown: true,
-                headerTitle: "",
-                headerRight: headerRightComponent,
-                drawerLabel: (props) => (
-                  <CustomLabel
-                    {...props}
-                    label="WhatsApp Registration"
-                    icon={
-                      <Ionicons
-                        name="logo-whatsapp"
-                        size={20}
-                        color={props.color || colors.onPrimary}
-                      />
-                    }
-                  />
-                ),
-              }}
-            />
-          )} */}
-
           {role === "Admin" && (
             <Drawer.Screen
               name="ActivateSender"
@@ -494,29 +469,6 @@ export default function AppLayout() {
                   icon={
                     <Ionicons
                       name="film-outline"
-                      size={20}
-                      color={props.color || colors.onPrimary}
-                    />
-                  }
-                />
-              ),
-            }}
-          />
-          
-          <Drawer.Screen
-            name="WhatsAppRegister"
-            component={WhatsAppRegisterScreen}
-            options={{
-              headerShown: true,
-              headerTitle: "",
-              headerRight: headerRightComponent,
-              drawerLabel: (props) => (
-                <CustomLabel
-                  {...props}
-                  label="WhatsApp Registration"
-                  icon={
-                    <Ionicons
-                      name="logo-whatsapp"
                       size={20}
                       color={props.color || colors.onPrimary}
                     />
