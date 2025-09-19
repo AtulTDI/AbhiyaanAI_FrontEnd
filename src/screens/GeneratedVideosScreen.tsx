@@ -264,6 +264,9 @@ export default function GeneratedVideoScreen() {
         updateRowStatus(item.id, { sendStatus: "sent" });
       } catch (err) {
         console.error("Error sending video:", err);
+        updateRowStatus(item.id, { sendStatus: "failed" });
+      } finally {
+         setSendingId(null);
       }
     }
   };
