@@ -209,7 +209,7 @@ export default function GenerateVideoScreen() {
           <Text style={[styles.countText, { fontSize: Platform.OS === "web" ? 16 : 12 }]}>
             Selected:{" "}
             <Text
-              style={[styles.countHighlight, { fontSize: Platform.OS === "web" ? 17 : 13 }]}
+              style={[styles.countHighlight, { fontSize: Platform.OS === "web" ? 16 : 12 }]}
             >
               {selectedVoterCount} /{" "}
             </Text>

@@ -41,7 +41,7 @@ let RNFS: any = null;
 let Share: any = null;
 if (Platform.OS !== "web") {
   RNFS = require("react-native-fs");
-  Share = require("react-native-share");
+  Share = require("react-native-share").default;
 }
 
 export default function GeneratedVideoScreen() {
@@ -245,7 +245,7 @@ export default function GeneratedVideoScreen() {
         const localPath = `${RNFS.CachesDirectoryPath}/video.mp4`;
 
         const download = await RNFS.downloadFile({
-          fromUrl: whatsAppVideoDetails?.videoUrl,
+          fromUrl: whatsAppVideoDetails?.data?.videoUrl,
           toFile: localPath,
         }).promise;
 
@@ -259,7 +259,7 @@ export default function GeneratedVideoScreen() {
           type: "video/mp4",
           social: Share.Social.WHATSAPP,
           whatsAppNumber: `91${item.phoneNumber}`,
-          message: whatsAppVideoDetails?.message,
+          message: whatsAppVideoDetails?.data?.message,
         });
         updateRowStatus(item.id, { sendStatus: "sent" });
       } catch (err) {

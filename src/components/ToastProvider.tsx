@@ -61,7 +61,6 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
     []
   );
 
-  // 🔗 Register for global access
   registerToastTrigger(showToast);
 
   const getIcon = (toastType: ToastType) => {
@@ -108,24 +107,23 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
     <ToastContext.Provider value={{ showToast }}>
       {children}
       {visible && (
-        <View style={[StyleSheet.absoluteFill, { pointerEvents: "box-none" }]}>
-          <Animated.View
-            style={[
-              styles.toast,
-              {
-                backgroundColor: backgroundColors[type],
-                transform: [{ translateY }],
-              },
-            ]}
-          >
-            <View style={styles.toastContent}>
-              {getIcon(type)}
-              <Text style={[styles.toastText, { color: textColors[type] }]}>
-                {message}
-              </Text>
-            </View>
-          </Animated.View>
-        </View>
+        <Animated.View
+          style={[
+            styles.toast,
+            {
+              backgroundColor: backgroundColors[type],
+              transform: [{ translateY }],
+            },
+          ]}
+          pointerEvents="box-none"
+        >
+          <View style={styles.toastContent}>
+            {getIcon(type)}
+            <Text style={[styles.toastText, { color: textColors[type] }]}>
+              {message}
+            </Text>
+          </View>
+        </Animated.View>
       )}
     </ToastContext.Provider>
   );
@@ -140,14 +138,13 @@ export const useToast = () => {
 const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
     toast: {
-      alignSelf: "center",
       position: "absolute",
       top: isWeb ? 20 : 10,
+      alignSelf: "center",
       paddingVertical: 12,
       paddingHorizontal: 16,
       borderRadius: 12,
       maxWidth: isWeb ? 400 : screenWidth * 0.9,
-      width: "auto",
       elevation: 5,
       shadowColor: theme.colors.black,
       shadowOffset: { width: 0, height: 2 },

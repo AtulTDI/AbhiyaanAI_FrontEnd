@@ -130,7 +130,7 @@ export default function ProcessingVideosScreen() {
         );
       case "Processing":
         return (
-          <View style={{ justifyContent: "flex-start", marginLeft: 8 }}>
+          <View style={{ justifyContent: "flex-start" }}>
             <ProgressBar
               indeterminate
               color={colors.primary}
