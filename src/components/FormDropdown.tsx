@@ -12,6 +12,7 @@ type Props = {
   value: string;
   options: Option[];
   disabled?: boolean;
+  noMargin?: boolean;
   error?: string;
   onSelect: (val: string) => void;
 };
@@ -22,6 +23,7 @@ export default function FormDropdown({
   value,
   options,
   disabled,
+  noMargin,
   error,
   onSelect,
 }: Props) {
@@ -30,7 +32,9 @@ export default function FormDropdown({
   const { colors } = theme;
 
   return (
-    <View style={styles.container}>
+    <View
+      style={{ marginBottom: noMargin ? 0 : Platform.OS === "web" ? 12 : 20 }}
+    >
       <Dropdown
         label={label}
         placeholder={placeholder || `Select ${label}`}
@@ -100,9 +104,6 @@ export default function FormDropdown({
 
 const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
-    container: {
-      marginBottom: Platform.OS === "web" ? 12 : 20,
-    },
     input: {
       fontSize: 16,
     },

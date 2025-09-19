@@ -197,23 +197,31 @@ export default function GenerateVideoScreen() {
 
       {/* Count Section */}
       {activeStep === 1 && (
-        <Surface style={styles.countContainer} elevation={1}>
+        <Surface
+          style={[styles.countContainer, { marginTop: Platform.OS === "web" ? -15 : 10 }]}
+        >
           <Ionicons
             name="people-circle-outline"
-            size={28}
+            size={Platform.OS === "web" ? 28 : 20}
             color={colors.primary}
-            style={{ marginRight: 10 }}
+            style={{ marginRight: Platform.OS === "web" ? 10 : 6 }}
           />
-          <Text style={styles.countText}>
+          <Text style={[styles.countText, { fontSize: Platform.OS === "web" ? 16 : 12 }]}>
             Selected:{" "}
-            <Text style={styles.countHighlight}>{selectedVoterCount} / </Text>
+            <Text
+              style={[styles.countHighlight, { fontSize: Platform.OS === "web" ? 17 : 13 }]}
+            >
+              {selectedVoterCount} /{" "}
+            </Text>
             {totalVoterCount}
           </Text>
         </Surface>
       )}
 
       {/* Step Content */}
-      <View style={styles.content}>{renderStepContent()}</View>
+      <View style={[styles.content, { marginTop: activeStep === 1 ? 0 : 10 }]}>
+        {renderStepContent()}
+      </View>
 
       {/* Navigation Buttons */}
       <View style={styles.buttons}>
@@ -283,7 +291,6 @@ const createStyles = (theme: AppTheme) =>
       flexDirection: "row",
       justifyContent: "center",
       alignItems: "flex-start",
-      marginBottom: 24,
       position: "relative",
     },
     step: {
@@ -309,7 +316,6 @@ const createStyles = (theme: AppTheme) =>
     },
     content: {
       flex: 1,
-      marginTop: 10,
     },
     buttons: {
       flexDirection: "row",
@@ -370,7 +376,7 @@ const createStyles = (theme: AppTheme) =>
       backgroundColor: theme.colors.background,
     },
     countText: {
-      fontSize: 16,
+      fontSize: 14,
       color: theme.colors.textPrimary,
     },
     countHighlight: {

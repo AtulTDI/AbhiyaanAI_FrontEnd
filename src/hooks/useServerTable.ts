@@ -58,6 +58,7 @@ export function useServerTable<T, P = any>(
     data,
     page,
     setPage,
+    setData,
     rowsPerPage,
     setRowsPerPage,
     total,

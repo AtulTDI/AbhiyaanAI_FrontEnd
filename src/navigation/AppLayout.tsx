@@ -475,29 +475,6 @@ export default function AppLayout() {
               ),
             }}
           />
-
-          <Drawer.Screen
-            name="WhatsAppRegister"
-            component={WhatsAppRegisterScreen}
-            options={{
-              headerShown: true,
-              headerTitle: "",
-              headerRight: headerRightComponent,
-              drawerLabel: (props) => (
-                <CustomLabel
-                  {...props}
-                  label="WhatsApp Registration"
-                  icon={
-                    <Ionicons
-                      name="logo-whatsapp"
-                      size={20}
-                      color={props.color || colors.onPrimary}
-                    />
-                  }
-                />
-              ),
-            }}
-          />
         </>
       )}
 

@@ -15,6 +15,13 @@ export const generateQr = (userId) =>
 
 
 /**
+ * Get voter details
+ */
+export const getWhatsAppVideoDetails = (data: any, userId) =>
+  axios.get(`/WhatsApp/getsendingdetails/${userId}`, data, { useApiPrefix: true, useAltBase: true });
+
+
+/**
  * Whatsapp Logout
  */
 export const whatsAppLogout = (userId) =>

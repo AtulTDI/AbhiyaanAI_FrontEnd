@@ -1,6 +1,21 @@
-import React, { useCallback, useState } from "react";
-import { View, StyleSheet, ActivityIndicator } from "react-native";
-import { IconButton, Surface, Text, useTheme } from "react-native-paper";
+import React, { useCallback, useEffect, useState } from "react";
+import {
+  View,
+  StyleSheet,
+  ActivityIndicator,
+  Image,
+  Platform,
+  Linking,
+} from "react-native";
+import {
+  IconButton,
+  Surface,
+  Text,
+  useTheme,
+  Portal,
+  Modal,
+  Button,
+} from "react-native-paper";
 import dayjs from "dayjs";
 import { useFocusEffect } from "@react-navigation/native";
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
@@ -12,20 +27,36 @@ import { useToast } from "../components/ToastProvider";
 import FormDropdown from "../components/FormDropdown";
 import { getVotersWithCompletedVideoId } from "../api/voterApi";
 import { getVideos } from "../api/videoApi";
-import { sendVideo } from "../api/whatsappApi";
+import {
+  getRegistrationStatus,
+  generateQr,
+  whatsAppLogout,
+  sendVideo,
+  getWhatsAppVideoDetails,
+} from "../api/whatsappApi";
 import { AppTheme } from "../theme";
 import { useServerTable } from "../hooks/useServerTable";
+
+let RNFS: any = null;
+let Share: any = null;
+if (Platform.OS !== "web") {
+  RNFS = require("react-native-fs");
+  Share = require("react-native-share");
+}
 
 export default function GeneratedVideoScreen() {
   const theme = useTheme<AppTheme>();
   const styles = createStyles(theme);
   const { colors } = theme;
   const { showToast } = useToast();
-
   const [baseVideos, setBaseVideos] = useState<any[]>([]);
-  const [selectedVideoId, setSelectedVideoId] = useState(null);
+  const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [sendingId, setSendingId] = useState<string | null>(null);
+  const [waRegistered, setWaRegistered] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [qrImageUrl, setQrImageUrl] = useState<string | null>(null);
+  const [waLoading, setWaLoading] = useState(false);
 
   const fetchVideos = useCallback(async () => {
     try {
@@ -41,10 +72,8 @@ export default function GeneratedVideoScreen() {
       }));
 
       setBaseVideos(transformedVideos);
-
       if (transformedVideos?.length) {
-        const firstId = transformedVideos?.[0]?.value;
-        setSelectedVideoId(firstId);
+        setSelectedVideoId((prev) => prev ?? transformedVideos[0]?.value);
       }
     } catch (error: any) {
       showToast(extractErrorMessage(error, "Failed to load videos"), "error");
@@ -53,9 +82,7 @@ export default function GeneratedVideoScreen() {
 
   const fetchVoters = useCallback(
     async (page: number, pageSize: number, videoId: string | null) => {
-      if (!videoId) {
-        return { items: [], totalCount: 0 };
-      }
+      if (!videoId) return { items: [], totalCount: 0 };
 
       setLoading(true);
       try {
@@ -64,6 +91,17 @@ export default function GeneratedVideoScreen() {
           page,
           pageSize
         );
+
+        response.data.items = [
+          {
+            fullName: "Prasang Bhatnagar",
+            phoneNumber: 7837378499,
+          },
+          {
+            fullName: "Atul Kadam",
+            phoneNumber: 7383909489,
+          },
+        ];
 
         return {
           items: Array.isArray(response?.data?.items)
@@ -87,18 +125,128 @@ export default function GeneratedVideoScreen() {
     selectedVideoId
   );
 
+  const loadWhatsAppStatus = useCallback(async () => {
+    setWaLoading(true);
+    try {
+      const { userId } = await getAuthData();
+      const response = await getRegistrationStatus(userId);
+      const isRegistered = JSON.parse(response.data)?.isReady;
+
+      setWaRegistered(isRegistered);
+    } catch (error) {
+      setWaRegistered(false);
+    } finally {
+      setWaLoading(false);
+    }
+  }, []);
+
+  const handleConnect = async () => {
+    setQrImageUrl(null);
+    setModalVisible(true);
+
+    try {
+      const { userId } = await getAuthData();
+      const qrRes = await generateQr(userId);
+      const base64Qr = JSON.parse(qrRes.data)?.qr;
+
+      if (base64Qr) {
+        setQrImageUrl(base64Qr);
+      } else {
+        showToast("Failed to generate QR", "error");
+        setModalVisible(false);
+      }
+    } catch (error) {
+      console.error("QR Error:", error);
+      showToast("Something went wrong while generating QR", "error");
+      setModalVisible(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      const { userId } = await getAuthData();
+      const response = await whatsAppLogout(userId);
+      const parsedResponse = JSON.parse(response.data);
+
+      if (parsedResponse?.success) {
+        showToast(parsedResponse.message, "success");
+        setWaRegistered(false);
+        setQrImageUrl(null);
+      } else {
+        showToast("Something went wrong", "error");
+      }
+    } catch {
+      showToast("Logout failed", "error");
+    }
+  };
+
   useFocusEffect(
     useCallback(() => {
       fetchVideos();
-    }, [fetchVideos])
+
+      if (Platform.OS === "web") {
+        loadWhatsAppStatus();
+      }
+    }, [fetchVideos, loadWhatsAppStatus])
   );
+
+  useEffect(() => {
+    const openWhatsApp = async () => {
+      const url = "whatsapp://app";
+
+      try {
+        const supported = await Linking.canOpenURL(url);
+
+        if (supported) {
+          await Linking.openURL(url);
+        } else {
+          showToast("WhatsApp is not installed", "error");
+        }
+      } catch (err) {
+        console.error("Error opening WhatsApp:", err);
+        showToast("Could not open WhatsApp", "error");
+      }
+    };
+
+    if (modalVisible && Platform.OS !== "web") {
+      const timer = setTimeout(() => {
+        openWhatsApp();
+      }, 800);
+
+      return () => clearTimeout(timer);
+    }
+  }, [modalVisible]);
+
+  const updateRowStatus = (id: string, newStatus: Partial<Voter>) => {
+    table.setData((prev) =>
+      prev.map((row) => (row.id === id ? { ...row, ...newStatus } : row))
+    );
+  };
 
   const handleSendVideo = async (item: Voter) => {
     const { userId } = await getAuthData();
-
     setSendingId(item.id);
-    try {
-      await sendVideo(
+
+    if (Platform.OS === "web") {
+      try {
+        await sendVideo(
+          {
+            userId: userId,
+            recipientId: item.id,
+            baseVideoID: selectedVideoId,
+          },
+          userId
+        );
+        showToast("Video sent successfully", "success");
+        updateRowStatus(item.id, { sendStatus: "sent" });
+      } catch (error) {
+        showToast("Error sending video", "error");
+        updateRowStatus(item.id, { sendStatus: "failed" });
+      } finally {
+        setSendingId(null);
+      }
+    } else {
+      const whatsAppVideoDetails: any = await getWhatsAppVideoDetails(
         {
           userId: userId,
           recipientId: item.id,
@@ -106,21 +254,35 @@ export default function GeneratedVideoScreen() {
         },
         userId
       );
-      showToast("Video sent successfully", "success");
-      await table.fetchData(table.page, table.rowsPerPage);
-    } catch (error) {
-      showToast("Error sending video", "error");
-    } finally {
-      setSendingId(null);
+
+      try {
+        const localPath = `${RNFS.CachesDirectoryPath}/video.mp4`;
+
+        const download = await RNFS.downloadFile({
+          fromUrl: whatsAppVideoDetails?.videoUrl,
+          toFile: localPath,
+        }).promise;
+
+        if (download.statusCode !== 200) {
+          throw new Error("Video download failed");
+        }
+
+        await Share.shareSingle({
+          title: "Video",
+          url: Platform.OS === "android" ? "file://" + localPath : localPath,
+          type: "video/mp4",
+          social: Share.Social.WHATSAPP,
+          whatsAppNumber: `91${item.phoneNumber}`,
+          message: whatsAppVideoDetails?.message,
+        });
+      } catch (err) {
+        console.error("Error sending video:", err);
+      }
     }
   };
 
   const columns = [
-    {
-      label: "Name",
-      key: "fullName",
-      flex: 0.8,
-    },
+    { label: "Name", key: "fullName", flex: 0.8 },
     { key: "phoneNumber", label: "Mobile", flex: 0.4 },
     {
       label: "Created At",
@@ -139,41 +301,62 @@ export default function GeneratedVideoScreen() {
       render: (item: Voter) => {
         const sendStatus = item?.sendStatus?.toLowerCase?.() ?? "pending";
 
-        if (sendingId === item.id) {
-          return (
-            <ActivityIndicator
-              size="small"
-              color={colors.primary}
-              style={{ marginLeft: 8 }}
-            />
-          );
-        }
-
-        if (sendStatus === "pending") {
-          return (
-            <View style={{ justifyContent: "flex-start" }}>
+        return (
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            {sendingId === item.id ? (
+              <View
+                style={{
+                  width: 40,
+                  height: 40,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <ActivityIndicator size="small" color={colors.primary} />
+              </View>
+            ) : !waRegistered && Platform.OS === "web" ? (
               <IconButton
-                style={{ margin: 0 }}
                 icon={() => (
                   <FontAwesome
                     name="whatsapp"
-                    size={20}
+                    size={22}
+                    color={colors.mediumGray}
+                  />
+                )}
+                style={{ margin: 0 }}
+              />
+            ) : sendStatus === "pending" ? (
+              <IconButton
+                icon={() => (
+                  <FontAwesome
+                    name="whatsapp"
+                    size={22}
                     color={colors.whatsappGreen}
                   />
                 )}
                 onPress={() => handleSendVideo(item)}
+                style={{ margin: 0 }}
               />
-            </View>
-          );
-        }
-
-        return (
-          <Ionicons
-            name="checkmark-circle"
-            size={24}
-            color={colors.success}
-            style={{ marginLeft: 8 }}
-          />
+            ) : (
+              <IconButton
+                icon={() => (
+                  <FontAwesome
+                    name="check-circle"
+                    size={22}
+                    color={colors.success}
+                  />
+                )}
+                disabled
+                style={{ margin: 0 }}
+              />
+            )}
+          </View>
         );
       },
     },
@@ -181,58 +364,186 @@ export default function GeneratedVideoScreen() {
 
   return (
     <Surface style={styles.container} elevation={2}>
-      <View style={styles.content}>
-        <Text
-          variant="titleLarge"
-          style={[styles.heading, { color: theme.colors.primary }]}
-        >
+      {/* Header */}
+      <View style={styles.headerRow}>
+        <Text variant="titleLarge" style={styles.heading}>
           Generated Videos
         </Text>
-        <FormDropdown
-          label="Select Campaign"
-          value={selectedVideoId}
-          options={
-            Array.isArray(baseVideos)
-              ? (baseVideos as { label: string; value: string }[])
-              : []
-          }
-          onSelect={(val) => setSelectedVideoId(val)}
-        />
-        <View style={{ flex: 1 }}>
-          <CommonTable
-            data={table.data}
-            columns={columns}
-            loading={loading}
-            emptyIcon={
-              <Ionicons
-                name="videocam-outline"
-                size={48}
-                color={colors.disabledText}
-              />
-            }
-            emptyText="No videos found"
-            tableHeight="calc(100vh - 320px)"
-            onPageChange={table.setPage}
-            onRowsPerPageChange={(size) => {
-              table.setRowsPerPage(size);
-              table.setPage(0);
-            }}
-            page={table.page}
-            rowsPerPage={table.rowsPerPage}
-            totalCount={table.total}
+      </View>
+
+      {Platform.OS === "web" && (
+        <Surface style={styles.toolbar} elevation={1}>
+          <FormDropdown
+            label="Select Campaign"
+            value={selectedVideoId}
+            options={baseVideos}
+            noMargin={true}
+            onSelect={(val) => setSelectedVideoId(val)}
+          />
+
+          <View
+            style={[
+              styles.waChip,
+              {
+                backgroundColor: waRegistered
+                  ? colors.successBackground
+                  : colors.errorBackground,
+                borderColor: waRegistered ? colors.success : colors.error,
+                gap: 12,
+              },
+            ]}
+          >
+            <FontAwesome
+              name="whatsapp"
+              size={24}
+              color={waRegistered ? colors.whatsappGreen : colors.errorIcon}
+            />
+
+            <View style={{ flex: 1 }}>
+              {waLoading ? (
+                <View
+                  style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
+                >
+                  <ActivityIndicator size="small" color={colors.primary} />
+                  <Text
+                    style={[styles.waChipText, { color: colors.textSecondary }]}
+                  >
+                    Checking status...
+                  </Text>
+                </View>
+              ) : (
+                <>
+                  <Text
+                    style={[
+                      styles.waChipText,
+                      {
+                        color: waRegistered
+                          ? colors.successText
+                          : colors.errorText,
+                      },
+                    ]}
+                  >
+                    {waRegistered ? "Connected to WhatsApp" : "Not Connected"}
+                  </Text>
+                  <Text style={styles.waChipSubText}>
+                    {waRegistered
+                      ? "You can now share videos directly"
+                      : "Please connect to start sharing"}
+                  </Text>
+                </>
+              )}
+            </View>
+
+            {!waLoading && (
+              <Button
+                mode={waRegistered ? "outlined" : "contained"}
+                compact
+                onPress={() => {
+                  waRegistered ? handleLogout() : handleConnect();
+                }}
+                textColor={waRegistered ? colors.deepRed : colors.white}
+                buttonColor={
+                  waRegistered ? "transparent" : colors.whatsappGreen
+                }
+                style={{
+                  borderRadius: 20,
+                  borderColor: waRegistered
+                    ? colors.deepRed
+                    : colors.whatsappGreen,
+                }}
+                labelStyle={{ fontSize: 13, fontWeight: "600" }}
+              >
+                {waRegistered ? "Logout" : "Connect"}
+              </Button>
+            )}
+          </View>
+        </Surface>
+      )}
+
+      {/* Mobile top compact toolbar (contains campaign dropdown) */}
+      {Platform.OS !== "web" && (
+        <View style={styles.mobileToolbar}>
+          <FormDropdown
+            label="Select Campaign"
+            value={selectedVideoId}
+            options={baseVideos}
+            noMargin
+            onSelect={(val) => setSelectedVideoId(val)}
           />
         </View>
+      )}
+
+      {/* Table */}
+      <View style={{ flex: 1 }}>
+        <CommonTable
+          data={table.data}
+          columns={columns}
+          loading={loading}
+          emptyIcon={
+            <Ionicons
+              name="videocam-outline"
+              size={48}
+              color={colors.disabledText}
+            />
+          }
+          emptyText="No videos found"
+          tableHeight={
+            Platform.OS === "web" ? "calc(100vh - 345px)" : undefined
+          }
+          onPageChange={table.setPage}
+          onRowsPerPageChange={(size) => {
+            table.setRowsPerPage(size);
+            table.setPage(0);
+          }}
+          page={table.page}
+          rowsPerPage={table.rowsPerPage}
+          totalCount={table.total}
+        />
       </View>
+
+      {/* WhatsApp QR Modal */}
+      <Portal>
+        <Modal
+          visible={modalVisible}
+          onDismiss={() => setModalVisible(false)}
+          contentContainerStyle={styles.modalContainer}
+        >
+          <Surface style={styles.modalCard} elevation={3}>
+            <Text style={styles.modalTitle}>Register on WhatsApp</Text>
+            <Text style={styles.modalSubtitle}>
+              Link your WhatsApp account by scanning the QR code below
+            </Text>
+
+            <View style={styles.qrWrapper}>
+              {qrImageUrl ? (
+                <Image source={{ uri: qrImageUrl }} style={styles.qrImage} />
+              ) : (
+                <ActivityIndicator size="large" color={colors.primary} />
+              )}
+            </View>
+
+            <Text style={styles.modalHint}>
+              Open WhatsApp → Settings → Linked Devices → Scan QR
+            </Text>
+
+            <Button
+              mode="contained"
+              style={styles.closeButton}
+              buttonColor={colors.primary}
+              textColor={colors.white}
+              onPress={() => setModalVisible(false)}
+            >
+              Close
+            </Button>
+          </Surface>
+        </Modal>
+      </Portal>
     </Surface>
   );
 }
 
 const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
-    content: {
-      flex: 1,
-      display: "flex",
-    },
     container: {
       padding: 16,
       flex: 1,
@@ -240,6 +551,110 @@ const createStyles = (theme: AppTheme) =>
     },
     heading: {
       fontWeight: "bold",
+      color: theme.colors.primary,
+    },
+    headerRow: {
+      marginBottom: 12,
+    },
+    toolbar: {
+      flexDirection: "row",
+      alignItems: "center",
+      padding: 8,
+      borderRadius: 4,
+      backgroundColor: "#fafafa",
+      borderWidth: 1,
+      borderColor: "#eaeaea",
+      marginBottom: 12,
+      justifyContent: "space-between",
+    },
+    mobileToolbar: {
+      paddingVertical: 6,
+      paddingHorizontal: 2,
+      marginBottom: 6,
+    },
+    waChip: {
+      flexDirection: "row",
+      alignItems: "center",
+      borderRadius: 16,
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+      borderWidth: 1,
+      shadowColor: theme.colors.black,
+      shadowOpacity: 0.05,
+      shadowRadius: 6,
+      elevation: 2,
+    },
+    waChipText: {
+      fontSize: 15,
+      marginBottom: 2,
+    },
+    waChipSubText: {
+      fontSize: 12,
+      color: theme.colors.textSecondary,
+    },
+    fab: {
+      position: "absolute",
+      bottom: 20,
+      right: 20,
+      borderRadius: 28,
+      elevation: 5,
+      shadowColor: "#000",
+      shadowOpacity: 0.15,
+      shadowRadius: 6,
+    },
+    modalContainer: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 16,
+    },
+    modalCard: {
+      width: "90%",
+      maxWidth: 420,
+      backgroundColor: theme.colors.white,
+      borderRadius: 16,
+      padding: 20,
+      alignItems: "center",
+      borderWidth: 1,
+      borderColor: theme.colors.mutedBorder,
+    },
+    modalTitle: {
+      fontSize: 20,
+      fontWeight: "700",
+      textAlign: "center",
+      marginBottom: 8,
+      color: theme.colors.primary,
+    },
+    modalSubtitle: {
+      fontSize: 14,
+      textAlign: "center",
+      color: theme.colors.textSecondary,
+      marginBottom: 20,
+    },
+    qrWrapper: {
+      width: 220,
+      height: 220,
+      borderRadius: 12,
+      backgroundColor: theme.colors.lightBackground,
+      alignItems: "center",
+      justifyContent: "center",
       marginBottom: 16,
+      elevation: 1,
+    },
+    qrImage: {
+      width: 200,
+      height: 200,
+      borderRadius: 12,
+    },
+    modalHint: {
+      fontSize: 13,
+      color: theme.colors.darkGrayText,
+      textAlign: "center",
+      marginBottom: 20,
+    },
+    closeButton: {
+      marginTop: 8,
+      alignSelf: "stretch",
+      borderRadius: 8,
     },
   });

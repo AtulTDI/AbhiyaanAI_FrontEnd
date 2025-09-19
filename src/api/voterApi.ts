@@ -21,10 +21,10 @@ export const getVotersForProcessing = (id: string, pageNumber, pageSize) =>
   });
 
 /**
- * Get paginated voters with in progress vidoes using base video id
+ * Get voters with in progress vidoes using base video id
  */
-export const getVotersWithInProgressVidoes = (pageNumber, pageSize) =>
-  axios.get(`/Recipients/getinProgressaivideos?page=${pageNumber + 1}&pageSize=${pageSize}`, {
+export const getVotersWithInProgressVidoes = () =>
+  axios.get('/Recipients/getinProgressaivideos', {
     useApiPrefix: true,
   });
 
