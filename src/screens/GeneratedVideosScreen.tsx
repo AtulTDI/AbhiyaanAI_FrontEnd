@@ -92,17 +92,6 @@ export default function GeneratedVideoScreen() {
           pageSize
         );
 
-        response.data.items = [
-          {
-            fullName: "Prasang Bhatnagar",
-            phoneNumber: 7837378499,
-          },
-          {
-            fullName: "Atul Kadam",
-            phoneNumber: 7383909489,
-          },
-        ];
-
         return {
           items: Array.isArray(response?.data?.items)
             ? response.data.items
