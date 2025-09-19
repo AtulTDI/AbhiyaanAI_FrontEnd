@@ -236,12 +236,9 @@ export default function GeneratedVideoScreen() {
       }
     } else {
       const whatsAppVideoDetails: any = await getWhatsAppVideoDetails(
-        {
-          userId: userId,
-          recipientId: item.id,
-          baseVideoID: selectedVideoId,
-        },
-        userId
+        userId,
+        item.id,
+        selectedVideoId
       );
 
       try {

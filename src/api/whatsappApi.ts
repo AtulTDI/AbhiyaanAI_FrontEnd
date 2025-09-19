@@ -17,8 +17,8 @@ export const generateQr = (userId) =>
 /**
  * Get voter details
  */
-export const getWhatsAppVideoDetails = (data: any, userId) =>
-  axios.get(`/WhatsApp/getsendingdetails/${userId}`, data, { useApiPrefix: true, useAltBase: true });
+export const getWhatsAppVideoDetails = (userId, voterId, videoId) =>
+  axios.get(`/WhatsApp/getsendingdetails/${userId}/${voterId}/${videoId}`, { useApiPrefix: true, useAltBase: true });
 
 
 /**
