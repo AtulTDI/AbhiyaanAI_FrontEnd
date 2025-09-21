@@ -6,6 +6,7 @@ import {
   Image,
   Platform,
   Linking,
+  PermissionsAndroid,
 } from "react-native";
 import {
   IconButton,
@@ -34,8 +35,8 @@ import {
   sendVideo,
   getWhatsAppVideoDetails,
 } from "../api/whatsappApi";
-import { AppTheme } from "../theme";
 import { useServerTable } from "../hooks/useServerTable";
+import { AppTheme } from "../theme";
 
 let RNFS: any = null;
 let Share: any = null;
@@ -169,9 +170,26 @@ export default function GeneratedVideoScreen() {
     }
   };
 
+  const clearCacheFiles = async () => {
+    try {
+      const files = await RNFS.readDir(RNFS.CachesDirectoryPath);
+
+      console.log("======Files=======", files);
+
+      for (const file of files) {
+        await RNFS.unlink(file.path);
+      }
+
+      console.log("Cache cleared successfully");
+    } catch (error) {
+      console.error("Error clearing cache:", error);
+    }
+  };
+
   useFocusEffect(
     useCallback(() => {
       fetchVideos();
+      clearCacheFiles();
 
       if (Platform.OS === "web") {
         loadWhatsAppStatus();
@@ -212,6 +230,33 @@ export default function GeneratedVideoScreen() {
     );
   };
 
+  const requestAndroidPermissions = async () => {
+    if (Platform.OS !== "android") return true;
+
+    try {
+      if (Platform.Version >= 33) {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.READ_MEDIA_VIDEO
+        );
+        return granted === PermissionsAndroid.RESULTS.GRANTED;
+      } else {
+        const granted = await PermissionsAndroid.requestMultiple([
+          PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+        ]);
+        return (
+          granted["android.permission.READ_EXTERNAL_STORAGE"] ===
+            PermissionsAndroid.RESULTS.GRANTED &&
+          granted["android.permission.WRITE_EXTERNAL_STORAGE"] ===
+            PermissionsAndroid.RESULTS.GRANTED
+        );
+      }
+    } catch (err) {
+      console.warn("Permissions request error", err);
+      return false;
+    }
+  };
+
   const handleSendVideo = async (item: Voter) => {
     const { userId } = await getAuthData();
     setSendingId(item.id);
@@ -244,6 +289,13 @@ export default function GeneratedVideoScreen() {
 
       if (Platform.OS === "android") {
         try {
+          const granted = await requestAndroidPermissions();
+          if (!granted) {
+            showToast("Storage permissions are required", "error");
+            setSendingId(null);
+            return;
+          }
+
           const pkgRes = await Share.isPackageInstalled("com.whatsapp");
           isWhatsAppAvailable = pkgRes?.isInstalled;
         } catch {
@@ -264,7 +316,8 @@ export default function GeneratedVideoScreen() {
       }
 
       try {
-        const localPath = `${RNFS.CachesDirectoryPath}/video_${Date.now()}.mp4`;
+        const uniqueFileName = `video_${Date.now()}.mp4`;
+        const localPath = `${RNFS.CachesDirectoryPath}/${uniqueFileName}`;
 
         console.log(
           "=========WhatsAppVideoDetails Url=========",
@@ -296,6 +349,7 @@ export default function GeneratedVideoScreen() {
           whatsAppNumber: `91${item.phoneNumber}`,
           message: `🙏 ${whatsAppVideoDetails?.data?.message}`,
         });
+
         updateRowStatus(item.id, { sendStatus: "sent" });
       } catch (err) {
         console.error("Error sending video:", err);
@@ -364,7 +418,11 @@ export default function GeneratedVideoScreen() {
                   <FontAwesome
                     name="whatsapp"
                     size={22}
-                    color={disableRowActions ? colors.mediumGray : colors.whatsappGreen}
+                    color={
+                      disableRowActions
+                        ? colors.mediumGray
+                        : colors.whatsappGreen
+                    }
                   />
                 )}
                 onPress={() => handleSendVideo(item)}
