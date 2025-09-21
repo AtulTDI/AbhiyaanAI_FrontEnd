@@ -230,19 +230,51 @@ export default function GeneratedVideoScreen() {
         updateRowStatus(item.id, { sendStatus: "sent" });
       } catch (error) {
         showToast("Error sending video", "error");
-        updateRowStatus(item.id, { sendStatus: "failed" });
+        updateRowStatus(item.id, { sendStatus: "pending" });
       } finally {
         setSendingId(null);
       }
     } else {
+      let isWhatsAppAvailable = false;
       const whatsAppVideoDetails: any = await getWhatsAppVideoDetails(
         userId,
         item.id,
         selectedVideoId
       );
 
+      if (Platform.OS === "android") {
+        try {
+          const pkgRes = await Share.isPackageInstalled("com.whatsapp");
+          isWhatsAppAvailable = pkgRes?.isInstalled;
+        } catch {
+          isWhatsAppAvailable = false;
+        }
+      } else {
+        try {
+          isWhatsAppAvailable = await Linking.canOpenURL("whatsapp://send");
+        } catch {
+          isWhatsAppAvailable = false;
+        }
+      }
+
+      if (!isWhatsAppAvailable) {
+        showToast("WhatsApp not installed", "error");
+        setSendingId(null);
+        return;
+      }
+
       try {
-        const localPath = `${RNFS.CachesDirectoryPath}/video.mp4`;
+        const localPath = `${RNFS.CachesDirectoryPath}/video_${Date.now()}.mp4`;
+
+        console.log(
+          "=========WhatsAppVideoDetails Url=========",
+          whatsAppVideoDetails?.data?.videoUrl
+        );
+
+        console.log(
+          "=========WhatsAppVideoDetails Message=========",
+          whatsAppVideoDetails?.data?.message
+        );
 
         const download = await RNFS.downloadFile({
           fromUrl: whatsAppVideoDetails?.data?.videoUrl,
@@ -250,7 +282,10 @@ export default function GeneratedVideoScreen() {
         }).promise;
 
         if (download.statusCode !== 200) {
-          throw new Error("Video download failed");
+          console.error("Video download failed");
+          updateRowStatus(item.id, { sendStatus: "pending" });
+          setSendingId(null);
+          return;
         }
 
         await Share.shareSingle({
@@ -259,14 +294,14 @@ export default function GeneratedVideoScreen() {
           type: "video/mp4",
           social: Share.Social.WHATSAPP,
           whatsAppNumber: `91${item.phoneNumber}`,
-          message: whatsAppVideoDetails?.data?.message,
+          message: `🙏 ${whatsAppVideoDetails?.data?.message}`,
         });
         updateRowStatus(item.id, { sendStatus: "sent" });
       } catch (err) {
         console.error("Error sending video:", err);
-        updateRowStatus(item.id, { sendStatus: "failed" });
+        updateRowStatus(item.id, { sendStatus: "pending" });
       } finally {
-         setSendingId(null);
+        setSendingId(null);
       }
     }
   };
@@ -290,6 +325,7 @@ export default function GeneratedVideoScreen() {
       smallColumn: true,
       render: (item: Voter) => {
         const sendStatus = item?.sendStatus?.toLowerCase?.() ?? "pending";
+        const disableRowActions = sendingId !== null && sendingId !== item.id;
 
         return (
           <View
@@ -320,6 +356,7 @@ export default function GeneratedVideoScreen() {
                   />
                 )}
                 style={{ margin: 0 }}
+                disabled
               />
             ) : sendStatus === "pending" ? (
               <IconButton
@@ -327,11 +364,12 @@ export default function GeneratedVideoScreen() {
                   <FontAwesome
                     name="whatsapp"
                     size={22}
-                    color={colors.whatsappGreen}
+                    color={disableRowActions ? colors.mediumGray : colors.whatsappGreen}
                   />
                 )}
                 onPress={() => handleSendVideo(item)}
                 style={{ margin: 0 }}
+                disabled={disableRowActions}
               />
             ) : (
               <IconButton
