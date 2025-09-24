@@ -16,6 +16,7 @@ import {
   Portal,
   Modal,
   Button,
+  ProgressBar
 } from "react-native-paper";
 import dayjs from "dayjs";
 import { useFocusEffect } from "@react-navigation/native";
@@ -58,6 +59,7 @@ export default function GeneratedVideoScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [qrImageUrl, setQrImageUrl] = useState<string | null>(null);
   const [waLoading, setWaLoading] = useState(false);
+  const [progressMap, setProgressMap] = useState<Record<string, number>>({});
 
   const fetchVideos = useCallback(async () => {
     try {
@@ -257,9 +259,32 @@ export default function GeneratedVideoScreen() {
     }
   };
 
+  const downloadVideo = async (url: string, voterId: string) => {
+    const localPath = `${RNFS.CachesDirectoryPath}/video_${Date.now()}.mp4`;
+
+    const download = RNFS.downloadFile({
+      fromUrl: url,
+      toFile: localPath,
+      progress: ({ bytesWritten, contentLength }) => {
+        const percentage = bytesWritten / contentLength;
+        setProgressMap((prev) => ({ ...prev, [voterId]: percentage }));
+      },
+      progressDivider: 1,
+    });
+
+    const result = await download.promise;
+    setProgressMap((prev) => ({ ...prev, [voterId]: 1 }));
+    if (result.statusCode === 200) {
+      return `file://${localPath}`;
+    } else {
+      console.error("Download failed");
+    }
+  };
+
   const handleSendVideo = async (item: Voter) => {
     const { userId } = await getAuthData();
     setSendingId(item.id);
+    setProgressMap((prev) => ({ ...prev, [item.id]: 0 }));
 
     if (Platform.OS === "web") {
       try {
@@ -278,6 +303,10 @@ export default function GeneratedVideoScreen() {
         updateRowStatus(item.id, { sendStatus: "pending" });
       } finally {
         setSendingId(null);
+        setProgressMap((prev) => {
+          const { [item.id]: _, ...rest } = prev;
+          return rest;
+        });
       }
     } else {
       let isWhatsAppAvailable = false;
@@ -316,30 +345,10 @@ export default function GeneratedVideoScreen() {
       }
 
       try {
-        const uniqueFileName = `video_${Date.now()}.mp4`;
-        const localPath = `${RNFS.CachesDirectoryPath}/${uniqueFileName}`;
-
-        console.log(
-          "=========WhatsAppVideoDetails Url=========",
-          whatsAppVideoDetails?.data?.videoUrl
+        const localPath = await downloadVideo(
+          whatsAppVideoDetails?.data?.videoUrl,
+          item.id
         );
-
-        console.log(
-          "=========WhatsAppVideoDetails Message=========",
-          whatsAppVideoDetails?.data?.message
-        );
-
-        const download = await RNFS.downloadFile({
-          fromUrl: whatsAppVideoDetails?.data?.videoUrl,
-          toFile: localPath,
-        }).promise;
-
-        if (download.statusCode !== 200) {
-          console.error("Video download failed");
-          updateRowStatus(item.id, { sendStatus: "pending" });
-          setSendingId(null);
-          return;
-        }
 
         await Share.shareSingle({
           title: "Video",
@@ -356,6 +365,10 @@ export default function GeneratedVideoScreen() {
         updateRowStatus(item.id, { sendStatus: "pending" });
       } finally {
         setSendingId(null);
+        setProgressMap((prev) => {
+          const { [item.id]: _, ...rest } = prev;
+          return rest;
+        });
       }
     }
   };
@@ -380,6 +393,7 @@ export default function GeneratedVideoScreen() {
       render: (item: Voter) => {
         const sendStatus = item?.sendStatus?.toLowerCase?.() ?? "pending";
         const disableRowActions = sendingId !== null && sendingId !== item.id;
+        const progress = progressMap[item.id];
 
         return (
           <View
@@ -389,16 +403,21 @@ export default function GeneratedVideoScreen() {
               justifyContent: "center",
             }}
           >
-            {sendingId === item.id ? (
-              <View
-                style={{
-                  width: 40,
-                  height: 40,
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <ActivityIndicator size="small" color={colors.primary} />
+            {sendingId === item.id && progress !== undefined ? (
+              <View style={{ width: 40, alignItems: "center" }}>
+                <Text style={{ fontSize: 12, color: colors.primary }}>
+                  {Math.floor(progress * 100)}%
+                </Text>
+                <ProgressBar
+                  progress={progress}
+                  color={colors.primary}
+                  style={{
+                    width: 36,
+                    height: 4,
+                    borderRadius: 2,
+                    marginTop: 2,
+                  }}
+                />
               </View>
             ) : !waRegistered && Platform.OS === "web" ? (
               <IconButton
