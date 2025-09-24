@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { View, StyleSheet, TouchableOpacity } from "react-native";
+import { useTranslation } from "react-i18next";
 import * as DocumentPicker from "expo-document-picker";
 import {
   useTheme,
@@ -26,6 +27,7 @@ export default function CommonUpload({
   onCancel,
   label,
 }: Props) {
+  const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
   const { showToast } = useToast();
   const { colors } = theme;
@@ -74,7 +76,10 @@ export default function CommonUpload({
 
       const name = selectedFile.name.toLowerCase();
       if (!getValidation(name)) {
-        showToast(`Invalid file! Please upload a valid ${getSupportedText()} file`, "error");
+        showToast(
+          `Invalid file! Please upload a valid ${getSupportedText()} file`,
+          "error"
+        );
         return;
       }
 
@@ -113,7 +118,7 @@ export default function CommonUpload({
             {label || defaultLabel}
           </Text>
           <Text variant="bodySmall" style={{ color: colors.onSurfaceVariant }}>
-            Supported: {getSupportedText()}
+            {t("video.supported")}: {getSupportedText()}
           </Text>
 
           {file && (
@@ -135,7 +140,10 @@ export default function CommonUpload({
             onPress={() => {
               if (file) onUpload(file);
               else
-                showToast("No file selected. Please select a file to upload", "error");
+                showToast(
+                  "No file selected. Please select a file to upload",
+                  "error"
+                );
             }}
             disabled={!file}
             style={styles.actionButton}

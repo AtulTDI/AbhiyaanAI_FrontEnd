@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { View, StyleSheet, Platform } from "react-native";
+import { useTranslation } from "react-i18next";
 import {
   TextInput,
   HelperText,
@@ -31,6 +32,7 @@ export default function DynamicForm({
   onSubmit,
   onCancel,
 }: Props) {
+  const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
   const { colors } = theme;
   const styles = createStyles(theme);
@@ -57,7 +59,8 @@ export default function DynamicForm({
       const numericValue = parseFloat(value);
 
       if (field.required && !value) {
-        errors[field.name] = `${field.label} is required`;
+        // errors[field.name] = `${field.label} is required`;
+        errors[field.name] = t('fieldRequired', { field: t(field.label) });
         return;
       }
 
@@ -71,7 +74,7 @@ export default function DynamicForm({
         if (value.length < 6) {
           errorsList.push("Passwords must be at least 6 characters");
         }
-        
+
         if (errorsList.length > 0) {
           errors[field.name] = errorsList.join("\n");
         }
@@ -309,7 +312,7 @@ export default function DynamicForm({
 
       <View style={styles.buttonRow}>
         <Button mode="outlined" onPress={onCancel} style={styles.resetBtn}>
-          Cancel
+          {t("cancel")}
         </Button>
         <Button
           mode="contained"
@@ -318,7 +321,7 @@ export default function DynamicForm({
           onPress={handleFormSubmit}
           style={styles.submitBtn}
         >
-          {mode === "edit" ? "Update" : "Create"}
+          {mode === "edit" ? t("update") : t("create")}
         </Button>
       </View>
     </Surface>

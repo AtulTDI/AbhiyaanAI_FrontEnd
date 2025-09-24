@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
+import { useTranslation } from "react-i18next";
 import { Button, Text } from "react-native-paper";
 import { useTheme } from "react-native-paper";
 import { useFocusEffect } from "@react-navigation/native";
@@ -19,10 +20,11 @@ import { useToast } from "../components/ToastProvider";
 import ApplicationsTable from "../components/ApplicationsTable";
 import ApplicationForm from "../components/ApplicationForm";
 import { extractErrorMessage, sortByDateDesc } from "../utils/common";
-import { AppTheme } from "../theme";
 import { useServerTable } from "../hooks/useServerTable";
+import { AppTheme } from "../theme";
 
 export default function AddApplicationScreen() {
+  const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
   const styles = createStyles(theme);
   const { showToast } = useToast();
@@ -44,7 +46,7 @@ export default function AddApplicationScreen() {
           totalCount: response?.data?.totalRecords ?? 0,
         };
       } catch (error) {
-        showToast("Failed to load applications", "error");
+        showToast(t("application.loadFailed"), "error");
       }
     },
     []
@@ -69,9 +71,9 @@ export default function AddApplicationScreen() {
       await table.fetchData(0, table.rowsPerPage);
       setShowAddApplicationView(false);
       setApplicationToEdit(null);
-      showToast("Application added", "success");
+      showToast(t("application.addSuccess"), "success");
     } catch {
-      showToast("Failed to add application", "error");
+      showToast(t("application.addFailed"), "error");
     }
   };
 
@@ -86,12 +88,9 @@ export default function AddApplicationScreen() {
       await table.fetchData(table.page, table.rowsPerPage);
       setShowAddApplicationView(false);
       setApplicationToEdit(null);
-      showToast("Application updated", "success");
+      showToast(t("application.editSuccess"), "success");
     } catch (error: any) {
-      showToast(
-        extractErrorMessage(error, "Failed to update application"),
-        "error"
-      );
+      showToast(t("application.editFailed"), "error");
     }
   };
 
@@ -104,10 +103,10 @@ export default function AddApplicationScreen() {
     try {
       await toggleApplication(item.id, !item.isActive);
       await table.fetchData(table.page, table.rowsPerPage);
-      showToast("Application updated", "success");
+      showToast(t("application.editSuccess"), "success");
     } catch (error: any) {
       showToast(
-        extractErrorMessage(error, "Failed to update application"),
+        extractErrorMessage(error, t("application.editFailed")),
         "error"
       );
     }
@@ -121,8 +120,8 @@ export default function AddApplicationScreen() {
           style={[styles.heading, { color: theme.colors.primary }]}
         >
           {showAddApplicationView
-            ? `${applicationToEdit ? "Edit" : "Add"} Application`
-            : "Applications"}
+            ? t(applicationToEdit ? "application.edit" : "application.add")
+            : t("application.plural")}
         </Text>
         {!showAddApplicationView && (
           <Button
@@ -137,7 +136,7 @@ export default function AddApplicationScreen() {
             buttonColor={theme.colors.primary}
             style={{ borderRadius: 5 }}
           >
-            Add Application
+            {t("application.add")}
           </Button>
         )}
       </View>

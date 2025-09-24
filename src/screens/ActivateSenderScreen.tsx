@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { Surface, Text, useTheme } from "react-native-paper";
+import { useTranslation } from "react-i18next";
 import { useFocusEffect } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import dayjs from "dayjs";
@@ -12,10 +13,11 @@ import FormDropdown from "../components/FormDropdown";
 import ApprovalToggle from "../components/ApprovalToggle";
 import { getUsers } from "../api/userApi";
 import { activateSender, getSenderByUserId } from "../api/senderApi";
-import { AppTheme } from "../theme";
 import { useServerTable } from "../hooks/useServerTable";
+import { AppTheme } from "../theme";
 
 export default function ActivateSenderScreen() {
+  const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
   const styles = createStyles(theme);
   const { colors } = theme;
@@ -73,28 +75,28 @@ export default function ActivateSenderScreen() {
     try {
       await activateSender(item.id);
       showToast(
-        `Sender ${
-          !item.emailConfirmed ? "activated" : "deactivated"
-        } successfully`,
+        t("sender.senderStatusMessage", {
+          status: !item.emailConfirmed ? t("activated") : t("deactivated"),
+        }),
         "success"
       );
       table.fetchData(table.page, table.rowsPerPage, selectedUserId);
     } catch (error) {
-      showToast("Failed to update sender status", "error");
+      showToast(t("sender.activationFailed"), "error");
     }
   };
 
   const columns = [
     {
-      label: "Name",
+      label: t("name"),
       key: "fullName",
       flex: 0.5,
       render: (item) => `${item.firstName} ${item.lastName}`,
     },
-    { label: "Mobile", key: "phoneNumber", flex: 0.2 },
-    { label: "Email", key: "email", flex: 0.4 },
+    { label: t("mobile"), key: "phoneNumber", flex: 0.2 },
+    { label: t("email"), key: "email", flex: 0.4 },
     {
-      label: "Created At",
+      label: t("createdAt"),
       key: "createdAt",
       flex: 0.4,
       render: (item: Sender) => (
@@ -107,14 +109,14 @@ export default function ActivateSenderScreen() {
     },
     {
       key: "actions",
-      label: "Activation",
+      label: t("activation"),
       flex: 1,
       render: (item: Sender) => (
         <ApprovalToggle
           isApproved={item.emailConfirmed}
           onToggle={() => handleToggleSender(item)}
-          approvedText="Activated"
-          pendingText="Click to Activate"
+          approvedText={t("activated")}
+          pendingText={t("clickToActivate")}
         />
       ),
     },
@@ -130,11 +132,11 @@ export default function ActivateSenderScreen() {
             { color: theme.colors.primary, marginBottom: 15 },
           ]}
         >
-          Activate Senders
+          {t("activateSenderPageLabel")}
         </Text>
 
         <FormDropdown
-          label="Select User"
+          label={t("selectUser")}
           value={selectedUserId}
           options={users}
           onSelect={setSelectedUserId}
@@ -152,7 +154,7 @@ export default function ActivateSenderScreen() {
                 color={colors.disabledText}
               />
             }
-            emptyText="No senders found"
+            emptyText={t("sender.noData")}
             tableHeight="calc(100vh - 320px)"
             onPageChange={table.setPage}
             onRowsPerPageChange={(size) => {

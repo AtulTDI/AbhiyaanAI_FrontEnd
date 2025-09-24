@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import dayjs from "dayjs";
 import { Application } from "../types/Application";
 import { Ionicons } from "@expo/vector-icons";
@@ -30,17 +31,18 @@ export default function ApplicationsTable({
   onEdit,
   onToggleStatus,
 }: Props) {
+  const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
   const { colors } = theme;
 
   const columns = [
     {
-      label: "Name",
+      label: t("name"),
       key: "name",
       flex: 1,
     },
     {
-      label: "Video Count",
+      label: t("videoCount"),
       key: "videoCount",
       flex: 0.8,
       render: (item: Application) => (
@@ -48,22 +50,22 @@ export default function ApplicationsTable({
       ),
     },
     {
-      label: "Video Rate",
+      label: t("videoRate"),
       key: "videoGenerationRate",
       flex: 0.8,
     },
     {
-      label: "Distributor",
+      label: t("distributorButtonLabel"),
       key: "salesAgentName",
       flex: 1,
     },
     {
-      label: "Created By",
+      label: t("createdBy"),
       key: "createdByUserName",
       flex: 1,
     },
     {
-      label: "Created At",
+      label: t("createdAt"),
       key: "createdAt",
       flex: 1,
       render: (item: Application) => (
@@ -71,7 +73,7 @@ export default function ApplicationsTable({
       ),
     },
     {
-      label: "Status",
+      label: t("status"),
       key: "isActive",
       flex: 0.8,
       render: (item: Application) => (
@@ -84,7 +86,7 @@ export default function ApplicationsTable({
               fontWeight: "600",
             }}
           >
-            {item.isActive ? "Active" : "Inactive"}
+            {item.isActive ? t("active") : t("inactive")}
           </Text>
           <Switch
             value={item.isActive}
@@ -95,7 +97,7 @@ export default function ApplicationsTable({
       ),
     },
     {
-      label: "Action",
+      label: t("actions"),
       key: "actions",
       flex: 0.9,
       smallColumn: true,
@@ -118,7 +120,7 @@ export default function ApplicationsTable({
       columns={columns}
       loading={loading}
       emptyIcon={<Ionicons name="apps" size={48} color={colors.disabledText} />}
-      emptyText="No applications found"
+      emptyText={t("application.noData")}
       page={page}
       rowsPerPage={rowsPerPage}
       totalCount={totalCount}

@@ -9,6 +9,7 @@ import {
   Divider,
   List,
 } from "react-native-paper";
+import { useTranslation } from "react-i18next";
 import {
   ResizeMode,
   Video as ExpoVideo,
@@ -53,6 +54,7 @@ export default function VideoUploadForm({
   setShowAddView,
   uploading,
 }: Props) {
+  const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
   const { showToast } = useToast();
   const styles = createStyles(theme);
@@ -167,7 +169,7 @@ export default function VideoUploadForm({
       >
         {/* Campaign */}
         <TextInput
-          label="Campaign"
+          label={t("campaign")}
           value={formData.campaign}
           onChangeText={(text) =>
             setFormData((prev) => ({
@@ -195,13 +197,13 @@ export default function VideoUploadForm({
               borderColor: colors.greenAccent,
             }}
           >
-            Download Sample Video
+            {t("video.downloadSample")}
           </Button>
         </View>
 
         {/* Upload Base Video */}
         <CommonUpload
-          label="Upload Base Video"
+          label={t("uploadBaseVideoTabLabel")}
           fileType="video"
           onUpload={(file) =>
             setFormData((prev) => ({
@@ -227,7 +229,7 @@ export default function VideoUploadForm({
             <Divider style={{ marginVertical: 20 }} />
 
             <List.Accordion
-              title="Generate Sample Video (Optional)"
+              title={t("video.generateSampleVideo")}
               expanded={expanded}
               onPress={() => setExpanded(!expanded)}
               titleStyle={{
@@ -237,7 +239,7 @@ export default function VideoUploadForm({
             >
               <View style={{ marginTop: 16 }}>
                 <TextInput
-                  label="Name"
+                  label={t("name")}
                   value={name}
                   onChangeText={setName}
                   mode="outlined"
@@ -251,7 +253,7 @@ export default function VideoUploadForm({
                     disabled={loading}
                     style={{ marginTop: 8, borderRadius: 5 }}
                   >
-                    {loading ? "Generating video..." : "Generate & Preview"}
+                    {loading ? t("video.generating") : t("video.generateAndPreview")}
                   </Button>
                 </View>
 
@@ -328,7 +330,7 @@ export default function VideoUploadForm({
           onPress={() => setShowAddView(false)}
           style={styles.actionButton}
         >
-          Cancel
+          {t("cancel")}
         </Button>
         <Button
           mode="contained"
@@ -338,7 +340,7 @@ export default function VideoUploadForm({
           loading={uploading}
           style={styles.actionButton}
         >
-          Upload Base Video
+          {t("uploadBaseVideoTabLabel")}
         </Button>
       </View>
     </View>

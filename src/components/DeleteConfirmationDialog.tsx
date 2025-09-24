@@ -1,6 +1,7 @@
 import React from "react";
 import { View, StyleSheet, useWindowDimensions } from "react-native";
 import { Dialog, Portal, Text, Button, useTheme } from "react-native-paper";
+import { useTranslation } from "react-i18next";
 import { Ionicons } from "@expo/vector-icons";
 import { AppTheme } from "../theme";
 
@@ -21,6 +22,7 @@ const DeleteConfirmationDialog = ({
   onConfirm,
   onCancel,
 }: Props) => {
+  const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
   const styles = createStyles(theme);
   const { colors } = theme;
@@ -74,7 +76,7 @@ const DeleteConfirmationDialog = ({
             style={styles.button}
             labelStyle={styles.label}
           >
-            Cancel
+            {t("cancel")}
           </Button>
           <Button
             mode="contained"
@@ -86,7 +88,7 @@ const DeleteConfirmationDialog = ({
             loading={deleteLoading}
             disabled={deleteLoading}
           >
-            Delete
+            {t("delete")}
           </Button>
         </Dialog.Actions>
       </Dialog>

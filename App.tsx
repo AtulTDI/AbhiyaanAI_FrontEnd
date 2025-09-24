@@ -1,5 +1,7 @@
 import { Platform } from "react-native";
 import { Provider as PaperProvider } from "react-native-paper";
+import { I18nextProvider } from 'react-i18next';
+import i18n from './i18n';
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
@@ -41,32 +43,34 @@ const linking = {
 export default function App() {
   return (
     <SafeAreaProvider>
-      <PaperProvider theme={customTheme}>
-        <ToastProvider>
-          <VideoPreviewProvider>
-            <NavigationContainer ref={navigationRef} linking={linking}>
-              <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
-                <Stack.Navigator
-                  id={undefined}
-                  initialRouteName="AuthLoading"
-                  screenOptions={{ headerShown: false }}
-                >
-                  <Stack.Screen
-                    name="AuthLoading"
-                    component={AuthLoadingScreen}
-                  />
-                  <Stack.Screen name="Login" component={LoginScreen} />
-                  <Stack.Screen name="App" component={AppLayout} />
-                  <Stack.Screen
-                    name="ResetPasswordScreen"
-                    component={ResetPasswordScreen}
-                  />
-                </Stack.Navigator>
-              </SafeAreaView>
-            </NavigationContainer>
-          </VideoPreviewProvider>
-        </ToastProvider>
-      </PaperProvider>
+      <I18nextProvider i18n={i18n}>
+        <PaperProvider theme={customTheme}>
+          <ToastProvider>
+            <VideoPreviewProvider>
+              <NavigationContainer ref={navigationRef} linking={linking}>
+                <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
+                  <Stack.Navigator
+                    id={undefined}
+                    initialRouteName="AuthLoading"
+                    screenOptions={{ headerShown: false }}
+                  >
+                    <Stack.Screen
+                      name="AuthLoading"
+                      component={AuthLoadingScreen}
+                    />
+                    <Stack.Screen name="Login" component={LoginScreen} />
+                    <Stack.Screen name="App" component={AppLayout} />
+                    <Stack.Screen
+                      name="ResetPasswordScreen"
+                      component={ResetPasswordScreen}
+                    />
+                  </Stack.Navigator>
+                </SafeAreaView>
+              </NavigationContainer>
+            </VideoPreviewProvider>
+          </ToastProvider>
+        </PaperProvider>
+      </I18nextProvider>
     </SafeAreaProvider>
   );
 }

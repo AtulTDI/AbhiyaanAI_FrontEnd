@@ -2,6 +2,7 @@ import React, { useCallback, useState } from "react";
 import { StyleSheet, View, KeyboardAvoidingView, Platform } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { Surface, Text, Button, useTheme } from "react-native-paper";
+import { useTranslation } from "react-i18next";
 import VideoTable from "../components/VideoTable";
 import VideoUploadForm from "../components/VideoUploadForm";
 import { useToast } from "../components/ToastProvider";
@@ -18,6 +19,7 @@ import { extractErrorMessage, sortByDateDesc } from "../utils/common";
 import { AppTheme } from "../theme";
 
 export default function UploadVideoScreen() {
+  const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
   const { colors } = theme;
   const { showToast } = useToast();
@@ -44,7 +46,10 @@ export default function UploadVideoScreen() {
         totalCount: response?.data?.totalRecords ?? 0,
       };
     } catch (error: any) {
-      showToast(extractErrorMessage(error, "Failed to load videos"), "error");
+      showToast(
+        extractErrorMessage(error, t("video.loadVideoFailMessage")),
+        "error"
+      );
     } finally {
       setLoading(false);
     }
@@ -70,7 +75,10 @@ export default function UploadVideoScreen() {
       await table.fetchData(0, table.rowsPerPage);
       setShowAddView(false);
     } catch (error) {
-      showToast(extractErrorMessage(error, "Failed to add video"), "error");
+      showToast(
+        extractErrorMessage(error, t("video.addVideoFailMessage")),
+        "error"
+      );
     } finally {
       setUploading(false);
     }
@@ -86,7 +94,10 @@ export default function UploadVideoScreen() {
       await shareVideoById(id, true);
       await table.fetchData(table.page, table.rowsPerPage);
     } catch (error) {
-      showToast(extractErrorMessage(error, "Failed to share video"), "error");
+      showToast(
+        extractErrorMessage(error, t("video.shareVideoFailMessage")),
+        "error"
+      );
     }
   };
 
@@ -95,7 +106,10 @@ export default function UploadVideoScreen() {
       await shareVideoById(id, false);
       await table.fetchData(table.page, table.rowsPerPage);
     } catch (error) {
-      showToast(extractErrorMessage(error, "Failed to share video"), "error");
+      showToast(
+        extractErrorMessage(error, t("video.shareVideoFailMessage")),
+        "error"
+      );
     }
   };
 
@@ -104,10 +118,10 @@ export default function UploadVideoScreen() {
       try {
         await deleteVideoById(selectedVideoId);
         await table.fetchData(table.page, table.rowsPerPage);
-        showToast("Video deleted successfully!", "success");
+        showToast(t("video.deleteSucessMessage"), "success");
       } catch (error: any) {
         showToast(
-          extractErrorMessage(error, "Failed to delete video"),
+          extractErrorMessage(error, t("video.deleteFailMessage")),
           "error"
         );
       }
@@ -131,7 +145,7 @@ export default function UploadVideoScreen() {
                   variant="titleLarge"
                   style={[styles.heading, { color: colors.primary }]}
                 >
-                  Videos
+                  {t("video.plural")}
                 </Text>
                 <Button
                   mode="contained"
@@ -141,7 +155,7 @@ export default function UploadVideoScreen() {
                   buttonColor={colors.primary}
                   textColor={colors.onPrimary}
                 >
-                  Add Video
+                  {t("video.add")}
                 </Button>
               </View>
 
@@ -169,7 +183,7 @@ export default function UploadVideoScreen() {
                   variant="titleLarge"
                   style={[styles.heading, { color: colors.primary }]}
                 >
-                  Add Video
+                  {t('video.add')}
                 </Text>
               </View>
 
@@ -185,8 +199,8 @@ export default function UploadVideoScreen() {
 
       <DeleteConfirmationDialog
         visible={deleteDialogVisible}
-        title="Delete Video"
-        message="Are you sure you want to delete this video?"
+        title={t("video.delete")}
+        message={t("video.confirmDelete")}
         onCancel={() => setDeleteDialogVisible(false)}
         onConfirm={confirmDeleteVideo}
       />

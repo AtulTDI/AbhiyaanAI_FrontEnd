@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { View, Modal, StyleSheet, TouchableOpacity } from "react-native";
 import { Button, Text, useTheme } from "react-native-paper";
+import { useTranslation } from "react-i18next";
 import dayjs from "dayjs";
 import { Ionicons } from "@expo/vector-icons";
 import { ResizeMode, Video as ExpoVideo } from "expo-av";
@@ -41,15 +42,16 @@ export default function VideoTable({
   onUnshare,
   onDelete,
 }: Props) {
+  const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
   const styles = createStyles(theme);
   const { colors } = theme;
   const [selectedVideoUri, setSelectedVideoUri] = useState<string | null>(null);
 
   const columns = [
-    { label: "Campaign", key: "campaignName", flex: 0.8 },
+    { label: t("campaign"), key: "campaignName", flex: 0.8 },
     {
-      label: "Uploaded At",
+      label: t("uploadedAt"),
       key: "createdAt",
       flex: 0.4,
       render: (item) => (
@@ -57,7 +59,7 @@ export default function VideoTable({
       ),
     },
     {
-      label: "Approval",
+      label: t("approval"),
       key: "isShared",
       flex: 0.4,
       render: (item) => (
@@ -72,7 +74,7 @@ export default function VideoTable({
       ),
     },
     {
-      label: "Actions",
+      label: t("actions"),
       key: "actions",
       flex: 0.9,
       smallColumn: true,

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { FieldConfig, FieldType } from "../types";
 import { User } from "../types/User";
@@ -30,6 +31,7 @@ export default function UserForm({
   setUserToEdit,
   setShowAddUserView,
 }: Props) {
+  const { t } = useTranslation();
   const [applicationOptions, setApplicationOptions] = useState<any[]>([]);
   const [loggedInUserRole, setLoggedInUserRole] = useState<
     "Admin" | "User" | "SuperAdmin" | null
@@ -74,25 +76,30 @@ export default function UserForm({
 
   const getUserFields = (): FieldConfig[] => {
     const fields: FieldConfig[] = [
-      { name: "firstName", label: "First Name", type: "text", required: true },
-      { name: "lastName", label: "Last Name", type: "text", required: true },
+      {
+        name: "firstName",
+        label: t("firstName"),
+        type: "text",
+        required: true,
+      },
+      { name: "lastName", label: t("lastName"), type: "text", required: true },
       {
         name: "email",
-        label: "Email",
+        label: t("email"),
         type: "email",
         required: true,
         disabled: mode === "edit",
       },
       {
         name: "password",
-        label: "Password",
+        label: t("password"),
         type: "password",
         required: true,
         disabled: mode === "edit",
       },
       {
         name: "phoneNumber",
-        label: "Mobile",
+        label: t("mobile"),
         type: "number",
         required: true,
       },
@@ -104,7 +111,7 @@ export default function UserForm({
     if (shouldShowApplicationField) {
       fields.push({
         name: "applicationId",
-        label: "Application",
+        label: t("application.singular"),
         type: "dropdown" as FieldType,
         options: applicationOptions,
         required: true,

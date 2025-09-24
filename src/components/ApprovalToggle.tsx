@@ -9,6 +9,7 @@ import {
 import { useTheme } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import { AppTheme } from "../theme";
+import { useTranslation } from "react-i18next";
 
 type Props = {
   isApproved: boolean;
@@ -26,11 +27,15 @@ export default function ApprovalToggle({
   style,
   iconSize = 16,
   labelStyle,
-  approvedText = "Approved",
-  pendingText = "Click to Approve",
+  approvedText,
+  pendingText,
 }: Props) {
+  const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
   const { colors } = theme;
+
+  approvedText = approvedText ?? t("approved");
+  pendingText = pendingText ?? t("clickToApprove");
 
   const iconName = isApproved ? "checkmark-circle" : "checkmark-circle-outline";
   const label = isApproved ? approvedText : pendingText;

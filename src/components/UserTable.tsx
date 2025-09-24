@@ -6,6 +6,7 @@ import { View, StyleSheet } from "react-native";
 import { Text, useTheme } from "react-native-paper";
 import CommonTable from "./CommonTable";
 import { AppTheme } from "../theme";
+import { useTranslation } from "react-i18next";
 
 type Props = {
   role: string;
@@ -34,19 +35,24 @@ export default function UserTable({
   onDelete,
   getHeaderTitle,
 }: Props) {
+  const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
   const { colors } = theme;
   const columns = [
     {
-      label: "Name",
+      label: t("name"),
       key: "fullName",
       flex: role === "Admin" ? 0.4 : 0.5,
       render: (item) => item.firstName + " " + item.lastName,
     },
-    { label: "Mobile", key: "phoneNumber", flex: 0.2 },
-    { label: "Email", key: "email", flex: role === "Admin" ? 0.3 : 0.5 },
+    { label: t("mobile"), key: "phoneNumber", flex: 0.2 },
     {
-      label: "Created At",
+      label: t("email"),
+      key: "email",
+      flex: role === "Admin" ? 0.3 : 0.5,
+    },
+    {
+      label: t("createdAt"),
       key: "createdAt",
       flex: 0.4,
       render: (item) => (
@@ -58,7 +64,7 @@ export default function UserTable({
       ),
     },
     {
-      label: "Actions",
+      label: t("actions"),
       key: "actions",
       flex: 0.9,
       smallColumn: true,
@@ -83,7 +89,7 @@ export default function UserTable({
 
   if (role === "Admin") {
     columns.splice(3, 0, {
-      label: "Application",
+      label: t("application.singular"),
       key: "applicationName",
       flex: 0.4,
     });

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { FieldConfig } from "../types";
 import { Application } from "../types/Application";
@@ -20,6 +21,7 @@ export default function ApplicationForm({
   setApplicationToEdit,
   setShowAddApplicationView,
 }: Props) {
+  const { t } = useTranslation();
   const [salesAgentOptions, setSalesAgentOptions] = useState<any[]>([]);
 
   useEffect(() => {
@@ -45,7 +47,7 @@ export default function ApplicationForm({
   const applicationFields: FieldConfig[] = [
     {
       name: "appName",
-      label: "Name",
+      label: t("name"),
       type: "text",
       validationRules: [
         {
@@ -62,7 +64,7 @@ export default function ApplicationForm({
     },
     {
       name: "videoCount",
-      label: applicationToEdit ? "Add Video Count" : "Video Count",
+      label: applicationToEdit ? t("addVideoCount") : t("videoCount"),
       type: "number",
       min: applicationToEdit ? 0 : 5000,
       max: 500000,
@@ -70,7 +72,7 @@ export default function ApplicationForm({
     },
     {
       name: "salesAgent",
-      label: "Distributor",
+      label: t("distributorButtonLabel"),
       type: "dropdown",
       options: salesAgentOptions,
       required: true,
@@ -78,7 +80,7 @@ export default function ApplicationForm({
     },
     {
       name: "videoGenerationRate",
-      label: "Video Generation Rate",
+      label: t("videoRate"),
       type: "number",
       decimalPlaces: 2,
       min: 1,

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   View,
   Text,
@@ -56,6 +57,7 @@ export default function CommonTable<T>({
   onPageChange,
   onRowsPerPageChange,
 }: Props<T>) {
+  const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
   const styles = createStyles(theme);
   const { colors } = theme;
@@ -84,7 +86,7 @@ export default function CommonTable<T>({
       ? [
           {
             key: "__sno__",
-            label: "S.No.",
+            label: t('sno'),
             flex: columns?.length > 7 ? 0.3 : totalCount >= 100 ? 0.2 : 0.1,
             smallColumn: true,
             render: (_: T, index: number) => (
@@ -206,7 +208,7 @@ export default function CommonTable<T>({
 
             <View style={styles.loaderContainer}>
               <ActivityIndicator size="large" color={colors.primary} />
-              <Text style={styles.loaderText}>Loading data...</Text>
+              <Text style={styles.loaderText}>{t('loadingData')}</Text>
             </View>
           </>
         ) : data.length === 0 ? (
@@ -291,7 +293,7 @@ export default function CommonTable<T>({
               {isWeb ? (
                 <>
                   <View style={styles.rowsPerPageWrapper}>
-                    <Text style={styles.pageText}>Rows per page:</Text>
+                    <Text style={styles.pageText}>{t("rowsPerPage")}:</Text>
                     <Menu
                       visible={menuVisible}
                       onDismiss={() => setMenuVisible(false)}

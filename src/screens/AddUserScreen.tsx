@@ -30,8 +30,10 @@ import {
 import { extractErrorMessage } from "../utils/common";
 import { getAuthData } from "../utils/storage";
 import { AppTheme } from "../theme";
+import { useTranslation } from "react-i18next";
 
 export default function AddUserScreen({ role }) {
+  const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
   const styles = createStyles(theme);
   const { showToast } = useToast();
@@ -166,24 +168,38 @@ export default function AddUserScreen({ role }) {
 
   const getRoleLabel = () =>
     role === "Distributor"
-      ? "Distributor"
+      ? t("distributorButtonLabel")
       : role === "Admin"
-      ? "Customer Admin"
-      : "User";
+      ? t("customerAdminButtonLabel")
+      : t("userButtonLabel");
+
+  const getAddRoleLabel = () =>
+    role === "Distributor"
+      ? t("addDistributorLabel")
+      : role === "Admin"
+      ? t("addCustomerAdminLabel")
+      : t("addUserLabel");
+
+  const getEditRoleLabel = () =>
+    role === "Distributor"
+      ? t("editDistributorLabel")
+      : role === "Admin"
+      ? t("editCustomerAdminLabel")
+      : t("editUserLabel");
 
   const getHeaderTitle = () => {
     const roleLabel =
       role === "Distributor"
-        ? "Distributor"
+        ? t("distributorPageLabel")
         : role === "Admin"
-        ? "Customer Admin"
-        : "User";
+        ? t("customerAdminPageLabel")
+        : t("userPageLabel");
 
     if (showAddUserView) {
-      return `${userToEdit ? "Edit" : "Add"} ${roleLabel}`;
+      return userToEdit ? getEditRoleLabel() : getAddRoleLabel();
     }
 
-    return `${roleLabel}s`;
+    return roleLabel;
   };
 
   return (
@@ -209,10 +225,10 @@ export default function AddUserScreen({ role }) {
               buttonColor={theme.colors.primary}
               style={{ borderRadius: 5 }}
             >
-              Add{" "}
-              {role === "Admin" && Platform.OS !== "web"
-                ? "Admin"
-                : getRoleLabel()}
+              {getAddRoleLabel()}
+              {/* {
+                ? t("adminButtonLabel")
+                : getRoleLabel()} */}
             </Button>
           )}
         </View>
@@ -250,11 +266,11 @@ export default function AddUserScreen({ role }) {
           />
         )}
       </ScrollView>
-
+   
       <DeleteConfirmationDialog
         visible={deleteDialogVisible}
-        title={`Delete ${getRoleLabel()}`}
-        message={`Are you sure you want to delete this ${getRoleLabel().toLowerCase()} ?`}
+        title={t("deleteRole", { role: getRoleLabel()?.toLowerCase() })}
+        message={t("confirmDeleteRole", { role: getRoleLabel().toLowerCase() })}
         onCancel={() => setDeleteDialogVisible(false)}
         onConfirm={confirmDeleteUser}
       />

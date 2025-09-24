@@ -1,7 +1,8 @@
 import React from "react";
 import { useEffect, useState } from "react";
 import { TouchableOpacity, useWindowDimensions, View } from "react-native";
-import { Avatar, Text, useTheme } from "react-native-paper";
+import { Text, useTheme } from "react-native-paper";
+import { useTranslation } from "react-i18next";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { Ionicons } from "@expo/vector-icons";
 import { clearAuthData, getAuthData } from "../utils/storage";
@@ -14,18 +15,18 @@ import AddSenderScreen from "../screens/AddSenderScreen";
 import GenerateVideoScreen from "../screens/GenerateVideoScreen";
 import GeneratedVideoScreen from "../screens/GeneratedVideosScreen";
 import AddApplicationScreen from "../screens/AddApplicationScreen";
-import AddChannelScreen from "../screens/AddChannelScreen";
-import WhatsAppRegisterScreen from "../screens/WhatsAppRegisterScreen";
 import ActivateSenderScreen from "../screens/ActivateSenderScreen";
 import ProcessingVideosScreen from "../screens/ProcessingVideosScreen";
 import CustomDrawer from "../components/CustomDrawer";
 import CustomLabel from "../components/CustomLabel";
 import UserAvatarMenu from "../components/UserAvatarMenu";
+import LanguageSelector from "../components/LanguageSelector";
 import { AppTheme } from "../theme";
 
 const Drawer = createDrawerNavigator();
 
 export default function AppLayout() {
+  const { t } = useTranslation();
   const { width } = useWindowDimensions();
   const isLargeScreen = width >= 768;
   const theme = useTheme<AppTheme>();
@@ -82,56 +83,62 @@ export default function AppLayout() {
     return colors.error;
   };
 
-  const headerRightComponent = () => (
-    <View
-      style={{
-        flexDirection: "row",
-        alignItems: "center",
-        marginRight: 10,
-        gap: 12,
-      }}
-    >
-      {role === "Admin" && videoCount !== null && (
-        <TouchableOpacity
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            backgroundColor: getCountColor(),
-            paddingHorizontal: 12,
-            paddingVertical: 6,
-            borderRadius: 5,
-            shadowColor: colors.black,
-            shadowOffset: { width: 0, height: 1 },
-            shadowOpacity: 0.1,
-            shadowRadius: 3,
-            elevation: 3,
-          }}
-          activeOpacity={0.8}
-        >
-          <Ionicons
-            name="videocam"
-            size={18}
-            color={colors.white}
-            style={{ marginRight: 6 }}
-          />
-          <Text
-            style={{
-              color: colors.white,
-              fontSize: 14,
-              fontWeight: "600",
-            }}
-          >
-            {videoCount}
-          </Text>
-        </TouchableOpacity>
-      )}
+  const headerRightComponent = () => {
+    return (
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          marginRight: 10,
+          gap: 12,
+        }}
+      >
 
-      <TouchableOpacity onPress={handleLogout}>
-        <Ionicons name="log-out-outline" size={28} color={colors.primary} />
-      </TouchableOpacity>
-      <UserAvatarMenu userName={userName} email={userEmail} role={role} />
-    </View>
-  );
+        {/* <LanguageSelector /> */}
+
+        {role === "Admin" && videoCount !== null && (
+          <TouchableOpacity
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              backgroundColor: getCountColor(),
+              paddingHorizontal: 12,
+              paddingVertical: 6,
+              borderRadius: 5,
+              shadowColor: colors.black,
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.1,
+              shadowRadius: 3,
+              elevation: 3,
+            }}
+            activeOpacity={0.8}
+          >
+            <Ionicons
+              name="videocam"
+              size={18}
+              color={colors.white}
+              style={{ marginRight: 6 }}
+            />
+            <Text
+              style={{
+                color: colors.white,
+                fontSize: 14,
+                fontWeight: "600",
+              }}
+            >
+              {videoCount}
+            </Text>
+          </TouchableOpacity>
+        )}
+
+        <TouchableOpacity onPress={handleLogout}>
+          <Ionicons name="log-out-outline" size={28} color={colors.primary} />
+        </TouchableOpacity>
+
+        <UserAvatarMenu userName={userName} email={userEmail} role={role} />
+      </View>
+    );
+  };
 
   if (!role) return null;
 
@@ -171,7 +178,7 @@ export default function AppLayout() {
                   drawerLabel: (props) => (
                     <CustomLabel
                       {...props}
-                      label="Distributor(s)"
+                      label={t('distributorTabLabel')}
                       icon={
                         <Ionicons
                           name="people-outline"
@@ -194,7 +201,7 @@ export default function AppLayout() {
                   drawerLabel: (props) => (
                     <CustomLabel
                       {...props}
-                      label="Application(s)"
+                      label={t('application.plural')}
                       icon={
                         <Ionicons
                           name="apps"
@@ -217,7 +224,7 @@ export default function AppLayout() {
                   drawerLabel: (props) => (
                     <CustomLabel
                       {...props}
-                      label="Customer Admin(s)"
+                      label={t('customerAdminTabLabel')}
                       icon={
                         <Ionicons
                           name="people-outline"
@@ -232,31 +239,6 @@ export default function AppLayout() {
             </>
           )}
 
-          {/* {role === "SuperAdmin" && (
-            <Drawer.Screen
-              name="AddChannel"
-              component={AddChannelScreen}
-              options={{
-                headerShown: true,
-                headerTitle: "",
-                headerRight: headerRightComponent,
-                drawerLabel: (props) => (
-                  <CustomLabel
-                    {...props}
-                    label="Channels"
-                    icon={
-                      <Ionicons
-                        name="radio-outline"
-                        size={20}
-                        color={props.color || colors.onPrimary}
-                      />
-                    }
-                  />
-                ),
-              }}
-            />
-          )} */}
-
           {role === "Admin" && (
             <Drawer.Screen
               name="AddUser"
@@ -268,7 +250,7 @@ export default function AppLayout() {
                 drawerLabel: (props) => (
                   <CustomLabel
                     {...props}
-                    label="User(s)"
+                    label={t("userTabLabel")}
                     icon={
                       <Ionicons
                         name="people-outline"
@@ -293,7 +275,7 @@ export default function AppLayout() {
                 drawerLabel: (props) => (
                   <CustomLabel
                     {...props}
-                    label="Activate Sender(s)"
+                    label={t("activateSenderTabLabel")}
                     icon={
                       <Ionicons
                         name="checkmark-circle-outline"
@@ -318,7 +300,7 @@ export default function AppLayout() {
                 drawerLabel: (props) => (
                   <CustomLabel
                     {...props}
-                    label="Upload Base Video"
+                    label={t("uploadBaseVideoTabLabel")}
                     icon={
                       <Ionicons
                         name="cloud-upload"

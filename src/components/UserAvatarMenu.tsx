@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { TouchableOpacity, View } from "react-native";
 import { Avatar, Divider, Menu, Text, useTheme } from "react-native-paper";
+import { useTranslation } from "react-i18next";
 import { MaterialIcons } from "@expo/vector-icons";
 import { AppTheme } from "../theme";
 
@@ -11,6 +12,7 @@ interface Props {
 }
 
 const UserAvatarMenu: React.FC<Props> = ({ userName, email, role }) => {
+  const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
   const { colors } = theme;
   const [visible, setVisible] = useState(false);
@@ -44,7 +46,7 @@ const UserAvatarMenu: React.FC<Props> = ({ userName, email, role }) => {
           minWidth: 250,
           paddingTop: 0,
           paddingBottom: 8,
-          marginTop: 5
+          marginTop: 5,
         }}
       >
         {/* Name Header with Orange Background */}
@@ -79,7 +81,7 @@ const UserAvatarMenu: React.FC<Props> = ({ userName, email, role }) => {
               marginBottom: 2,
             }}
           >
-            Email
+            {t("email")}
           </Text>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
             <MaterialIcons name="email" size={16} color={colors.textTertiary} />
@@ -102,7 +104,7 @@ const UserAvatarMenu: React.FC<Props> = ({ userName, email, role }) => {
               marginBottom: 2,
             }}
           >
-            Role
+            {t("roleLabel")}
           </Text>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
             <MaterialIcons
