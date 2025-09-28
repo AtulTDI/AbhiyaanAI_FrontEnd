@@ -577,7 +577,7 @@ export default function GeneratedVideoScreen() {
                   <Text
                     style={[styles.waChipText, { color: colors.textSecondary }]}
                   >
-                    Checking status...
+                    {t("whatsapp.checkingStatus")}
                   </Text>
                 </View>
               ) : (

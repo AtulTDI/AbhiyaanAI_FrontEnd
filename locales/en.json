@@ -182,6 +182,7 @@
     "notConnected": "Not Connected",
     "shareDirectly": "You can now share videos directly",
     "connectToShare": "Please connect to start sharing",
+    "checkingStatus": "Checking status...",
     "register": "Register on WhatsApp",
     "link": "Link your WhatsApp account by scanning the QR code below",
     "scanQR": "Open WhatsApp → Settings → Linked Devices → Scan QR"

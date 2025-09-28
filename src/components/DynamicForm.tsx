@@ -59,8 +59,7 @@ export default function DynamicForm({
       const numericValue = parseFloat(value);
 
       if (field.required && !value) {
-        // errors[field.name] = `${field.label} is required`;
-        errors[field.name] = t('fieldRequired', { field: t(field.label) });
+        errors[field.name] = t("fieldRequired", { field: t(field.label) });
         return;
       }
 
@@ -165,7 +164,15 @@ export default function DynamicForm({
     }
 
     if (name === "mobile" || name === "phoneNumber") {
-      newValue = value.replace(/[^0-9]/g, "").slice(0, 10);
+      let digitsOnly = value.replace(/[^0-9]/g, "");
+
+      if (digitsOnly.length > formData[name].length + 1) {
+        digitsOnly = digitsOnly.slice(-10);
+      } else if (digitsOnly.length > 10) {
+        digitsOnly = digitsOnly.substring(0, 10);
+      }
+
+      newValue = digitsOnly;
     }
 
     if (name === "firstName" || name === "lastName") {
