@@ -1,6 +1,7 @@
 import React from "react";
 import { StyleSheet, View, Text, Platform } from "react-native";
 import { TextInput, useTheme, List } from "react-native-paper";
+import { useTranslation } from "react-i18next";
 import { Dropdown } from "react-native-paper-dropdown";
 import { AppTheme } from "../theme";
 
@@ -27,6 +28,7 @@ export default function FormDropdown({
   error,
   onSelect,
 }: Props) {
+  const {t} = useTranslation();
   const theme = useTheme<AppTheme>();
   const styles = createStyles(theme);
   const { colors } = theme;
@@ -89,7 +91,7 @@ export default function FormDropdown({
               <Text style={styles.headerText}>{label}</Text>
               {value && (
                 <Text onPress={resetMenu} style={styles.clearText}>
-                  Clear
+                  {t("clear")}
                 </Text>
               )}
             </View>

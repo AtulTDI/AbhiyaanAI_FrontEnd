@@ -2,6 +2,7 @@ import React from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { StyleSheet, View } from "react-native";
 import { useTheme } from "react-native-paper";
+import { useTranslation } from "react-i18next";
 import dayjs from "dayjs";
 import { Voter } from "../types/Voter";
 import CommonTable from "./CommonTable";
@@ -30,22 +31,23 @@ export default function VoterTable({
   onEdit,
   onDelete,
 }: Props) {
+  const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
   const { colors } = theme;
 
   const columns = [
     {
-      label: "Name",
+      label: t("name"),
       key: "fullName",
       flex: 1,
     },
     {
-      label: "Mobile",
+      label: t("mobile"),
       key: "phoneNumber",
       flex: 0.3,
     },
     {
-      label: "Created At",
+      label: t("createdAt"),
       key: "createdAt",
       flex: 0.4,
       render: (item: Voter) =>
@@ -54,7 +56,7 @@ export default function VoterTable({
           : "-",
     },
     {
-      label: "Actions",
+      label: t("actions"),
       key: "actions",
       flex: 0.9,
       smallColumn: true,
@@ -87,7 +89,7 @@ export default function VoterTable({
       emptyIcon={
         <Ionicons name="people-outline" size={48} color={colors.disabledText} />
       }
-      emptyText="No voters found"
+      emptyText={t("voter.noData")}
       page={page}
       rowsPerPage={rowsPerPage}
       totalCount={totalCount}

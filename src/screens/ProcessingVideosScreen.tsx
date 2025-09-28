@@ -8,6 +8,7 @@ import {
   useTheme,
 } from "react-native-paper";
 import { useFocusEffect } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
 import dayjs from "dayjs";
 import { Feather, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { Voter } from "../types/Voter";
@@ -33,6 +34,7 @@ type VoterStatus =
   | "Failed";
 
 export default function ProcessingVideosScreen() {
+  const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
   const styles = createStyles(theme);
   const { colors } = theme;
@@ -76,7 +78,10 @@ export default function ProcessingVideosScreen() {
       await startConnection(accessToken);
       await joinGroups(voterList.map((v) => v.id));
     } catch (error: any) {
-      showToast(extractErrorMessage(error, "Failed to load voters"), "error");
+      showToast(
+        extractErrorMessage(error, t("voter.loadVoterFailMessage")),
+        "error"
+      );
     } finally {
       setLoading(false);
     }
@@ -105,7 +110,7 @@ export default function ProcessingVideosScreen() {
               color={colors.warning}
             />
             <Text style={{ fontSize: 12, color: colors.warning }}>
-              In Queue
+              {t("inQueue")}
             </Text>
           </View>
         );
@@ -124,7 +129,7 @@ export default function ProcessingVideosScreen() {
               color={colors.primaryLight}
             />
             <Text style={{ fontSize: 12, color: colors.primaryLight }}>
-              Pending
+              {t("pending")}
             </Text>
           </View>
         );
@@ -168,7 +173,7 @@ export default function ProcessingVideosScreen() {
               color={colors.criticalError}
             />
             <Text style={{ fontSize: 12, color: colors.criticalError }}>
-              Failed
+              {t("failed")}
             </Text>
           </View>
         );
@@ -178,10 +183,10 @@ export default function ProcessingVideosScreen() {
   };
 
   const columns = [
-    { label: "Name", key: "fullName", flex: 0.8 },
-    { key: "phoneNumber", label: "Mobile", flex: 0.4 },
+    { label: t("name"), key: "fullName", flex: 0.8 },
+    { label: t("mobile"), key: "phoneNumber", flex: 0.4 },
     {
-      label: "Created At",
+      label: t("createdAt"),
       key: "createdAt",
       flex: 0.4,
       render: (item) =>
@@ -190,8 +195,8 @@ export default function ProcessingVideosScreen() {
           : "-",
     },
     {
+      label: t("status"),
       key: "actions",
-      label: "Status",
       flex: 1,
       render: (item: Voter) =>
         getStatusView(voterStatuses[item.id] || "InQueue", item),
@@ -212,7 +217,7 @@ export default function ProcessingVideosScreen() {
           variant="titleLarge"
           style={[styles.heading, { color: theme.colors.primary }]}
         >
-          Processing Videos
+          {t("processingVideoPageLabel")}
         </Text>
         <ProgressChip
           completedCount={totalCount === 0 ? 0 : completedCount}
@@ -230,7 +235,7 @@ export default function ProcessingVideosScreen() {
             color={colors.disabledText}
           />
         }
-        emptyText="No videos found"
+        emptyText={t("video.noData")}
         loading={loading}
       />
     </Surface>

@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from "react";
 import { View, StyleSheet, ScrollView } from "react-native";
 import { Text, useTheme, Button } from "react-native-paper";
+import { useTranslation } from "react-i18next";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { useFocusEffect } from "@react-navigation/native";
 import { Sender } from "../types/Sender";
@@ -19,6 +20,7 @@ import { AppTheme } from "../theme";
 import { useServerTable } from "../hooks/useServerTable";
 
 export default function AddSenderScreen() {
+  const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
   const styles = createStyles(theme);
   const { showToast } = useToast();
@@ -60,9 +62,9 @@ export default function AddSenderScreen() {
       await table.fetchData(0, table.rowsPerPage);
       setShowAddSenderView(false);
       setSenderToEdit(null);
-      showToast("Sender registered successfully!", "success");
+      showToast(t("sender.addSuccess"), "success");
     } catch (error: any) {
-      showToast(extractErrorMessage(error, "Failed to create sender"), "error");
+      showToast(extractErrorMessage(error, t("sender.addFailed")), "error");
     }
   };
 
@@ -80,9 +82,9 @@ export default function AddSenderScreen() {
       await table.fetchData(table.page, table.rowsPerPage);
       setShowAddSenderView(false);
       setSenderToEdit(null);
-      showToast("Sender updated successfully!", "success");
+      showToast(t("sender.editSuccess"), "success");
     } catch (error: any) {
-      showToast(extractErrorMessage(error, "Failed to update sender"), "error");
+      showToast(extractErrorMessage(error, t("sender.editFailed")), "error");
     }
   };
 
@@ -101,12 +103,9 @@ export default function AddSenderScreen() {
       try {
         await deleteSenderById(selectedSenderId);
         await table.fetchData(table.page, table.rowsPerPage);
-        showToast("Sender deleted successfully!", "success");
+        showToast(t("sender.deleteSucess"), "success");
       } catch (error: any) {
-        showToast(
-          extractErrorMessage(error, "Failed to delete sender"),
-          "error"
-        );
+        showToast(extractErrorMessage(error, t("sender.deleteFail")), "error");
       }
       setSelectedSenderId(null);
       setDeleteDialogVisible(false);
@@ -122,8 +121,10 @@ export default function AddSenderScreen() {
             style={[styles.heading, { color: theme.colors.primary }]}
           >
             {showAddSenderView
-              ? `${senderToEdit ? "Edit" : "Add"} Sender`
-              : "Senders"}
+              ? senderToEdit
+                ? t("sender.edit")
+                : t("sender.add")
+              : t("sender.plural")}
           </Text>
           {!showAddSenderView && (
             <Button
@@ -138,7 +139,7 @@ export default function AddSenderScreen() {
               buttonColor={theme.colors.primary}
               style={{ borderRadius: 5 }}
             >
-              Add Sender
+              {t("sender.add")}
             </Button>
           )}
         </View>
@@ -180,8 +181,8 @@ export default function AddSenderScreen() {
 
       <DeleteConfirmationDialog
         visible={deleteDialogVisible}
-        title="Delete Sender"
-        message="Are you sure you want to delete this sender?"
+        title={t("sender.delete")}
+        message={t("sender.confirmDelete")}
         onCancel={() => setDeleteDialogVisible(false)}
         onConfirm={confirmDeleteSender}
       />

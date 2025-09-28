@@ -1,6 +1,7 @@
 import React from "react";
 import { Chip } from "react-native-paper";
 import { Platform, View } from "react-native";
+import { useTranslation } from "react-i18next";
 import { Feather } from "@expo/vector-icons";
 import colors from "../constants/colors";
 
@@ -13,6 +14,7 @@ export default function ProgressChip({
   completedCount,
   totalCount,
 }: ProgressChipProps) {
+  const { t } = useTranslation();
   const progress = totalCount > 0 ? completedCount / totalCount : 0;
 
   let bgColor = colors.errorBackground;
@@ -42,7 +44,7 @@ export default function ProgressChip({
         textStyle={{ fontWeight: "600", color: textColor }}
       >
         {completedCount} / {totalCount}{" "}
-        {Platform.OS === "web" ? "Completed" : ""}
+        {Platform.OS === "web" ? t("completed") : ""}
       </Chip>
     </View>
   );

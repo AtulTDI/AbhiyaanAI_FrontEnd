@@ -93,8 +93,7 @@ export default function AppLayout() {
           gap: 12,
         }}
       >
-
-        {/* <LanguageSelector /> */}
+        <LanguageSelector />
 
         {role === "Admin" && videoCount !== null && (
           <TouchableOpacity
@@ -178,7 +177,7 @@ export default function AppLayout() {
                   drawerLabel: (props) => (
                     <CustomLabel
                       {...props}
-                      label={t('distributorTabLabel')}
+                      label={t("distributorTabLabel")}
                       icon={
                         <Ionicons
                           name="people-outline"
@@ -201,7 +200,7 @@ export default function AppLayout() {
                   drawerLabel: (props) => (
                     <CustomLabel
                       {...props}
-                      label={t('application.plural')}
+                      label={t("application.plural")}
                       icon={
                         <Ionicons
                           name="apps"
@@ -224,7 +223,7 @@ export default function AppLayout() {
                   drawerLabel: (props) => (
                     <CustomLabel
                       {...props}
-                      label={t('customerAdminTabLabel')}
+                      label={t("customerAdminTabLabel")}
                       icon={
                         <Ionicons
                           name="people-outline"
@@ -328,7 +327,7 @@ export default function AppLayout() {
               drawerLabel: (props) => (
                 <CustomLabel
                   {...props}
-                  label="Voter(s)"
+                  label={t("voterTabLabel")}
                   icon={
                     <Ionicons
                       name="people-outline"
@@ -351,7 +350,7 @@ export default function AppLayout() {
               drawerLabel: (props) => (
                 <CustomLabel
                   {...props}
-                  label="Sender(s)"
+                  label={t("senderTabLabel")}
                   icon={
                     <Ionicons
                       name="paper-plane-outline"
@@ -374,7 +373,7 @@ export default function AppLayout() {
               drawerLabel: (props) => (
                 <CustomLabel
                   {...props}
-                  label="Generate Video(s)"
+                  label={t("generateVideoTabLabel")}
                   icon={
                     <Ionicons
                       name="sparkles-outline"
@@ -397,7 +396,7 @@ export default function AppLayout() {
               drawerLabel: (props) => (
                 <CustomLabel
                   {...props}
-                  label="Processing Video(s)"
+                  label={t("processingVideoTabLabel")}
                   icon={
                     <Ionicons
                       name="time-outline"
@@ -420,7 +419,7 @@ export default function AppLayout() {
               drawerLabel: (props) => (
                 <CustomLabel
                   {...props}
-                  label="Generated Video(s)"
+                  label={t("generatedVideoTabLabel")}
                   icon={
                     <Ionicons
                       name="film-outline"
@@ -447,7 +446,7 @@ export default function AppLayout() {
               drawerLabel: (props) => (
                 <CustomLabel
                   {...props}
-                  label="Generated Video(s)"
+                  label={t("generatedVideoTabLabel")}
                   icon={
                     <Ionicons
                       name="film-outline"

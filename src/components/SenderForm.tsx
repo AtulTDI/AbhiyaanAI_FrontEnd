@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { FieldConfig } from "../types";
 import { Sender } from "../types/Sender";
 import DynamicForm from "./DynamicForm";
@@ -24,27 +25,33 @@ export default function SenderForm({
   setSenderToEdit,
   setShowAddSenderView,
 }: Props) {
+  const { t } = useTranslation();
   const getSenderFields = (): FieldConfig[] => {
     const fields: FieldConfig[] = [
-      { name: "firstName", label: "First Name", type: "text", required: true },
-      { name: "lastName", label: "Last Name", type: "text", required: true },
+      {
+        name: "firstName",
+        label: t("firstName"),
+        type: "text",
+        required: true,
+      },
+      { name: "lastName", label: t("lastName"), type: "text", required: true },
       {
         name: "email",
-        label: "Email",
+        label: t("email"),
         type: "email",
         required: true,
         disabled: mode === "edit",
       },
       {
         name: "password",
-        label: "Password",
+        label: t("password"),
         type: "password",
         required: true,
         disabled: mode === "edit",
       },
       {
         name: "phoneNumber",
-        label: "Mobile",
+        label: t("mobile"),
         type: "number",
         required: true,
       },

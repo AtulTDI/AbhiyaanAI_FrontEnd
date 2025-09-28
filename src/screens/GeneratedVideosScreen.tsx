@@ -16,7 +16,7 @@ import {
   Portal,
   Modal,
   Button,
-  ProgressBar
+  ProgressBar,
 } from "react-native-paper";
 import dayjs from "dayjs";
 import { useFocusEffect } from "@react-navigation/native";
@@ -38,6 +38,7 @@ import {
 } from "../api/whatsappApi";
 import { useServerTable } from "../hooks/useServerTable";
 import { AppTheme } from "../theme";
+import { useTranslation } from "react-i18next";
 
 let RNFS: any = null;
 let Share: any = null;
@@ -47,6 +48,7 @@ if (Platform.OS !== "web") {
 }
 
 export default function GeneratedVideoScreen() {
+  const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
   const styles = createStyles(theme);
   const { colors } = theme;
@@ -79,7 +81,10 @@ export default function GeneratedVideoScreen() {
         setSelectedVideoId((prev) => prev ?? transformedVideos[0]?.value);
       }
     } catch (error: any) {
-      showToast(extractErrorMessage(error, "Failed to load videos"), "error");
+      showToast(
+        extractErrorMessage(error, t("video.loadVideoFailMessage")),
+        "error"
+      );
     }
   }, []);
 
@@ -102,7 +107,10 @@ export default function GeneratedVideoScreen() {
           totalCount: response?.data?.totalRecords ?? 0,
         };
       } catch (error: any) {
-        showToast(extractErrorMessage(error, "Failed to load voters"), "error");
+        showToast(
+          extractErrorMessage(error, t("voter.loadVoterFailMessage")),
+          "error"
+        );
         return { items: [], totalCount: 0 };
       } finally {
         setLoading(false);
@@ -144,12 +152,12 @@ export default function GeneratedVideoScreen() {
       if (base64Qr) {
         setQrImageUrl(base64Qr);
       } else {
-        showToast("Failed to generate QR", "error");
+        showToast(t("whatsapp.qrGenerationFail"), "error");
         setModalVisible(false);
       }
     } catch (error) {
       console.error("QR Error:", error);
-      showToast("Something went wrong while generating QR", "error");
+      showToast(t("whatsapp.qrGenerationFail"), "error");
       setModalVisible(false);
     }
   };
@@ -165,10 +173,10 @@ export default function GeneratedVideoScreen() {
         setWaRegistered(false);
         setQrImageUrl(null);
       } else {
-        showToast("Something went wrong", "error");
+        showToast(t("somethingWentWrong"), "error");
       }
     } catch {
-      showToast("Logout failed", "error");
+      showToast(t("logoutFailed"), "error");
     }
   };
 
@@ -209,11 +217,11 @@ export default function GeneratedVideoScreen() {
         if (supported) {
           await Linking.openURL(url);
         } else {
-          showToast("WhatsApp is not installed", "error");
+          showToast(t("whatsapp.notInstalled"), "error");
         }
       } catch (err) {
         console.error("Error opening WhatsApp:", err);
-        showToast("Could not open WhatsApp", "error");
+        showToast(t("notOpenWhatsApp"), "error");
       }
     };
 
@@ -296,10 +304,10 @@ export default function GeneratedVideoScreen() {
           },
           userId
         );
-        showToast("Video sent successfully", "success");
+        showToast(t("video.sendSuccess"), "success");
         updateRowStatus(item.id, { sendStatus: "sent" });
       } catch (error) {
-        showToast("Error sending video", "error");
+        showToast(t("video.sendFail"), "error");
         updateRowStatus(item.id, { sendStatus: "pending" });
       } finally {
         setSendingId(null);
@@ -325,8 +333,9 @@ export default function GeneratedVideoScreen() {
             return;
           }
 
-          const pkgRes = await Share.isPackageInstalled("com.whatsapp");
-          isWhatsAppAvailable = pkgRes?.isInstalled;
+          const personal = await Share.isPackageInstalled("com.whatsapp");
+          const business = await Share.isPackageInstalled("com.whatsapp.w4b");
+          isWhatsAppAvailable = personal?.isInstalled || business?.isInstalled;
         } catch {
           isWhatsAppAvailable = false;
         }
@@ -339,7 +348,7 @@ export default function GeneratedVideoScreen() {
       }
 
       if (!isWhatsAppAvailable) {
-        showToast("WhatsApp not installed", "error");
+        showToast(t("whatsapp.notInstalled"), "error");
         setSendingId(null);
         return;
       }
@@ -374,10 +383,10 @@ export default function GeneratedVideoScreen() {
   };
 
   const columns = [
-    { label: "Name", key: "fullName", flex: 0.8 },
-    { label: "Mobile", key: "phoneNumber", flex: 0.4 },
+    { label: t("name"), key: "fullName", flex: 0.8 },
+    { label: t("mobile"), key: "phoneNumber", flex: 0.4 },
     {
-      label: "Created At",
+      label: t("createdAt"),
       key: "createdAt",
       flex: 0.4,
       render: (item) =>
@@ -386,8 +395,8 @@ export default function GeneratedVideoScreen() {
           : "-",
     },
     {
+      label: t("actions"),
       key: "actions",
-      label: "Actions",
       flex: 1,
       smallColumn: true,
       render: (item: Voter) => {
@@ -472,14 +481,14 @@ export default function GeneratedVideoScreen() {
       {/* Header */}
       <View style={styles.headerRow}>
         <Text variant="titleLarge" style={styles.heading}>
-          Generated Videos
+          {t("generatedVideoPageLabel")}
         </Text>
       </View>
 
       {Platform.OS === "web" && (
         <Surface style={styles.toolbar} elevation={1}>
           <FormDropdown
-            label="Select Campaign"
+            label={t("selectCampaign")}
             value={selectedVideoId}
             options={baseVideos}
             noMargin={true}
@@ -528,12 +537,14 @@ export default function GeneratedVideoScreen() {
                       },
                     ]}
                   >
-                    {waRegistered ? "Connected to WhatsApp" : "Not Connected"}
+                    {waRegistered
+                      ? t("whatsapp.connected")
+                      : t("whatsapp.notConnected")}
                   </Text>
                   <Text style={styles.waChipSubText}>
                     {waRegistered
-                      ? "You can now share videos directly"
-                      : "Please connect to start sharing"}
+                      ? t("whatsapp.shareDirectly")
+                      : t("whatsapp.connectToShare")}
                   </Text>
                 </>
               )}
@@ -558,7 +569,7 @@ export default function GeneratedVideoScreen() {
                 }}
                 labelStyle={{ fontSize: 13, fontWeight: "600" }}
               >
-                {waRegistered ? "Logout" : "Connect"}
+                {waRegistered ? t("logout") : t("connect")}
               </Button>
             )}
           </View>
@@ -569,7 +580,7 @@ export default function GeneratedVideoScreen() {
       {Platform.OS !== "web" && (
         <View style={styles.mobileToolbar}>
           <FormDropdown
-            label="Select Campaign"
+            label={t("selectCampaign")}
             value={selectedVideoId}
             options={baseVideos}
             noMargin
@@ -591,7 +602,7 @@ export default function GeneratedVideoScreen() {
               color={colors.disabledText}
             />
           }
-          emptyText="No videos found"
+          emptyText={t("video.noData")}
           tableHeight={
             Platform.OS === "web" ? "calc(100vh - 345px)" : undefined
           }
@@ -614,10 +625,8 @@ export default function GeneratedVideoScreen() {
           contentContainerStyle={styles.modalContainer}
         >
           <Surface style={styles.modalCard} elevation={3}>
-            <Text style={styles.modalTitle}>Register on WhatsApp</Text>
-            <Text style={styles.modalSubtitle}>
-              Link your WhatsApp account by scanning the QR code below
-            </Text>
+            <Text style={styles.modalTitle}>{t("whatsapp.register")}</Text>
+            <Text style={styles.modalSubtitle}>{t("whatsapp.link")}</Text>
 
             <View style={styles.qrWrapper}>
               {qrImageUrl ? (
@@ -627,9 +636,7 @@ export default function GeneratedVideoScreen() {
               )}
             </View>
 
-            <Text style={styles.modalHint}>
-              Open WhatsApp → Settings → Linked Devices → Scan QR
-            </Text>
+            <Text style={styles.modalHint}>{t("whatsapp.scanQR")}</Text>
 
             <Button
               mode="contained"
@@ -638,7 +645,7 @@ export default function GeneratedVideoScreen() {
               textColor={colors.white}
               onPress={() => setModalVisible(false)}
             >
-              Close
+              {t("close")}
             </Button>
           </Surface>
         </Modal>

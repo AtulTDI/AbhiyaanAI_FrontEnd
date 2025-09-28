@@ -343,7 +343,7 @@ export default function CommonTable<T>({
                           page === 0 && { color: colors.borderGray },
                         ]}
                       >
-                        Previous
+                        {t("previous")}
                       </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
@@ -361,7 +361,7 @@ export default function CommonTable<T>({
                           },
                         ]}
                       >
-                        Next
+                        {t("next")}
                       </Text>
                       <MaterialIcons
                         name="chevron-right"

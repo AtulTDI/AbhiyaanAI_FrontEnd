@@ -2,15 +2,16 @@ import React, { useCallback, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { RadioButton, useTheme } from "react-native-paper";
 import { useFocusEffect } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
 import { Ionicons } from "@expo/vector-icons";
 import CommonTable from "./CommonTable";
 import { getVideos } from "../api/videoApi";
 import { useToast } from "./ToastProvider";
 import { useVideoPreview } from "./VideoPreviewContext";
 import { extractErrorMessage, sortByDateDesc } from "../utils/common";
-import { AppTheme } from "../theme";
 import { useServerTable } from "../hooks/useServerTable";
 import { GetPaginatedVideos } from "../types/Video";
+import { AppTheme } from "../theme";
 
 type BaseVideo = {
   id: string;
@@ -18,6 +19,7 @@ type BaseVideo = {
 };
 
 export default function SelectBaseVideo({ stepData, setStepData }) {
+  const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
   const styles = createStyles(theme);
   const { colors } = theme;
@@ -50,7 +52,7 @@ export default function SelectBaseVideo({ stepData, setStepData }) {
         totalCount: response?.data?.totalRecords ?? 0,
       };
     } catch (error: any) {
-      showToast(extractErrorMessage(error, "Failed to load videos"), "error");
+      showToast(extractErrorMessage(error, t("video.loadVideoFailMessage")), "error");
     } finally {
       showLoading(false);
     }
@@ -87,12 +89,12 @@ export default function SelectBaseVideo({ stepData, setStepData }) {
       ),
     },
     {
-      label: "Campaign",
+      label: t("campaign"),
       key: "campaignName" as const,
       flex: 1.8,
     },
     {
-      label: "Actions",
+      label: t("actions"),
       key: "actions",
       flex: 1,
       smallColumn: true,
@@ -146,7 +148,7 @@ export default function SelectBaseVideo({ stepData, setStepData }) {
             color={colors.disabledText}
           />
         }
-        emptyText="No videos found"
+        emptyText={t("video.noData")}
         loading={loading}
         tableWithSelection={true}
         page={table.page}

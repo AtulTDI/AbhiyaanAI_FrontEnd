@@ -253,7 +253,7 @@ export default function VideoUploadForm({
                     disabled={loading}
                     style={{ marginTop: 8, borderRadius: 5 }}
                   >
-                    {loading ? t("video.generating") : t("video.generateAndPreview")}
+                    {loading ? t("video.generatingVideo") : t("video.generateAndPreview")}
                   </Button>
                 </View>
 

@@ -1,29 +1,14 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { View, StyleSheet, Pressable } from "react-native";
 import { Checkbox, useTheme } from "react-native-paper";
+import { useTranslation } from "react-i18next";
 import { Ionicons } from "@expo/vector-icons";
 import CommonTable from "../components/CommonTable";
 import { GetPaginatedVoters, Voter } from "../types/Voter";
 import { getVotersForProcessing } from "../api/voterApi";
 import { useFocusEffect } from "@react-navigation/native";
-import { AppTheme } from "../theme";
 import { useServerTable } from "../hooks/useServerTable";
-
-const columns = [
-  {
-    label: "",
-    key: "checkbox" as const,
-    flex: 0.1,
-    smallColumn: true,
-    render: undefined,
-  },
-  {
-    label: "Name",
-    key: "fullName",
-    flex: 1,
-  },
-  { label: "Mobile", key: "phoneNumber", flex: 0.8 },
-];
+import { AppTheme } from "../theme";
 
 export default function SelectVoters({
   stepData,
@@ -31,9 +16,26 @@ export default function SelectVoters({
   getTotalVotersCount,
   getSelectedVotersCount,
 }) {
+  const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
   const { colors } = theme;
   const [loading, setLoading] = useState(false);
+
+  const columns = [
+    {
+      label: "",
+      key: "checkbox" as const,
+      flex: 0.1,
+      smallColumn: true,
+      render: undefined,
+    },
+    {
+      label: t("name"),
+      key: "fullName",
+      flex: 1,
+    },
+    { label: t("mobile"), key: "phoneNumber", flex: 0.8 },
+  ];
 
   const selectedIds: string[] = stepData[1] || [];
 
@@ -68,7 +70,7 @@ export default function SelectVoters({
           totalCount: response?.data?.totalRecords ?? 0,
         }))
         .catch((error) => {
-          console.error("Failed to fetch voters:", error);
+          console.error(t("voter.loadVoterFailMessage"), error);
           return { items: [], totalCount: 0 };
         })
         .finally(() => setLoading(false));
@@ -176,7 +178,7 @@ export default function SelectVoters({
             color={colors.disabledText}
           />
         }
-        emptyText="No voters found"
+        emptyText={t("voter.noData")}
         keyExtractor={(item) => item.id}
         loading={loading}
         tableWithSelection={true}

@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
   View,
   StyleSheet,
@@ -7,6 +7,7 @@ import {
   Platform,
 } from "react-native";
 import { Text, useTheme, Surface, Button } from "react-native-paper";
+import { useTranslation } from "react-i18next";
 import { useFocusEffect } from "@react-navigation/native";
 import {
   TabView,
@@ -39,6 +40,7 @@ type TabRoute = {
 };
 
 export default function AddVoterScreen() {
+  const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
   const { colors } = theme;
   const layout = useWindowDimensions();
@@ -50,10 +52,13 @@ export default function AddVoterScreen() {
   const [selectedVoterId, setSelectedVoterId] = useState<string | null>(null);
   const [voterToEdit, setVoterToEdit] = useState<Voter | null>(null);
 
-  const [routes] = useState<TabRoute[]>([
-    { key: "manual", title: "Register Voter" },
-    { key: "excel", title: "Bulk Register" },
-  ]);
+  const routes = useMemo(
+    () => [
+      { key: "manual", title: t("voter.registerVoter") },
+      { key: "excel", title: t("voter.bulkRegister") },
+    ],
+    [t]
+  );
 
   const fetchVoters = useCallback(async (page: number, pageSize: number) => {
     const response = await getVoters(page, pageSize);
@@ -80,11 +85,11 @@ export default function AddVoterScreen() {
     try {
       await createVoter(voterData);
       table.fetchData(0, table.rowsPerPage);
-      showToast("Voter registered successfully!", "success");
+      showToast(t("voter.addSuccess"), "success");
       setShowAddVoterView(false);
       setVoterToEdit(null);
     } catch (error: any) {
-      showToast(extractErrorMessage(error, "Failed to create voter"), "error");
+      showToast(extractErrorMessage(error, t("voter.addFailed")), "error");
     }
   };
 
@@ -93,11 +98,11 @@ export default function AddVoterScreen() {
     try {
       await editVoterById(voterToEdit.id, voterData);
       await table.fetchData(table.page, table.rowsPerPage);
-      showToast("Voter updated successfully!", "success");
+      showToast(t("voter.editSuccess"), "success");
       setShowAddVoterView(false);
       setVoterToEdit(null);
     } catch (error: any) {
-      showToast(extractErrorMessage(error, "Failed to update voter"), "error");
+      showToast(extractErrorMessage(error, t("voter.editFailed")), "error");
     }
   };
 
@@ -116,12 +121,9 @@ export default function AddVoterScreen() {
       try {
         await deleteVoterById(selectedVoterId);
         table.fetchData(table.page, table.rowsPerPage);
-        showToast("Voter deleted successfully!", "success");
+        showToast(t("voter.deleteSucess"), "success");
       } catch (error: any) {
-        showToast(
-          extractErrorMessage(error, "Failed to delete voter"),
-          "error"
-        );
+        showToast(extractErrorMessage(error, t("voter.deleteFail")), "error");
       }
       setSelectedVoterId(null);
       setDeleteDialogVisible(false);
@@ -150,7 +152,7 @@ export default function AddVoterScreen() {
         await Sharing.shareAsync(dest);
       }
     } catch (error) {
-      console.error("Error sharing/downloading Excel:", error);
+      console.error(t("voter.excelDownloadFail"), error);
     }
   };
 
@@ -184,7 +186,7 @@ export default function AddVoterScreen() {
                 textColor={colors.greenAccent}
                 style={{ borderRadius: 8, borderColor: colors.greenAccent }}
               >
-                Download Sample
+                {t("voter.downloadSample")}
               </Button>
             </View>
             <VoterUpload
@@ -240,10 +242,10 @@ export default function AddVoterScreen() {
             style={[styles.heading, { color: theme.colors.primary }]}
           >
             {showAddVoterView
-              ? `${voterToEdit ? "Edit" : "Add"} ${
-                  voterToEdit ? "Voter" : "Voter(s)"
-                }`
-              : "Voters"}
+              ? voterToEdit
+                ? t("voter.edit")
+                : t("voter.add")
+              : t("voter.plural")}
           </Text>
           {!showAddVoterView && (
             <Button
@@ -258,7 +260,7 @@ export default function AddVoterScreen() {
               buttonColor={theme.colors.primary}
               style={{ borderRadius: 5 }}
             >
-              Add Voter(s)
+              {t("voter.add")}
             </Button>
           )}
         </View>
@@ -306,8 +308,8 @@ export default function AddVoterScreen() {
       </Surface>
       <DeleteConfirmationDialog
         visible={deleteDialogVisible}
-        title="Delete Voter"
-        message="Are you sure you want to delete this voter?"
+        title={t("voter.delete")}
+        message={t("voter.confirmDelete")}
         onCancel={() => setDeleteDialogVisible(false)}
         onConfirm={confirmDeleteVoter}
       />

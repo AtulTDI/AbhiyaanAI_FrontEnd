@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { FieldConfig } from "../types";
 import { CreateVoterPayload } from "../types/Voter";
 import DynamicForm from "./DynamicForm";
@@ -23,9 +24,10 @@ export default function VoterForm({
   setVoterToEdit,
   setShowAddVoterView,
 }: Props) {
+  const { t } = useTranslation();
   const voterFields: FieldConfig[] = [
-    { name: "fullName", label: "Full name", type: "text", required: true },
-    { name: "phoneNumber", label: "Mobile", type: "number", required: true },
+    { name: "fullName", label: t("fullName"), type: "text", required: true },
+    { name: "phoneNumber", label: t("mobile"), type: "number", required: true },
   ];
 
   return (

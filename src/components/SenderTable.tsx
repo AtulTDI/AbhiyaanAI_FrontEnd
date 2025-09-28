@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import dayjs from "dayjs";
 import { Ionicons } from "@expo/vector-icons";
 import { View, StyleSheet } from "react-native";
@@ -30,19 +31,20 @@ export default function SenderTable({
   onEdit,
   onDelete,
 }: Props) {
+  const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
   const { colors } = theme;
   const columns = [
     {
-      label: "Name",
+      label: t("name"),
       key: "fullName",
       flex: 0.5,
       render: (item) => item.firstName + " " + item.lastName,
     },
-    { label: "Mobile", key: "phoneNumber", flex: 0.4 },
-    { label: "Email", key: "email", flex: 0.4 },
+    { label: t("mobile"), key: "phoneNumber", flex: 0.4 },
+    { label: t("email"), key: "email", flex: 0.4 },
     {
-      label: "Created At",
+      label: t("createdAt"),
       key: "createdAt",
       flex: 0.4,
       render: (item) =>
@@ -51,7 +53,7 @@ export default function SenderTable({
           : "-",
     },
     {
-      label: "Actions",
+      label: t("actions"),
       key: "actions",
       flex: 0.9,
       smallColumn: true,
@@ -85,7 +87,7 @@ export default function SenderTable({
           color={colors.disabledText}
         />
       }
-      emptyText="No senders found"
+      emptyText={t("sender.noData")}
       loading={loading}
       page={page}
       rowsPerPage={rowsPerPage}

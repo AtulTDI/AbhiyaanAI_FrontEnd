@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from "react";
 import { View, StyleSheet, Dimensions, Platform } from "react-native";
 import { Surface, Text, Button, useTheme } from "react-native-paper";
+import { useTranslation } from "react-i18next";
 import { useFocusEffect } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import SelectBaseVideo from "../components/SelectBaseVideo";
@@ -16,9 +17,8 @@ import {
 } from "../api/videoApi";
 import { AppTheme } from "../theme";
 
-const steps = ["Select Base Video", "Select Voters"];
-
 export default function GenerateVideoScreen() {
+  const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
   const styles = createStyles(theme);
   const { colors } = theme;
@@ -33,6 +33,7 @@ export default function GenerateVideoScreen() {
   const [showOverlay, setShowOverlay] = useState(false);
   const [totalVoterCount, setTotalVoterCount] = useState(0);
   const [selectedVoterCount, setSelectedVoterCount] = useState(0);
+  const steps = [t("selectBaseVideo"), t("selectVoters")];
 
   useFocusEffect(
     useCallback(() => {
@@ -73,11 +74,11 @@ export default function GenerateVideoScreen() {
 
     try {
       await generateCustomisedVideo(payload);
-      showToast("Video Generation started", "success");
+      showToast(t("video.generateVideoStart"), "success");
       navigate("Processing");
     } catch (error: any) {
       showToast(
-        extractErrorMessage(error, "Failed to generate videos"),
+        extractErrorMessage(error, t("video.generateVideoFail")),
         "error"
       );
     } finally {
@@ -95,7 +96,7 @@ export default function GenerateVideoScreen() {
 
   const handleGenerate = async () => {
     if (!stepData[1] || stepData[1].length === 0) {
-      showToast("Please select at least one voter", "warning");
+      showToast(t("voter.selectOneVoter"), "warning");
       return;
     }
 
@@ -198,7 +199,10 @@ export default function GenerateVideoScreen() {
       {/* Count Section */}
       {activeStep === 1 && (
         <Surface
-          style={[styles.countContainer, { marginTop: Platform.OS === "web" ? -15 : 10 }]}
+          style={[
+            styles.countContainer,
+            { marginTop: Platform.OS === "web" ? -15 : 10 },
+          ]}
         >
           <Ionicons
             name="people-circle-outline"
@@ -206,10 +210,18 @@ export default function GenerateVideoScreen() {
             color={colors.primary}
             style={{ marginRight: Platform.OS === "web" ? 10 : 6 }}
           />
-          <Text style={[styles.countText, { fontSize: Platform.OS === "web" ? 16 : 12 }]}>
-            Selected:{" "}
+          <Text
+            style={[
+              styles.countText,
+              { fontSize: Platform.OS === "web" ? 16 : 12 },
+            ]}
+          >
+            {t("selected")}:{" "}
             <Text
-              style={[styles.countHighlight, { fontSize: Platform.OS === "web" ? 16 : 12 }]}
+              style={[
+                styles.countHighlight,
+                { fontSize: Platform.OS === "web" ? 16 : 12 },
+              ]}
             >
               {selectedVoterCount} /{" "}
             </Text>
@@ -231,7 +243,7 @@ export default function GenerateVideoScreen() {
           disabled={activeStep === 0}
           style={styles.btn}
         >
-          Previous
+          {t("previous")}
         </Button>
         <Button
           mode="contained"
@@ -248,9 +260,9 @@ export default function GenerateVideoScreen() {
         >
           {activeStep === steps.length - 1
             ? isLoading
-              ? "Generating..."
-              : "Generate Video"
-            : "Next"}
+              ? t("video.generating")
+              : t("video.generateVideo")
+            : t("next")}
         </Button>
       </View>
 
@@ -265,13 +277,13 @@ export default function GenerateVideoScreen() {
               style={{ marginBottom: 20, opacity: 0.85 }}
             />
             <Text style={styles.overlayMessageTitle}>
-              Processing in Progress
+              {t("video.processingProgress")}
             </Text>
             <Text style={styles.overlayMessageText}>
-              Video generation for one campaign is currently running.
+              {t("video.videoGenerationProgress")}
             </Text>
             <Text style={styles.overlayMessageText}>
-              Please wait until it completes
+              {t("video.waitForCompletion")}
             </Text>
           </View>
         </View>
