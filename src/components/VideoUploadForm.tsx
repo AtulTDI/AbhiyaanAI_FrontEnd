@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { View, StyleSheet, Platform, Dimensions } from "react-native";
 import {
   Text,
@@ -60,6 +60,9 @@ export default function VideoUploadForm({
   const styles = createStyles(theme);
   const { colors } = theme;
   const screenWidth = Dimensions.get("window").width;
+
+  const scrollRef = useRef<KeyboardAwareScrollView>(null);
+  const campaignInputRef = useRef<any>(null);
 
   const [formData, setFormData] = useState<FormData>({
     campaign: "",
@@ -125,6 +128,13 @@ export default function VideoUploadForm({
 
     if (Object.keys(errors).length > 0) {
       setFormData((prev) => ({ ...prev, errors }));
+
+      if (scrollRef.current) {
+        scrollRef.current.scrollToPosition(0, 0, true);
+      }
+      if (errors.campaign && campaignInputRef.current) {
+        campaignInputRef.current.focus();
+      }
       return;
     }
 
@@ -162,6 +172,7 @@ export default function VideoUploadForm({
   return (
     <View style={{ flex: 1 }}>
       <KeyboardAwareScrollView
+        ref={scrollRef}
         contentContainerStyle={{ padding: 16, paddingBottom: 160 }}
         enableOnAndroid
         extraScrollHeight={Platform.OS === "ios" ? 100 : 120}
@@ -169,6 +180,7 @@ export default function VideoUploadForm({
       >
         {/* Campaign */}
         <TextInput
+          ref={campaignInputRef}
           label={t("campaign")}
           value={formData.campaign}
           onChangeText={(text) =>
@@ -182,7 +194,11 @@ export default function VideoUploadForm({
           style={styles.input}
           error={!!formData.errors.campaign}
         />
-        <HelperText type="error" visible={!!formData.errors.campaign}>
+        <HelperText
+          type="error"
+          visible={!!formData.errors.campaign}
+          style={{ paddingLeft: 0 }}
+        >
           {formData.errors.campaign}
         </HelperText>
 
@@ -253,7 +269,9 @@ export default function VideoUploadForm({
                     disabled={loading}
                     style={{ marginTop: 8, borderRadius: 5 }}
                   >
-                    {loading ? t("video.generatingVideo") : t("video.generateAndPreview")}
+                    {loading
+                      ? t("video.generatingVideo")
+                      : t("video.generateAndPreview")}
                   </Button>
                 </View>
 
@@ -350,7 +368,7 @@ export default function VideoUploadForm({
 const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
     input: {
-      marginBottom: 12,
+      marginBottom: 0,
       backgroundColor: theme.colors.white,
     },
     footer: {
@@ -372,5 +390,6 @@ const createStyles = (theme: AppTheme) =>
     downloadButton: {
       display: "flex",
       alignItems: "flex-end",
+      marginTop: 12
     },
   });

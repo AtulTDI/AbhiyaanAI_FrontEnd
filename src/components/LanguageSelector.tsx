@@ -6,6 +6,9 @@ import {
   StyleSheet,
   FlatList,
   Animated,
+  Modal,
+  TouchableWithoutFeedback,
+  Platform,
 } from "react-native";
 import { useTheme } from "react-native-paper";
 import i18n from "../../i18n";
@@ -20,11 +23,36 @@ const languages = [
 export default function LanguageSelector() {
   const theme = useTheme<AppTheme>();
   const styles = createStyles(theme);
+
   const [currentLang, setCurrentLang] = useState(i18n.language);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [position, setPosition] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(-8)).current;
+
+  const selectBoxRef = useRef<View | null>(null);
+
+  useEffect(() => {
+    if (dropdownOpen && selectBoxRef.current) {
+      if (Platform.OS === "web") {
+        const domNode = (selectBoxRef.current as any);
+        if (domNode && domNode.getBoundingClientRect) {
+          const rect = domNode.getBoundingClientRect();
+          setPosition({
+            x: rect.left,
+            y: rect.top,
+            w: rect.width,
+            h: rect.height,
+          });
+        }
+      } else {
+        selectBoxRef.current.measureInWindow((x, y, w, h) => {
+          setPosition({ x, y, w, h });
+        });
+      }
+    }
+  }, [dropdownOpen]);
 
   useEffect(() => {
     if (dropdownOpen) {
@@ -67,59 +95,78 @@ export default function LanguageSelector() {
   return (
     <View style={styles.wrapper}>
       <TouchableOpacity
+        ref={selectBoxRef}
         style={styles.selectBox}
         onPress={() => setDropdownOpen(!dropdownOpen)}
         activeOpacity={0.8}
       >
-        <Text style={styles.selectedText}>{currentLabel}</Text>
+        <Text
+          style={[
+            styles.selectedText,
+            { color: dropdownOpen ? theme.colors.textPrimary : theme.colors.primaryDark },
+          ]}
+        >
+          {currentLabel}
+        </Text>
         <Text style={styles.arrow}>{dropdownOpen ? "▲" : "▼"}</Text>
       </TouchableOpacity>
 
-      {dropdownOpen && (
-        <Animated.View
-          style={[
-            styles.dropdown,
-            {
-              opacity: fadeAnim,
-              transform: [{ translateY: slideAnim }],
-            },
-          ]}
-        >
-          <FlatList
-            data={languages}
-            keyExtractor={(item) => item.code}
-            renderItem={({ item }) => (
-              <TouchableOpacity
+      <Modal
+        visible={dropdownOpen}
+        transparent
+        animationType="none"
+        onRequestClose={() => setDropdownOpen(false)}
+      >
+        <TouchableWithoutFeedback onPress={() => setDropdownOpen(false)}>
+          <View style={styles.overlay}>
+            {position && (
+              <Animated.View
                 style={[
-                  styles.dropdownItem,
-                  currentLang === item.code && styles.selectedItem,
+                  styles.dropdown,
+                  {
+                    top: position.y + position.h + 4,
+                    left: position.x,
+                    width: position.w,
+                    opacity: fadeAnim,
+                    transform: [{ translateY: slideAnim }],
+                  },
                 ]}
-                onPress={() => switchLanguage(item.code)}
-                activeOpacity={0.6}
               >
-                <Text
-                  style={[
-                    styles.itemText,
-                    currentLang === item.code && styles.selectedItemText,
-                  ]}
-                >
-                  {item.label}
-                </Text>
-              </TouchableOpacity>
+                <FlatList
+                  data={languages}
+                  keyExtractor={(item) => item.code}
+                  renderItem={({ item }) => (
+                    <TouchableOpacity
+                      style={[
+                        styles.dropdownItem,
+                        currentLang === item.code && styles.selectedItem,
+                      ]}
+                      onPress={() => switchLanguage(item.code)}
+                      activeOpacity={0.6}
+                    >
+                      <Text
+                        style={[
+                          styles.itemText,
+                          currentLang === item.code && styles.selectedItemText,
+                        ]}
+                      >
+                        {item.label}
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                />
+              </Animated.View>
             )}
-          />
-        </Animated.View>
-      )}
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
     </View>
   );
 }
 
 const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
-    wrapper: {
-      width: 120,
-      position: "relative",
-    },
+    wrapper: { width: 120 },
     selectBox: {
       flexDirection: "row",
       justifyContent: "space-between",
@@ -140,18 +187,17 @@ const createStyles = (theme: AppTheme) =>
     selectedText: {
       fontSize: 13,
       fontWeight: "600",
-      color: theme.colors.textPrimary,
     },
     arrow: {
       fontSize: 11,
       color: theme.colors.primaryDark,
     },
+    overlay: {
+      flex: 1,
+      backgroundColor: "transparent",
+    },
     dropdown: {
       position: "absolute",
-      top: "100%",
-      left: 0,
-      right: 0,
-      marginTop: 4,
       borderWidth: 1,
       borderColor: theme.colors.primaryDark,
       borderRadius: 6,
