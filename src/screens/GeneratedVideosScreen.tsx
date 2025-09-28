@@ -18,6 +18,7 @@ import {
   Button,
   ProgressBar,
 } from "react-native-paper";
+import { useTranslation } from "react-i18next";
 import dayjs from "dayjs";
 import { useFocusEffect } from "@react-navigation/native";
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
@@ -38,13 +39,19 @@ import {
 } from "../api/whatsappApi";
 import { useServerTable } from "../hooks/useServerTable";
 import { AppTheme } from "../theme";
-import { useTranslation } from "react-i18next";
 
 let RNFS: any = null;
 let Share: any = null;
+let Contacts: any = null;
+
 if (Platform.OS !== "web") {
   RNFS = require("react-native-fs");
   Share = require("react-native-share").default;
+  if (Platform.OS === "android") {
+    Contacts =
+      require("react-native-contacts").default ||
+      require("react-native-contacts");
+  }
 }
 
 export default function GeneratedVideoScreen() {
@@ -131,7 +138,6 @@ export default function GeneratedVideoScreen() {
       const { userId } = await getAuthData();
       const response = await getRegistrationStatus(userId);
       const isRegistered = JSON.parse(response.data)?.isReady;
-
       setWaRegistered(isRegistered);
     } catch (error) {
       setWaRegistered(false);
@@ -180,17 +186,34 @@ export default function GeneratedVideoScreen() {
     }
   };
 
+  const clearAllTempContacts = async () => {
+    if (Platform.OS !== "android") return;
+
+    try {
+      const contacts = await Contacts.getAll();
+      const tempContacts = contacts.filter((c) =>
+        c.givenName?.startsWith("TempContact_")
+      );
+
+      for (const contact of tempContacts) {
+        try {
+          await Contacts.deleteContact(contact);
+          console.log("Deleted temp contact:", contact.givenName);
+        } catch (err) {
+          console.warn("Failed to delete temp contact", contact.givenName, err);
+        }
+      }
+    } catch (err) {
+      console.error("Error clearing temp contacts", err);
+    }
+  };
+
   const clearCacheFiles = async () => {
     try {
       const files = await RNFS.readDir(RNFS.CachesDirectoryPath);
-
-      console.log("======Files=======", files);
-
       for (const file of files) {
         await RNFS.unlink(file.path);
       }
-
-      console.log("Cache cleared successfully");
     } catch (error) {
       console.error("Error clearing cache:", error);
     }
@@ -198,6 +221,7 @@ export default function GeneratedVideoScreen() {
 
   useFocusEffect(
     useCallback(() => {
+      clearAllTempContacts();
       fetchVideos();
       clearCacheFiles();
 
@@ -213,12 +237,8 @@ export default function GeneratedVideoScreen() {
 
       try {
         const supported = await Linking.canOpenURL(url);
-
-        if (supported) {
-          await Linking.openURL(url);
-        } else {
-          showToast(t("whatsapp.notInstalled"), "error");
-        }
+        if (supported) await Linking.openURL(url);
+        else showToast(t("whatsapp.notInstalled"), "error");
       } catch (err) {
         console.error("Error opening WhatsApp:", err);
         showToast(t("notOpenWhatsApp"), "error");
@@ -229,7 +249,6 @@ export default function GeneratedVideoScreen() {
       const timer = setTimeout(() => {
         openWhatsApp();
       }, 800);
-
       return () => clearTimeout(timer);
     }
   }, [modalVisible]);
@@ -253,11 +272,14 @@ export default function GeneratedVideoScreen() {
         const granted = await PermissionsAndroid.requestMultiple([
           PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
           PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+          PermissionsAndroid.PERMISSIONS.WRITE_CONTACTS,
         ]);
         return (
           granted["android.permission.READ_EXTERNAL_STORAGE"] ===
             PermissionsAndroid.RESULTS.GRANTED &&
           granted["android.permission.WRITE_EXTERNAL_STORAGE"] ===
+            PermissionsAndroid.RESULTS.GRANTED &&
+          granted["android.permission.WRITE_CONTACTS"] ===
             PermissionsAndroid.RESULTS.GRANTED
         );
       }
@@ -328,7 +350,7 @@ export default function GeneratedVideoScreen() {
         try {
           const granted = await requestAndroidPermissions();
           if (!granted) {
-            showToast("Storage permissions are required", "error");
+            showToast("Storage & Contacts permissions are required", "error");
             setSendingId(null);
             return;
           }
@@ -359,19 +381,52 @@ export default function GeneratedVideoScreen() {
           item.id
         );
 
-        await Share.shareSingle({
-          title: "Video",
-          url: Platform.OS === "android" ? "file://" + localPath : localPath,
-          type: "video/mp4",
-          social: Share.Social.WHATSAPP,
-          whatsAppNumber: `91${item.phoneNumber}`,
-          message: `🙏 ${whatsAppVideoDetails?.data?.message}`,
-        });
+        let savedContact: any = null;
+        if (Platform.OS === "android") {
+          const tempContact = {
+            givenName: `TempContact_${item.id}`,
+            phoneNumbers: [{ label: "mobile", number: item.phoneNumber }],
+          };
+          savedContact = await Contacts.addContact(tempContact);
+          console.log("===Saved Contact===", savedContact);
+        }
+
+        if (Platform.OS === "android") {
+          await Share.shareSingle({
+            title: "Video",
+            url: localPath,
+            type: "video/mp4",
+            social: Share.Social.WHATSAPP,
+            whatsAppNumber: `91${item.phoneNumber}`,
+          });
+        } else {
+          await Share.shareSingle({
+            title: "Video",
+            url: Platform.OS === "ios" ? localPath : "file://" + localPath,
+            type: "video/mp4",
+            social: Share.Social.WHATSAPP,
+            whatsAppNumber: `91${item.phoneNumber}`,
+            message: `🙏 ${whatsAppVideoDetails?.data?.message}`,
+          });
+        }
 
         updateRowStatus(item.id, { sendStatus: "sent" });
+        showToast(t("video.sendSuccess"), "success");
+
+        if (Platform.OS === "android" && savedContact?.recordID) {
+          setTimeout(async () => {
+            try {
+              await Contacts.deleteContact(savedContact);
+              console.log("Contact deleted");
+            } catch (err) {
+              console.warn("Failed to delete temp contact", err);
+            }
+          }, 5000);
+        }
       } catch (err) {
         console.error("Error sending video:", err);
         updateRowStatus(item.id, { sendStatus: "pending" });
+        showToast(t("video.sendFail"), "error");
       } finally {
         setSendingId(null);
         setProgressMap((prev) => {
