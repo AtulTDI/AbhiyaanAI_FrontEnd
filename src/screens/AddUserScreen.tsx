@@ -177,7 +177,7 @@ export default function AddUserScreen({ role }) {
     role === "Distributor"
       ? t("addDistributorLabel")
       : role === "Admin"
-      ? t("addCustomerAdminLabel")
+      ? t(Platform.OS === "web" ? "addCustomerAdminLabel" : "addAdminLabel")
       : t("addUserLabel");
 
   const getEditRoleLabel = () =>
@@ -226,9 +226,6 @@ export default function AddUserScreen({ role }) {
               style={{ borderRadius: 5 }}
             >
               {getAddRoleLabel()}
-              {/* {
-                ? t("adminButtonLabel")
-                : getRoleLabel()} */}
             </Button>
           )}
         </View>
@@ -266,7 +263,7 @@ export default function AddUserScreen({ role }) {
           />
         )}
       </ScrollView>
-   
+
       <DeleteConfirmationDialog
         visible={deleteDialogVisible}
         title={t("deleteRole", { role: getRoleLabel()?.toLowerCase() })}

@@ -209,6 +209,8 @@ export default function GeneratedVideoScreen() {
   };
 
   const clearCacheFiles = async () => {
+    if (Platform.OS === "web" || !RNFS) return;
+
     try {
       const files = await RNFS.readDir(RNFS.CachesDirectoryPath);
       for (const file of files) {

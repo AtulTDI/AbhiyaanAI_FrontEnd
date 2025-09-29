@@ -7,8 +7,8 @@ import {
   FlatList,
   Animated,
   Modal,
-  TouchableWithoutFeedback,
   Platform,
+  Pressable,
 } from "react-native";
 import { useTheme } from "react-native-paper";
 import i18n from "../../i18n";
@@ -26,7 +26,12 @@ export default function LanguageSelector() {
 
   const [currentLang, setCurrentLang] = useState(i18n.language);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [position, setPosition] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
+  const [position, setPosition] = useState<{
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+  } | null>(null);
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(-8)).current;
@@ -34,10 +39,20 @@ export default function LanguageSelector() {
   const selectBoxRef = useRef<View | null>(null);
 
   useEffect(() => {
+    const handleLangChanged = () => {
+      setCurrentLang(i18n.language);
+    };
+    i18n.on("languageChanged", handleLangChanged);
+    return () => {
+      i18n.off("languageChanged", handleLangChanged);
+    };
+  }, []);
+
+  useEffect(() => {
     if (dropdownOpen && selectBoxRef.current) {
       if (Platform.OS === "web") {
-        const domNode = (selectBoxRef.current as any);
-        if (domNode && domNode.getBoundingClientRect) {
+        const domNode = selectBoxRef.current as any;
+        if (domNode?.getBoundingClientRect) {
           const rect = domNode.getBoundingClientRect();
           setPosition({
             x: rect.left,
@@ -55,38 +70,22 @@ export default function LanguageSelector() {
   }, [dropdownOpen]);
 
   useEffect(() => {
-    if (dropdownOpen) {
-      Animated.parallel([
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 150,
-          useNativeDriver: true,
-        }),
-        Animated.timing(slideAnim, {
-          toValue: 0,
-          duration: 150,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    } else {
-      Animated.parallel([
-        Animated.timing(fadeAnim, {
-          toValue: 0,
-          duration: 120,
-          useNativeDriver: true,
-        }),
-        Animated.timing(slideAnim, {
-          toValue: -8,
-          duration: 120,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    }
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: dropdownOpen ? 1 : 0,
+        duration: dropdownOpen ? 150 : 120,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: dropdownOpen ? 0 : -8,
+        duration: dropdownOpen ? 150 : 120,
+        useNativeDriver: true,
+      }),
+    ]).start();
   }, [dropdownOpen]);
 
   const switchLanguage = (code: string) => {
     i18n.changeLanguage(code);
-    setCurrentLang(code);
     setDropdownOpen(false);
   };
 
@@ -103,7 +102,11 @@ export default function LanguageSelector() {
         <Text
           style={[
             styles.selectedText,
-            { color: dropdownOpen ? theme.colors.textPrimary : theme.colors.primaryDark },
+            {
+              color: dropdownOpen
+                ? theme.colors.textPrimary
+                : theme.colors.primaryDark,
+            },
           ]}
         >
           {currentLabel}
@@ -117,48 +120,49 @@ export default function LanguageSelector() {
         animationType="none"
         onRequestClose={() => setDropdownOpen(false)}
       >
-        <TouchableWithoutFeedback onPress={() => setDropdownOpen(false)}>
-          <View style={styles.overlay}>
-            {position && (
-              <Animated.View
-                style={[
-                  styles.dropdown,
-                  {
-                    top: position.y + position.h + 4,
-                    left: position.x,
-                    width: position.w,
-                    opacity: fadeAnim,
-                    transform: [{ translateY: slideAnim }],
-                  },
-                ]}
-              >
-                <FlatList
-                  data={languages}
-                  keyExtractor={(item) => item.code}
-                  renderItem={({ item }) => (
-                    <TouchableOpacity
+        <Pressable
+          style={styles.overlay}
+          onPress={() => setDropdownOpen(false)}
+        >
+          {position && (
+            <Animated.View
+              style={[
+                styles.dropdown,
+                {
+                  top: position.y + position.h + 4,
+                  left: position.x,
+                  width: position.w,
+                  opacity: fadeAnim,
+                  transform: [{ translateY: slideAnim }],
+                },
+              ]}
+            >
+              <FlatList
+                data={languages}
+                keyExtractor={(item) => item.code}
+                renderItem={({ item }) => (
+                  <TouchableOpacity
+                    style={[
+                      styles.dropdownItem,
+                      currentLang === item.code && styles.selectedItem,
+                    ]}
+                    onPress={() => switchLanguage(item.code)}
+                    activeOpacity={0.6}
+                  >
+                    <Text
                       style={[
-                        styles.dropdownItem,
-                        currentLang === item.code && styles.selectedItem,
+                        styles.itemText,
+                        currentLang === item.code && styles.selectedItemText,
                       ]}
-                      onPress={() => switchLanguage(item.code)}
-                      activeOpacity={0.6}
                     >
-                      <Text
-                        style={[
-                          styles.itemText,
-                          currentLang === item.code && styles.selectedItemText,
-                        ]}
-                      >
-                        {item.label}
-                      </Text>
-                    </TouchableOpacity>
-                  )}
-                />
-              </Animated.View>
-            )}
-          </View>
-        </TouchableWithoutFeedback>
+                      {item.label}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              />
+            </Animated.View>
+          )}
+        </Pressable>
       </Modal>
     </View>
   );
@@ -184,18 +188,9 @@ const createStyles = (theme: AppTheme) =>
       shadowRadius: 3,
       cursor: "pointer",
     },
-    selectedText: {
-      fontSize: 13,
-      fontWeight: "600",
-    },
-    arrow: {
-      fontSize: 11,
-      color: theme.colors.primaryDark,
-    },
-    overlay: {
-      flex: 1,
-      backgroundColor: "transparent",
-    },
+    selectedText: { fontSize: 13, fontWeight: "600" },
+    arrow: { fontSize: 11, color: theme.colors.primaryDark },
+    overlay: { flex: 1, backgroundColor: "transparent" },
     dropdown: {
       position: "absolute",
       borderWidth: 1,
@@ -210,6 +205,7 @@ const createStyles = (theme: AppTheme) =>
       shadowOffset: { width: 0, height: 2 },
       shadowRadius: 4,
       zIndex: 1000,
+      cursor: "pointer"
     },
     dropdownItem: {
       paddingVertical: 8,
@@ -218,15 +214,7 @@ const createStyles = (theme: AppTheme) =>
       borderBottomWidth: 1,
       cursor: "pointer",
     },
-    selectedItem: {
-      backgroundColor: theme.colors.primaryLight,
-    },
-    itemText: {
-      fontSize: 13,
-      color: theme.colors.textPrimary,
-    },
-    selectedItemText: {
-      fontWeight: "700",
-      color: theme.colors.primaryDark,
-    },
+    selectedItem: { backgroundColor: theme.colors.primaryLight },
+    itemText: { fontSize: 13, color: theme.colors.textPrimary },
+    selectedItemText: { fontWeight: "700", color: theme.colors.primaryDark },
   });
