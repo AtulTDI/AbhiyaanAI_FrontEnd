@@ -398,6 +398,7 @@ export default function GeneratedVideoScreen() {
             type: "video/mp4",
             social: Share.Social.WHATSAPP,
             whatsAppNumber: `91${item.phoneNumber}`,
+            message: `🙏 ${whatsAppVideoDetails?.data?.message}`,
           });
         } else {
           await Share.shareSingle({
