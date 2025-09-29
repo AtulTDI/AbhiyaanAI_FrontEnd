@@ -1,17 +1,30 @@
-
 const ENV = process.env.APP_ENV || "development";
 
-const prefixes =
-  ENV === "production"
-    ? [
-        "http://3.6.255.8:5000",
-        "http://3.6.255.8:5002",
-        "abhiyanai://",
-      ]
-    : [
-        "http://localhost:5201",
-        "http://localhost:5202",
-        "abhiyanai://",
-      ];
+const apiMap = {
+  development: {
+    API: process.env.DEV_API,
+    ALT_API: process.env.DEV_ALT_API,
+  },
+  uat: {
+    API: process.env.UAT_API,
+    ALT_API: process.env.UAT_ALT_API,
+  },
+  demo: {
+    API: process.env.DEMO_API,
+    ALT_API: process.env.DEMO_ALT_API,
+  },
+  production: {
+    API: process.env.PROD_API,
+    ALT_API: process.env.PROD_ALT_API,
+  },
+};
+
+const selected = apiMap[ENV] || apiMap.development;
+
+const prefixes = [
+  selected.API,
+  selected.ALT_API,
+  "abhiyanai://",
+];
 
 export default prefixes;

@@ -1,5 +1,31 @@
 const APP_ENV = process.env.APP_ENV || "development";
 
+const resolveApi = () => {
+  switch (APP_ENV) {
+    case "uat":
+      return process.env.UAT_API;
+    case "demo":
+      return process.env.DEMO_API;
+    case "production":
+      return process.env.PROD_API;
+    default:
+      return process.env.DEV_API;
+  }
+};
+
+const resolveAltApi = () => {
+  switch (APP_ENV) {
+    case "uat":
+      return process.env.UAT_ALT_API;
+    case "demo":
+      return process.env.DEMO_ALT_API;
+    case "production":
+      return process.env.PROD_ALT_API;
+    default:
+      return process.env.DEV_ALT_API;
+  }
+};
+
 export default ({ config }) => {
   return {
     ...config,
@@ -12,7 +38,7 @@ export default ({ config }) => {
       icon: "./assets/logo.png",
       userInterfaceStyle: "light",
       newArchEnabled: true,
-      "assetBundlePatterns": ["**/*"],
+      assetBundlePatterns: ["**/*"],
 
       splash: {
         image: "./assets/splash-icon.png",
@@ -22,7 +48,7 @@ export default ({ config }) => {
 
       ios: {
         supportsTablet: true,
-        bundleIdentifier: "com.abhiyaanai.app"
+        bundleIdentifier: "com.abhiyaanai.app",
       },
 
       android: {
@@ -39,14 +65,11 @@ export default ({ config }) => {
         favicon: "./assets/logo.png",
         name: "AbhiyaanAI",
       },
+
       extra: {
         ENV: APP_ENV,
-        API:
-          APP_ENV === "production" ? process.env.PROD_API : process.env.DEV_API,
-        ALT_API:
-          APP_ENV === "production"
-            ? process.env.PROD_ALT_API
-            : process.env.DEV_ALT_API,
+        API: resolveApi(),
+        ALT_API: resolveAltApi(),
       },
     },
   };
