@@ -139,6 +139,18 @@ export default function GeneratedVideoScreen() {
     selectedVideoId
   );
 
+  const memoizedDropdown = React.useMemo(() => {
+    return (
+      <FormDropdown
+        label={t("selectCampaign")}
+        value={selectedVideoId}
+        options={baseVideos}
+        noMargin
+        onSelect={(val) => setSelectedVideoId(val)}
+      />
+    );
+  }, [selectedVideoId, baseVideos, t]);
+
   const loadWhatsAppStatus = useCallback(async () => {
     setWaLoading(true);
     try {
@@ -583,13 +595,7 @@ export default function GeneratedVideoScreen() {
 
       {Platform.OS === "web" && (
         <Surface style={styles.toolbar} elevation={1}>
-          <FormDropdown
-            label={t("selectCampaign")}
-            value={selectedVideoId}
-            options={baseVideos}
-            noMargin={true}
-            onSelect={(val) => setSelectedVideoId(val)}
-          />
+          {memoizedDropdown}
 
           <View
             style={[
@@ -674,15 +680,7 @@ export default function GeneratedVideoScreen() {
 
       {/* Mobile top compact toolbar (contains campaign dropdown) */}
       {Platform.OS !== "web" && (
-        <View style={styles.mobileToolbar}>
-          <FormDropdown
-            label={t("selectCampaign")}
-            value={selectedVideoId}
-            options={baseVideos}
-            noMargin
-            onSelect={(val) => setSelectedVideoId(val)}
-          />
-        </View>
+        <View style={styles.mobileToolbar}>{memoizedDropdown}</View>
       )}
 
       {/* Table */}

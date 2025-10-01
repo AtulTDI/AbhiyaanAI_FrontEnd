@@ -18,7 +18,7 @@ type Props = {
   onSelect: (val: string) => void;
 };
 
-export default function FormDropdown({
+function FormDropdown({
   label,
   placeholder,
   value,
@@ -28,7 +28,7 @@ export default function FormDropdown({
   error,
   onSelect,
 }: Props) {
-  const {t} = useTranslation();
+  const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
   const styles = createStyles(theme);
   const { colors } = theme;
@@ -103,6 +103,18 @@ export default function FormDropdown({
     </View>
   );
 }
+
+export default React.memo(FormDropdown, (prev, next) => {
+  return (
+    prev.label === next.label &&
+    prev.value === next.value &&
+    prev.disabled === next.disabled &&
+    prev.noMargin === next.noMargin &&
+    prev.error === next.error &&
+    prev.onSelect === next.onSelect &&
+    JSON.stringify(prev.options) === JSON.stringify(next.options)
+  );
+});
 
 const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
