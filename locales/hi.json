@@ -84,6 +84,8 @@
   "logoutFailed": "लॉगआउट विफल रहा",
   "close": "बंद करें",
   "clear": "साफ़ करें",
+  "yes": "हाँ",
+  "no": "नहीं",
 
   "role": {
     "distributor": "वितरक",
@@ -150,6 +152,9 @@
     "loadVideoFailMessage": "वीडियो लोड करने में विफल",
     "sendSuccess": "वीडियो सफलतापूर्वक भेजा गया",
     "sendFail": "वीडियो भेजने में त्रुटि",
+    "sendConfirmTitle": "वीडियो भेजा गया?",
+    "sendConfirmMessage": "क्या आपने वीडियो सफलतापूर्वक भेज दिया है?",
+    "markSendVideoError": "स्थिति की पुष्टि में त्रुटि",
     "noData": "कोई वीडियो नहीं मिला"
   },
   "voter": {

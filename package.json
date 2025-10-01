@@ -19,6 +19,9 @@
     "android:prod": "cross-env APP_ENV=production expo run:android --clear",
 
     "android:build:dev": "cross-env APP_ENV=development node ./scripts/gradleBuild.js android assembleDebug",
+    "android:build:dev:uat": "cross-env APP_ENV=uat node ./scripts/gradleBuild.js android assembleDebug",
+    "android:build:dev:demo": "cross-env APP_ENV=demo node ./scripts/gradleBuild.js android assembleDebug",
+
     "android:build:uat": "cross-env APP_ENV=uat node ./scripts/gradleBuild.js android assembleUatRelease",
     "android:build:demo": "cross-env APP_ENV=demo node ./scripts/gradleBuild.js android assembleDemoRelease",
     "android:build:prod": "cross-env APP_ENV=production node ./scripts/gradleBuild.js android assembleProductionRelease",

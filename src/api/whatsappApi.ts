@@ -33,3 +33,9 @@ export const whatsAppLogout = (userId) =>
  */
 export const sendVideo = (data: any, userId) =>
   axios.post(`/WhatsApp/sendvideo/${userId}`, data, { useApiPrefix: true, useAltBase: true });
+
+/**
+ * Mark video as sent
+ */
+export const markVideoSent = (data: any) =>
+  axios.put("/WhatsApp/markvideoassent", data, { useApiPrefix: true, useAltBase: true });

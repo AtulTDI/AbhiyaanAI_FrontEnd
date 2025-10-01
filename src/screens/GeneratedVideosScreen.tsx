@@ -7,6 +7,7 @@ import {
   Platform,
   Linking,
   PermissionsAndroid,
+  AppState,
 } from "react-native";
 import {
   IconButton,
@@ -28,6 +29,7 @@ import { extractErrorMessage } from "../utils/common";
 import { getAuthData } from "../utils/storage";
 import { useToast } from "../components/ToastProvider";
 import FormDropdown from "../components/FormDropdown";
+import VideoSendConfirmationDialog from "../components/VideoSendConfirmationDialog";
 import { getVotersWithCompletedVideoId } from "../api/voterApi";
 import { getVideos } from "../api/videoApi";
 import {
@@ -36,6 +38,7 @@ import {
   whatsAppLogout,
   sendVideo,
   getWhatsAppVideoDetails,
+  markVideoSent,
 } from "../api/whatsappApi";
 import { useServerTable } from "../hooks/useServerTable";
 import { AppTheme } from "../theme";
@@ -69,6 +72,10 @@ export default function GeneratedVideoScreen() {
   const [qrImageUrl, setQrImageUrl] = useState<string | null>(null);
   const [waLoading, setWaLoading] = useState(false);
   const [progressMap, setProgressMap] = useState<Record<string, number>>({});
+  const [openSentPopup, setOpenSentPopup] = useState(false);
+  const [pendingConfirmationId, setPendingConfirmationId] = useState<
+    string | null
+  >(null);
 
   const fetchVideos = useCallback(async () => {
     try {
@@ -255,6 +262,16 @@ export default function GeneratedVideoScreen() {
     }
   }, [modalVisible]);
 
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", (state) => {
+      if (state === "active" && pendingConfirmationId) {
+        setOpenSentPopup(true);
+      }
+    });
+
+    return () => subscription.remove();
+  }, [pendingConfirmationId]);
+
   const updateRowStatus = (id: string, newStatus: Partial<Voter>) => {
     table.setData((prev) =>
       prev.map((row) => (row.id === id ? { ...row, ...newStatus } : row))
@@ -318,14 +335,11 @@ export default function GeneratedVideoScreen() {
     setSendingId(item.id);
     setProgressMap((prev) => ({ ...prev, [item.id]: 0 }));
 
+    // --- Web flow ---
     if (Platform.OS === "web") {
       try {
         await sendVideo(
-          {
-            userId: userId,
-            recipientId: item.id,
-            baseVideoID: selectedVideoId,
-          },
+          { userId, recipientId: item.id, baseVideoID: selectedVideoId },
           userId
         );
         showToast(t("video.sendSuccess"), "success");
@@ -340,103 +354,127 @@ export default function GeneratedVideoScreen() {
           return rest;
         });
       }
+      return;
+    }
+
+    // --- Mobile flow ---
+    let isWhatsAppAvailable = false;
+    const whatsAppVideoDetails: any = await getWhatsAppVideoDetails(
+      userId,
+      item.id,
+      selectedVideoId
+    );
+
+    // Platform-specific availability check
+    if (Platform.OS === "android") {
+      try {
+        const granted = await requestAndroidPermissions();
+        if (!granted) {
+          showToast("Storage & Contacts permissions are required", "error");
+          setSendingId(null);
+          return;
+        }
+
+        const personal = await Share.isPackageInstalled("com.whatsapp");
+        const business = await Share.isPackageInstalled("com.whatsapp.w4b");
+        isWhatsAppAvailable = personal?.isInstalled || business?.isInstalled;
+      } catch {
+        isWhatsAppAvailable = false;
+      }
     } else {
-      let isWhatsAppAvailable = false;
-      const whatsAppVideoDetails: any = await getWhatsAppVideoDetails(
-        userId,
-        item.id,
-        selectedVideoId
+      try {
+        isWhatsAppAvailable = await Linking.canOpenURL("whatsapp://send");
+      } catch {
+        isWhatsAppAvailable = false;
+      }
+    }
+
+    if (!isWhatsAppAvailable) {
+      showToast(t("whatsapp.notInstalled"), "error");
+      setSendingId(null);
+      return;
+    }
+
+    // --- Share video flow ---
+    try {
+      let savedContact: any = null;
+
+      // Save temporary contact for Android
+      if (Platform.OS === "android") {
+        const tempContact = {
+          givenName: `TempContact_${item.id}`,
+          phoneNumbers: [{ label: "mobile", number: item.phoneNumber }],
+        };
+        savedContact = await Contacts.addContact(tempContact);
+        console.log("===Saved Contact===", savedContact);
+      }
+
+      // Download video
+      const localPath = await downloadVideo(
+        whatsAppVideoDetails?.data?.videoUrl,
+        item.id
       );
 
+      // Share on WhatsApp
       if (Platform.OS === "android") {
-        try {
-          const granted = await requestAndroidPermissions();
-          if (!granted) {
-            showToast("Storage & Contacts permissions are required", "error");
-            setSendingId(null);
-            return;
-          }
-
-          const personal = await Share.isPackageInstalled("com.whatsapp");
-          const business = await Share.isPackageInstalled("com.whatsapp.w4b");
-          isWhatsAppAvailable = personal?.isInstalled || business?.isInstalled;
-        } catch {
-          isWhatsAppAvailable = false;
-        }
+        await new Promise((r) => setTimeout(r, 1000));
+        await Share.shareSingle({
+          title: "Video",
+          url: localPath,
+          type: "video/mp4",
+          social: Share.Social.WHATSAPP,
+          whatsAppNumber: `91${item.phoneNumber}`,
+          message: `🙏 ${whatsAppVideoDetails?.data?.message}`,
+        });
       } else {
-        try {
-          isWhatsAppAvailable = await Linking.canOpenURL("whatsapp://send");
-        } catch {
-          isWhatsAppAvailable = false;
-        }
-      }
-
-      if (!isWhatsAppAvailable) {
-        showToast(t("whatsapp.notInstalled"), "error");
-        setSendingId(null);
-        return;
-      }
-
-      try {
-        const localPath = await downloadVideo(
-          whatsAppVideoDetails?.data?.videoUrl,
-          item.id
-        );
-
-        let savedContact: any = null;
-        if (Platform.OS === "android") {
-          const tempContact = {
-            givenName: `TempContact_${item.id}`,
-            phoneNumbers: [{ label: "mobile", number: item.phoneNumber }],
-          };
-          savedContact = await Contacts.addContact(tempContact);
-          console.log("===Saved Contact===", savedContact);
-        }
-
-        if (Platform.OS === "android") {
-          await Share.shareSingle({
-            title: "Video",
-            url: localPath,
-            type: "video/mp4",
-            social: Share.Social.WHATSAPP,
-            whatsAppNumber: `91${item.phoneNumber}`,
-            message: `🙏 ${whatsAppVideoDetails?.data?.message}`,
-          });
-        } else {
-          await Share.shareSingle({
-            title: "Video",
-            url: Platform.OS === "ios" ? localPath : "file://" + localPath,
-            type: "video/mp4",
-            social: Share.Social.WHATSAPP,
-            whatsAppNumber: `91${item.phoneNumber}`,
-            message: `🙏 ${whatsAppVideoDetails?.data?.message}`,
-          });
-        }
-
-        updateRowStatus(item.id, { sendStatus: "sent" });
-        showToast(t("video.sendSuccess"), "success");
-
-        if (Platform.OS === "android" && savedContact?.recordID) {
-          setTimeout(async () => {
-            try {
-              await Contacts.deleteContact(savedContact);
-              console.log("Contact deleted");
-            } catch (err) {
-              console.warn("Failed to delete temp contact", err);
-            }
-          }, 5000);
-        }
-      } catch (err) {
-        console.error("Error sending video:", err);
-        updateRowStatus(item.id, { sendStatus: "pending" });
-        showToast(t("video.sendFail"), "error");
-      } finally {
-        setSendingId(null);
-        setProgressMap((prev) => {
-          const { [item.id]: _, ...rest } = prev;
-          return rest;
+        await Share.shareSingle({
+          title: "Video",
+          url: Platform.OS === "ios" ? localPath : "file://" + localPath,
+          type: "video/mp4",
+          social: Share.Social.WHATSAPP,
+          whatsAppNumber: `91${item.phoneNumber}`,
+          message: `🙏 ${whatsAppVideoDetails?.data?.message}`,
         });
       }
+
+      setPendingConfirmationId(item.id);
+
+      // Delete temporary contact (Android only)
+      if (Platform.OS === "android" && savedContact?.recordID) {
+        setTimeout(async () => {
+          try {
+            await Contacts.deleteContact(savedContact);
+            console.log("Contact deleted");
+          } catch (err) {
+            console.warn("Failed to delete temp contact", err);
+          }
+        }, 5000);
+      }
+    } catch (err) {
+      console.error("Error sending video:", err);
+      updateRowStatus(item.id, { sendStatus: "pending" });
+      showToast(t("video.sendFail"), "error");
+    } finally {
+      setSendingId(null);
+      setProgressMap((prev) => {
+        const { [item.id]: _, ...rest } = prev;
+        return rest;
+      });
+    }
+  };
+
+  const confirmVideoSent = async () => {
+    try {
+      await markVideoSent({
+        recepientId: sendingId,
+        baseVideoId: selectedVideoId,
+      });
+      updateRowStatus(sendingId, { sendStatus: "sent" });
+      showToast(t("video.sendSuccess"), "success");
+    } catch (error) {
+      showToast(t("video.markSendVideoError"), "error");
+    } finally {
+      setOpenSentPopup(false);
     }
   };
 
@@ -708,6 +746,12 @@ export default function GeneratedVideoScreen() {
           </Surface>
         </Modal>
       </Portal>
+
+      <VideoSendConfirmationDialog
+        visible={openSentPopup}
+        onCancel={() => setOpenSentPopup(false)}
+        onConfirm={confirmVideoSent}
+      />
     </Surface>
   );
 }

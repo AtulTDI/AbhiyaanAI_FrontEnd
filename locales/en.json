@@ -84,6 +84,8 @@
   "logoutFailed": "Logout failed",
   "close": "Close",
   "clear": "Clear",
+  "yes": "Yes",
+  "no": "No",
 
   "role": {
     "distributor": "Distributor",
@@ -150,6 +152,9 @@
     "loadVideoFailMessage": "Failed to load videos",
     "sendSuccess": "Video sent successfully",
     "sendFail": "Error sending video",
+    "sendConfirmTitle": "Video Sent?",
+    "sendConfirmMessage": "Have you successfully sent the video?",
+    "markSendVideoError": "Error in confirming status", 
     "noData": "No videos found"
   },
   "voter": {
