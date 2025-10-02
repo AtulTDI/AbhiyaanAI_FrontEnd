@@ -63,6 +63,8 @@ export default function UploadVideoScreen() {
   useFocusEffect(
     useCallback(() => {
       setShowAddView(false);
+      table.setPage(0);
+      table.setRowsPerPage(10);
       table.fetchData(0, 10);
     }, [])
   );

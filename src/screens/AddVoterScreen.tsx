@@ -77,6 +77,8 @@ export default function AddVoterScreen() {
     useCallback(() => {
       setShowAddVoterView(false);
       setVoterToEdit(null);
+      table.setPage(0);
+      table.setRowsPerPage(10);
       table.fetchData(0, 10);
     }, [])
   );

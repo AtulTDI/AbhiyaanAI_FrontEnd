@@ -61,6 +61,8 @@ export default function AddApplicationScreen() {
     useCallback(() => {
       setShowAddApplicationView(false);
       setApplicationToEdit(null);
+      table.setPage(0);
+      table.setRowsPerPage(10);
       table.fetchData(0, 10);
     }, [])
   );

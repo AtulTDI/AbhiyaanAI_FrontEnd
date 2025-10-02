@@ -10,10 +10,10 @@ import {
   Platform,
 } from "react-native";
 import { Menu, useTheme, ActivityIndicator } from "react-native-paper";
-import { MaterialIcons } from "@expo/vector-icons";
-import { AppTheme } from "../theme";
 import { Row } from "react-native-table-component";
+import { MaterialIcons } from "@expo/vector-icons";
 import { EllipsisCell } from "./EllipsisCell";
+import { AppTheme } from "../theme";
 
 type Column<T> = {
   label: string | React.ReactNode;
@@ -86,7 +86,7 @@ export default function CommonTable<T>({
       ? [
           {
             key: "__sno__",
-            label: t('sno'),
+            label: t("sno"),
             flex: columns?.length > 7 ? 0.3 : totalCount >= 100 ? 0.2 : 0.1,
             smallColumn: true,
             render: (_: T, index: number) => (
@@ -112,38 +112,40 @@ export default function CommonTable<T>({
     })
   );
 
+  let enableHorizontalScroll = false;
   const totalFlex = enhancedColumns.reduce((sum, col) => sum + col.flex, 0);
+  const containerWidth = screenWidth - 140;
 
   const widthArr = enhancedColumns.map((col) => {
-    if (isWeb) return (col.flex / totalFlex) * screenWidth;
-    if (col?.smallColumn) return 80;
-    return Math.max(col.flex * 150, 200);
+    if (isWeb) {
+      return (col.flex / totalFlex) * screenWidth;
+    }
+
+    if ((isWeb || screenWidth < 600) && col?.smallColumn) return 80;
+
+    if (screenWidth < 600) {
+      return Math.max(col.flex * 150, 200);
+    }
+
+    const minWidth = col.smallColumn ? 80 : 100;
+    const calculatedWidth = (col.flex / totalFlex) * containerWidth;
+
+    return Math.max(calculatedWidth, minWidth);
   });
 
-  const enableHorizontalScroll = wrapperWidth < 900 || columns.length > 7;
+  if (isWeb || screenWidth < 600) {
+    enableHorizontalScroll = wrapperWidth < 900 || columns.length > 7;
+  } else {
+    const totalTableWidth = widthArr.reduce((sum, w) => sum + w, 0);
+    enableHorizontalScroll = totalTableWidth > containerWidth;
+  }
+
   const availableHeight =
     Platform.OS === "web"
       ? tableHeight
         ? tableHeight
         : "calc(100vh - 260px)"
       : screenHeight * 0.66;
-
-  const skeletonRows = Array.from({ length: 8 }).map((_, idx) => (
-    <View key={idx} style={[styles.dataRow, { flexDirection: "row" }]}>
-      {enhancedColumns.map((col, colIndex) => (
-        <View
-          key={colIndex}
-          style={{
-            width: widthArr[colIndex],
-            height: 20,
-            backgroundColor: theme.colors.borderGray,
-            marginVertical: 12,
-            borderRadius: 4,
-          }}
-        />
-      ))}
-    </View>
-  ));
 
   useEffect(() => {
     let timer;
@@ -208,7 +210,7 @@ export default function CommonTable<T>({
 
             <View style={styles.loaderContainer}>
               <ActivityIndicator size="large" color={colors.primary} />
-              <Text style={styles.loaderText}>{t('loadingData')}</Text>
+              <Text style={styles.loaderText}>{t("loadingData")}</Text>
             </View>
           </>
         ) : data.length === 0 ? (
