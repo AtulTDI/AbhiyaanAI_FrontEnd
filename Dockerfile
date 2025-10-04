@@ -14,6 +14,8 @@ COPY App.tsx ./
 COPY index.ts ./
 COPY tsconfig.json ./
 COPY app.config.js ./
+COPY i18n.ts ./
+COPY locales ./locales
 COPY src ./src
 COPY assets ./assets
 
