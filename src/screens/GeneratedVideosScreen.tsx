@@ -246,8 +246,15 @@ export default function GeneratedVideoScreen() {
     }
   };
 
+  useEffect(() => {
+    if (selectedVideoId) {
+      table.fetchData(0, 10);
+    }
+  }, [selectedVideoId]);
+
   useFocusEffect(
     useCallback(() => {
+      setSelectedVideoId(null);
       clearAllTempContacts();
       fetchVideos();
       clearCacheFiles();
