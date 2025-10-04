@@ -4,6 +4,10 @@ export const login = (email: string, password: string) => {
   return axiosInstance.post("/Auth/login", { email, password }, { useApiPrefix: true });
 };
 
+export const getPublicKey = () => {
+  return axiosInstance.get("/Auth/public-key", { useApiPrefix: true });
+};
+
 export const forgotPasswordLink = (email: string) => {
   return axiosInstance.post("/Account/forgotpassword", { email });
 };

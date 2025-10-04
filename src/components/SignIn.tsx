@@ -23,6 +23,7 @@ import { login } from "../api/authApi";
 import { saveAuthData } from "../utils/storage";
 import { extractErrorMessage } from "../utils/common";
 import { fetchAccounts } from "../services/accountsService";
+import { encryptWithBackendKey } from "../services/rsaEncryptor";
 import { AppTheme } from "../theme";
 
 type SignInProps = {
@@ -95,7 +96,8 @@ export default function SignIn({
     setAuthError("");
 
     try {
-      const response = await login(email, password);
+      const encryptedPassword = await encryptWithBackendKey(password);
+      const response = await login(email, encryptedPassword);
       const token = response.data.token || "dummy-token";
       const userId = response.data?.userId || "";
       const username = response.data?.userName || "User";
