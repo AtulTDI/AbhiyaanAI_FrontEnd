@@ -29,8 +29,9 @@ import {
 } from "../api/salesAgentApi";
 import { extractErrorMessage } from "../utils/common";
 import { getAuthData } from "../utils/storage";
-import { AppTheme } from "../theme";
 import { useTranslation } from "react-i18next";
+import { encryptWithBackendKey } from "../services/rsaEncryptor";
+import { AppTheme } from "../theme";
 
 export default function AddUserScreen({ role }) {
   const { t } = useTranslation();
@@ -85,11 +86,16 @@ export default function AddUserScreen({ role }) {
   const addUser = async (userData: any) => {
     try {
       const { applicationId: loggedInUserApplicationId } = await getAuthData();
+      const encryptedPassword = await encryptWithBackendKey(userData?.password);
 
       userData?.role === "Distributor"
-        ? await createDistributor(userData)
+        ? await createDistributor({
+            ...userData,
+            password: encryptedPassword,
+          })
         : await createUser({
             ...userData,
+            password: encryptedPassword,
             applicationId: userData?.applicationId
               ? userData?.applicationId
               : loggedInUserApplicationId,

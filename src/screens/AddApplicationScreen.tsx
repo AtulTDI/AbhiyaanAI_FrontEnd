@@ -45,8 +45,11 @@ export default function AddApplicationScreen() {
           items: sortedApps ?? [],
           totalCount: response?.data?.totalRecords ?? 0,
         };
-      } catch (error) {
-        showToast(t("application.loadFailed"), "error");
+      } catch (error: any) {
+        showToast(
+          extractErrorMessage(error, t("application.loadFailed")),
+          "error"
+        );
       }
     },
     []
@@ -74,8 +77,11 @@ export default function AddApplicationScreen() {
       setShowAddApplicationView(false);
       setApplicationToEdit(null);
       showToast(t("application.addSuccess"), "success");
-    } catch {
-      showToast(t("application.addFailed"), "error");
+    } catch (error: any) {
+      showToast(
+        extractErrorMessage(error, t("application.addFailed")),
+        "error"
+      );
     }
   };
 
@@ -92,7 +98,10 @@ export default function AddApplicationScreen() {
       setApplicationToEdit(null);
       showToast(t("application.editSuccess"), "success");
     } catch (error: any) {
-      showToast(t("application.editFailed"), "error");
+      showToast(
+        extractErrorMessage(error, t("application.editFailed")),
+        "error"
+      );
     }
   };
 

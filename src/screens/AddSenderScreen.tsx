@@ -16,8 +16,9 @@ import {
   getSenders,
 } from "../api/senderApi";
 import { extractErrorMessage } from "../utils/common";
-import { AppTheme } from "../theme";
 import { useServerTable } from "../hooks/useServerTable";
+import { encryptWithBackendKey } from "../services/rsaEncryptor";
+import { AppTheme } from "../theme";
 
 export default function AddSenderScreen() {
   const { t } = useTranslation();
@@ -60,7 +61,14 @@ export default function AddSenderScreen() {
     password: string;
   }) => {
     try {
-      await createSender({ ...senderData, role: "Sender" });
+      const encryptedPassword = await encryptWithBackendKey(
+        senderData?.password
+      );
+      await createSender({
+        ...senderData,
+        password: encryptedPassword,
+        role: "Sender",
+      });
       await table.fetchData(0, table.rowsPerPage);
       setShowAddSenderView(false);
       setSenderToEdit(null);

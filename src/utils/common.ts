@@ -17,23 +17,36 @@ export const base64ToBlob = (base64Data: string, contentType: string): Blob => {
   return new Blob(byteArrays, { type: contentType });
 };
 
-export const extractErrorMessage = (error: any, fallback = "Something went wrong") => {
+export const extractErrorMessage = (
+  error: any,
+  fallback = "Something went wrong"
+) => {
   const status = error?.response?.status;
 
   if (status === 500) {
     return fallback;
   }
 
-  if (typeof error?.response?.data === "string") {
-    return error.response.data;
+  const data = error?.response?.data;
+
+  if (typeof data === "string") {
+    return data;
+  }
+
+  if (Array.isArray(data) && data.length > 0) {
+    const first = data[0];
+    if (first && typeof first === "object" && "description" in first) {
+      return first.description || fallback;
+    }
   }
 
   return (
-    error?.response?.data?.title ||
-    error?.response?.data?.message ||
+    data?.title ||
+    data?.message ||
     fallback
   );
 };
+
 
 export const getFileNameWithoutExtension = (fullName: string): string => {
   return fullName.replace(/\.[^/.]+$/, "");

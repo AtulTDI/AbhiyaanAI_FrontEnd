@@ -160,6 +160,10 @@ export default function GeneratedVideoScreen() {
       setWaRegistered(isRegistered);
     } catch (error) {
       setWaRegistered(false);
+      showToast(
+        extractErrorMessage(error, t("whatsapp.loadStatusFail")),
+        "error"
+      );
     } finally {
       setWaLoading(false);
     }
@@ -181,8 +185,10 @@ export default function GeneratedVideoScreen() {
         setModalVisible(false);
       }
     } catch (error) {
-      console.error("QR Error:", error);
-      showToast(t("whatsapp.qrGenerationFail"), "error");
+      showToast(
+        extractErrorMessage(error, t("whatsapp.qrGenerationFail")),
+        "error"
+      );
       setModalVisible(false);
     }
   };
@@ -200,8 +206,8 @@ export default function GeneratedVideoScreen() {
       } else {
         showToast(t("somethingWentWrong"), "error");
       }
-    } catch {
-      showToast(t("logoutFailed"), "error");
+    } catch (error: any) {
+      showToast(extractErrorMessage(error, t("logoutFailed")), "error");
     }
   };
 
@@ -357,7 +363,7 @@ export default function GeneratedVideoScreen() {
         showToast(t("video.sendSuccess"), "success");
         updateRowStatus(item.id, { sendStatus: "sent" });
       } catch (error) {
-        showToast(t("video.sendFail"), "error");
+        showToast(extractErrorMessage(error, t("video.sendFail")), "error");
         updateRowStatus(item.id, { sendStatus: "pending" });
       } finally {
         setSendingId(null);
@@ -484,9 +490,13 @@ export default function GeneratedVideoScreen() {
       updateRowStatus(sendingId, { sendStatus: "sent" });
       showToast(t("video.sendSuccess"), "success");
     } catch (error) {
-      showToast(t("video.markSendVideoError"), "error");
+      showToast(
+        extractErrorMessage(error, t("video.markSendVideoError")),
+        "error"
+      );
     } finally {
       setOpenSentPopup(false);
+      setPendingConfirmationId(null);
     }
   };
 
@@ -509,7 +519,9 @@ export default function GeneratedVideoScreen() {
       smallColumn: true,
       render: (item: Voter) => {
         const sendStatus = item?.sendStatus?.toLowerCase?.() ?? "pending";
-        const disableRowActions = sendingId !== null && sendingId !== item.id;
+        const disableRowActions =
+          (sendingId !== null && sendingId !== item.id) ||
+          pendingConfirmationId !== null;
         const progress = progressMap[item.id];
 
         return (
@@ -747,7 +759,10 @@ export default function GeneratedVideoScreen() {
 
       <VideoSendConfirmationDialog
         visible={openSentPopup}
-        onCancel={() => setOpenSentPopup(false)}
+        onCancel={() => {
+          setOpenSentPopup(false);
+          setPendingConfirmationId(null);
+        }}
         onConfirm={confirmVideoSent}
       />
     </Surface>
