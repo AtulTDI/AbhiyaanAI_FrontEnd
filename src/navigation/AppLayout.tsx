@@ -8,6 +8,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { clearAuthData, getAuthData } from "../utils/storage";
 import { navigate } from "./NavigationService";
 import { stopConnection } from "../services/signalrService";
+import AdminDashboardScreen from "../screens/AdminDashboardScreen";
 import AddUserScreen from "../screens/AddUserScreen";
 import UploadVideoScreen from "../screens/UploadVideoScreen";
 import AddVoterScreen from "../screens/AddVoterScreen";
@@ -236,6 +237,31 @@ export default function AppLayout() {
                 }}
               />
             </>
+          )}
+
+          {role === "Admin" && (
+            <Drawer.Screen
+              name="Dashboard"
+              component={AdminDashboardScreen}
+              options={{
+                headerShown: true,
+                headerTitle: "",
+                headerRight: headerRightComponent,
+                drawerLabel: (props) => (
+                  <CustomLabel
+                    {...props}
+                    label={t("dashboardTabLabel")}
+                    icon={
+                      <Ionicons
+                        name="grid-outline"
+                        size={20}
+                        color={props.color || colors.onPrimary}
+                      />
+                    }
+                  />
+                ),
+              }}
+            />
           )}
 
           {role === "Admin" && (

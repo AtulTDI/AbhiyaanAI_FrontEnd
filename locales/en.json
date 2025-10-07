@@ -10,6 +10,7 @@
   "generateVideoTabLabel": "Generate Video(s)",
   "processingVideoTabLabel": "Processing Video(s)",
   "generatedVideoTabLabel": "Generated Video(s)",
+  "dashboardTabLabel": "Dashboard",
 
   "distributorButtonLabel": "Distributor",
   "customerAdminButtonLabel": "Customer Admin",
@@ -193,5 +194,14 @@
     "register": "Register on WhatsApp",
     "link": "Link your WhatsApp account by scanning the QR code below",
     "scanQR": "Open WhatsApp → Settings → Linked Devices → Scan QR"
+  },
+  "dashboard": {
+    "videosByUser": "Videos by User",
+    "videosByCampaign": "Videos by Campaign",
+    "generated": "Generated",
+    "sent": "Sent",
+    "pending": "Pending",
+    "failed": "Failed",
+    "noData": "No data available"
   }
 }

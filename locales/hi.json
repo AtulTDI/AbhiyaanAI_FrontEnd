@@ -10,6 +10,7 @@
   "generateVideoTabLabel": "वीडियो जनरेट करें",
   "processingVideoTabLabel": "वीडियो संसाधित हो रहा है",
   "generatedVideoTabLabel": "वीडियो जनरेट किया गया",
+  "dashboardTabLabel": "डैशबोर्ड",
 
   "distributorButtonLabel": "डिस्ट्रिब्यूटर",
   "customerAdminButtonLabel": "ग्राहक प्रशासक",
@@ -193,5 +194,14 @@
     "register": "व्हाट्सएप पर रजिस्टर करें",
     "link": "नीचे दिए गए QR कोड को स्कैन करके अपना व्हाट्सएप अकाउंट लिंक करें",
     "scanQR": "व्हाट्सएप खोलें → सेटिंग्स → लिंक्ड डिवाइसेस → QR स्कैन करें"
+  },
+  "dashboard": {
+    "videosByUser": "उपयोगकर्ता अनुसार वीडियो",
+    "videosByCampaign": "अभियान अनुसार वीडियो",
+    "generated": "जनरेटेड",
+    "sent": "भेजा गया",
+    "pending": "प्रतीक्षारत",
+    "failed": "त्रुटि",
+    "noData": "कोई डेटा उपलब्ध नहीं है"
   }
 }
