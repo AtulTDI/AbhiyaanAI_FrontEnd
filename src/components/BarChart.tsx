@@ -1,5 +1,11 @@
 import React, { useEffect, useState, useRef } from "react";
-import { ScrollView, View, Text, TouchableOpacity } from "react-native";
+import {
+  ScrollView,
+  View,
+  Text,
+  TouchableOpacity,
+  Dimensions,
+} from "react-native";
 import Svg, { G, Text as SvgText, Rect } from "react-native-svg";
 import Animated, {
   useSharedValue,
@@ -22,10 +28,7 @@ const AnimatedBar = ({
 }) => {
   const animatedProps = useAnimatedProps(() => {
     const scaledHeight = (sharedValue.value / maxValue) * chartHeight;
-    return {
-      height: scaledHeight,
-      y: -scaledHeight,
-    };
+    return { height: scaledHeight, y: -scaledHeight };
   });
 
   return (
@@ -53,10 +56,18 @@ const AnimatedBar = ({
   );
 };
 
-const BarChart = ({ data, width, height, colors, titleColor }) => {
+const BarChart = ({
+  data,
+  width,
+  height,
+  colors,
+  titleColor,
+  centerSingleGroup = false,
+}) => {
   const { t } = useTranslation();
   const keys = ["generated", "sent", "failed"];
   const [visibleKeys, setVisibleKeys] = useState(keys);
+  const screenWidth = Dimensions.get("window").width;
 
   const keyColors = {
     generated: colors[0],
@@ -73,6 +84,7 @@ const BarChart = ({ data, width, height, colors, titleColor }) => {
   const animatedHeightsRef = useRef(
     data.map(() => keys.map(() => useSharedValue(0)))
   );
+  const animatedHeights = animatedHeightsRef.current;
 
   useEffect(() => {
     if (animatedHeightsRef.current.length < data.length) {
@@ -83,8 +95,6 @@ const BarChart = ({ data, width, height, colors, titleColor }) => {
       animatedHeightsRef.current = [...animatedHeightsRef.current, ...extra];
     }
   }, [data.length]);
-
-  const animatedHeights = animatedHeightsRef.current;
 
   useEffect(() => {
     data.forEach((d, i) => {
@@ -102,7 +112,7 @@ const BarChart = ({ data, width, height, colors, titleColor }) => {
   );
 
   const topPadding = 20;
-  const dynamicChartHeight = Math.max(height, maxValue * 1.5);
+  const dynamicChartHeight = height;
   const barWidth = 24;
   const barSpacing = 12;
   const groupSpacing = 40;
@@ -112,12 +122,17 @@ const BarChart = ({ data, width, height, colors, titleColor }) => {
     visibleKeys.length === 0 ||
     data.every((d) => visibleKeys.every((k) => (d[k] || 0) === 0));
 
+  let offsetX = 0;
+  if (centerSingleGroup && data.length === 1) {
+    offsetX = screenWidth / 2 - fullGroupWidth / 2;
+    if (offsetX < 0) offsetX = 0;
+  }
+
   const chartWidth = data.length * fullGroupWidth;
   const svgWidth = Math.max(width, chartWidth);
 
   return (
     <View style={{ marginBottom: 24 }}>
-      {/* Legend */}
       <View
         style={{
           flexDirection: "row",
@@ -164,11 +179,7 @@ const BarChart = ({ data, width, height, colors, titleColor }) => {
 
       {allZero ? (
         <View
-          style={{
-            height,
-            justifyContent: "center",
-            alignItems: "center",
-          }}
+          style={{ height, justifyContent: "center", alignItems: "center" }}
         >
           <Text style={{ color: titleColor, fontSize: 16, fontWeight: "600" }}>
             {t("dashboard.noData")}
@@ -176,11 +187,14 @@ const BarChart = ({ data, width, height, colors, titleColor }) => {
         </View>
       ) : (
         <ScrollView
-          horizontal={svgWidth > width}
+          horizontal={svgWidth > width || data.length > 1}
           showsHorizontalScrollIndicator={false}
         >
-          <Svg height={dynamicChartHeight + 60} width={svgWidth}>
-            <G y={dynamicChartHeight + topPadding}>
+          <Svg
+            height={dynamicChartHeight + 60}
+            width={Math.max(svgWidth, screenWidth)}
+          >
+            <G y={dynamicChartHeight + topPadding} x={offsetX}>
               {data.map((d, i) => {
                 const groupX = i * fullGroupWidth + barSpacing;
                 return (
@@ -190,9 +204,7 @@ const BarChart = ({ data, width, height, colors, titleColor }) => {
                       if (!animatedHeights[i] || !animatedHeights[i][keyIndex])
                         return null;
 
-                      const x =
-                        groupX +
-                        keyIndex * (barWidth + barSpacing);
+                      const x = groupX + keyIndex * (barWidth + barSpacing);
                       const value = d[k] || 0;
 
                       return (

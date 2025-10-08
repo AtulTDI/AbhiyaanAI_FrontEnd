@@ -37,7 +37,6 @@ const AdminDashboardScreen = () => {
       async function fetchDashboard() {
         try {
           const response = await getDashboard();
-
           setUserStats(
             response.data.perUserStats.map((user) => ({
               label: `${user.firstName} ${user.lastName}`,
@@ -60,12 +59,69 @@ const AdminDashboardScreen = () => {
   );
 
   const campaignData = [
-    { label: "Campaign A", value: 500, color: colors.primary },
-    { label: "Campaign B", value: 300, color: colors.primaryLight },
-    { label: "Campaign C", value: 400, color: colors.primaryDark },
-    { label: "Campaign D", value: 250, color: colors.greenAccent },
-    { label: "Campaign E", value: 600, color: colors.warning },
-    { label: "Campaign F", value: 350, color: colors.error },
+    {
+      id: "c1",
+      campaignName: "Campaign A",
+      firstName: "Alice",
+      lastName: "Smith",
+      totalGeneratedVideos: 120,
+      totalSentVideos: 100,
+      totalFailedVideos: 5,
+    },
+    {
+      id: "c3",
+      campaignName: "Campaign B",
+      firstName: "Charlie",
+      lastName: "Brown",
+      totalGeneratedVideos: 90,
+      totalSentVideos: 85,
+      totalFailedVideos: 4,
+    },
+    {
+      id: "c5",
+      campaignName: "Campaign C",
+      firstName: "Ethan",
+      lastName: "Davis",
+      totalGeneratedVideos: 75,
+      totalSentVideos: 65,
+      totalFailedVideos: 3,
+    },
+    {
+      id: "c7",
+      campaignName: "Campaign D",
+      firstName: "George",
+      lastName: "Taylor",
+      totalGeneratedVideos: 100,
+      totalSentVideos: 90,
+      totalFailedVideos: 5,
+    },
+    {
+      id: "c9",
+      campaignName: "Campaign E",
+      firstName: "Ian",
+      lastName: "Thomas",
+      totalGeneratedVideos: 85,
+      totalSentVideos: 75,
+      totalFailedVideos: 4,
+    },
+    {
+      id: "c11",
+      campaignName: "Campaign F",
+      firstName: "Kevin",
+      lastName: "Martin",
+      totalGeneratedVideos: 70,
+      totalSentVideos: 60,
+      totalFailedVideos: 2,
+    },
+    {
+      id: "c12",
+      campaignName: "Campaign G",
+      firstName: "Laura",
+      lastName: "Lee",
+      totalGeneratedVideos: 55,
+      totalSentVideos: 50,
+      totalFailedVideos: 1,
+    },
   ];
 
   const kpis = [
@@ -139,13 +195,7 @@ const AdminDashboardScreen = () => {
       {/* DONUT CHART */}
       {/* <Card style={styles.chartCard}>
         <Text style={styles.chartTitle}>{t("dashboard.videosByCampaign")}</Text>
-        <DonutChart
-          data={campaignData}
-          radius={110}
-          holeRadius={55}
-          colors={[colors.primary, colors.primaryLight, colors.primaryDark]}
-          textColor={colors.white}
-        />
+        <DonutChart campaignsData={campaignData} radius={110} holeRadius={55} />
       </Card> */}
     </ScrollView>
   );
