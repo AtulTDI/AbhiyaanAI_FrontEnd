@@ -103,17 +103,21 @@ const BarChart = ({ data, width, height, colors, titleColor }) => {
 
   const topPadding = 20;
   const dynamicChartHeight = Math.max(height, maxValue * 1.5);
-  const groupWidth = Math.max(60, width / Math.max(1, data.length));
-  const barWidth = groupWidth / (visibleKeys.length + 1);
+  const barWidth = 24;
+  const barSpacing = 12;
+  const groupSpacing = 40;
+  const fullGroupWidth = keys.length * (barWidth + barSpacing) + groupSpacing;
 
   const allZero =
     visibleKeys.length === 0 ||
     data.every((d) => visibleKeys.every((k) => (d[k] || 0) === 0));
 
-  const extraRightPadding = 20;
+  const chartWidth = data.length * fullGroupWidth;
+  const svgWidth = Math.max(width, chartWidth);
 
   return (
-    <View>
+    <View style={{ marginBottom: 24 }}>
+      {/* Legend */}
       <View
         style={{
           flexDirection: "row",
@@ -151,7 +155,7 @@ const BarChart = ({ data, width, height, colors, titleColor }) => {
                   color: titleColor,
                 }}
               >
-                {k.toUpperCase()}
+                {k.charAt(0).toUpperCase() + k.slice(1)}
               </Text>
             </TouchableOpacity>
           );
@@ -171,18 +175,14 @@ const BarChart = ({ data, width, height, colors, titleColor }) => {
           </Text>
         </View>
       ) : (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <Svg
-            height={dynamicChartHeight + 60}
-            width={Math.max(
-              width,
-              data.length * groupWidth + extraRightPadding
-            )}
-          >
+        <ScrollView
+          horizontal={svgWidth > width}
+          showsHorizontalScrollIndicator={false}
+        >
+          <Svg height={dynamicChartHeight + 60} width={svgWidth}>
             <G y={dynamicChartHeight + topPadding}>
               {data.map((d, i) => {
-                const groupX = i * groupWidth + barWidth;
-
+                const groupX = i * fullGroupWidth + barSpacing;
                 return (
                   <G key={i}>
                     {visibleKeys.map((k, j) => {
@@ -190,7 +190,9 @@ const BarChart = ({ data, width, height, colors, titleColor }) => {
                       if (!animatedHeights[i] || !animatedHeights[i][keyIndex])
                         return null;
 
-                      const x = groupX + j * (barWidth + 6);
+                      const x =
+                        groupX +
+                        keyIndex * (barWidth + barSpacing);
                       const value = d[k] || 0;
 
                       return (
@@ -209,7 +211,7 @@ const BarChart = ({ data, width, height, colors, titleColor }) => {
                     })}
 
                     <SvgText
-                      x={groupX + (visibleKeys.length * (barWidth + 6)) / 2}
+                      x={groupX + (keys.length * (barWidth + barSpacing)) / 2}
                       y={35}
                       fontSize="14"
                       fill={titleColor}
