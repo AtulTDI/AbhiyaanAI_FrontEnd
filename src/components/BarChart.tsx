@@ -44,7 +44,7 @@ const AnimatedBar = ({
         <SvgText
           x={x + barWidth / 2}
           y={-(value / maxValue) * chartHeight - 10}
-          fontSize="10"
+          fontSize="14"
           fill={titleColor}
           textAnchor="middle"
           fontWeight="600"
