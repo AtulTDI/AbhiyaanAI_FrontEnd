@@ -201,7 +201,7 @@ export default function AppLayout() {
                   drawerLabel: (props) => (
                     <CustomLabel
                       {...props}
-                      label={t("application.plural")}
+                      label={t("applicationTabLabel")}
                       icon={
                         <Ionicons
                           name="apps"

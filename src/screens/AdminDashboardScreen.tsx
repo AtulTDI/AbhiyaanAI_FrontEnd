@@ -10,12 +10,14 @@ import {
 import { Card } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 import { useFocusEffect } from "@react-navigation/native";
-import { getDashboard } from "../api/dashboardApi";
+import { getCampaignStats, getDashboard } from "../api/dashboardApi";
 import { extractErrorMessage } from "../utils/common";
 import { useToast } from "../components/ToastProvider";
 import BarChart from "../components/BarChart";
 import DonutChart from "../components/DonutChart";
+import KPICard from "../components/KpiCard";
 import colors from "../constants/colors";
+import { getAuthData } from "../utils/storage";
 
 const { width } = Dimensions.get("window");
 const chartWidth = width - 64;
@@ -31,106 +33,59 @@ const AdminDashboardScreen = () => {
     totalSentVideos: 0,
     totalFailedVideos: 0,
   });
+  const [campaignStats, setCampaignStats] = useState([]);
 
   useFocusEffect(
     useCallback(() => {
-      async function fetchDashboard() {
+      async function fetchDashboardData() {
         try {
-          const response = await getDashboard();
+          const { userId } = await getAuthData();
+
+          const [dashboardResponse, campaignStatsResponse] = await Promise.all([
+            getDashboard(userId),
+            getCampaignStats(userId),
+          ]);
+
+          const dashboardData = dashboardResponse.data;
+          const campaignData = campaignStatsResponse.data;
+
           setUserStats(
-            response.data.perUserStats.map((user) => ({
+            dashboardData.perUserStats.map((user) => ({
               label: `${user.firstName} ${user.lastName}`,
               generated: user.totalGeneratedVideos,
               sent: user.totalSentVideos,
               failed: user.totalFailedVideos,
             }))
           );
+          setAggregateTotals(dashboardData.aggregateTotals || {});
 
-          setAggregateTotals(response.data.aggregateTotals || {});
+          setCampaignStats(
+            campaignData.perCampaignStats.map((campaign) => ({
+              label: campaign.campaignName,
+              generated: campaign.totalGeneratedVideos,
+              sent: campaign.totalSentVideos,
+              failed: campaign.totalFailedVideos,
+            }))
+          );
         } catch (error) {
           showToast(
-            extractErrorMessage(error, "Error fetching stats"),
+            extractErrorMessage(error, t("dashboard.fetchDataFail")),
             "error"
           );
         }
       }
-      fetchDashboard();
+
+      fetchDashboardData();
     }, [])
   );
 
-  const campaignData = [
-    {
-      id: "c1",
-      campaignName: "Campaign A",
-      firstName: "Alice",
-      lastName: "Smith",
-      totalGeneratedVideos: 120,
-      totalSentVideos: 100,
-      totalFailedVideos: 5,
-    },
-    {
-      id: "c3",
-      campaignName: "Campaign B",
-      firstName: "Charlie",
-      lastName: "Brown",
-      totalGeneratedVideos: 90,
-      totalSentVideos: 85,
-      totalFailedVideos: 4,
-    },
-    {
-      id: "c5",
-      campaignName: "Campaign C",
-      firstName: "Ethan",
-      lastName: "Davis",
-      totalGeneratedVideos: 75,
-      totalSentVideos: 65,
-      totalFailedVideos: 3,
-    },
-    {
-      id: "c7",
-      campaignName: "Campaign D",
-      firstName: "George",
-      lastName: "Taylor",
-      totalGeneratedVideos: 100,
-      totalSentVideos: 90,
-      totalFailedVideos: 5,
-    },
-    {
-      id: "c9",
-      campaignName: "Campaign E",
-      firstName: "Ian",
-      lastName: "Thomas",
-      totalGeneratedVideos: 85,
-      totalSentVideos: 75,
-      totalFailedVideos: 4,
-    },
-    {
-      id: "c11",
-      campaignName: "Campaign F",
-      firstName: "Kevin",
-      lastName: "Martin",
-      totalGeneratedVideos: 70,
-      totalSentVideos: 60,
-      totalFailedVideos: 2,
-    },
-    {
-      id: "c12",
-      campaignName: "Campaign G",
-      firstName: "Laura",
-      lastName: "Lee",
-      totalGeneratedVideos: 55,
-      totalSentVideos: 50,
-      totalFailedVideos: 1,
-    },
-  ];
-
   const kpis = [
     {
-      title: t("dashboard.generated"),
+      title: t("dashboard.status.generated"),
       value: aggregateTotals.totalGeneratedVideos,
     },
-    { title: t("dashboard.sent"), value: aggregateTotals.totalSentVideos },
-    { title: t("dashboard.failed"), value: aggregateTotals.totalFailedVideos },
+    { title: t("dashboard.status.sent"), value: aggregateTotals.totalSentVideos },
+    { title: t("dashboard.status.failed"), value: aggregateTotals.totalFailedVideos },
   ];
 
   return (
@@ -140,13 +95,7 @@ const AdminDashboardScreen = () => {
         // Web: all KPIs in one row
         <View style={[styles.kpiRow, { justifyContent: "space-between" }]}>
           {kpis.map((item, idx) => (
-            <Card
-              key={idx}
-              style={[styles.kpiCard, { flex: 1, marginHorizontal: 8 }]}
-            >
-              <Text style={styles.kpiTitle}>{item.title}</Text>
-              <Text style={styles.kpiValue}>{item.value}</Text>
-            </Card>
+           <KPICard item={item} idx={idx} />
           ))}
         </View>
       ) : isSmallScreen ? (
@@ -188,15 +137,21 @@ const AdminDashboardScreen = () => {
             height={220}
             colors={[colors.primary, colors.primaryLight, colors.darkOrange]}
             titleColor={colors.primaryDark}
+            noVideosGenerated={aggregateTotals.totalGeneratedVideos === 0}
           />
         )}
       </Card>
 
       {/* DONUT CHART */}
-      {/* <Card style={styles.chartCard}>
+      <Card style={styles.chartCard}>
         <Text style={styles.chartTitle}>{t("dashboard.videosByCampaign")}</Text>
-        <DonutChart campaignsData={campaignData} radius={110} holeRadius={55} />
-      </Card> */}
+        <DonutChart
+          campaignsData={campaignStats}
+          radius={110}
+          holeRadius={55}
+          noVideosGenerated={aggregateTotals.totalGeneratedVideos === 0}
+        />
+      </Card>
     </ScrollView>
   );
 };
@@ -240,7 +195,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: colors.primary,
     textAlign: "left",
-    marginBottom: 8,
+    marginBottom: 12,
   },
 });
 

@@ -87,6 +87,7 @@
   "clear": "साफ करें",
   "yes": "हाँ",
   "no": "नहीं",
+  "back": "वापस",
 
   "role": {
     "distributor": "वितरक",
@@ -198,10 +199,13 @@
   "dashboard": {
     "videosByUser": "उपयोगकर्ता वीडियो",
     "videosByCampaign": "अभियान वीडियो",
-    "generated": "तैयार",
-    "sent": "भेजा गया",
-    "pending": "लंबित",
-    "failed": "विफल",
-    "noData": "कोई जानकारी नहीं"
+    "fetchDataFail": "डैशबोर्ड डेटा लाने में त्रुटि",
+    "noData": "कोई जानकारी नहीं",
+    "status": {
+      "generated": "तैयार",
+      "sent": "भेजा गया",
+      "pending": "लंबित",
+      "failed": "विफल"
+    }
   }
 }

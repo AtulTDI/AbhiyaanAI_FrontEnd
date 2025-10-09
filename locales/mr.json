@@ -87,6 +87,7 @@
   "clear": "साफ करा",
   "yes": "हो",
   "no": "नाही",
+  "back": "मागे",
 
   "role": {
     "distributor": "वितरक",
@@ -198,10 +199,13 @@
   "dashboard": {
     "videosByUser": "वापरकर्ता व्हिडिओ",
     "videosByCampaign": "मोहिम व्हिडिओ",
-    "generated": "तयार",
-    "sent": "पाठवले",
-    "pending": "प्रलंबित",
-    "failed": "अयशस्वी",
-    "noData": "माहिती नाही"
+    "fetchDataFail": "डॅशबोर्ड डेटा मिळवताना त्रुटी",
+    "noData": "माहिती नाही",
+    "status": {
+      "generated": "तयार",
+      "sent": "पाठवले",
+      "pending": "प्रलंबित",
+      "failed": "अयशस्वी"
+    }
   }
 }

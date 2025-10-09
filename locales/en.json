@@ -87,6 +87,7 @@
   "clear": "Clear",
   "yes": "Yes",
   "no": "No",
+  "back": "Back",
 
   "role": {
     "distributor": "Distributor",
@@ -155,7 +156,7 @@
     "sendFail": "Error sending video",
     "sendConfirmTitle": "Video Sent?",
     "sendConfirmMessage": "Have you successfully sent the video?",
-    "markSendVideoError": "Error in confirming status", 
+    "markSendVideoError": "Error in confirming status",
     "noData": "No videos found"
   },
   "voter": {
@@ -198,10 +199,13 @@
   "dashboard": {
     "videosByUser": "Videos by User",
     "videosByCampaign": "Videos by Campaign",
-    "generated": "Generated",
-    "sent": "Sent",
-    "pending": "Pending",
-    "failed": "Failed",
-    "noData": "No data available"
+    "fetchDataFail": "Error fetching dashboard data",
+    "noData": "No data available",
+    "status": {
+      "generated": "Generated",
+      "sent": "Sent",
+      "pending": "Pending",
+      "failed": "Failed"
+    }
   }
 }

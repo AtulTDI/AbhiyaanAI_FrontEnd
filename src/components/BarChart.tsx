@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   Dimensions,
 } from "react-native";
-import Svg, { G, Text as SvgText, Rect } from "react-native-svg";
+import Svg, { G, Text as SvgText, Rect, Line } from "react-native-svg";
 import Animated, {
   useSharedValue,
   withSpring,
@@ -25,7 +25,7 @@ const AnimatedBar = ({
   color,
   value,
   titleColor,
-}) => {
+}: any) => {
   const animatedProps = useAnimatedProps(() => {
     const scaledHeight = (sharedValue.value / maxValue) * chartHeight;
     return { height: scaledHeight, y: -scaledHeight };
@@ -38,13 +38,13 @@ const AnimatedBar = ({
         x={x}
         width={barWidth}
         fill={color}
-        rx={3}
+        rx={4}
       />
       {value > 0 && (
         <SvgText
           x={x + barWidth / 2}
-          y={-(value / maxValue) * chartHeight - 10}
-          fontSize="14"
+          y={-(value / maxValue) * chartHeight - 8}
+          fontSize="12"
           fill={titleColor}
           textAnchor="middle"
           fontWeight="600"
@@ -63,19 +63,22 @@ const BarChart = ({
   colors,
   titleColor,
   centerSingleGroup = false,
-}) => {
+  noVideosGenerated,
+  backgroundColor = "#fdfaf7",
+}: any) => {
   const { t } = useTranslation();
   const keys = ["generated", "sent", "failed"];
   const [visibleKeys, setVisibleKeys] = useState(keys);
   const screenWidth = Dimensions.get("window").width;
+  const scrollRef = useRef<ScrollView>(null);
 
-  const keyColors = {
+  const keyColors: Record<string, string> = {
     generated: colors[0],
     sent: colors[1],
     failed: colors[2],
   };
 
-  const toggleKey = (key) => {
+  const toggleKey = (key: string) => {
     setVisibleKeys((prev) =>
       prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
     );
@@ -106,78 +109,115 @@ const BarChart = ({
     });
   }, [data]);
 
-  const maxValue = Math.max(
+  const rawMaxValue = Math.max(
     1,
     ...data.flatMap((d) => visibleKeys.map((k) => d[k] || 0))
   );
+  const visualMaxValue = rawMaxValue === 0 ? 1 : rawMaxValue * 1.1;
 
-  const topPadding = 20;
+  const topPadding = 30;
+  const bottomPadding = 60;
+  const leftPadding = 60;
+  const rightPadding = 20;
   const dynamicChartHeight = height;
   const barWidth = 24;
   const barSpacing = 12;
-  const groupSpacing = 40;
-  const fullGroupWidth = keys.length * (barWidth + barSpacing) + groupSpacing;
+  const groupSpacing = 30;
+  const fullGroupWidth =
+    keys.length * (barWidth + barSpacing) - barSpacing + groupSpacing;
 
   const allZero =
     visibleKeys.length === 0 ||
     data.every((d) => visibleKeys.every((k) => (d[k] || 0) === 0));
 
-  let offsetX = 0;
+  let offsetX = leftPadding;
   if (centerSingleGroup && data.length === 1) {
     offsetX = screenWidth / 2 - fullGroupWidth / 2;
-    if (offsetX < 0) offsetX = 0;
+    if (offsetX < leftPadding) offsetX = leftPadding;
   }
 
   const chartWidth = data.length * fullGroupWidth;
-  const svgWidth = Math.max(width, chartWidth);
+  const svgWidth = Math.max(
+    width,
+    chartWidth + leftPadding + rightPadding,
+    screenWidth
+  );
+
+  // Force scrollbar to appear immediately if chart width exceeds screen width
+  useEffect(() => {
+    if (svgWidth > screenWidth && scrollRef.current) {
+      scrollRef.current.scrollTo({ x: 1, animated: false });
+    }
+  }, [svgWidth, screenWidth]);
+
+  const yStepCount = 5;
+  const yStepValue = Math.ceil(rawMaxValue / yStepCount);
+  const ySteps = Array.from(
+    { length: yStepCount + 1 },
+    (_, i) => i * yStepValue
+  );
 
   return (
-    <View style={{ marginBottom: 24 }}>
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "center",
-          marginBottom: 12,
-          flexWrap: "wrap",
-        }}
-      >
-        {keys.map((k) => {
-          const active = visibleKeys.includes(k);
-          return (
-            <TouchableOpacity
-              key={k}
-              onPress={() => toggleKey(k)}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                marginHorizontal: 10,
-                marginVertical: 4,
-                opacity: active ? 1 : 0.4,
-              }}
-            >
-              <View
+    <View
+      style={{
+        backgroundColor,
+        borderRadius: 12,
+        paddingVertical: 10,
+        overflow: "hidden",
+        shadowColor: "#000",
+        shadowOpacity: 0.05,
+        shadowRadius: 10,
+        elevation: 2,
+      }}
+    >
+      {/* Legend */}
+      {!noVideosGenerated && (
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "center",
+            marginBottom: 12,
+            flexWrap: "wrap",
+          }}
+        >
+          {keys.map((k) => {
+            const active = visibleKeys.includes(k);
+            return (
+              <TouchableOpacity
+                key={k}
+                onPress={() => toggleKey(k)}
                 style={{
-                  width: 14,
-                  height: 14,
-                  backgroundColor: keyColors[k],
-                  borderRadius: 3,
-                  marginRight: 6,
-                }}
-              />
-              <Text
-                style={{
-                  fontWeight: active ? "bold" : "normal",
-                  color: titleColor,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  marginHorizontal: 10,
+                  marginVertical: 4,
+                  opacity: active ? 1 : 0.4,
                 }}
               >
-                {k.charAt(0).toUpperCase() + k.slice(1)}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
+                <View
+                  style={{
+                    width: 14,
+                    height: 14,
+                    backgroundColor: keyColors[k],
+                    borderRadius: 3,
+                    marginRight: 6,
+                  }}
+                />
+                <Text
+                  style={{
+                    fontWeight: active ? "bold" : "normal",
+                    color: titleColor,
+                  }}
+                >
+                  {t(`dashboard.status.${k}`)}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      )}
 
-      {allZero ? (
+      {allZero || noVideosGenerated ? (
         <View
           style={{ height, justifyContent: "center", alignItems: "center" }}
         >
@@ -187,16 +227,78 @@ const BarChart = ({
         </View>
       ) : (
         <ScrollView
-          horizontal={svgWidth > width || data.length > 1}
-          showsHorizontalScrollIndicator={false}
+          ref={scrollRef}
+          horizontal
+          showsHorizontalScrollIndicator={true}
+          style={{
+            paddingHorizontal: 5,
+            overflowX: "scroll", // ensures scrollbar is visible on web
+          }}
+          contentContainerStyle={{
+            paddingBottom: 15,
+            minWidth: svgWidth, // ensures content is wider than container
+          }}
         >
-          <Svg
-            height={dynamicChartHeight + 60}
-            width={Math.max(svgWidth, screenWidth)}
-          >
+          <Svg height={dynamicChartHeight + bottomPadding} width={svgWidth}>
+            {/* Y-axis label */}
+            <SvgText
+              x={15}
+              y={dynamicChartHeight / 2 + topPadding}
+              fontSize="14"
+              fill={titleColor}
+              textAnchor="middle"
+              transform={`rotate(-90, 15, ${
+                dynamicChartHeight / 2 + topPadding
+              })`}
+              fontWeight="600"
+            >
+              {t("videoCount")}
+            </SvgText>
+
+            {/* Grid lines and Y-axis ticks */}
+            {ySteps.map((y, i) => {
+              const yPos =
+                dynamicChartHeight -
+                (y / visualMaxValue) * dynamicChartHeight +
+                topPadding;
+              return (
+                <G key={`grid-${i}`}>
+                  <Line
+                    x1={leftPadding - 5}
+                    y1={yPos}
+                    x2={svgWidth - rightPadding}
+                    y2={yPos}
+                    stroke="#e0e0e0"
+                    strokeDasharray="4 4"
+                    strokeWidth="1"
+                  />
+                  <SvgText
+                    x={leftPadding - 10}
+                    y={yPos + 4}
+                    fontSize="12"
+                    fill="#888"
+                    textAnchor="end"
+                  >
+                    {y}
+                  </SvgText>
+                </G>
+              );
+            })}
+
+            {/* X-axis line */}
+            <Line
+              x1={leftPadding - 5}
+              y1={dynamicChartHeight + topPadding}
+              x2={svgWidth - rightPadding}
+              y2={dynamicChartHeight + topPadding}
+              stroke="#bbb"
+              strokeWidth="1.5"
+            />
+
+            {/* Bars */}
             <G y={dynamicChartHeight + topPadding} x={offsetX}>
               {data.map((d, i) => {
-                const groupX = i * fullGroupWidth + barSpacing;
+                const groupX = i * fullGroupWidth;
                 return (
                   <G key={i}>
                     {visibleKeys.map((k, j) => {
@@ -211,8 +313,8 @@ const BarChart = ({
                         <AnimatedBar
                           key={j}
                           sharedValue={animatedHeights[i][keyIndex]}
-                          maxValue={maxValue}
-                          chartHeight={dynamicChartHeight - topPadding}
+                          maxValue={visualMaxValue}
+                          chartHeight={dynamicChartHeight}
                           x={x}
                           barWidth={barWidth}
                           color={keyColors[k]}
@@ -222,12 +324,18 @@ const BarChart = ({
                       );
                     })}
 
+                    {/* X-axis label */}
                     <SvgText
-                      x={groupX + (keys.length * (barWidth + barSpacing)) / 2}
-                      y={35}
-                      fontSize="14"
+                      x={
+                        groupX +
+                        (keys.length * (barWidth + barSpacing)) / 2 -
+                        barSpacing / 2
+                      }
+                      y={20}
+                      fontSize="13"
                       fill={titleColor}
                       textAnchor="middle"
+                      fontWeight="500"
                     >
                       {d.label}
                     </SvgText>

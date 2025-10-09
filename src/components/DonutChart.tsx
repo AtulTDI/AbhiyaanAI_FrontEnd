@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { View, Text, Pressable } from "react-native";
 import Svg, { G, Path, Text as SvgText } from "react-native-svg";
+import { useTranslation } from "react-i18next";
 import colors from "../constants/colors";
 import BarChart from "./BarChart";
 
@@ -10,19 +11,41 @@ const DonutChart = ({
   holeRadius = 55,
   width = 320,
   height = 200,
+  noVideosGenerated = false,
 }) => {
-  const aggregatedData = campaignsData.map((c) => ({
-    label: c.campaignName,
-    totalGeneratedVideos: c.totalGeneratedVideos,
-    totalSentVideos: c.totalSentVideos,
-    totalFailedVideos: c.totalFailedVideos,
-  }));
+  const { t } = useTranslation();
+
+  const [drilledSlice, setDrilledSlice] = useState(null);
+
+  if (noVideosGenerated) {
+    return (
+      <View style={{ height, justifyContent: "center", alignItems: "center" }}>
+        <Text
+          style={{
+            color: colors.primaryDark,
+            fontSize: 16,
+            fontWeight: "600",
+          }}
+        >
+          {t("dashboard.noData")}
+        </Text>
+      </View>
+    );
+  }
+
+  const aggregatedData =
+    campaignsData?.map((c) => ({
+      label: c.label || "Unknown",
+      totalGeneratedVideos: c.generated ?? c.total ?? 0,
+      totalSentVideos: c.sent ?? 0,
+      totalFailedVideos: c.failed ?? 0,
+    })) || [];
 
   const totalValue = aggregatedData.reduce(
     (sum, d) => sum + d.totalGeneratedVideos,
     0
   );
-  const [drilledSlice, setDrilledSlice] = useState(null);
+
   const sliceColors = [colors.primary, colors.primaryLight, colors.darkOrange];
 
   const createDonutPath = (startAngle, endAngle, radius) => {
@@ -35,9 +58,9 @@ const DonutChart = ({
   };
 
   return (
-    <View style={{ alignItems: "center", width: "100%" }}>
+    <View style={{ alignItems: !drilledSlice && "center", width: "100%" }}>
       {drilledSlice ? (
-        <View style={{ width: "100%", alignItems: "center" }}>
+        <>
           <BarChart
             data={[
               {
@@ -47,30 +70,31 @@ const DonutChart = ({
                 failed: drilledSlice.totalFailedVideos,
               },
             ]}
-            width={width}
+            width={10}
             height={height}
             colors={[colors.primary, colors.primaryLight, colors.darkOrange]}
             titleColor={colors.primaryDark}
-            centerSingleGroup={true}
+            noVideosGenerated={noVideosGenerated}
           />
-
-          <Pressable
-            onPress={() => setDrilledSlice(null)}
-            style={{
-              marginTop: 12,
-              paddingVertical: 8,
-              paddingHorizontal: 16,
-              backgroundColor: colors.primaryLight,
-              borderRadius: 6,
-            }}
-          >
-            <Text
-              style={{ fontSize: 12, fontWeight: "600", color: colors.white }}
+          <View style={{ width: "100%", alignItems: "center" }}>
+            <Pressable
+              onPress={() => setDrilledSlice(null)}
+              style={{
+                marginTop: 12,
+                paddingVertical: 8,
+                paddingHorizontal: 16,
+                backgroundColor: colors.primary,
+                borderRadius: 8,
+              }}
             >
-              ⬅ Back
-            </Text>
-          </Pressable>
-        </View>
+              <Text
+                style={{ fontSize: 12, fontWeight: "600", color: colors.white }}
+              >
+                ⬅ {t("back")}
+              </Text>
+            </Pressable>
+          </View>
+        </>
       ) : (
         <>
           {/* Donut Chart */}
@@ -111,7 +135,8 @@ const DonutChart = ({
                   );
                 });
               })()}
-              {/* Hole */}
+
+              {/* Donut Hole */}
               <Path
                 d={`M0,0 m-${holeRadius},0 a${holeRadius},${holeRadius} 0 1,0 ${
                   holeRadius * 2
@@ -122,48 +147,57 @@ const DonutChart = ({
           </Svg>
 
           {/* Legends */}
-          <View
-            style={{
-              flexDirection: "row",
-              flexWrap: "wrap",
-              marginTop: 16,
-              justifyContent: "center",
-            }}
-          >
-            {aggregatedData.map((d, i) => (
-              <Pressable
-                key={i}
-                onPress={() => setDrilledSlice(d)}
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  margin: 6,
-                  paddingHorizontal: 8,
-                  paddingVertical: 4,
-                  borderRadius: 6,
-                }}
-              >
-                <View
+          {aggregatedData.length > 0 && (
+            <View
+              style={{
+                flexDirection: "row",
+                flexWrap: "wrap",
+                marginTop: 16,
+                justifyContent: "center",
+              }}
+            >
+              {aggregatedData.map((d, i) => (
+                <Pressable
+                  key={i}
+                  onPress={() => setDrilledSlice(d)}
                   style={{
-                    width: 14,
-                    height: 14,
-                    borderRadius: 7,
-                    backgroundColor: sliceColors[i % sliceColors.length],
-                    marginRight: 6,
-                  }}
-                />
-                <Text
-                  style={{
-                    fontSize: 12,
-                    color: colors.primaryDark,
-                    fontWeight: "600",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    margin: 6,
+                    paddingHorizontal: 10,
+                    paddingVertical: 6,
+                    borderRadius: 8,
+                    backgroundColor: colors.softOrange,
+                    borderWidth: 1,
+                    borderColor: colors.primaryLight,
+                    shadowColor: colors.primaryDark,
+                    shadowOpacity: 0.08,
+                    shadowRadius: 4,
+                    shadowOffset: { width: 0, height: 2 },
                   }}
                 >
-                  {d.label} ({d.totalGeneratedVideos})
-                </Text>
-              </Pressable>
-            ))}
-          </View>
+                  <View
+                    style={{
+                      width: 14,
+                      height: 14,
+                      borderRadius: 7,
+                      backgroundColor: sliceColors[i % sliceColors.length],
+                      marginRight: 6,
+                    }}
+                  />
+                  <Text
+                    style={{
+                      fontSize: 12,
+                      color: colors.darkerGrayText,
+                      fontWeight: "600",
+                    }}
+                  >
+                    {d.label} ({d.totalGeneratedVideos})
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          )}
         </>
       )}
     </View>
