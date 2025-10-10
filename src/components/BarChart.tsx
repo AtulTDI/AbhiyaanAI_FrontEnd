@@ -87,24 +87,115 @@ const BarChart = ({
   );
   const visualMaxValue = rawMaxValue === 0 ? 1 : rawMaxValue * 1.1;
 
-  let offsetX = leftPadding;
-  if (centerSingleGroup && data.length === 1) {
-    offsetX = screenWidth / 2 - fullGroupWidth / 2;
-    if (offsetX < leftPadding) offsetX = leftPadding;
-  }
-
   const chartWidth = data.length * fullGroupWidth;
-  const svgWidth = Math.max(
-    width,
-    chartWidth + leftPadding + rightPadding,
-    screenWidth
-  );
+  const svgWidth = chartWidth + leftPadding + rightPadding;
+  const scrollNeeded = svgWidth > screenWidth;
+  const offsetX = leftPadding;
 
   const yStepCount = 5;
   const yStepValue = Math.ceil(rawMaxValue / yStepCount);
   const ySteps = Array.from(
     { length: yStepCount + 1 },
     (_, i) => i * yStepValue
+  );
+
+  const renderChartContent = (svgW: number) => (
+    <Svg height={dynamicChartHeight + bottomPadding} width={svgW}>
+      {/* Y-axis label */}
+      <SvgText
+        x={15}
+        y={dynamicChartHeight / 2 + topPadding}
+        fontSize="14"
+        fill={titleColor}
+        textAnchor="middle"
+        transform={`rotate(-90, 15, ${dynamicChartHeight / 2 + topPadding})`}
+        fontWeight="600"
+      >
+        {t("videoCount")}
+      </SvgText>
+
+      {/* Grid lines */}
+      {ySteps.map((y, i) => {
+        const yPos =
+          dynamicChartHeight -
+          (y / visualMaxValue) * dynamicChartHeight +
+          topPadding;
+        return (
+          <G key={`grid-${i}`}>
+            <Line
+              x1={leftPadding - 5}
+              y1={yPos}
+              x2={svgW - rightPadding}
+              y2={yPos}
+              stroke="#e0e0e0"
+              strokeDasharray="4 4"
+              strokeWidth="1"
+            />
+            <SvgText
+              x={leftPadding - 10}
+              y={yPos + 4}
+              fontSize="12"
+              fill="#888"
+              textAnchor="end"
+            >
+              {y}
+            </SvgText>
+          </G>
+        );
+      })}
+
+      {/* X-axis */}
+      <Line
+        x1={leftPadding - 5}
+        y1={dynamicChartHeight + topPadding}
+        x2={svgW - rightPadding}
+        y2={dynamicChartHeight + topPadding}
+        stroke="#bbb"
+        strokeWidth="1.5"
+      />
+
+      {/* Bars */}
+      <G y={dynamicChartHeight + topPadding} x={offsetX}>
+        {data.map((d, i) => {
+          const groupX = i * fullGroupWidth;
+          return (
+            <G key={i}>
+              {visibleKeys.map((k) => {
+                const keyIndex = keys.indexOf(k);
+                const x = groupX + keyIndex * (barWidth + barSpacing);
+                const value = d[k] || 0;
+                return (
+                  <Bar
+                    key={k}
+                    x={x}
+                    value={value}
+                    maxValue={visualMaxValue}
+                    chartHeight={dynamicChartHeight}
+                    width={barWidth}
+                    color={keyColors[k]}
+                    titleColor={titleColor}
+                  />
+                );
+              })}
+              <SvgText
+                x={
+                  groupX +
+                  (keys.length * (barWidth + barSpacing)) / 2 -
+                  barSpacing / 2
+                }
+                y={20}
+                fontSize="13"
+                fill={titleColor}
+                textAnchor="middle"
+                fontWeight="500"
+              >
+                {d.label}
+              </SvgText>
+            </G>
+          );
+        })}
+      </G>
+    </Svg>
   );
 
   return (
@@ -167,6 +258,7 @@ const BarChart = ({
         </View>
       )}
 
+      {/* No data */}
       {allZero || noVideosGenerated ? (
         <View
           style={{ height, justifyContent: "center", alignItems: "center" }}
@@ -175,113 +267,23 @@ const BarChart = ({
             {t("dashboard.noData")}
           </Text>
         </View>
-      ) : (
+      ) : scrollNeeded ? (
         <ScrollView
           ref={scrollRef}
           horizontal
           showsHorizontalScrollIndicator={true}
           style={{ paddingHorizontal: 5 }}
-          contentContainerStyle={{ paddingBottom: 15, minWidth: svgWidth }}
+          contentContainerStyle={{
+            paddingBottom: 15,
+            width: svgWidth,
+          }}
         >
-          <Svg height={dynamicChartHeight + bottomPadding} width={svgWidth}>
-            {/* Y-axis label */}
-            <SvgText
-              x={15}
-              y={dynamicChartHeight / 2 + topPadding}
-              fontSize="14"
-              fill={titleColor}
-              textAnchor="middle"
-              transform={`rotate(-90, 15, ${
-                dynamicChartHeight / 2 + topPadding
-              })`}
-              fontWeight="600"
-            >
-              {t("videoCount")}
-            </SvgText>
-
-            {/* Grid lines */}
-            {ySteps.map((y, i) => {
-              const yPos =
-                dynamicChartHeight -
-                (y / visualMaxValue) * dynamicChartHeight +
-                topPadding;
-              return (
-                <G key={`grid-${i}`}>
-                  <Line
-                    x1={leftPadding - 5}
-                    y1={yPos}
-                    x2={svgWidth - rightPadding}
-                    y2={yPos}
-                    stroke="#e0e0e0"
-                    strokeDasharray="4 4"
-                    strokeWidth="1"
-                  />
-                  <SvgText
-                    x={leftPadding - 10}
-                    y={yPos + 4}
-                    fontSize="12"
-                    fill="#888"
-                    textAnchor="end"
-                  >
-                    {y}
-                  </SvgText>
-                </G>
-              );
-            })}
-
-            {/* X-axis line */}
-            <Line
-              x1={leftPadding - 5}
-              y1={dynamicChartHeight + topPadding}
-              x2={svgWidth - rightPadding}
-              y2={dynamicChartHeight + topPadding}
-              stroke="#bbb"
-              strokeWidth="1.5"
-            />
-
-            {/* Bars */}
-            <G y={dynamicChartHeight + topPadding} x={offsetX}>
-              {data.map((d, i) => {
-                const groupX = i * fullGroupWidth;
-                return (
-                  <G key={i}>
-                    {visibleKeys.map((k) => {
-                      const keyIndex = keys.indexOf(k);
-                      const x = groupX + keyIndex * (barWidth + barSpacing);
-                      const value = d[k] || 0;
-                      return (
-                        <Bar
-                          key={k}
-                          x={x}
-                          value={value}
-                          maxValue={visualMaxValue}
-                          chartHeight={dynamicChartHeight}
-                          width={barWidth}
-                          color={keyColors[k]}
-                          titleColor={titleColor}
-                        />
-                      );
-                    })}
-                    <SvgText
-                      x={
-                        groupX +
-                        (keys.length * (barWidth + barSpacing)) / 2 -
-                        barSpacing / 2
-                      }
-                      y={20}
-                      fontSize="13"
-                      fill={titleColor}
-                      textAnchor="middle"
-                      fontWeight="500"
-                    >
-                      {d.label}
-                    </SvgText>
-                  </G>
-                );
-              })}
-            </G>
-          </Svg>
+          {renderChartContent(svgWidth)}
         </ScrollView>
+      ) : (
+        <View style={{ paddingHorizontal: 5, paddingBottom: 15 }}>
+          {renderChartContent(screenWidth - 10)}
+        </View>
       )}
     </View>
   );
