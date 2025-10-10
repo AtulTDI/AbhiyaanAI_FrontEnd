@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useState, useRef, memo } from "react";
 import {
   ScrollView,
   View,
@@ -7,54 +7,37 @@ import {
   Dimensions,
 } from "react-native";
 import Svg, { G, Text as SvgText, Rect, Line } from "react-native-svg";
-import Animated, {
-  useSharedValue,
-  withSpring,
-  useAnimatedProps,
-} from "react-native-reanimated";
 import { useTranslation } from "react-i18next";
 
-const AnimatedRect = Animated.createAnimatedComponent(Rect);
-
-const AnimatedBar = ({
-  sharedValue,
-  maxValue,
-  chartHeight,
-  x,
-  barWidth,
-  color,
-  value,
-  titleColor,
-}: any) => {
-  const animatedProps = useAnimatedProps(() => {
-    const scaledHeight = (sharedValue.value / maxValue) * chartHeight;
-    return { height: scaledHeight, y: -scaledHeight };
-  });
-
-  return (
-    <G>
-      <AnimatedRect
-        animatedProps={animatedProps}
-        x={x}
-        width={barWidth}
-        fill={color}
-        rx={4}
-      />
-      {value > 0 && (
-        <SvgText
-          x={x + barWidth / 2}
-          y={-(value / maxValue) * chartHeight - 8}
-          fontSize="12"
-          fill={titleColor}
-          textAnchor="middle"
-          fontWeight="600"
-        >
-          {value}
-        </SvgText>
-      )}
-    </G>
-  );
-};
+const Bar = memo(
+  ({ x, value, maxValue, chartHeight, width, color, titleColor }: any) => {
+    const scaledHeight = (value / maxValue) * chartHeight;
+    return (
+      <G>
+        <Rect
+          x={x}
+          y={-scaledHeight}
+          width={width}
+          height={scaledHeight}
+          fill={color}
+          rx={4}
+        />
+        {value > 0 && (
+          <SvgText
+            x={x + width / 2}
+            y={-scaledHeight - 8}
+            fontSize="12"
+            fill={titleColor}
+            textAnchor="middle"
+            fontWeight="600"
+          >
+            {value}
+          </SvgText>
+        )}
+      </G>
+    );
+  }
+);
 
 const BarChart = ({
   data,
@@ -78,42 +61,10 @@ const BarChart = ({
     failed: colors[2],
   };
 
-  const toggleKey = (key: string) => {
+  const toggleKey = (key: string) =>
     setVisibleKeys((prev) =>
       prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
     );
-  };
-
-  const animatedHeightsRef = useRef(
-    data.map(() => keys.map(() => useSharedValue(0)))
-  );
-  const animatedHeights = animatedHeightsRef.current;
-
-  useEffect(() => {
-    if (animatedHeightsRef.current.length < data.length) {
-      const extra = Array.from(
-        { length: data.length - animatedHeightsRef.current.length },
-        () => keys.map(() => useSharedValue(0))
-      );
-      animatedHeightsRef.current = [...animatedHeightsRef.current, ...extra];
-    }
-  }, [data.length]);
-
-  useEffect(() => {
-    data.forEach((d, i) => {
-      keys.forEach((k, j) => {
-        if (animatedHeights[i] && animatedHeights[i][j]) {
-          animatedHeights[i][j].value = withSpring(d[k] || 0, { damping: 15 });
-        }
-      });
-    });
-  }, [data]);
-
-  const rawMaxValue = Math.max(
-    1,
-    ...data.flatMap((d) => visibleKeys.map((k) => d[k] || 0))
-  );
-  const visualMaxValue = rawMaxValue === 0 ? 1 : rawMaxValue * 1.1;
 
   const topPadding = 30;
   const bottomPadding = 60;
@@ -130,6 +81,12 @@ const BarChart = ({
     visibleKeys.length === 0 ||
     data.every((d) => visibleKeys.every((k) => (d[k] || 0) === 0));
 
+  const rawMaxValue = Math.max(
+    1,
+    ...data.flatMap((d) => visibleKeys.map((k) => d[k] || 0))
+  );
+  const visualMaxValue = rawMaxValue === 0 ? 1 : rawMaxValue * 1.1;
+
   let offsetX = leftPadding;
   if (centerSingleGroup && data.length === 1) {
     offsetX = screenWidth / 2 - fullGroupWidth / 2;
@@ -142,13 +99,6 @@ const BarChart = ({
     chartWidth + leftPadding + rightPadding,
     screenWidth
   );
-
-  // Force scrollbar to appear immediately if chart width exceeds screen width
-  useEffect(() => {
-    if (svgWidth > screenWidth && scrollRef.current) {
-      scrollRef.current.scrollTo({ x: 1, animated: false });
-    }
-  }, [svgWidth, screenWidth]);
 
   const yStepCount = 5;
   const yStepValue = Math.ceil(rawMaxValue / yStepCount);
@@ -230,14 +180,8 @@ const BarChart = ({
           ref={scrollRef}
           horizontal
           showsHorizontalScrollIndicator={true}
-          style={{
-            paddingHorizontal: 5,
-            overflowX: "scroll", // ensures scrollbar is visible on web
-          }}
-          contentContainerStyle={{
-            paddingBottom: 15,
-            minWidth: svgWidth, // ensures content is wider than container
-          }}
+          style={{ paddingHorizontal: 5 }}
+          contentContainerStyle={{ paddingBottom: 15, minWidth: svgWidth }}
         >
           <Svg height={dynamicChartHeight + bottomPadding} width={svgWidth}>
             {/* Y-axis label */}
@@ -255,7 +199,7 @@ const BarChart = ({
               {t("videoCount")}
             </SvgText>
 
-            {/* Grid lines and Y-axis ticks */}
+            {/* Grid lines */}
             {ySteps.map((y, i) => {
               const yPos =
                 dynamicChartHeight -
@@ -301,30 +245,23 @@ const BarChart = ({
                 const groupX = i * fullGroupWidth;
                 return (
                   <G key={i}>
-                    {visibleKeys.map((k, j) => {
+                    {visibleKeys.map((k) => {
                       const keyIndex = keys.indexOf(k);
-                      if (!animatedHeights[i] || !animatedHeights[i][keyIndex])
-                        return null;
-
                       const x = groupX + keyIndex * (barWidth + barSpacing);
                       const value = d[k] || 0;
-
                       return (
-                        <AnimatedBar
-                          key={j}
-                          sharedValue={animatedHeights[i][keyIndex]}
+                        <Bar
+                          key={k}
+                          x={x}
+                          value={value}
                           maxValue={visualMaxValue}
                           chartHeight={dynamicChartHeight}
-                          x={x}
-                          barWidth={barWidth}
+                          width={barWidth}
                           color={keyColors[k]}
-                          value={value}
                           titleColor={titleColor}
                         />
                       );
                     })}
-
-                    {/* X-axis label */}
                     <SvgText
                       x={
                         groupX +

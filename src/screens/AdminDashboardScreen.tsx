@@ -84,8 +84,14 @@ const AdminDashboardScreen = () => {
       title: t("dashboard.status.generated"),
       value: aggregateTotals.totalGeneratedVideos,
     },
-    { title: t("dashboard.status.sent"), value: aggregateTotals.totalSentVideos },
-    { title: t("dashboard.status.failed"), value: aggregateTotals.totalFailedVideos },
+    {
+      title: t("dashboard.status.sent"),
+      value: aggregateTotals.totalSentVideos,
+    },
+    {
+      title: t("dashboard.status.failed"),
+      value: aggregateTotals.totalFailedVideos,
+    },
   ];
 
   return (
@@ -95,7 +101,7 @@ const AdminDashboardScreen = () => {
         // Web: all KPIs in one row
         <View style={[styles.kpiRow, { justifyContent: "space-between" }]}>
           {kpis.map((item, idx) => (
-           <KPICard item={item} idx={idx} />
+            <KPICard item={item} idx={idx} />
           ))}
         </View>
       ) : isSmallScreen ? (
