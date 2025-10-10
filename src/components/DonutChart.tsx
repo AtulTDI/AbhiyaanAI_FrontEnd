@@ -14,8 +14,8 @@ const DonutChart = ({
   noVideosGenerated = false,
 }) => {
   const { t } = useTranslation();
-
   const [drilledSlice, setDrilledSlice] = useState(null);
+  const [showAllLegends, setShowAllLegends] = useState(false);
 
   if (noVideosGenerated) {
     return (
@@ -56,6 +56,10 @@ const DonutChart = ({
     const largeArcFlag = endAngle - startAngle > Math.PI ? 1 : 0;
     return `M0,0 L${startX},${startY} A${radius},${radius} 0 ${largeArcFlag} 1 ${endX},${endY} Z`;
   };
+
+  const visibleLegends = showAllLegends
+    ? aggregatedData
+    : aggregatedData.slice(0, 4);
 
   return (
     <View style={{ alignItems: !drilledSlice && "center", width: "100%" }}>
@@ -148,54 +152,73 @@ const DonutChart = ({
 
           {/* Legends */}
           {aggregatedData.length > 0 && (
-            <View
-              style={{
-                flexDirection: "row",
-                flexWrap: "wrap",
-                marginTop: 16,
-                justifyContent: "center",
-              }}
-            >
-              {aggregatedData.map((d, i) => (
-                <Pressable
-                  key={i}
-                  onPress={() => setDrilledSlice(d)}
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    margin: 6,
-                    paddingHorizontal: 10,
-                    paddingVertical: 6,
-                    borderRadius: 8,
-                    backgroundColor: colors.softOrange,
-                    borderWidth: 1,
-                    borderColor: colors.primaryLight,
-                    shadowColor: colors.primaryDark,
-                    shadowOpacity: 0.08,
-                    shadowRadius: 4,
-                    shadowOffset: { width: 0, height: 2 },
-                  }}
-                >
-                  <View
+            <View style={{ marginTop: 16, alignItems: "center" }}>
+              <View
+                style={{
+                  flexDirection: "row",
+                  flexWrap: "wrap",
+                  justifyContent: "center",
+                }}
+              >
+                {visibleLegends.map((d, i) => (
+                  <Pressable
+                    key={i}
+                    onPress={() => setDrilledSlice(d)}
                     style={{
-                      width: 14,
-                      height: 14,
-                      borderRadius: 7,
-                      backgroundColor: sliceColors[i % sliceColors.length],
-                      marginRight: 6,
-                    }}
-                  />
-                  <Text
-                    style={{
-                      fontSize: 12,
-                      color: colors.darkerGrayText,
-                      fontWeight: "600",
+                      flexDirection: "row",
+                      alignItems: "center",
+                      margin: 6,
+                      paddingHorizontal: 10,
+                      paddingVertical: 6,
+                      borderRadius: 8,
+                      backgroundColor: colors.softOrange,
+                      borderWidth: 1,
+                      borderColor: colors.primaryLight,
                     }}
                   >
-                    {d.label} ({d.totalGeneratedVideos})
+                    <View
+                      style={{
+                        width: 14,
+                        height: 14,
+                        borderRadius: 7,
+                        backgroundColor: sliceColors[i % sliceColors.length],
+                        marginRight: 6,
+                      }}
+                    />
+                    <Text
+                      style={{
+                        fontSize: 12,
+                        color: colors.darkerGrayText,
+                        fontWeight: "600",
+                        maxWidth: 120, // Prevent text overflow
+                      }}
+                      numberOfLines={1}
+                      ellipsizeMode="tail"
+                    >
+                      {d.label} ({d.totalGeneratedVideos})
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+
+              {aggregatedData.length > 4 && (
+                <Pressable
+                  onPress={() => setShowAllLegends(!showAllLegends)}
+                  style={{ marginTop: 8 }}
+                >
+                  <Text
+                    style={{
+                      color: colors.primary,
+                      fontWeight: "600",
+                      fontSize: 12,
+                    }}
+                  >
+                    {showAllLegends
+                      ? t("dashboard.showLess") || "Show Less ▲"
+                      : t("dashboard.showMore") || "Show More ▼"}
                   </Text>
                 </Pressable>
-              ))}
+              )}
             </View>
           )}
         </>

@@ -201,6 +201,8 @@
     "videosByCampaign": "अभियान वीडियो",
     "fetchDataFail": "डैशबोर्ड डेटा लाने में त्रुटि",
     "noData": "सूचना नहीं",
+    "showLess": "कम दिखाएं ▲",
+    "showMore": "और दिखाएं ▼",
     "status": {
       "generated": "तैयार",
       "sent": "भेजा गया",

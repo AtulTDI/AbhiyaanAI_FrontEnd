@@ -201,6 +201,8 @@
     "videosByCampaign": "मोहिम व्हिडिओ",
     "fetchDataFail": "डॅशबोर्ड डेटा मिळवताना त्रुटी",
     "noData": "माहिती नाही",
+    "showLess": "कमी दाखवा ▲",
+    "showMore": "अधिक दाखवा ▼",
     "status": {
       "generated": "तयार",
       "sent": "पाठवले",

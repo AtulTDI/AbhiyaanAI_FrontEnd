@@ -201,6 +201,8 @@
     "videosByCampaign": "Videos by Campaign",
     "fetchDataFail": "Error fetching dashboard data",
     "noData": "No data available",
+    "showLess": "Show Less ▲",
+    "showMore": "Show More ▼",
     "status": {
       "generated": "Generated",
       "sent": "Sent",
