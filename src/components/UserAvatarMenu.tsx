@@ -8,10 +8,16 @@ import { AppTheme } from "../theme";
 interface Props {
   userName: string;
   email: string;
+  applicationName?: string;
   role: string;
 }
 
-const UserAvatarMenu: React.FC<Props> = ({ userName, email, role }) => {
+const UserAvatarMenu: React.FC<Props> = ({
+  userName,
+  email,
+  applicationName,
+  role,
+}) => {
   const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
   const { colors } = theme;
@@ -94,6 +100,39 @@ const UserAvatarMenu: React.FC<Props> = ({ userName, email, role }) => {
         <Divider
           style={{ backgroundColor: colors.divider, marginVertical: 4 }}
         />
+
+        {/* Application Name */}
+        {applicationName && (
+          <View>
+            <View style={{ paddingHorizontal: 16, paddingVertical: 8 }}>
+              <Text
+                style={{
+                  fontSize: 12,
+                  color: colors.textSecondary,
+                  marginBottom: 2,
+                }}
+              >
+                {t("application.singular")}
+              </Text>
+              <View
+                style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
+              >
+                <MaterialIcons
+                  name="apps"
+                  size={16}
+                  color={colors.textTertiary}
+                />
+                <Text style={{ fontSize: 14, color: colors.textPrimary }}>
+                  {applicationName}
+                </Text>
+              </View>
+            </View>
+
+            <Divider
+              style={{ backgroundColor: colors.divider, marginVertical: 4 }}
+            />
+          </View>
+        )}
 
         {/* Role */}
         <View style={{ paddingHorizontal: 16, paddingVertical: 8 }}>

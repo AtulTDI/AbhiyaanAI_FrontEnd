@@ -104,6 +104,7 @@ export default function SignIn({
       const userEmail = response.data?.userEmail || email;
       const role = response.data?.role || "User";
       const applicationId = response.data?.applicationId || "";
+      const applicationName = response.data?.applicationName || "";
       const videoCount = response.data?.videoCount?.toString() ?? "0";
       const channelId = response.data?.channelId || "";
 
@@ -114,6 +115,7 @@ export default function SignIn({
         userEmail,
         role,
         applicationId,
+        applicationName,
         videoCount,
         channelId,
       });

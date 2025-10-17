@@ -38,6 +38,7 @@ export default function AppLayout() {
     "Admin" | "User" | "SuperAdmin" | "Sender" | null
   >(null);
   const [userEmail, setUserEmail] = useState("");
+  const [applicationName, setApplicationName] = useState("");
   const [videoCount, setVideoCount] = useState<number | null>(null);
 
   useEffect(() => {
@@ -47,10 +48,12 @@ export default function AppLayout() {
         userEmail: email,
         role: storedRole,
         videoCount: count,
+        applicationName: userApplication
       } = await getAuthData();
 
       if (name) setUserName(name);
       if (email) setUserEmail(email);
+      if (userApplication) setApplicationName(userApplication);
       if (
         storedRole === "Admin" ||
         storedRole === "SuperAdmin" ||
@@ -135,7 +138,12 @@ export default function AppLayout() {
           <Ionicons name="log-out-outline" size={28} color={colors.primary} />
         </TouchableOpacity>
 
-        <UserAvatarMenu userName={userName} email={userEmail} role={role} />
+        <UserAvatarMenu
+          userName={userName}
+          email={userEmail}
+          role={role}
+          applicationName={applicationName}
+        />
       </View>
     );
   };

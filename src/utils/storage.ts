@@ -20,6 +20,7 @@ export type AuthData = {
   userEmail: string;
   role: string;
   applicationId: string;
+  applicationName?: string;
   videoCount: string;
   channelId: string;
 };
@@ -31,6 +32,7 @@ const DEFAULT_AUTH: AuthData = {
   userEmail: "",
   role: "User",
   applicationId: "",
+  applicationName: "",
   videoCount: "0",
   channelId: "",
 };
