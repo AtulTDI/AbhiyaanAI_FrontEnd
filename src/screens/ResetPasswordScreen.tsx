@@ -14,6 +14,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useToast } from "../components/ToastProvider";
 import { resetPassword } from "../api/authApi";
 import { extractErrorMessage } from "../utils/common";
+import { encryptWithBackendKey } from "../services/rsaEncryptor";
 import { navigate } from "../navigation/NavigationService";
 import { AppTheme } from "../theme";
 
@@ -34,6 +35,9 @@ export default function ResetPasswordScreen() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const handleResetPassword = async () => {
     if (!newPassword || !confirmPassword) {
       return showToast("Please fill in both password fields", "info");
@@ -45,7 +49,8 @@ export default function ResetPasswordScreen() {
 
     try {
       setIsSubmitting(true);
-      await resetPassword(email, token, newPassword);
+      const encryptedPassword = await encryptWithBackendKey(newPassword);
+      await resetPassword(email, token, encryptedPassword);
       showToast("Password reset successful. Please log in", "success");
 
       setTimeout(() => {
@@ -107,28 +112,42 @@ export default function ResetPasswordScreen() {
                     Resetting for: {email}
                   </Text>
 
+                  {/* New Password Field */}
                   <TextInput
                     label="New Password"
                     placeholder="Enter new password"
                     value={newPassword}
                     onChangeText={setNewPassword}
-                    secureTextEntry
+                    secureTextEntry={!showNewPassword}
                     mode="outlined"
                     style={[styles.input, { backgroundColor: colors.white }]}
                     outlineColor={colors.outline}
                     activeOutlineColor={colors.primary}
+                    right={
+                      <TextInput.Icon
+                        icon={showNewPassword ? "eye-off" : "eye"}
+                        onPress={() => setShowNewPassword((prev) => !prev)}
+                      />
+                    }
                   />
 
+                  {/* Confirm Password Field */}
                   <TextInput
                     label="Confirm Password"
                     placeholder="Re-enter new password"
                     value={confirmPassword}
                     onChangeText={setConfirmPassword}
-                    secureTextEntry
+                    secureTextEntry={!showConfirmPassword}
                     mode="outlined"
                     style={[styles.input, { backgroundColor: colors.white }]}
                     outlineColor={colors.outline}
                     activeOutlineColor={colors.primary}
+                    right={
+                      <TextInput.Icon
+                        icon={showConfirmPassword ? "eye-off" : "eye"}
+                        onPress={() => setShowConfirmPassword((prev) => !prev)}
+                      />
+                    }
                   />
 
                   <Button

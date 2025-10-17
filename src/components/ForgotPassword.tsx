@@ -20,15 +20,19 @@ export default function ForgotPassword({
   const { showToast } = useToast();
   const { colors } = theme;
   const [email, setEmail] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleReset = async () => {
     if (!email) return showToast("Please enter your email", "info");
 
     try {
+      setIsLoading(true);
       await forgotPasswordLink(email);
       showToast(`Password reset link sent to ${email}`, "success");
     } catch (error: any) {
       showToast(extractErrorMessage(error));
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -75,6 +79,8 @@ export default function ForgotPassword({
           <Button
             mode="contained"
             onPress={handleReset}
+            loading={isLoading}
+            disabled={isLoading}
             style={styles.button}
             contentStyle={{ paddingVertical: 8 }}
           >
@@ -83,7 +89,7 @@ export default function ForgotPassword({
 
           <Button
             mode="text"
-            onPress={() => setShowSignInPage(true)}
+            onPress={() => !isLoading && setShowSignInPage(true)}
             labelStyle={{ color: colors.primary }}
           >
             ← Back to Login
