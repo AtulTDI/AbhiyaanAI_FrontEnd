@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { StyleSheet } from "react-native";
+import React, { useState, useEffect } from "react";
+import { StyleSheet, Platform } from "react-native";
 import { Text, TextInput, Button, Card, useTheme } from "react-native-paper";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { useToast } from "./ToastProvider";
@@ -22,6 +22,19 @@ export default function ForgotPassword({
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  useEffect(() => {
+    if (Platform.OS === "web") {
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          handleReset();
+        }
+      };
+      window.addEventListener("keydown", handleKeyDown);
+      return () => window.removeEventListener("keydown", handleKeyDown);
+    }
+  }, [email]);
+
   const handleReset = async () => {
     if (!email) return showToast("Please enter your email", "info");
 
@@ -38,12 +51,9 @@ export default function ForgotPassword({
 
   return (
     <KeyboardAwareScrollView
-      contentContainerStyle={{
-        flexGrow: 1,
-        justifyContent: "center",
-      }}
+      contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
       extraScrollHeight={50}
-      enableOnAndroid={true}
+      enableOnAndroid
       keyboardShouldPersistTaps="handled"
     >
       <Card
@@ -74,6 +84,9 @@ export default function ForgotPassword({
             style={[styles.input, { backgroundColor: colors.white }]}
             outlineColor={colors.outline}
             activeOutlineColor={colors.primary}
+            onSubmitEditing={handleReset} // ✅ Works for mobile
+            blurOnSubmit={true}
+            returnKeyType="done"
           />
 
           <Button

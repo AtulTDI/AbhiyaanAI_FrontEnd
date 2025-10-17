@@ -227,6 +227,7 @@ export default function SignIn({
                 mode="outlined"
                 outlineColor={colors.outline}
                 activeOutlineColor={colors.primary}
+                onSubmitEditing={handleSignIn}
                 error={!!passwordError}
                 right={
                   <TextInput.Icon

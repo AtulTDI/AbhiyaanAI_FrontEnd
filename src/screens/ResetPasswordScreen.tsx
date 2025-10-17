@@ -139,6 +139,7 @@ export default function ResetPasswordScreen() {
                     onChangeText={setConfirmPassword}
                     secureTextEntry={!showConfirmPassword}
                     mode="outlined"
+                    onSubmitEditing={handleResetPassword}
                     style={[styles.input, { backgroundColor: colors.white }]}
                     outlineColor={colors.outline}
                     activeOutlineColor={colors.primary}
