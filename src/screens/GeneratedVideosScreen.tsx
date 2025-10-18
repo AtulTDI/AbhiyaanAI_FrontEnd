@@ -41,6 +41,7 @@ import {
   markVideoSent,
 } from "../api/whatsappApi";
 import { useServerTable } from "../hooks/useServerTable";
+import { usePlatformInfo } from "../hooks/usePlatformInfo";
 import { AppTheme } from "../theme";
 
 let RNFS: any = null;
@@ -58,6 +59,7 @@ if (Platform.OS !== "web") {
 }
 
 export default function GeneratedVideoScreen() {
+  const { isWeb, isMobileWeb } = usePlatformInfo();
   const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
   const styles = createStyles(theme);
@@ -234,7 +236,7 @@ export default function GeneratedVideoScreen() {
   };
 
   const clearCacheFiles = async () => {
-    if (Platform.OS === "web" || !RNFS) return;
+    if ((isWeb && !isMobileWeb) || !RNFS) return;
 
     try {
       const files = await RNFS.readDir(RNFS.CachesDirectoryPath);
@@ -259,7 +261,7 @@ export default function GeneratedVideoScreen() {
       fetchVideos();
       clearCacheFiles();
 
-      if (Platform.OS === "web") {
+      if (isWeb && !isMobileWeb) {
         loadWhatsAppStatus();
       }
     }, [fetchVideos, loadWhatsAppStatus])
@@ -361,7 +363,7 @@ export default function GeneratedVideoScreen() {
     setProgressMap((prev) => ({ ...prev, [item.id]: 0 }));
 
     // --- Web flow ---
-    if (Platform.OS === "web") {
+    if (isWeb && !isMobileWeb) {
       try {
         await sendVideo(
           { userId, recipientId: item.id, baseVideoID: selectedVideoId },
@@ -555,7 +557,7 @@ export default function GeneratedVideoScreen() {
                   }}
                 />
               </View>
-            ) : !waRegistered && Platform.OS === "web" ? (
+            ) : !waRegistered && isWeb && !isMobileWeb ? (
               <IconButton
                 icon={() => (
                   <FontAwesome
@@ -612,7 +614,7 @@ export default function GeneratedVideoScreen() {
         </Text>
       </View>
 
-      {Platform.OS === "web" && (
+      {isWeb && !isMobileWeb && (
         <Surface style={styles.toolbar} elevation={1}>
           {memoizedDropdown}
 
@@ -717,7 +719,7 @@ export default function GeneratedVideoScreen() {
           }
           emptyText={t("video.noData")}
           tableHeight={
-            Platform.OS === "web" ? "calc(100vh - 345px)" : undefined
+            isWeb && !isMobileWeb ? "calc(100vh - 345px)" : undefined
           }
           onPageChange={table.setPage}
           onRowsPerPageChange={(size) => {

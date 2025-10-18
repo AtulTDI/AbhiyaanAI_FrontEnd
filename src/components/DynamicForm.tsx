@@ -9,6 +9,7 @@ import {
   useTheme,
   Text,
 } from "react-native-paper";
+import { usePlatformInfo } from "../hooks/usePlatformInfo";
 import FormDropdown from "./FormDropdown";
 import { FieldConfig } from "../types";
 import { AppTheme } from "../theme";
@@ -33,9 +34,10 @@ export default function DynamicForm({
   onCancel,
 }: Props) {
   const { t } = useTranslation();
+  const { isWeb, isMobileWeb } = usePlatformInfo();
   const theme = useTheme<AppTheme>();
   const { colors } = theme;
-  const styles = createStyles(theme);
+  const styles = createStyles(theme, { isWeb, isMobileWeb });
 
   const [formData, setFormData] = useState(initialValues);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
@@ -335,7 +337,10 @@ export default function DynamicForm({
   );
 }
 
-const createStyles = (theme: AppTheme) =>
+const createStyles = (
+  theme: AppTheme,
+  platform: { isWeb: boolean; isMobileWeb: boolean }
+) =>
   StyleSheet.create({
     form: {
       padding: 16,
@@ -343,13 +348,13 @@ const createStyles = (theme: AppTheme) =>
       marginBottom: 20,
     },
     fieldsRowWrapper: {
-      flexDirection: Platform.OS === "web" ? "row" : "column",
+      flexDirection: platform.isWeb && !platform.isMobileWeb ? "row" : "column",
       flexWrap: "wrap",
       justifyContent: "space-between",
     },
     inputWrapper: {
-      width: Platform.OS === "web" ? "48%" : "100%",
-      marginBottom: Platform.OS === "web" ? 8 : 0,
+      width: platform.isWeb && !platform.isMobileWeb ? "48%" : "100%",
+      marginBottom: platform.isWeb && !platform.isMobileWeb ? 8 : 0,
     },
     buttonRow: {
       flexDirection: "row",

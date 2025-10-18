@@ -14,6 +14,7 @@ import UserTable from "../components/UserTable";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 import { useToast } from "../components/ToastProvider";
 import { useServerTable } from "../hooks/useServerTable";
+import { usePlatformInfo } from "../hooks/usePlatformInfo";
 import {
   createUser,
   deleteUserById,
@@ -35,6 +36,7 @@ import { AppTheme } from "../theme";
 
 export default function AddUserScreen({ role }) {
   const { t } = useTranslation();
+  const { isWeb, isMobileWeb } = usePlatformInfo();
   const theme = useTheme<AppTheme>();
   const styles = createStyles(theme);
   const { showToast } = useToast();
@@ -185,7 +187,7 @@ export default function AddUserScreen({ role }) {
     role === "Distributor"
       ? t("addDistributorLabel")
       : role === "Admin"
-      ? t(Platform.OS === "web" ? "addCustomerAdminLabel" : "addAdminLabel")
+      ? t(isWeb && !isMobileWeb ? "addCustomerAdminLabel" : "addAdminLabel")
       : t("addUserLabel");
 
   const getEditRoleLabel = () =>

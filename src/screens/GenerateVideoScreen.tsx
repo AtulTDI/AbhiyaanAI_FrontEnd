@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from "react";
-import { View, StyleSheet, Dimensions, Platform } from "react-native";
+import { View, StyleSheet, Dimensions } from "react-native";
 import { Surface, Text, Button, useTheme } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 import { useFocusEffect } from "@react-navigation/native";
@@ -11,6 +11,7 @@ import { navigate } from "../navigation/NavigationService";
 import { getAuthData } from "../utils/storage";
 import { extractErrorMessage } from "../utils/common";
 import { joinGroups, startConnection } from "../services/signalrService";
+import { usePlatformInfo } from "../hooks/usePlatformInfo";
 import {
   generateCustomisedVideo,
   getInProgressVideoCount,
@@ -18,9 +19,10 @@ import {
 import { AppTheme } from "../theme";
 
 export default function GenerateVideoScreen() {
+  const { isWeb, isMobileWeb } = usePlatformInfo();
   const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
-  const styles = createStyles(theme);
+  const styles = createStyles(theme, { isWeb, isMobileWeb });
   const { colors } = theme;
 
   const [activeStep, setActiveStep] = useState(0);
@@ -199,29 +201,18 @@ export default function GenerateVideoScreen() {
       {/* Count Section */}
       {activeStep === 1 && (
         <Surface
-          style={[
-            styles.countContainer,
-            { marginTop: Platform.OS === "web" ? -15 : 10 },
-          ]}
+          style={[styles.countContainer, { marginTop: isWeb && !isMobileWeb ? -15 : 10 }]}
         >
           <Ionicons
             name="people-circle-outline"
-            size={Platform.OS === "web" ? 28 : 20}
+            size={isWeb && !isMobileWeb ? 28 : 20}
             color={colors.primary}
-            style={{ marginRight: Platform.OS === "web" ? 10 : 6 }}
+            style={{ marginRight: isWeb && !isMobileWeb ? 10 : 6 }}
           />
-          <Text
-            style={[
-              styles.countText,
-              { fontSize: Platform.OS === "web" ? 16 : 12 },
-            ]}
-          >
+          <Text style={[styles.countText, { fontSize: isWeb && !isMobileWeb ? 16 : 12 }]}>
             {t("selected")}:{" "}
             <Text
-              style={[
-                styles.countHighlight,
-                { fontSize: Platform.OS === "web" ? 16 : 12 },
-              ]}
+              style={[styles.countHighlight, { fontSize: isWeb && !isMobileWeb ? 16 : 12 }]}
             >
               {selectedVoterCount} /{" "}
             </Text>
@@ -292,7 +283,10 @@ export default function GenerateVideoScreen() {
   );
 }
 
-const createStyles = (theme: AppTheme) =>
+const createStyles = (
+  theme: AppTheme,
+  platform: { isWeb: boolean; isMobileWeb: boolean }
+) =>
   StyleSheet.create({
     container: {
       padding: 16,
@@ -356,7 +350,7 @@ const createStyles = (theme: AppTheme) =>
       borderRadius: 20,
       paddingVertical: 30,
       paddingHorizontal: 25,
-      width: Platform.OS === "web" ? "50%" : "100%",
+      width: platform.isWeb && !platform.isMobileWeb ? "50%" : "100%",
       alignItems: "center",
       shadowColor: theme.colors.black,
       shadowOffset: { width: 0, height: 6 },

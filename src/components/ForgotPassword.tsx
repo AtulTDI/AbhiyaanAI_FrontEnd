@@ -84,7 +84,7 @@ export default function ForgotPassword({
             style={[styles.input, { backgroundColor: colors.white }]}
             outlineColor={colors.outline}
             activeOutlineColor={colors.primary}
-            onSubmitEditing={handleReset} // ✅ Works for mobile
+            onSubmitEditing={handleReset}
             blurOnSubmit={true}
             returnKeyType="done"
           />

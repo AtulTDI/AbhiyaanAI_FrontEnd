@@ -7,11 +7,11 @@ import {
   ScrollView,
   TouchableOpacity,
   useWindowDimensions,
-  Platform,
 } from "react-native";
 import { Menu, useTheme, ActivityIndicator } from "react-native-paper";
 import { Row } from "react-native-table-component";
 import { MaterialIcons } from "@expo/vector-icons";
+import { usePlatformInfo } from "../hooks/usePlatformInfo";
 import { EllipsisCell } from "./EllipsisCell";
 import { AppTheme } from "../theme";
 
@@ -57,12 +57,12 @@ export default function CommonTable<T>({
   onPageChange,
   onRowsPerPageChange,
 }: Props<T>) {
+  const { isWeb, isMobileWeb } = usePlatformInfo();
   const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
-  const styles = createStyles(theme);
+  const styles = createStyles(theme, { isWeb, isMobileWeb });
   const { colors } = theme;
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
-  const isWeb = Platform.OS === "web";
 
   const [internalPage, setInternalPage] = useState(0);
   const [internalRowsPerPage, setInternalRowsPerPage] = useState(10);
@@ -117,13 +117,14 @@ export default function CommonTable<T>({
   const containerWidth = screenWidth - 140;
 
   const widthArr = enhancedColumns.map((col) => {
-    if (isWeb) {
+    if (isWeb && !isMobileWeb) {
       return (col.flex / totalFlex) * screenWidth;
     }
 
-    if ((isWeb || screenWidth < 600) && col?.smallColumn) return 80;
+    if ((isWeb || screenWidth < 600 || isMobileWeb) && col?.smallColumn)
+      return 80;
 
-    if (screenWidth < 600) {
+    if (screenWidth < 600 || isMobileWeb) {
       return Math.max(col.flex * 150, 200);
     }
 
@@ -133,7 +134,9 @@ export default function CommonTable<T>({
     return Math.max(calculatedWidth, minWidth);
   });
 
-  if (isWeb || screenWidth < 600) {
+  if (isMobileWeb) {
+    enableHorizontalScroll = true;
+  } else if ((isWeb && !isMobileWeb) || screenWidth < 600) {
     enableHorizontalScroll = wrapperWidth < 900 || columns.length > 7;
   } else {
     const totalTableWidth = widthArr.reduce((sum, w) => sum + w, 0);
@@ -141,7 +144,7 @@ export default function CommonTable<T>({
   }
 
   const availableHeight =
-    Platform.OS === "web"
+    isWeb && !isMobileWeb
       ? tableHeight
         ? tableHeight
         : "calc(100vh - 260px)"
@@ -226,11 +229,19 @@ export default function CommonTable<T>({
           </View>
         ) : (
           <>
+            {/* Horizontal scroll container */}
             <ScrollView
               horizontal={enableHorizontalScroll}
               nestedScrollEnabled
               showsHorizontalScrollIndicator={enableHorizontalScroll}
-              style={styles.scrollArea}
+              contentContainerStyle={{
+                minWidth: "100%",
+                flexGrow: 1,
+              }}
+              style={[
+                styles.scrollArea,
+                isMobileWeb ? { overflowX: "auto" } : {},
+              ]}
             >
               <View>
                 {/* Header Row */}
@@ -257,42 +268,45 @@ export default function CommonTable<T>({
                 />
 
                 {/* Data Rows */}
-                <ScrollView
-                  style={{ maxHeight: availableHeight }}
-                  nestedScrollEnabled
-                  showsVerticalScrollIndicator
-                >
-                  {tableData.map((rowData, rowIndex) => (
-                    <Row
-                      key={rowIndex}
-                      data={rowData.map((cell, colIndex) => {
-                        const cellKey = `${rowIndex}-${colIndex}`;
-                        const cellWidth = widthArr[colIndex];
-                        return (
-                          <EllipsisCell
-                            key={cellKey}
-                            cellKey={cellKey}
-                            width={cellWidth}
-                            value={cell}
-                            visibleTooltip={visibleTooltip}
-                            setVisibleTooltip={setVisibleTooltip}
-                            textStyle={styles.dataCell}
-                            tableWithSelection={tableWithSelection}
-                          />
-                        );
-                      })}
-                      style={styles.dataRow}
-                      widthArr={widthArr}
-                    />
-                  ))}
-                </ScrollView>
+                <View style={{ minHeight: 200, maxHeight: availableHeight }}>
+                  <ScrollView nestedScrollEnabled showsVerticalScrollIndicator>
+                    {tableData.map((rowData, rowIndex) => (
+                      <Row
+                        key={rowIndex}
+                        data={rowData.map((cell, colIndex) => {
+                          const cellKey = `${rowIndex}-${colIndex}`;
+                          const cellWidth = widthArr[colIndex];
+                          return (
+                            <EllipsisCell
+                              key={cellKey}
+                              cellKey={cellKey}
+                              width={cellWidth}
+                              value={cell}
+                              visibleTooltip={visibleTooltip}
+                              setVisibleTooltip={setVisibleTooltip}
+                              textStyle={styles.dataCell}
+                              tableWithSelection={tableWithSelection}
+                            />
+                          );
+                        })}
+                        style={styles.dataRow}
+                        widthArr={widthArr}
+                      />
+                    ))}
+                  </ScrollView>
+                </View>
               </View>
             </ScrollView>
 
             {/* Pagination */}
             <View style={styles.divider} />
-            <View style={styles.paginationContainer}>
-              {isWeb ? (
+            <View
+              style={[
+                styles.paginationContainer,
+                isMobileWeb && { paddingVertical: 6, paddingHorizontal: 8 },
+              ]}
+            >
+              {isWeb && !isMobileWeb ? (
                 <>
                   <View style={styles.rowsPerPageWrapper}>
                     <Text style={styles.pageText}>{t("rowsPerPage")}:</Text>
@@ -450,9 +464,12 @@ export default function CommonTable<T>({
   );
 }
 
-const createStyles = (theme: AppTheme) =>
+const createStyles = (
+  theme: AppTheme,
+  platform: { isWeb: boolean; isMobileWeb: boolean }
+) =>
   StyleSheet.create({
-    container: { flex: 1, width: "100%", paddingTop: 8 },
+    container: { flex: 1, width: "100%", minWidth: "100%", paddingTop: 8 },
     tableWrapper: {
       flex: 1,
       backgroundColor: theme.colors.white,
@@ -485,7 +502,7 @@ const createStyles = (theme: AppTheme) =>
       color: theme.colors.onSurface,
       paddingHorizontal: 8,
       lineHeight: 20,
-      ...(Platform.OS === "web"
+      ...(platform.isWeb && !platform.isMobileWeb
         ? {
             overflow: "hidden",
             textOverflow: "ellipsis",
