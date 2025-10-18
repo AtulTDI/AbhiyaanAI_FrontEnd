@@ -1,12 +1,5 @@
 import React, { useCallback, useState } from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  StyleSheet,
-  Dimensions,
-  Platform,
-} from "react-native";
+import { View, Text, ScrollView, StyleSheet, Dimensions } from "react-native";
 import { Card } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 import { useFocusEffect } from "@react-navigation/native";
@@ -17,14 +10,15 @@ import BarChart from "../components/BarChart";
 import DonutChart from "../components/DonutChart";
 import KPICard from "../components/KpiCard";
 import colors from "../constants/colors";
+import { usePlatformInfo } from "../hooks/usePlatformInfo";
 import { getAuthData } from "../utils/storage";
 
 const { width } = Dimensions.get("window");
 const chartWidth = width - 64;
-const isWeb = Platform.OS === "web";
 const isSmallScreen = width < 600;
 
 const AdminDashboardScreen = () => {
+  const { isWeb } = usePlatformInfo();
   const { t } = useTranslation();
   const { showToast } = useToast();
   const [userStats, setUserStats] = useState([]);

@@ -1,12 +1,13 @@
 import { useRef, useState, useCallback } from "react";
-import { Platform } from "react-native";
+import { usePlatformInfo } from "./usePlatformInfo";
 
 export function useEllipsisTooltip(cellKey: string) {
+  const { isWeb, isMobileWeb } = usePlatformInfo();
   const textRef = useRef<any>(null);
   const [visibleTooltip, setVisibleTooltip] = useState<string | null>(null);
 
   const handleMouseEnter = useCallback(() => {
-    if (Platform.OS === "web" && textRef.current) {
+    if (isWeb && !isMobileWeb && textRef.current) {
       const el = textRef.current as HTMLElement;
       if (el.scrollWidth > el.clientWidth) {
         setVisibleTooltip(cellKey);
@@ -19,7 +20,7 @@ export function useEllipsisTooltip(cellKey: string) {
   }, []);
 
   const handleLongPress = useCallback(() => {
-    if (Platform.OS !== "web") {
+    if (!isWeb || isMobileWeb) {
       setVisibleTooltip(cellKey);
     }
   }, [cellKey]);

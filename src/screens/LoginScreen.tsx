@@ -4,7 +4,6 @@ import {
   StyleSheet,
   SafeAreaView,
   KeyboardAvoidingView,
-  Platform,
   ScrollView,
   View,
 } from "react-native";
@@ -12,9 +11,11 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useTheme } from "react-native-paper";
 import SignIn from "../components/SignIn";
 import ForgotPassword from "../components/ForgotPassword";
+import { usePlatformInfo } from "../hooks/usePlatformInfo";
 import { AppTheme } from "../theme";
 
 export default function LoginScreen() {
+  const { isIOS } = usePlatformInfo();
   const [showSignInPage, setShowSignInPage] = useState(true);
   const [authError, setAuthError] = useState("");
   const theme = useTheme<AppTheme>();
@@ -33,7 +34,7 @@ export default function LoginScreen() {
     >
       <SafeAreaView style={styles.safeArea}>
         <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          behavior={isIOS ? "padding" : undefined}
           style={styles.flex}
         >
           <ScrollView

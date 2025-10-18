@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from "react";
-import { StyleSheet, View, KeyboardAvoidingView, Platform } from "react-native";
+import { StyleSheet, View, KeyboardAvoidingView } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { Surface, Text, Button, useTheme } from "react-native-paper";
 import { useTranslation } from "react-i18next";
@@ -14,11 +14,13 @@ import {
   uploadVideo,
 } from "../api/videoApi";
 import { useServerTable } from "../hooks/useServerTable";
+import { usePlatformInfo } from "../hooks/usePlatformInfo";
 import { GetPaginatedVideos } from "../types/Video";
 import { extractErrorMessage, sortByDateDesc } from "../utils/common";
 import { AppTheme } from "../theme";
 
 export default function UploadVideoScreen() {
+  const { isIOS } = usePlatformInfo();
   const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
   const { colors } = theme;
@@ -136,7 +138,7 @@ export default function UploadVideoScreen() {
     <>
       <Surface style={styles.container} elevation={1}>
         <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          behavior={isIOS ? "padding" : undefined}
           style={{ flex: 1 }}
         >
           {!showAddView ? (
@@ -185,7 +187,7 @@ export default function UploadVideoScreen() {
                   variant="titleLarge"
                   style={[styles.heading, { color: colors.primary }]}
                 >
-                  {t('video.add')}
+                  {t("video.add")}
                 </Text>
               </View>
 

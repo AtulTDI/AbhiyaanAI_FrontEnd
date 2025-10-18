@@ -4,7 +4,6 @@ import {
   StyleSheet,
   SafeAreaView,
   KeyboardAvoidingView,
-  Platform,
   ScrollView,
   View,
 } from "react-native";
@@ -15,6 +14,7 @@ import { useToast } from "../components/ToastProvider";
 import { resetPassword } from "../api/authApi";
 import { extractErrorMessage } from "../utils/common";
 import { encryptWithBackendKey } from "../services/rsaEncryptor";
+import { usePlatformInfo } from "../hooks/usePlatformInfo";
 import { navigate } from "../navigation/NavigationService";
 import { AppTheme } from "../theme";
 
@@ -24,6 +24,7 @@ type RouteParams = {
 };
 
 export default function ResetPasswordScreen() {
+  const { isIOS } = usePlatformInfo();
   const route = useRoute();
   const { token, email } = route.params as RouteParams;
 
@@ -72,7 +73,7 @@ export default function ResetPasswordScreen() {
     >
       <SafeAreaView style={styles.safeArea}>
         <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          behavior={isIOS ? "padding" : undefined}
           style={styles.flex}
         >
           <ScrollView

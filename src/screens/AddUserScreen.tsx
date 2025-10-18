@@ -3,7 +3,6 @@ import {
   View,
   StyleSheet,
   KeyboardAvoidingView,
-  Platform,
   ScrollView,
 } from "react-native";
 import { Text, useTheme, Button } from "react-native-paper";
@@ -36,7 +35,7 @@ import { AppTheme } from "../theme";
 
 export default function AddUserScreen({ role }) {
   const { t } = useTranslation();
-  const { isWeb, isMobileWeb } = usePlatformInfo();
+  const { isWeb, isMobileWeb, isIOS } = usePlatformInfo();
   const theme = useTheme<AppTheme>();
   const styles = createStyles(theme);
   const { showToast } = useToast();
@@ -242,7 +241,7 @@ export default function AddUserScreen({ role }) {
 
         {showAddUserView ? (
           <KeyboardAvoidingView
-            behavior={Platform.OS === "ios" ? "padding" : undefined}
+            behavior={isIOS ? "padding" : undefined}
             style={{ flex: 1 }}
           >
             <UserForm

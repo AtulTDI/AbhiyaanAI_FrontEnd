@@ -4,7 +4,6 @@ import {
   StyleSheet,
   useWindowDimensions,
   KeyboardAvoidingView,
-  Platform,
 } from "react-native";
 import { Text, useTheme, Surface, Button } from "react-native-paper";
 import { useTranslation } from "react-i18next";
@@ -25,6 +24,7 @@ import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 import { useToast } from "../components/ToastProvider";
 import { CreateVoterPayload, EditVoterPayload, Voter } from "../types/Voter";
 import { useServerTable } from "../hooks/useServerTable";
+import { usePlatformInfo } from "../hooks/usePlatformInfo";
 import {
   createVoter,
   deleteVoterById,
@@ -40,6 +40,7 @@ type TabRoute = {
 };
 
 export default function AddVoterScreen() {
+  const { isWeb, isIOS } = usePlatformInfo();
   const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
   const { colors } = theme;
@@ -134,7 +135,7 @@ export default function AddVoterScreen() {
 
   const downloadSampleExcel = async () => {
     try {
-      if (Platform.OS === "web") {
+      if (isWeb) {
         const link = document.createElement("a");
         link.href = "/sample-voter-upload.xlsx";
         link.download = "sample-voter-upload.xlsx";
@@ -268,7 +269,7 @@ export default function AddVoterScreen() {
         </View>
         {showAddVoterView ? (
           <KeyboardAvoidingView
-            behavior={Platform.OS === "ios" ? "padding" : undefined}
+            behavior={isIOS ? "padding" : undefined}
             style={{ flex: 1 }}
           >
             {voterToEdit ? (

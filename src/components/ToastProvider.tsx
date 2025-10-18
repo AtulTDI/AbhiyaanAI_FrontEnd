@@ -8,6 +8,7 @@ import React, {
 import { StyleSheet, Animated, View, Dimensions, Platform } from "react-native";
 import { Text, useTheme } from "react-native-paper";
 import { Ionicons, MaterialIcons, FontAwesome } from "@expo/vector-icons";
+import { usePlatformInfo } from "../hooks/usePlatformInfo";
 import { registerToastTrigger } from "../services/toastService";
 import { AppTheme } from "../theme";
 
@@ -20,13 +21,13 @@ type ToastContextType = {
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
 
 const { width: screenWidth } = Dimensions.get("window");
-const isWeb = Platform.OS === "web";
 
 export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
+  const { isWeb, isMobileWeb } = usePlatformInfo();
   const theme = useTheme<AppTheme>();
-  const styles = createStyles(theme);
+  const styles = createStyles(theme, { isWeb, isMobileWeb });
   const { colors } = theme;
   const [message, setMessage] = useState("");
   const [type, setType] = useState<ToastType>("info");
@@ -45,13 +46,13 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
         Animated.timing(translateY, {
           toValue: 60,
           duration: 300,
-          useNativeDriver: Platform.OS !== "web",
+          useNativeDriver: !isWeb,
         }),
         Animated.delay(duration),
         Animated.timing(translateY, {
           toValue: -100,
           duration: 300,
-          useNativeDriver: Platform.OS !== "web",
+          useNativeDriver: !isWeb,
         }),
       ]).start(() => {
         setVisible(false);
@@ -135,16 +136,20 @@ export const useToast = () => {
   return context;
 };
 
-const createStyles = (theme: AppTheme) =>
+const createStyles = (
+  theme: AppTheme,
+  platform: { isWeb: boolean; isMobileWeb: boolean }
+) =>
   StyleSheet.create({
     toast: {
       position: "absolute",
-      top: isWeb ? 20 : 10,
+      top: platform.isWeb && !platform.isMobileWeb ? 20 : 10,
       alignSelf: "center",
       paddingVertical: 12,
       paddingHorizontal: 16,
       borderRadius: 12,
-      maxWidth: isWeb ? 400 : screenWidth * 0.9,
+      maxWidth:
+        platform.isWeb && !platform.isMobileWeb ? 400 : screenWidth * 0.9,
       elevation: 5,
       shadowColor: theme.colors.black,
       shadowOffset: { width: 0, height: 2 },
