@@ -4,6 +4,7 @@ import {
   StyleSheet,
   useWindowDimensions,
   KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { Text, useTheme, Surface, Button } from "react-native-paper";
 import { useTranslation } from "react-i18next";
@@ -40,7 +41,7 @@ type TabRoute = {
 };
 
 export default function AddVoterScreen() {
-  const { isWeb, isIOS } = usePlatformInfo();
+  const { isIOS } = usePlatformInfo();
   const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
   const { colors } = theme;
@@ -135,7 +136,7 @@ export default function AddVoterScreen() {
 
   const downloadSampleExcel = async () => {
     try {
-      if (isWeb) {
+      if (Platform.OS === "web") {
         const link = document.createElement("a");
         link.href = "/sample-voter-upload.xlsx";
         link.download = "sample-voter-upload.xlsx";
