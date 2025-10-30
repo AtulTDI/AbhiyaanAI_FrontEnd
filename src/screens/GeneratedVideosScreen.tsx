@@ -219,7 +219,7 @@ export default function GeneratedVideoScreen() {
     try {
       const contacts = await Contacts.getAll();
       const tempContacts = contacts.filter((c) =>
-        c.givenName?.startsWith("TempContact_")
+        c.givenName?.includes("_AbhiyanAI_")
       );
 
       for (const contact of tempContacts) {
@@ -425,53 +425,76 @@ export default function GeneratedVideoScreen() {
     // --- Share video flow ---
     try {
       let savedContact: any = null;
+      let contactExists = false;
 
-      // Save temporary contact for Android
       if (Platform.OS === "android") {
-        const tempContact = {
-          givenName: `TempContact_${item.id}`,
-          phoneNumbers: [{ label: "mobile", number: item.phoneNumber }],
-        };
-        savedContact = await Contacts.addContact(tempContact);
-        console.log("===Saved Contact===", savedContact);
+        const phoneNumber = item.phoneNumber.replace(/\D/g, "");
+
+        // Check if contact already exists
+        const allContacts = await Contacts.getAll();
+        const existing = allContacts.find((c) =>
+          c.phoneNumbers?.some(
+            (p) =>
+              p.number.replace(/\D/g, "").endsWith(phoneNumber) ||
+              phoneNumber.endsWith(p.number.replace(/\D/g, ""))
+          )
+        );
+
+        if (existing) {
+          console.log("Contact already exists:", existing.displayName);
+          contactExists = true;
+        } else {
+          const tempContact = {
+            givenName: `${item.fullName}_AbhiyanAI_${item.id}`,
+            phoneNumbers: [{ label: "mobile", number: item.phoneNumber }],
+          };
+          savedContact = await Contacts.addContact(tempContact);
+          console.log("Saved new temp contact:", savedContact);
+          contactExists = true;
+        }
       }
 
-      // Download video
+      // Download video before sharing
       const localPath = await downloadVideo(
         whatsAppVideoDetails?.data?.videoUrl,
         item.id
       );
 
-      // Share on WhatsApp
-      if (Platform.OS === "android") {
-        await new Promise((r) => setTimeout(r, 1000));
-        await Share.shareSingle({
-          title: "Video",
-          url: localPath,
-          type: "video/mp4",
-          social: Share.Social.WHATSAPP,
-          whatsAppNumber: `91${item.phoneNumber}`,
-          message: `🙏 ${whatsAppVideoDetails?.data?.message}`,
-        });
+      // Only proceed if contact exists
+      if (contactExists) {
+        await new Promise((r) => setTimeout(r, 1500));
+
+        if (Platform.OS === "android") {
+          await Share.shareSingle({
+            title: "Video",
+            url: localPath,
+            type: "video/mp4",
+            social: Share.Social.WHATSAPP,
+            whatsAppNumber: `91${item.phoneNumber}`,
+            message: `🙏 ${whatsAppVideoDetails?.data?.message}`,
+          });
+        } else {
+          await Share.shareSingle({
+            title: "Video",
+            url: Platform.OS === "ios" ? localPath : "file://" + localPath,
+            type: "video/mp4",
+            social: Share.Social.WHATSAPP,
+            whatsAppNumber: `91${item.phoneNumber}`,
+            message: `🙏 ${whatsAppVideoDetails?.data?.message}`,
+          });
+        }
       } else {
-        await Share.shareSingle({
-          title: "Video",
-          url: Platform.OS === "ios" ? localPath : "file://" + localPath,
-          type: "video/mp4",
-          social: Share.Social.WHATSAPP,
-          whatsAppNumber: `91${item.phoneNumber}`,
-          message: `🙏 ${whatsAppVideoDetails?.data?.message}`,
-        });
+        console.log("Contact not found. Please check the number.", "error");
       }
 
       setPendingConfirmationId(item.id);
 
-      // Delete temporary contact (Android only)
+      // Delete only temp contact (not existing ones)
       if (Platform.OS === "android" && savedContact?.recordID) {
         setTimeout(async () => {
           try {
             await Contacts.deleteContact(savedContact);
-            console.log("Contact deleted");
+            console.log("Deleted temp contact:", savedContact.givenName);
           } catch (err) {
             console.warn("Failed to delete temp contact", err);
           }
@@ -506,6 +529,7 @@ export default function GeneratedVideoScreen() {
     } finally {
       setOpenSentPopup(false);
       setPendingConfirmationId(null);
+      clearAllTempContacts();
     }
   };
 
