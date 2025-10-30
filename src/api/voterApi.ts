@@ -14,9 +14,9 @@ export const getVoters = (pageNumber, pageSize) =>
 /**
  * Get paginated voters without processing videos
  */
-export const getVotersForProcessing = (id: string, pageNumber, pageSize) =>
+export const getVotersForProcessing = (id: string, pageNumber, pageSize, searchText) =>
   axios.get<GetPaginatedVoters>(`/Recipients/getrecipientsforprocessing`, {
-    params: { baseVideoID: id, page: pageNumber + 1, pageSize: pageSize },
+    params: { baseVideoID: id, searchText: searchText ?? "", page: pageNumber + 1, pageSize: pageSize },
     useApiPrefix: true,
   });
 

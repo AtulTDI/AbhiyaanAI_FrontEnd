@@ -7,8 +7,15 @@ import {
   ScrollView,
   TouchableOpacity,
   useWindowDimensions,
+  Animated,
+  Pressable,
 } from "react-native";
-import { Menu, useTheme, ActivityIndicator } from "react-native-paper";
+import {
+  Menu,
+  useTheme,
+  ActivityIndicator,
+  TextInput,
+} from "react-native-paper";
 import { Row } from "react-native-table-component";
 import { MaterialIcons } from "@expo/vector-icons";
 import { usePlatformInfo } from "../hooks/usePlatformInfo";
@@ -38,6 +45,8 @@ type Props<T> = {
   totalCount?: number;
   onPageChange?: (page: number) => void;
   onRowsPerPageChange?: (size: number) => void;
+  enableSearch?: boolean;
+  onSearchChange?: (filters: Record<string, string>) => void;
 };
 
 const ROWS_PER_PAGE_OPTIONS = [5, 10, 20, 50];
@@ -48,6 +57,7 @@ export default function CommonTable<T>({
   keyExtractor = (_, index) => index.toString(),
   emptyText = "No data found",
   emptyIcon,
+  enableSearch,
   loading = false,
   tableWithSelection,
   tableHeight,
@@ -56,6 +66,7 @@ export default function CommonTable<T>({
   totalCount,
   onPageChange,
   onRowsPerPageChange,
+  onSearchChange,
 }: Props<T>) {
   const { isWeb, isMobileWeb } = usePlatformInfo();
   const { t } = useTranslation();
@@ -70,6 +81,9 @@ export default function CommonTable<T>({
   const [wrapperWidth, setWrapperWidth] = useState(0);
   const [visibleTooltip, setVisibleTooltip] = useState<string | null>(null);
   const [showLoading, setShowLoading] = useState(loading);
+  const [showSearch, setShowSearch] = useState(false);
+  const [filters, setFilters] = useState<Record<string, string>>({});
+  const fadeAnim = useState(new Animated.Value(0))[0];
 
   const page = controlledPage ?? internalPage;
   const rowsPerPage = controlledRowsPerPage ?? internalRowsPerPage;
@@ -143,12 +157,25 @@ export default function CommonTable<T>({
     enableHorizontalScroll = totalTableWidth > containerWidth;
   }
 
-  const availableHeight =
-    isWeb && !isMobileWeb
-      ? tableHeight
-        ? tableHeight
-        : "calc(100vh - 260px)"
-      : screenHeight * 0.66;
+  let availableHeight;
+
+  if (isWeb && !isMobileWeb) {
+    if (
+      typeof tableHeight === "string" &&
+      tableHeight.includes("calc(100vh -")
+    ) {
+      const match = tableHeight.match(/calc\(100vh\s*-\s*(\d+)px\)/);
+      const basePx = match ? parseInt(match[1], 10) : 260;
+      const adjustedPx = showSearch ? basePx + 70 : basePx;
+      availableHeight = `calc(100vh - ${adjustedPx}px)`;
+    } else {
+      availableHeight = showSearch
+        ? `calc(${tableHeight ?? "100vh - 260px"} - 70px)`
+        : tableHeight ?? "calc(100vh - 260px)";
+    }
+  } else {
+    availableHeight = screenHeight * (showSearch ? 0.56 : 0.66);
+  }
 
   useEffect(() => {
     let timer;
@@ -157,32 +184,64 @@ export default function CommonTable<T>({
     } else {
       timer = setTimeout(() => setShowLoading(false), 500);
     }
-
     return () => {
       if (timer) clearTimeout(timer);
     };
   }, [loading]);
 
   const handlePageChange = (newPage: number) => {
-    if (onPageChange) {
-      onPageChange(newPage);
-    } else {
-      setInternalPage(newPage);
-    }
+    if (onPageChange) onPageChange(newPage);
+    else setInternalPage(newPage);
   };
 
   const handleRowsPerPageChange = (newSize: number) => {
-    if (onRowsPerPageChange) {
-      onRowsPerPageChange(newSize);
-    } else {
-      setInternalRowsPerPage(newSize);
-    }
+    if (onRowsPerPageChange) onRowsPerPageChange(newSize);
+    else setInternalRowsPerPage(newSize);
     handlePageChange(0);
     setMenuVisible(false);
   };
 
+  const toggleSearch = () => {
+    if (showSearch) {
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start(() => setShowSearch(false));
+
+      setFilters((prev) => ({
+        ...prev,
+        search: "",
+      }));
+    } else {
+      setShowSearch(true);
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    }
+  };
+
+  useEffect(() => {
+    if (onSearchChange) {
+      const delay = setTimeout(() => onSearchChange(filters), 1000);
+      return () => clearTimeout(delay);
+    }
+  }, [filters]);
+
   return (
     <View style={styles.container}>
+      {enableSearch && (
+        <Pressable style={styles.searchIcon} onPress={toggleSearch}>
+          <MaterialIcons
+            name={showSearch ? "close" : "search"}
+            size={15}
+            color={theme.colors.primary}
+          />
+        </Pressable>
+      )}
+
       <View
         style={styles.tableWrapper}
         onLayout={(event) => setWrapperWidth(event.nativeEvent.layout.width)}
@@ -210,7 +269,6 @@ export default function CommonTable<T>({
               style={styles.headerRow}
               widthArr={widthArr}
             />
-
             <View style={styles.loaderContainer}>
               <ActivityIndicator size="large" color={colors.primary} />
               <Text style={styles.loaderText}>{t("loadingData")}</Text>
@@ -229,7 +287,6 @@ export default function CommonTable<T>({
           </View>
         ) : (
           <>
-            {/* Horizontal scroll container */}
             <ScrollView
               horizontal={enableHorizontalScroll}
               nestedScrollEnabled
@@ -266,6 +323,51 @@ export default function CommonTable<T>({
                   style={styles.headerRow}
                   widthArr={widthArr}
                 />
+
+                {/* Inline Search Panel */}
+                {enableSearch && showSearch && (
+                  <Animated.View
+                    style={[
+                      styles.searchPanelInline,
+                      {
+                        opacity: fadeAnim,
+                        transform: [
+                          {
+                            translateY: fadeAnim.interpolate({
+                              inputRange: [0, 1],
+                              outputRange: [-10, 0],
+                            }),
+                          },
+                        ],
+                      },
+                    ]}
+                  >
+                    <View style={styles.fullWidthSearchContainer}>
+                      <TextInput
+                        mode="outlined"
+                        placeholder="Search by name or mobile number"
+                        value={filters.search || ""}
+                        onChangeText={(text) =>
+                          setFilters((prev) => ({
+                            ...prev,
+                            search: text,
+                          }))
+                        }
+                        left={
+                          <TextInput.Icon
+                            icon="magnify"
+                            color={theme.colors.primary}
+                          />
+                        }
+                        style={styles.fullWidthSearchInput}
+                        outlineColor={theme.colors.borderGray}
+                        activeOutlineColor={theme.colors.primary}
+                        textColor={theme.colors.textPrimary}
+                        placeholderTextColor={theme.colors.textSecondary}
+                      />
+                    </View>
+                  </Animated.View>
+                )}
 
                 {/* Data Rows */}
                 <View style={{ minHeight: 200, maxHeight: availableHeight }}>
@@ -579,5 +681,37 @@ const createStyles = (
       gap: 4,
       paddingHorizontal: 6,
       paddingVertical: 4,
+    },
+    searchIcon: {
+      position: "absolute",
+      right: 16,
+      top: 20,
+      zIndex: 20,
+      backgroundColor: theme.colors.white,
+      borderRadius: 20,
+      padding: 5,
+      elevation: 3,
+    },
+    searchPanelInline: {
+      backgroundColor: theme.colors.white,
+      borderBottomWidth: 1,
+      borderColor: theme.colors.borderGray,
+      paddingVertical: 6,
+      paddingHorizontal: 8,
+      zIndex: 5,
+      width: "100%",
+    },
+    fullWidthSearchContainer: {
+      width: "100%",
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      backgroundColor: theme.colors.white,
+    },
+    fullWidthSearchInput: {
+      backgroundColor: theme.colors.white,
+      fontSize: 14,
+      height: 44,
+      borderRadius: 8,
+      width: "100%",
     },
   });
