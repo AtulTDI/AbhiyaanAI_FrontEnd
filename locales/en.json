@@ -51,6 +51,7 @@
   "lastName": "Last Name",
   "password": "Password",
   "campaign": "Campaign",
+  "campaignMessage": "Campaign Message",
   "approval": "Approval",
 
   "loadingData": "Loading data...",

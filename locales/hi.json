@@ -51,6 +51,7 @@
   "lastName": "अंतिम नाम",
   "password": "पासवर्ड",
   "campaign": "कैंपेन",
+  "campaignMessage": "कैंपेन संदेश",
   "approval": "मंजूरी",
 
   "loadingData": "डेटा लोड हो रहा है...",

@@ -2,7 +2,8 @@ export type Video = {
   id: string;
   name: string;
   campaign: string;
-  campaignName?: string
+  campaignName?: string;
+  message?: string;
   status: string;
   file: any;
 }

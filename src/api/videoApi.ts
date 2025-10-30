@@ -45,8 +45,6 @@ export const uploadVideo = async (payload: Video) => {
   const mimeType = payload.file.mimeType || "video/mp4";
   let fileUri = payload.file.uri;
 
-  console.log("================URI========", fileUri);
-
   // --- Check file exists on Mobile ---
   if (Platform.OS !== "web" && fileUri.startsWith("file://")) {
     const fileInfo = await FileSystem.getInfoAsync(fileUri);
@@ -87,6 +85,7 @@ export const uploadVideo = async (payload: Video) => {
 
   // --- Other Form Fields ---
   formData.append("campaignName", payload.campaign);
+  formData.append("message", payload.message);
 
   // --- Upload API ---
   const response = await axios.post("/BaseVideos/upload", formData, {
