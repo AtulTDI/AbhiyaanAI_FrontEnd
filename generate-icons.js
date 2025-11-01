@@ -55,8 +55,8 @@ const sizes = {
       // --- Foreground icon (adaptive) ---
       const foregroundPath = path.join(dir, "ic_launcher_foreground.webp");
 
-      // Scale to 66% and add transparent padding
-      const scaledSize = Math.round(size * 0.66);
+      // Scale to 90% and add transparent padding
+      const scaledSize = Math.round(size * 0.8);
       const padding = Math.round((size - scaledSize) / 2);
 
       await sharp(inputPath)
