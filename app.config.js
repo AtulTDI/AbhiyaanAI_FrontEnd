@@ -31,7 +31,7 @@ export default ({ config }) => {
     ...config,
     expo: {
       ...config.expo,
-      name: "AbhiyaanAI",
+      name: "AbhiyanAI",
       slug: "abhiyanai",
       version: "1.0.0",
       orientation: "default",
@@ -63,7 +63,7 @@ export default ({ config }) => {
 
       web: {
         favicon: "./assets/logo.png",
-        name: "AbhiyaanAI",
+        name: "AbhiyanAI",
       },
 
       extra: {

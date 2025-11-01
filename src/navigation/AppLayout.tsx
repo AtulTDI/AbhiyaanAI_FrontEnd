@@ -82,8 +82,8 @@ export default function AppLayout() {
   };
 
   const getCountColor = () => {
-    if (videoCount >= 5000) return colors.success;
-    if (videoCount > 1000) return colors.warning;
+    if (videoCount >= 100) return colors.success;
+    if (videoCount > 50) return colors.warning;
     return colors.error;
   };
 

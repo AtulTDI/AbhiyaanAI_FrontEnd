@@ -66,7 +66,7 @@ export default function ApplicationForm({
       name: "videoCount",
       label: applicationToEdit ? t("addVideoCount") : t("videoCount"),
       type: "number",
-      min: applicationToEdit ? 0 : 5000,
+      min: applicationToEdit ? 0 : 100,
       max: 500000,
       required: true,
     },
@@ -101,7 +101,7 @@ export default function ApplicationForm({
         fields={applicationFields}
         initialValues={{
           appName: applicationToEdit?.name || "",
-          videoCount: applicationToEdit ? "0" : "5000",
+          videoCount: applicationToEdit ? "0" : "100",
           salesAgent: applicationToEdit?.salesAgentId || "",
           videoGenerationRate: applicationToEdit?.videoGenerationRate || "",
         }}

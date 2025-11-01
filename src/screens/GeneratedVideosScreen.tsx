@@ -795,6 +795,7 @@ export default function GeneratedVideoScreen() {
         onCancel={() => {
           setOpenSentPopup(false);
           setPendingConfirmationId(null);
+          clearAllTempContacts();
         }}
         onConfirm={confirmVideoSent}
       />
