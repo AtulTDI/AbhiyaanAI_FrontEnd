@@ -20,6 +20,7 @@ export default function SelectVoters({
   const theme = useTheme<AppTheme>();
   const { colors } = theme;
   const [loading, setLoading] = useState(false);
+  const [searchText, setSearchText] = useState("");
 
   const columns = [
     {
@@ -53,8 +54,27 @@ export default function SelectVoters({
     [setStepData]
   );
 
+  const [params, setParams] = useState({
+    baseVideoId: stepData[0],
+    searchText: "",
+  });
+
+  useEffect(() => {
+    setParams((prev) => {
+      if (prev.baseVideoId !== stepData[0] || prev.searchText !== searchText) {
+        return { baseVideoId: stepData[0], searchText };
+      }
+      return prev;
+    });
+  }, [stepData[0], searchText]);
+
   const fetchVoters = useCallback(
-    (page: number, pageSize: number, baseVideoId: string | null) => {
+    (
+      page: number,
+      pageSize: number,
+      params?: { baseVideoId?: string; searchText?: string }
+    ) => {
+      const { baseVideoId, searchText } = params || {};
       setLoading(true);
 
       if (!baseVideoId) {
@@ -62,7 +82,12 @@ export default function SelectVoters({
         return Promise.resolve({ items: [], totalCount: 0 });
       }
 
-      return getVotersForProcessing(baseVideoId, page, pageSize)
+      return getVotersForProcessing(
+        baseVideoId,
+        page,
+        pageSize,
+        searchText || ""
+      )
         .then((response) => ({
           items: Array.isArray(response?.data?.items)
             ? response.data.items
@@ -75,14 +100,13 @@ export default function SelectVoters({
         })
         .finally(() => setLoading(false));
     },
-    []
+    [t]
   );
 
-  const table = useServerTable<GetPaginatedVoters, string>(
-    fetchVoters,
-    { initialPage: 0, initialRowsPerPage: 10 },
-    stepData[0]
-  );
+  const table = useServerTable<
+    GetPaginatedVoters,
+    { baseVideoId?: string; searchText?: string }
+  >(fetchVoters, { initialPage: 0, initialRowsPerPage: 10 }, params);
 
   const toggleSelectAll = () => {
     const currentPageIds = table.data.map((v) => v.id);
@@ -106,10 +130,10 @@ export default function SelectVoters({
 
   useFocusEffect(
     useCallback(() => {
-      table.setPage(0);
-      table.setRowsPerPage(10);
-      table.fetchData(0, 10);
-    }, [])
+      if (table.data.length === 0) {
+        table.fetchData(0, 10);
+      }
+    }, [table])
   );
 
   useEffect(() => {
@@ -168,6 +192,16 @@ export default function SelectVoters({
     [isSelected, headerCheckboxStatus, toggleSelection, toggleSelectAll]
   );
 
+  const handleVoterSearch = useCallback(
+    (text: string) => {
+      if (text !== undefined) {
+        setSearchText(text);
+        table.setPage(0);
+      }
+    },
+    [table]
+  );
+
   return (
     <View style={styles.container}>
       <CommonTable
@@ -182,6 +216,10 @@ export default function SelectVoters({
         }
         emptyText={t("voter.noData")}
         keyExtractor={(item) => item.id}
+        enableSearch
+        onSearchChange={(filters) => {
+          handleVoterSearch(filters.search);
+        }}
         loading={loading}
         tableWithSelection={true}
         tableHeight="calc(100vh - 360px)"

@@ -35,6 +35,7 @@ export default function GenerateVideoScreen() {
   const [showOverlay, setShowOverlay] = useState(false);
   const [totalVoterCount, setTotalVoterCount] = useState(0);
   const [selectedVoterCount, setSelectedVoterCount] = useState(0);
+  const [isAllVotersSelected, setIsAllVotersSelected] = useState(false);
   const steps = [t("selectBaseVideo"), t("selectVoters")];
 
   useFocusEffect(
@@ -72,6 +73,7 @@ export default function GenerateVideoScreen() {
     const payload = {
       baseVideoId: stepData[0],
       recipientIds: stepData[1],
+      IsSelectAllClicked: isAllVotersSelected
     };
 
     try {
@@ -131,6 +133,8 @@ export default function GenerateVideoScreen() {
             setStepData={setStepData}
             getTotalVotersCount={(count) => setTotalVoterCount(count)}
             getSelectedVotersCount={(count) => setSelectedVoterCount(count)}
+            isAllVotersSelected={isAllVotersSelected}
+            setIsAllVotersSelected={setIsAllVotersSelected}
           />
         );
       default:
