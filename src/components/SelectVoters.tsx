@@ -15,6 +15,8 @@ export default function SelectVoters({
   setStepData,
   getTotalVotersCount,
   getSelectedVotersCount,
+  isAllVotersSelected,
+  setIsAllVotersSelected
 }) {
   const { t } = useTranslation();
   const theme = useTheme<AppTheme>();

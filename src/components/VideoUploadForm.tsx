@@ -23,6 +23,7 @@ import * as DocumentPicker from "expo-document-picker";
 import CommonUpload from "./CommonUpload";
 import { generateSampleVideo } from "../api/videoApi";
 import { getAuthData } from "../utils/storage";
+import { usePlatformInfo } from "../hooks/usePlatformInfo";
 import {
   joinGroups,
   leaveGroups,
@@ -36,9 +37,11 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
 
 interface FormData {
   campaign: string;
+  message?: string;
   file: DocumentPicker.DocumentPickerAsset | null;
   errors: {
     campaign?: string;
+    message?: string;
     file?: string;
   };
 }
@@ -54,6 +57,7 @@ export default function VideoUploadForm({
   setShowAddView,
   uploading,
 }: Props) {
+  const { isWeb, isMobileWeb } = usePlatformInfo();
   const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
   const { showToast } = useToast();
@@ -66,6 +70,7 @@ export default function VideoUploadForm({
 
   const [formData, setFormData] = useState<FormData>({
     campaign: "",
+    message: "",
     file: null,
     errors: {},
   });
@@ -140,6 +145,7 @@ export default function VideoUploadForm({
 
     const payload = {
       campaign: formData.campaign.trim(),
+      message: formData.message.trim(),
       file: formData.file,
     };
 
@@ -178,29 +184,64 @@ export default function VideoUploadForm({
         extraScrollHeight={Platform.OS === "ios" ? 100 : 120}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Campaign */}
-        <TextInput
-          ref={campaignInputRef}
-          label={t("campaign")}
-          value={formData.campaign}
-          onChangeText={(text) =>
-            setFormData((prev) => ({
-              ...prev,
-              campaign: text,
-              errors: { ...prev.errors, campaign: undefined },
-            }))
-          }
-          mode="outlined"
-          style={styles.input}
-          error={!!formData.errors.campaign}
-        />
-        <HelperText
-          type="error"
-          visible={!!formData.errors.campaign}
-          style={{ paddingLeft: 0 }}
+        <View
+          style={{
+            display: "flex",
+            flexDirection: isWeb && !isMobileWeb ? "row" : "column",
+            gap: isWeb && !isMobileWeb ? 12 : 0,
+          }}
         >
-          {formData.errors.campaign}
-        </HelperText>
+          {/* Campaign */}
+          <View style={{ flex: 1 }}>
+            <TextInput
+              ref={campaignInputRef}
+              label={t("campaign")}
+              value={formData.campaign}
+              onChangeText={(text) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  campaign: text,
+                  errors: { ...prev.errors, campaign: undefined },
+                }))
+              }
+              mode="outlined"
+              style={styles.input}
+              error={!!formData.errors.campaign}
+            />
+            <HelperText
+              type="error"
+              visible={!!formData.errors.campaign}
+              style={{ paddingLeft: 0 }}
+            >
+              {formData.errors.campaign}
+            </HelperText>
+          </View>
+
+          {/* Message */}
+          <View style={{ flex: 1 }}>
+            <TextInput
+              label={t("campaignMessage")}
+              value={formData.message}
+              onChangeText={(text) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  message: text,
+                  errors: { ...prev.errors, message: undefined },
+                }))
+              }
+              mode="outlined"
+              style={styles.input}
+              error={!!formData.errors.message}
+            />
+            <HelperText
+              type="error"
+              visible={!!formData.errors.message}
+              style={{ paddingLeft: 0 }}
+            >
+              {formData.errors.message}
+            </HelperText>
+          </View>
+        </View>
 
         <View style={styles.downloadButton}>
           <Button
@@ -390,6 +431,6 @@ const createStyles = (theme: AppTheme) =>
     downloadButton: {
       display: "flex",
       alignItems: "flex-end",
-      marginTop: 12
+      marginTop: 12,
     },
   });
