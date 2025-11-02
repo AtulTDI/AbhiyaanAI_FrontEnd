@@ -39,6 +39,7 @@ type Props<T> = {
   emptyIcon?: React.ReactNode;
   loading?: boolean;
   tableWithSelection?: boolean;
+  customMobileHeight?: boolean;
   tableHeight?: string;
   page?: number;
   rowsPerPage?: number;
@@ -60,6 +61,7 @@ export default function CommonTable<T>({
   enableSearch,
   loading = false,
   tableWithSelection,
+  customMobileHeight,
   tableHeight,
   page: controlledPage,
   rowsPerPage: controlledRowsPerPage,
@@ -174,7 +176,11 @@ export default function CommonTable<T>({
         : tableHeight ?? "calc(100vh - 260px)";
     }
   } else {
-    availableHeight = screenHeight * (showSearch ? 0.56 : 0.66);
+    if (customMobileHeight) {
+      availableHeight = screenHeight * (showSearch ? 0.33 : 0.43);
+    } else {
+      availableHeight = screenHeight * (showSearch ? 0.56 : 0.66);
+    }
   }
 
   useEffect(() => {

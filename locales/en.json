@@ -138,6 +138,7 @@
     "downloadSample": "Download Sample Video",
     "supported": "Supported",
     "generateVideo": "Generate Video",
+    "generateAllVideos": "Generate All Videos",
     "generateSampleVideo": "Generate Sample Video (Optional)",
     "generateAndPreview": "Generate & Preview",
     "generating": "Generating...",

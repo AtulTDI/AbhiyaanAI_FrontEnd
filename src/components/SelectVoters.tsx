@@ -9,15 +9,15 @@ import { getVotersForProcessing } from "../api/voterApi";
 import { useFocusEffect } from "@react-navigation/native";
 import { useServerTable } from "../hooks/useServerTable";
 import { AppTheme } from "../theme";
+import { usePlatformInfo } from "../hooks/usePlatformInfo";
 
 export default function SelectVoters({
   stepData,
   setStepData,
   getTotalVotersCount,
   getSelectedVotersCount,
-  isAllVotersSelected,
-  setIsAllVotersSelected
 }) {
+  const { isWeb, isAndroid, isMobileWeb } = usePlatformInfo();
   const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
   const { colors } = theme;
@@ -180,14 +180,14 @@ export default function SelectVoters({
             <Checkbox status={isSelected(item.id) ? "checked" : "unchecked"} />
           </Pressable>
         ),
-        label: (
-          <Checkbox
-            status={headerCheckboxStatus}
-            onPress={toggleSelectAll}
-            color={colors.white}
-            uncheckedColor={colors.white}
-          />
-        ),
+        // label: (
+        //   <Checkbox
+        //     status={headerCheckboxStatus}
+        //     onPress={toggleSelectAll}
+        //     color={colors.white}
+        //     uncheckedColor={colors.white}
+        //   />
+        // ),
       },
       ...columns.slice(1),
     ],
@@ -224,7 +224,8 @@ export default function SelectVoters({
         }}
         loading={loading}
         tableWithSelection={true}
-        tableHeight="calc(100vh - 360px)"
+        customMobileHeight={true}
+        tableHeight={"calc(100vh - 360px)"}
         onPageChange={table.setPage}
         onRowsPerPageChange={(size) => {
           table.setRowsPerPage(size);

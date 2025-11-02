@@ -35,7 +35,6 @@ export default function GenerateVideoScreen() {
   const [showOverlay, setShowOverlay] = useState(false);
   const [totalVoterCount, setTotalVoterCount] = useState(0);
   const [selectedVoterCount, setSelectedVoterCount] = useState(0);
-  const [isAllVotersSelected, setIsAllVotersSelected] = useState(false);
   const steps = [t("selectBaseVideo"), t("selectVoters")];
 
   useFocusEffect(
@@ -69,11 +68,11 @@ export default function GenerateVideoScreen() {
     }, [])
   );
 
-  const generateVideo = async () => {
+  const generateVideo = async (allVotersSelected) => {
     const payload = {
       baseVideoId: stepData[0],
-      recipientIds: stepData[1],
-      IsSelectAllClicked: isAllVotersSelected
+      recipientIds: allVotersSelected ? [] : stepData[1],
+      isSelectAllClicked: allVotersSelected ? allVotersSelected : undefined,
     };
 
     try {
@@ -90,12 +89,12 @@ export default function GenerateVideoScreen() {
     }
   };
 
-  const setupSignalR = async () => {
+  const setupSignalR = async (allVotersSelected) => {
     const { accessToken } = await getAuthData();
 
     await startConnection(accessToken);
     await joinGroups(stepData?.[1]);
-    await generateVideo();
+    await generateVideo(allVotersSelected);
   };
 
   const handleGenerate = async () => {
@@ -105,7 +104,12 @@ export default function GenerateVideoScreen() {
     }
 
     setIsLoading(true);
-    await setupSignalR();
+    await setupSignalR(undefined);
+  };
+
+  const handleGenerateAll = async () => {
+    setIsLoading(true);
+    await setupSignalR(true);
   };
 
   const handleNext = () => {
@@ -133,8 +137,6 @@ export default function GenerateVideoScreen() {
             setStepData={setStepData}
             getTotalVotersCount={(count) => setTotalVoterCount(count)}
             getSelectedVotersCount={(count) => setSelectedVoterCount(count)}
-            isAllVotersSelected={isAllVotersSelected}
-            setIsAllVotersSelected={setIsAllVotersSelected}
           />
         );
       default:
@@ -205,7 +207,10 @@ export default function GenerateVideoScreen() {
       {/* Count Section */}
       {activeStep === 1 && (
         <Surface
-          style={[styles.countContainer, { marginTop: isWeb && !isMobileWeb ? -15 : 10 }]}
+          style={[
+            styles.countContainer,
+            { marginTop: isWeb && !isMobileWeb ? -15 : 10 },
+          ]}
         >
           <Ionicons
             name="people-circle-outline"
@@ -213,10 +218,18 @@ export default function GenerateVideoScreen() {
             color={colors.primary}
             style={{ marginRight: isWeb && !isMobileWeb ? 10 : 6 }}
           />
-          <Text style={[styles.countText, { fontSize: isWeb && !isMobileWeb ? 16 : 12 }]}>
+          <Text
+            style={[
+              styles.countText,
+              { fontSize: isWeb && !isMobileWeb ? 16 : 12 },
+            ]}
+          >
             {t("selected")}:{" "}
             <Text
-              style={[styles.countHighlight, { fontSize: isWeb && !isMobileWeb ? 16 : 12 }]}
+              style={[
+                styles.countHighlight,
+                { fontSize: isWeb && !isMobileWeb ? 16 : 12 },
+              ]}
             >
               {selectedVoterCount} /{" "}
             </Text>
@@ -231,6 +244,20 @@ export default function GenerateVideoScreen() {
       </View>
 
       {/* Navigation Buttons */}
+      {!isWeb && activeStep === steps.length - 1 && (
+        <View>
+          <Button
+            mode="contained"
+            onPress={handleGenerateAll}
+            loading={isLoading}
+            disabled={isLoading}
+            style={styles.selectAllBtn}
+          >
+            {t("video.generateAllVideos")}
+          </Button>
+        </View>
+      )}
+
       <View style={styles.buttons}>
         <Button
           mode="outlined"
@@ -259,6 +286,17 @@ export default function GenerateVideoScreen() {
               : t("video.generateVideo")
             : t("next")}
         </Button>
+        {isWeb && !isMobileWeb && activeStep === steps.length - 1 && (
+          <Button
+            mode="contained"
+            onPress={handleGenerateAll}
+            loading={isLoading}
+            disabled={isLoading}
+            style={styles.btn}
+          >
+            {t("video.generateAllVideos")}
+          </Button>
+        )}
       </View>
 
       {/* Blocking Overlay */}
@@ -331,6 +369,11 @@ const createStyles = (
       flexDirection: "row",
       justifyContent: "space-between",
       marginTop: 20,
+    },
+    selectAllBtn: {
+      marginTop: 15,
+      marginHorizontal: 6,
+      borderRadius: 8,
     },
     btn: {
       flex: 1,

@@ -80,7 +80,6 @@ export const uploadVideo = async (payload: Video) => {
     }
   } catch (err) {
     console.warn("Thumbnail generation failed:", err);
-    // Continue without thumbnail
   }
 
   // --- Other Form Fields ---
