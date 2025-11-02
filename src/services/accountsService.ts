@@ -26,9 +26,21 @@ async function requestAccountsPermissions() {
       }
     );
 
+    const grantedWriteContacts = await PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.WRITE_CONTACTS,
+      {
+        title: 'Modify Contacts',
+        message: 'App needs permission to add or delete contacts on your device',
+        buttonNeutral: 'Ask Me Later',
+        buttonNegative: 'Cancel',
+        buttonPositive: 'OK',
+      }
+    );
+
     return (
       grantedGetAccounts === PermissionsAndroid.RESULTS.GRANTED &&
-      grantedReadContacts === PermissionsAndroid.RESULTS.GRANTED
+      grantedReadContacts === PermissionsAndroid.RESULTS.GRANTED &&
+      grantedWriteContacts === PermissionsAndroid.RESULTS.GRANTED
     );
   }
   return true;

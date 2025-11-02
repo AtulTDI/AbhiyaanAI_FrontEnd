@@ -218,9 +218,16 @@ export default function GeneratedVideoScreen() {
 
     try {
       const contacts = await Contacts.getAll();
-      const tempContacts = contacts.filter((c) =>
-        c.givenName?.includes("_AbhiyanAI_")
-      );
+      const tempContacts = contacts.filter((c) => {
+        const fieldsToCheck = [
+          c.displayName,
+          c.givenName,
+          c.familyName,
+          c.middleName,
+        ];
+
+        return fieldsToCheck.some((field) => field?.includes("_AbhiyanAI_"));
+      });
 
       for (const contact of tempContacts) {
         try {
