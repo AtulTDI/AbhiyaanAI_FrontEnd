@@ -96,6 +96,7 @@ export default function CommonTable<T>({
   const totalPages = Math.ceil(
     totalCount > 0 ? totalCount / rowsPerPage : data.length / rowsPerPage
   );
+  const searchInputRef = React.useRef(null);
 
   const enhancedColumns: Column<T>[] = [
     ...(!tableWithSelection
@@ -195,6 +196,15 @@ export default function CommonTable<T>({
     };
   }, [loading]);
 
+  useEffect(() => {
+    if (showSearch) {
+      const timer = setTimeout(() => {
+        searchInputRef.current?.focus();
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [showSearch]);
+
   const handlePageChange = (newPage: number) => {
     if (onPageChange) onPageChange(newPage);
     else setInternalPage(newPage);
@@ -214,7 +224,6 @@ export default function CommonTable<T>({
         duration: 200,
         useNativeDriver: true,
       }).start(() => setShowSearch(false));
-
       setFilters((prev) => ({
         ...prev,
         search: "",
@@ -230,11 +239,14 @@ export default function CommonTable<T>({
   };
 
   useEffect(() => {
-    if (onSearchChange) {
-      const delay = setTimeout(() => onSearchChange(filters), 1000);
+    if (onSearchChange && filters.search !== undefined) {
+      const delay = setTimeout(
+        () => onSearchChange({ search: filters.search }),
+        1000
+      );
       return () => clearTimeout(delay);
     }
-  }, [filters]);
+  }, [filters.search]);
 
   return (
     <View style={styles.container}>
@@ -242,7 +254,7 @@ export default function CommonTable<T>({
         <Pressable style={styles.searchIcon} onPress={toggleSearch}>
           <MaterialIcons
             name={showSearch ? "close" : "search"}
-            size={15}
+            size={20}
             color={theme.colors.primary}
           />
         </Pressable>
@@ -350,6 +362,7 @@ export default function CommonTable<T>({
                   >
                     <View style={styles.fullWidthSearchContainer}>
                       <TextInput
+                        ref={searchInputRef} 
                         mode="outlined"
                         placeholder="Search by name or mobile number"
                         value={filters.search || ""}
@@ -691,7 +704,7 @@ const createStyles = (
     searchIcon: {
       position: "absolute",
       right: 16,
-      top: 20,
+      top: 17,
       zIndex: 20,
       backgroundColor: theme.colors.white,
       borderRadius: 20,

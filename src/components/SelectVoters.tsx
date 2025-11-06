@@ -63,8 +63,9 @@ export default function SelectVoters({
 
   useEffect(() => {
     setParams((prev) => {
-      if (prev.baseVideoId !== stepData[0] || prev.searchText !== searchText) {
-        return { baseVideoId: stepData[0], searchText };
+      const next = { baseVideoId: stepData[0], searchText };
+      if (JSON.stringify(prev) !== JSON.stringify(next)) {
+        return next;
       }
       return prev;
     });
@@ -135,7 +136,7 @@ export default function SelectVoters({
       if (table.data.length === 0) {
         table.fetchData(0, 10);
       }
-    }, [table])
+    }, [])
   );
 
   useEffect(() => {

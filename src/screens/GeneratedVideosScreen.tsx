@@ -512,7 +512,6 @@ export default function GeneratedVideoScreen() {
       updateRowStatus(item.id, { sendStatus: "pending" });
       showToast(t("video.sendFail"), "error");
     } finally {
-      setSendingId(null);
       setProgressMap((prev) => {
         const { [item.id]: _, ...rest } = prev;
         return rest;
@@ -536,6 +535,7 @@ export default function GeneratedVideoScreen() {
     } finally {
       setOpenSentPopup(false);
       setPendingConfirmationId(null);
+      setSendingId(null);
       clearAllTempContacts();
     }
   };
@@ -800,6 +800,7 @@ export default function GeneratedVideoScreen() {
       <VideoSendConfirmationDialog
         visible={openSentPopup}
         onCancel={() => {
+          setSendingId(null);
           setOpenSentPopup(false);
           setPendingConfirmationId(null);
           clearAllTempContacts();
