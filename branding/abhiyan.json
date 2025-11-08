@@ -1,0 +1,12 @@
+{
+  "name": "AbhiyanAI",
+  "slug": "abhiyanai",
+  "package": "com.abhiyanai.app",
+  "icon": "./assets/abhiyan/icon.png",
+  "splash": "./assets/abhiyan/splash-icon.png",
+  "adaptiveIcon": "./assets/abhiyan/adaptive-icon.png",
+  "favIcon": "./assets/abhiyan/favicon.png",
+  "pwaSmallIcon": "./assets/abhiyan/icon-192.png",
+  "pwaLargeIcon": "./assets/abhiyan/icon-512.png",
+  "backgroundColor": "#ffffff"
+}

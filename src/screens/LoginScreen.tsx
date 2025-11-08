@@ -12,10 +12,12 @@ import { useTheme } from "react-native-paper";
 import SignIn from "../components/SignIn";
 import ForgotPassword from "../components/ForgotPassword";
 import { usePlatformInfo } from "../hooks/usePlatformInfo";
+import { getBrandAssets } from "../utils/brandAssets";
 import { AppTheme } from "../theme";
 
 export default function LoginScreen() {
   const { isIOS } = usePlatformInfo();
+  const { icon } = getBrandAssets();
   const [showSignInPage, setShowSignInPage] = useState(true);
   const [authError, setAuthError] = useState("");
   const theme = useTheme<AppTheme>();
@@ -42,11 +44,7 @@ export default function LoginScreen() {
             keyboardShouldPersistTaps="handled"
           >
             <View style={styles.innerContainer}>
-              <Image
-                source={require("../assets/images/logo.png")}
-                style={styles.logo}
-                resizeMode="contain"
-              />
+              <Image source={icon} style={styles.logo} resizeMode="contain" />
 
               <View
                 style={[

@@ -6,9 +6,11 @@ import {
 } from "@react-navigation/drawer";
 import { LinearGradient } from "expo-linear-gradient";
 import { useTheme } from "react-native-paper";
+import { getBrandAssets } from "../utils/brandAssets";
 import { AppTheme } from "../theme";
 
 export default function CustomDrawer(props: any) {
+  const { icon } = getBrandAssets();
   const theme = useTheme<AppTheme>();
   const styles = createStyles(theme);
   const { colors } = theme;
@@ -26,11 +28,7 @@ export default function CustomDrawer(props: any) {
     >
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.logoContainer}>
-          <Image
-            source={require("../assets/images/logo.png")}
-            style={styles.logo}
-            resizeMode="contain"
-          />
+          <Image source={icon} style={styles.logo} resizeMode="contain" />
         </View>
 
         <DrawerContentScrollView
@@ -40,10 +38,7 @@ export default function CustomDrawer(props: any) {
           <View style={styles.drawerItemsContainer}>
             <DrawerItemList
               {...props}
-              labelStyle={[
-                styles.drawerLabel,
-                { color: colors.onPrimary },
-              ]}
+              labelStyle={[styles.drawerLabel, { color: colors.onPrimary }]}
               activeTintColor={colors.onPrimary}
               inactiveTintColor={colors.onPrimary}
             />

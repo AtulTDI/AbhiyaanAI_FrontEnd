@@ -13,6 +13,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useToast } from "../components/ToastProvider";
 import { resetPassword } from "../api/authApi";
 import { extractErrorMessage } from "../utils/common";
+import { getBrandAssets } from "../utils/brandAssets";
 import { encryptWithBackendKey } from "../services/rsaEncryptor";
 import { usePlatformInfo } from "../hooks/usePlatformInfo";
 import { navigate } from "../navigation/NavigationService";
@@ -25,6 +26,7 @@ type RouteParams = {
 
 export default function ResetPasswordScreen() {
   const { isIOS } = usePlatformInfo();
+  const { icon } = getBrandAssets();
   const route = useRoute();
   const { token, email } = route.params as RouteParams;
 
@@ -81,11 +83,7 @@ export default function ResetPasswordScreen() {
             keyboardShouldPersistTaps="handled"
           >
             <View style={styles.innerContainer}>
-              <Image
-                source={require("../assets/images/logo.png")}
-                style={styles.logo}
-                resizeMode="contain"
-              />
+              <Image source={icon} style={styles.logo} resizeMode="contain" />
 
               <Card
                 style={[

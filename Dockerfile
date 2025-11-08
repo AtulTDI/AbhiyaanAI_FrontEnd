@@ -18,6 +18,7 @@ COPY i18n.ts ./
 COPY locales ./locales
 COPY src ./src
 COPY assets ./assets
+COPY branding ./branding
 
 # ---------- Dev stage (Expo Metro / Web Dev) ----------
 FROM base AS dev

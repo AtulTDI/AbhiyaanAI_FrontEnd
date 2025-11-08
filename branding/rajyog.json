@@ -1,0 +1,12 @@
+{
+  "name": "RajyogAI",
+  "slug": "rajyogai",
+  "package": "com.rajyogai.app",
+  "icon": "./assets/rajyog/icon.png",
+  "splash": "./assets/rajyog/splash-icon.png",
+  "adaptiveIcon": "./assets/rajyog/adaptive-icon.png",
+  "favIcon": "./assets/rajyog/favicon.png",
+  "pwaSmallIcon": "./assets/rajyog/icon-192.png",
+  "pwaLargeIcon": "./assets/rajyog/icon-512.png",
+  "backgroundColor": "#ffffff"
+}
