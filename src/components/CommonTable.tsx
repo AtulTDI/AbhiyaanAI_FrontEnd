@@ -98,6 +98,27 @@ export default function CommonTable<T>({
   );
   const searchInputRef = React.useRef(null);
 
+  const toggleSearch = () => {
+    if (showSearch) {
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start(() => setShowSearch(false));
+      setFilters((prev) => ({
+        ...prev,
+        search: "",
+      }));
+    } else {
+      setShowSearch(true);
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    }
+  };
+
   const enhancedColumns: Column<T>[] = [
     ...(!tableWithSelection
       ? [
@@ -106,6 +127,21 @@ export default function CommonTable<T>({
             label: enableSearch ? "" : t("sno"),
             flex: columns?.length > 7 ? 0.3 : totalCount >= 100 ? 0.2 : 0.1,
             smallColumn: true,
+            renderHeader: () => (
+              <View>
+                {enableSearch ? (
+                  <Pressable onPress={toggleSearch} style={styles.searchIcon}>
+                    <MaterialIcons
+                      name={showSearch ? "close" : "search"}
+                      size={18}
+                      color={theme.colors.primary}
+                    />
+                  </Pressable>
+                ) : (
+                  <Text style={styles.headerCell}>{t("sno")}</Text>
+                )}
+              </View>
+            ),
             render: (_: T, index: number) => (
               <Text style={styles.dataCell}>{startIndex + index + 1}</Text>
             ),
@@ -217,27 +253,6 @@ export default function CommonTable<T>({
     setMenuVisible(false);
   };
 
-  const toggleSearch = () => {
-    if (showSearch) {
-      Animated.timing(fadeAnim, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }).start(() => setShowSearch(false));
-      setFilters((prev) => ({
-        ...prev,
-        search: "",
-      }));
-    } else {
-      setShowSearch(true);
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 200,
-        useNativeDriver: true,
-      }).start();
-    }
-  };
-
   useEffect(() => {
     if (onSearchChange && filters.search !== undefined) {
       const delay = setTimeout(
@@ -250,16 +265,6 @@ export default function CommonTable<T>({
 
   return (
     <View style={styles.container}>
-      {enableSearch && (
-        <Pressable style={styles.searchIcon} onPress={toggleSearch}>
-          <MaterialIcons
-            name={showSearch ? "close" : "search"}
-            size={20}
-            color={theme.colors.primary}
-          />
-        </Pressable>
-      )}
-
       <View
         style={styles.tableWrapper}
         onLayout={(event) => setWrapperWidth(event.nativeEvent.layout.width)}
@@ -362,7 +367,7 @@ export default function CommonTable<T>({
                   >
                     <View style={styles.fullWidthSearchContainer}>
                       <TextInput
-                        ref={searchInputRef} 
+                        ref={searchInputRef}
                         mode="outlined"
                         placeholder="Search by name or mobile number"
                         value={filters.search || ""}
@@ -702,14 +707,9 @@ const createStyles = (
       paddingVertical: 4,
     },
     searchIcon: {
-      position: "absolute",
-      left: 10,
-      top: 17,
-      zIndex: 20,
       backgroundColor: theme.colors.white,
       borderRadius: 20,
       padding: 5,
-      elevation: 3,
     },
     searchPanelInline: {
       backgroundColor: theme.colors.white,
