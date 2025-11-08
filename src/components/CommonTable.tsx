@@ -103,7 +103,7 @@ export default function CommonTable<T>({
       ? [
           {
             key: "__sno__",
-            label: t("sno"),
+            label: enableSearch ? "" : t("sno"),
             flex: columns?.length > 7 ? 0.3 : totalCount >= 100 ? 0.2 : 0.1,
             smallColumn: true,
             render: (_: T, index: number) => (
@@ -703,7 +703,7 @@ const createStyles = (
     },
     searchIcon: {
       position: "absolute",
-      right: 16,
+      left: 10,
       top: 17,
       zIndex: 20,
       backgroundColor: theme.colors.white,

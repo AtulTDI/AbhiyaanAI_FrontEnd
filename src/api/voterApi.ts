@@ -7,8 +7,8 @@ import { base64ToBlob } from "../utils/common";
 /**
  * Get paginated voters with optional search
  */
-export const getVoters = (pageNumber, pageSize) =>
-  axios.get<GetPaginatedVoters>(`/Recipients/getrecipients?page=${pageNumber + 1}&pageSize=${pageSize}`, { useApiPrefix: true });
+export const getVoters = (pageNumber, pageSize, searchText) =>
+  axios.get<GetPaginatedVoters>(`/Recipients/getrecipients?searchText=${searchText}&page=${pageNumber + 1}&pageSize=${pageSize}`, { useApiPrefix: true });
 
 
 /**
@@ -32,10 +32,10 @@ export const getVotersWithInProgressVidoes = () =>
 /**
 * Get paginated voters with completed vidoes using base video id
 */
-export const getVotersWithCompletedVideoId = (id: string, pageNumber, pageSize) =>
+export const getVotersWithCompletedVideoId = (id: string, pageNumber, pageSize, searchText) =>
   axios.get('/Recipients/getcompletedaivideoswithbaseid',
     {
-      params: { baseVideoID: id, page: pageNumber + 1, pageSize: pageSize },
+      params: { baseVideoID: id, searchText: searchText, page: pageNumber + 1, pageSize: pageSize },
       useApiPrefix: true
     });
 

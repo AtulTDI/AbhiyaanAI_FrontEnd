@@ -53,6 +53,10 @@ export default function AddVoterScreen() {
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
   const [selectedVoterId, setSelectedVoterId] = useState<string | null>(null);
   const [voterToEdit, setVoterToEdit] = useState<Voter | null>(null);
+  const [searchText, setSearchText] = useState("");
+  const [tableParams, setTableParams] = useState<{ searchText?: string }>({
+    searchText: "",
+  });
 
   const routes = useMemo(
     () => [
@@ -62,18 +66,30 @@ export default function AddVoterScreen() {
     [t]
   );
 
-  const fetchVoters = useCallback(async (page: number, pageSize: number) => {
-    const response = await getVoters(page, pageSize);
-    return {
-      items: Array.isArray(response?.data?.items) ? response.data.items : [],
-      totalCount: response?.data?.totalRecords ?? 0,
-    };
-  }, []);
+  const fetchVoters = useCallback(
+    async (
+      page: number,
+      pageSize: number,
+      params?: { searchText?: string }
+    ) => {
+      const response = await getVoters(
+        page,
+        pageSize,
+        params?.searchText ?? ""
+      );
+      return {
+        items: Array.isArray(response?.data?.items) ? response.data.items : [],
+        totalCount: response?.data?.totalRecords ?? 0,
+      };
+    },
+    []
+  );
 
-  const table = useServerTable<Voter>(fetchVoters, {
-    initialPage: 0,
-    initialRowsPerPage: 10,
-  });
+  const table = useServerTable<Voter, { searchText?: string }>(
+    fetchVoters,
+    { initialPage: 0, initialRowsPerPage: 10 },
+    tableParams
+  );
 
   useFocusEffect(
     useCallback(() => {
@@ -81,14 +97,22 @@ export default function AddVoterScreen() {
       setVoterToEdit(null);
       table.setPage(0);
       table.setRowsPerPage(10);
-      table.fetchData(0, 10);
     }, [])
+  );
+
+  const handleVoterSearch = useCallback(
+    (text: string) => {
+      setSearchText(text);
+      setTableParams({ searchText: text });
+      table.setPage(0);
+    },
+    [table]
   );
 
   const addVoter = async (voterData: CreateVoterPayload) => {
     try {
       await createVoter(voterData);
-      table.fetchData(0, table.rowsPerPage);
+      table.fetchData(0, table.rowsPerPage, { searchText });
       showToast(t("voter.addSuccess"), "success");
       setShowAddVoterView(false);
       setVoterToEdit(null);
@@ -101,7 +125,7 @@ export default function AddVoterScreen() {
     if (!voterToEdit) return;
     try {
       await editVoterById(voterToEdit.id, voterData);
-      await table.fetchData(table.page, table.rowsPerPage);
+      await table.fetchData(table.page, table.rowsPerPage, { searchText });
       showToast(t("voter.editSuccess"), "success");
       setShowAddVoterView(false);
       setVoterToEdit(null);
@@ -124,7 +148,7 @@ export default function AddVoterScreen() {
     if (selectedVoterId) {
       try {
         await deleteVoterById(selectedVoterId);
-        table.fetchData(table.page, table.rowsPerPage);
+        table.fetchData(table.page, table.rowsPerPage, { searchText });
         showToast(t("voter.deleteSucess"), "success");
       } catch (error: any) {
         showToast(extractErrorMessage(error, t("voter.deleteFail")), "error");
@@ -175,14 +199,7 @@ export default function AddVoterScreen() {
       case "excel":
         return (
           <View style={{ flex: 1 }}>
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "flex-end",
-                paddingTop: 15,
-                paddingBottom: 8,
-              }}
-            >
+            <View style={styles.downloadBtnWrapper}>
               <Button
                 mode="outlined"
                 icon="download"
@@ -194,7 +211,9 @@ export default function AddVoterScreen() {
               </Button>
             </View>
             <VoterUpload
-              fetchVoters={() => table.fetchData(0, table.rowsPerPage)}
+              fetchVoters={() =>
+                table.fetchData(0, table.rowsPerPage, { searchText })
+              }
               setShowAddVoterView={setShowAddVoterView}
             />
           </View>
@@ -217,7 +236,6 @@ export default function AddVoterScreen() {
         const focused =
           props.navigationState.index ===
           props.navigationState.routes.findIndex((r) => r.key === route.key);
-
         return (
           <TabBarItem
             {...rest}
@@ -251,6 +269,7 @@ export default function AddVoterScreen() {
                 : t("voter.add")
               : t("voter.plural")}
           </Text>
+
           {!showAddVoterView && (
             <Button
               mode="contained"
@@ -268,6 +287,7 @@ export default function AddVoterScreen() {
             </Button>
           )}
         </View>
+
         {showAddVoterView ? (
           <KeyboardAvoidingView
             behavior={isIOS ? "padding" : undefined}
@@ -307,9 +327,11 @@ export default function AddVoterScreen() {
             }}
             onEdit={handleEdit}
             onDelete={handleDeleteRequest}
+            handleVoterSearch={handleVoterSearch}
           />
         )}
       </Surface>
+
       <DeleteConfirmationDialog
         visible={deleteDialogVisible}
         title={t("voter.delete")}
@@ -334,5 +356,11 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 16,
+  },
+  downloadBtnWrapper: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    paddingTop: 15,
+    paddingBottom: 8,
   },
 });

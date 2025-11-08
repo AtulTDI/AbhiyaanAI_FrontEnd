@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { StyleSheet, View } from "react-native";
 import { useTheme } from "react-native-paper";
@@ -18,6 +18,7 @@ type Props = {
   onRowsPerPageChange: (size: number) => void;
   onEdit: (item: Voter) => void;
   onDelete: (id: string) => void;
+  handleVoterSearch: (text: string) => void;
 };
 
 export default function VoterTable({
@@ -30,6 +31,7 @@ export default function VoterTable({
   onRowsPerPageChange,
   onEdit,
   onDelete,
+  handleVoterSearch
 }: Props) {
   const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
@@ -93,6 +95,10 @@ export default function VoterTable({
       page={page}
       rowsPerPage={rowsPerPage}
       totalCount={totalCount}
+      enableSearch
+      onSearchChange={(filters) => {
+        handleVoterSearch(filters.search);
+      }}
       onPageChange={onPageChange}
       onRowsPerPageChange={onRowsPerPageChange}
     />

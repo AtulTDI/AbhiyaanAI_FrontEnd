@@ -9,7 +9,6 @@ import { getVotersForProcessing } from "../api/voterApi";
 import { useFocusEffect } from "@react-navigation/native";
 import { useServerTable } from "../hooks/useServerTable";
 import { AppTheme } from "../theme";
-import { usePlatformInfo } from "../hooks/usePlatformInfo";
 
 export default function SelectVoters({
   stepData,
@@ -17,7 +16,6 @@ export default function SelectVoters({
   getTotalVotersCount,
   getSelectedVotersCount,
 }) {
-  const { isWeb, isAndroid, isMobileWeb } = usePlatformInfo();
   const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
   const { colors } = theme;
@@ -180,15 +178,7 @@ export default function SelectVoters({
           <Pressable onPress={() => toggleSelection(item.id)}>
             <Checkbox status={isSelected(item.id) ? "checked" : "unchecked"} />
           </Pressable>
-        ),
-        // label: (
-        //   <Checkbox
-        //     status={headerCheckboxStatus}
-        //     onPress={toggleSelectAll}
-        //     color={colors.white}
-        //     uncheckedColor={colors.white}
-        //   />
-        // ),
+        )
       },
       ...columns.slice(1),
     ],

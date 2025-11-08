@@ -78,6 +78,14 @@ export default function GeneratedVideoScreen() {
   const [pendingConfirmationId, setPendingConfirmationId] = useState<
     string | null
   >(null);
+  const [searchText, setSearchText] = useState("");
+  const [tableParams, setTableParams] = useState<{
+    videoId: string | null;
+    searchText: string;
+  }>({
+    videoId: null,
+    searchText: "",
+  });
 
   const fetchVideos = useCallback(async () => {
     try {
@@ -105,15 +113,20 @@ export default function GeneratedVideoScreen() {
   }, []);
 
   const fetchVoters = useCallback(
-    async (page: number, pageSize: number, videoId: string | null) => {
-      if (!videoId) return { items: [], totalCount: 0 };
+    async (
+      page: number,
+      pageSize: number,
+      params?: { videoId?: string | null; searchText?: string }
+    ) => {
+      if (!params?.videoId) return { items: [], totalCount: 0 };
 
       setLoading(true);
       try {
         const response = await getVotersWithCompletedVideoId(
-          videoId,
+          params.videoId,
           page,
-          pageSize
+          pageSize,
+          params?.searchText ?? ""
         );
 
         return {
@@ -135,11 +148,10 @@ export default function GeneratedVideoScreen() {
     []
   );
 
-  const table = useServerTable<Voter, string>(
-    fetchVoters,
-    { initialPage: 0, initialRowsPerPage: 10 },
-    selectedVideoId
-  );
+  const table = useServerTable<
+    Voter,
+    { videoId: string | null; searchText: string }
+  >(fetchVoters, { initialPage: 0, initialRowsPerPage: 10 }, tableParams);
 
   const memoizedDropdown = React.useMemo(() => {
     return (
@@ -256,9 +268,11 @@ export default function GeneratedVideoScreen() {
   };
 
   useEffect(() => {
-    if (selectedVideoId) {
-      table.fetchData(0, 10);
-    }
+    setTableParams((prev) => ({
+      ...prev,
+      videoId: selectedVideoId,
+    }));
+    table.setPage(0);
   }, [selectedVideoId]);
 
   useFocusEffect(
@@ -636,6 +650,18 @@ export default function GeneratedVideoScreen() {
     },
   ];
 
+  const handleVoterSearch = useCallback(
+    (text: string) => {
+      setSearchText(text);
+      setTableParams((prev) => ({
+        ...prev,
+        searchText: text,
+      }));
+      table.setPage(0);
+    },
+    [table]
+  );
+
   return (
     <Surface style={styles.container} elevation={2}>
       {/* Header */}
@@ -752,6 +778,10 @@ export default function GeneratedVideoScreen() {
           tableHeight={
             isWeb && !isMobileWeb ? "calc(100vh - 345px)" : undefined
           }
+          enableSearch
+          onSearchChange={(filters) => {
+            handleVoterSearch(filters.search);
+          }}
           onPageChange={table.setPage}
           onRowsPerPageChange={(size) => {
             table.setRowsPerPage(size);
