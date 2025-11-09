@@ -8,6 +8,7 @@ services:
       target: dev
       args:
         APP_ENV: development
+        BRAND: ${BRAND:-abhiyan}
         DEV_API: http://localhost:5201
         DEV_ALT_API: http://localhost:5202
     volumes:
@@ -40,10 +41,11 @@ services:
       target: prod
       args:
         APP_ENV: uat
+        BRAND: ${BRAND:-abhiyan}
         UAT_API: http://3.6.255.8:5000
         UAT_ALT_API: http://3.6.255.8:5002
-    image: abhiyaan_ai_frontend:latest
-    container_name: abhiyaanai_frontend_uat
+    image: abhiyan_ai_frontend:latest
+    container_name: abhiyanai_frontend_uat
     ports:
       - "80:80"
     environment:
@@ -60,10 +62,11 @@ services:
       target: prod
       args:
         APP_ENV: demo
+        BRAND: ${BRAND:-abhiyan}
         DEMO_API: http://65.2.28.225:5000
         DEMO_ALT_API: http://65.2.28.225:5002
-    image: abhiyaan_ai_frontend:latest
-    container_name: abhiyaanai_frontend_demo
+    image: abhiyan_ai_frontend:latest
+    container_name: abhiyanai_frontend_demo
     ports:
       - "80:80"
     environment:
@@ -80,10 +83,11 @@ services:
       target: prod
       args:
         APP_ENV: production
+        BRAND: ${BRAND:-abhiyan}
         PROD_API: http://3.6.255.8:5000
         PROD_ALT_API: http://3.6.255.8:5002
-    image: abhiyaan_ai_frontend:latest
-    container_name: abhiyaanai_frontend_prod
+    image: abhiyan_ai_frontend:latest
+    container_name: abhiyanai_frontend_prod
     ports:
       - "80:80"
     environment:
