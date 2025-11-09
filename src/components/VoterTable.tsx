@@ -41,7 +41,7 @@ export default function VoterTable({
     {
       label: t("name"),
       key: "fullName",
-      flex: 1,
+      flex: 0.9,
     },
     {
       label: t("mobile"),

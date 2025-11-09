@@ -142,17 +142,20 @@ export default function CommonTable<T>({
         {
           key: "__sno__",
           label: enableSearch ? "" : t("sno"),
-          flex: columns?.length > 7 ? 0.3 : totalCount >= 100 ? 0.2 : 0.1,
+          flex: columns?.length > 7 ? 0.3 : totalCount >= 100 ? 0.3 : 0.2,
           smallColumn: true,
-          renderHeader: () => (
-            <Pressable onPress={toggleSearch} style={styles.searchIcon}>
-              <MaterialIcons
-                name={showSearch ? "close" : "search"}
-                size={18}
-                color={theme.colors.primary}
-              />
-            </Pressable>
-          ),
+          renderHeader: () =>
+            enableSearch ? (
+              <Pressable onPress={toggleSearch} style={styles.searchIcon}>
+                <MaterialIcons
+                  name={showSearch ? "close" : "search"}
+                  size={18}
+                  color={theme.colors.primary}
+                />
+              </Pressable>
+            ) : (
+              <Text style={styles.headerCell}>{t("sno")}</Text>
+            ),
           render: (_: T, index: number) => (
             <Text style={styles.dataCell}>{startIndex + index + 1}</Text>
           ),
