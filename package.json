@@ -60,14 +60,14 @@
     "docker:prod:down": "docker compose -f docker-compose.yml --profile prod down",
     "docker:prod:logs": "docker compose -f docker-compose.yml --profile prod logs -f",
     "docker:prod:restart": "npm run docker:prod:down && npm run docker:prod:up",
-    "docker:build:tar:dev:abhiyan": "BRAND=abhiyan node ./scripts/createTarDir.js && docker compose -f docker-compose.yml --profile dev build --no-cache && docker save -o tar/abhiyan_ai_frontend_dev_abhiyan.tar abhiyan_ai_frontend:latest",
-    "docker:build:tar:dev:rajyog": "BRAND=rajyog  node ./scripts/createTarDir.js && docker compose -f docker-compose.yml --profile dev build --no-cache && docker save -o tar/abhiyan_ai_frontend_dev_rajyog.tar abhiyan_ai_frontend:latest",
-    "docker:build:tar:uat:abhiyan": "BRAND=abhiyan node ./scripts/createTarDir.js && docker compose -f docker-compose.yml --profile uat build --no-cache && docker save -o tar/abhiyan_ai_frontend_uat_abhiyan.tar abhiyan_ai_frontend:latest",
-    "docker:build:tar:uat:rajyog": "BRAND=rajyog  node ./scripts/createTarDir.js && docker compose -f docker-compose.yml --profile uat build --no-cache && docker save -o tar/abhiyan_ai_frontend_uat_rajyog.tar abhiyan_ai_frontend:latest",
-    "docker:build:tar:demo:abhiyan": "BRAND=abhiyan node ./scripts/createTarDir.js && docker compose -f docker-compose.yml --profile demo build --no-cache && docker save -o tar/abhiyan_ai_frontend_demo_abhiyan.tar abhiyan_ai_frontend:latest",
-    "docker:build:tar:demo:rajyog": "BRAND=rajyog  node ./scripts/createTarDir.js && docker compose -f docker-compose.yml --profile demo build --no-cache && docker save -o tar/abhiyan_ai_frontend_demo_rajyog.tar abhiyan_ai_frontend:latest",
-    "docker:build:tar:prod:abhiyan": "BRAND=abhiyan node ./scripts/createTarDir.js && docker compose -f docker-compose.yml --profile prod build --no-cache && docker save -o tar/abhiyan_ai_frontend_prod_abhiyan.tar abhiyan_ai_frontend:latest",
-    "docker:build:tar:prod:rajyog": "BRAND=rajyog  node ./scripts/createTarDir.js && docker compose -f docker-compose.yml --profile prod build --no-cache && docker save -o tar/abhiyan_ai_frontend_prod_rajyog.tar abhiyan_ai_frontend:latest"
+    "docker:build:tar:dev:abhiyan": "node ./scripts/createTarDir.js && BRAND=abhiyan docker compose -f docker-compose.yml --profile dev build --no-cache && docker save -o tar/abhiyan_ai_frontend_dev_abhiyan.tar abhiyan_ai_frontend:latest",
+    "docker:build:tar:dev:rajyog": "node ./scripts/createTarDir.js && BRAND=rajyog docker compose -f docker-compose.yml --profile dev build --no-cache && docker save -o tar/abhiyan_ai_frontend_dev_rajyog.tar abhiyan_ai_frontend:latest",
+    "docker:build:tar:uat:abhiyan": "node ./scripts/createTarDir.js && BRAND=abhiyan docker compose -f docker-compose.yml --profile uat build --no-cache && docker save -o tar/abhiyan_ai_frontend_uat_abhiyan.tar abhiyan_ai_frontend:latest",
+    "docker:build:tar:uat:rajyog": "node ./scripts/createTarDir.js && BRAND=rajyog docker compose -f docker-compose.yml --profile uat build --no-cache && docker save -o tar/abhiyan_ai_frontend_uat_rajyog.tar abhiyan_ai_frontend:latest",
+    "docker:build:tar:demo:abhiyan": "node ./scripts/createTarDir.js && BRAND=abhiyan docker compose -f docker-compose.yml --profile demo build --no-cache && docker save -o tar/abhiyan_ai_frontend_demo_abhiyan.tar abhiyan_ai_frontend:latest",
+    "docker:build:tar:demo:rajyog": "node ./scripts/createTarDir.js && BRAND=rajyog docker compose -f docker-compose.yml --profile demo build --no-cache && docker save -o tar/abhiyan_ai_frontend_demo_rajyog.tar abhiyan_ai_frontend:latest",
+    "docker:build:tar:prod:abhiyan": "node ./scripts/createTarDir.js && BRAND=abhiyan docker compose -f docker-compose.yml --profile prod build --no-cache && docker save -o tar/abhiyan_ai_frontend_prod_abhiyan.tar abhiyan_ai_frontend:latest",
+    "docker:build:tar:prod:rajyog": "node ./scripts/createTarDir.js && BRAND=rajyog docker compose -f docker-compose.yml --profile prod build --no-cache && docker save -o tar/abhiyan_ai_frontend_prod_rajyog.tar abhiyan_ai_frontend:latest"
   },
   "dependencies": {
     "@expo/metro-runtime": "~5.0.4",
