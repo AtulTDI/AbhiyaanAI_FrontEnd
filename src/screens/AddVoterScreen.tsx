@@ -97,6 +97,7 @@ export default function AddVoterScreen() {
       setVoterToEdit(null);
       table.setPage(0);
       table.setRowsPerPage(10);
+      table.fetchData(0, 10);
     }, [])
   );
 
@@ -112,7 +113,8 @@ export default function AddVoterScreen() {
   const addVoter = async (voterData: CreateVoterPayload) => {
     try {
       await createVoter(voterData);
-      table.fetchData(0, table.rowsPerPage, { searchText });
+      table.fetchData(0, table.rowsPerPage, { searchText: "" });
+      setSearchText("");
       showToast(t("voter.addSuccess"), "success");
       setShowAddVoterView(false);
       setVoterToEdit(null);
@@ -125,7 +127,8 @@ export default function AddVoterScreen() {
     if (!voterToEdit) return;
     try {
       await editVoterById(voterToEdit.id, voterData);
-      await table.fetchData(table.page, table.rowsPerPage, { searchText });
+      await table.fetchData(table.page, table.rowsPerPage, { searchText: "" });
+      setSearchText("");
       showToast(t("voter.editSuccess"), "success");
       setShowAddVoterView(false);
       setVoterToEdit(null);
@@ -148,7 +151,8 @@ export default function AddVoterScreen() {
     if (selectedVoterId) {
       try {
         await deleteVoterById(selectedVoterId);
-        table.fetchData(table.page, table.rowsPerPage, { searchText });
+        setSearchText("");
+        table.fetchData(table.page, table.rowsPerPage, { searchText: "" });
         showToast(t("voter.deleteSucess"), "success");
       } catch (error: any) {
         showToast(extractErrorMessage(error, t("voter.deleteFail")), "error");
@@ -211,9 +215,10 @@ export default function AddVoterScreen() {
               </Button>
             </View>
             <VoterUpload
-              fetchVoters={() =>
-                table.fetchData(0, table.rowsPerPage, { searchText })
-              }
+              fetchVoters={() => {
+                table.fetchData(0, table.rowsPerPage, { searchText: "" });
+                setSearchText("");
+              }}
               setShowAddVoterView={setShowAddVoterView}
             />
           </View>

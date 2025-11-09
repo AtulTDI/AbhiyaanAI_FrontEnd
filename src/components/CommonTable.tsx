@@ -119,37 +119,50 @@ export default function CommonTable<T>({
     }
   };
 
-  const enhancedColumns: Column<T>[] = [
-    ...(!tableWithSelection
-      ? [
-          {
-            key: "__sno__",
-            label: enableSearch ? "" : t("sno"),
-            flex: columns?.length > 7 ? 0.3 : totalCount >= 100 ? 0.2 : 0.1,
-            smallColumn: true,
-            renderHeader: () => (
-              <View>
-                {enableSearch ? (
-                  <Pressable onPress={toggleSearch} style={styles.searchIcon}>
-                    <MaterialIcons
-                      name={showSearch ? "close" : "search"}
-                      size={18}
-                      color={theme.colors.primary}
-                    />
-                  </Pressable>
-                ) : (
-                  <Text style={styles.headerCell}>{t("sno")}</Text>
-                )}
-              </View>
-            ),
-            render: (_: T, index: number) => (
-              <Text style={styles.dataCell}>{startIndex + index + 1}</Text>
-            ),
-          },
-        ]
-      : []),
-    ...columns,
-  ];
+  const enhancedColumns: Column<T>[] = (() => {
+    let baseColumns = [...columns];
+
+    if (tableWithSelection && enableSearch && baseColumns.length > 0) {
+      baseColumns[0] = {
+        ...baseColumns[0],
+        renderHeader: () => (
+          <Pressable onPress={toggleSearch} style={styles.searchIcon}>
+            <MaterialIcons
+              name={showSearch ? "close" : "search"}
+              size={18}
+              color={theme.colors.primary}
+            />
+          </Pressable>
+        ),
+      };
+    }
+
+    if (!tableWithSelection) {
+      baseColumns = [
+        {
+          key: "__sno__",
+          label: enableSearch ? "" : t("sno"),
+          flex: columns?.length > 7 ? 0.3 : totalCount >= 100 ? 0.2 : 0.1,
+          smallColumn: true,
+          renderHeader: () => (
+            <Pressable onPress={toggleSearch} style={styles.searchIcon}>
+              <MaterialIcons
+                name={showSearch ? "close" : "search"}
+                size={18}
+                color={theme.colors.primary}
+              />
+            </Pressable>
+          ),
+          render: (_: T, index: number) => (
+            <Text style={styles.dataCell}>{startIndex + index + 1}</Text>
+          ),
+        },
+        ...baseColumns,
+      ];
+    }
+
+    return baseColumns;
+  })();
 
   const tableHead = enhancedColumns.map((col) =>
     col.renderHeader ? col.renderHeader() : col.label
@@ -298,16 +311,85 @@ export default function CommonTable<T>({
             </View>
           </>
         ) : data.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            {emptyIcon ?? (
-              <MaterialIcons
-                name="info-outline"
-                size={40}
-                color={colors.borderGray}
-              />
+          <>
+            <Row
+              data={tableHead.map((head, idx) => (
+                <View
+                  key={idx}
+                  style={{ width: widthArr[idx], justifyContent: "center" }}
+                >
+                  <Text
+                    style={[
+                      styles.headerCell,
+                      { color: colors.white, width: "100%" },
+                    ]}
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                  >
+                    {head}
+                  </Text>
+                </View>
+              ))}
+              style={styles.headerRow}
+              widthArr={widthArr}
+            />
+
+            {enableSearch && showSearch && (
+              <Animated.View
+                style={[
+                  styles.searchPanelInline,
+                  {
+                    opacity: fadeAnim,
+                    transform: [
+                      {
+                        translateY: fadeAnim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [-10, 0],
+                        }),
+                      },
+                    ],
+                  },
+                ]}
+              >
+                <View style={styles.fullWidthSearchContainer}>
+                  <TextInput
+                    ref={searchInputRef}
+                    mode="outlined"
+                    placeholder="Search by name or mobile number"
+                    value={filters.search || ""}
+                    onChangeText={(text) =>
+                      setFilters((prev) => ({
+                        ...prev,
+                        search: text,
+                      }))
+                    }
+                    left={
+                      <TextInput.Icon
+                        icon="magnify"
+                        color={theme.colors.primary}
+                      />
+                    }
+                    style={styles.fullWidthSearchInput}
+                    outlineColor={theme.colors.borderGray}
+                    activeOutlineColor={theme.colors.primary}
+                    textColor={theme.colors.textPrimary}
+                    placeholderTextColor={theme.colors.textSecondary}
+                  />
+                </View>
+              </Animated.View>
             )}
-            <Text style={styles.emptyText}>{emptyText}</Text>
-          </View>
+
+            <View style={styles.emptyContainer}>
+              {emptyIcon ?? (
+                <MaterialIcons
+                  name="info-outline"
+                  size={40}
+                  color={colors.borderGray}
+                />
+              )}
+              <Text style={styles.emptyText}>{emptyText}</Text>
+            </View>
+          </>
         ) : (
           <>
             <ScrollView
