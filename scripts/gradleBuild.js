@@ -84,7 +84,8 @@ try {
       .find((d) => d.toLowerCase().includes(APP_ENV.toLowerCase())) ||
     "release";
 
-  const releaseDir = path.join(apkBaseDir, variantFolder, "release");
+  const debugOrRelease = gradleTask.toLowerCase().includes("debug") ? "debug" : "release";
+  const releaseDir = path.join(apkBaseDir, variantFolder, debugOrRelease);
   if (!fs.existsSync(releaseDir)) {
     console.error(`❌ No APK release folder found at ${releaseDir}`);
     process.exit(1);
