@@ -4,6 +4,7 @@ import { Surface, Text, Button, useTheme } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 import { useFocusEffect } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
+import ResponsiveKeyboardView from "../components/ResponsiveKeyboardView";
 import SelectBaseVideo from "../components/SelectBaseVideo";
 import SelectVoters from "../components/SelectVoters";
 import { useToast } from "../components/ToastProvider";
@@ -145,183 +146,187 @@ export default function GenerateVideoScreen() {
   };
 
   return (
-    <Surface style={styles.container} elevation={2}>
-      {/* Custom Stepper */}
-      <View style={styles.stepperContainer}>
-        {steps.map((label, index) => {
-          const isActive = index === activeStep;
-          const isCompleted = index < activeStep;
+    <ResponsiveKeyboardView>
+      <Surface style={styles.container} elevation={2}>
+        {/* Custom Stepper */}
+        <View style={styles.stepperContainer}>
+          {steps.map((label, index) => {
+            const isActive = index === activeStep;
+            const isCompleted = index < activeStep;
 
-          return (
-            <View key={label} style={styles.step}>
-              <View
-                style={[
-                  styles.circle,
-                  {
-                    backgroundColor: isCompleted
-                      ? colors.success
-                      : isActive
-                      ? colors.primary
-                      : colors.background,
-                    borderColor: isCompleted
-                      ? colors.success
-                      : isActive
-                      ? colors.primary
-                      : colors.background,
-                  },
-                ]}
-              >
-                {isCompleted ? (
-                  <Ionicons name="checkmark" size={18} color={colors.white} />
-                ) : (
-                  <Text
-                    style={{
-                      color: isActive ? colors.white : colors.outline,
-                      fontWeight: "bold",
-                    }}
-                  >
-                    {index + 1}
-                  </Text>
+            return (
+              <View key={label} style={styles.step}>
+                <View
+                  style={[
+                    styles.circle,
+                    {
+                      backgroundColor: isCompleted
+                        ? colors.success
+                        : isActive
+                        ? colors.primary
+                        : colors.background,
+                      borderColor: isCompleted
+                        ? colors.success
+                        : isActive
+                        ? colors.primary
+                        : colors.background,
+                    },
+                  ]}
+                >
+                  {isCompleted ? (
+                    <Ionicons name="checkmark" size={18} color={colors.white} />
+                  ) : (
+                    <Text
+                      style={{
+                        color: isActive ? colors.white : colors.outline,
+                        fontWeight: "bold",
+                      }}
+                    >
+                      {index + 1}
+                    </Text>
+                  )}
+                </View>
+                <Text
+                  style={{
+                    marginTop: 6,
+                    fontSize: 14,
+                    textAlign: "center",
+                    color: isActive ? colors.primary : colors.outline,
+                    fontWeight: isActive ? "bold" : "normal",
+                  }}
+                >
+                  {label}
+                </Text>
+
+                {index < steps.length - 1 && (
+                  <View style={styles.lineConnector} />
                 )}
               </View>
-              <Text
-                style={{
-                  marginTop: 6,
-                  fontSize: 14,
-                  textAlign: "center",
-                  color: isActive ? colors.primary : colors.outline,
-                  fontWeight: isActive ? "bold" : "normal",
-                }}
-              >
-                {label}
-              </Text>
+            );
+          })}
+        </View>
 
-              {index < steps.length - 1 && (
-                <View style={styles.lineConnector} />
-              )}
-            </View>
-          );
-        })}
-      </View>
-
-      {/* Count Section */}
-      {activeStep === 1 && (
-        <Surface
-          style={[
-            styles.countContainer,
-            { marginTop: isWeb && !isMobileWeb ? -15 : 10 },
-          ]}
-        >
-          <Ionicons
-            name="people-circle-outline"
-            size={isWeb && !isMobileWeb ? 28 : 20}
-            color={colors.primary}
-            style={{ marginRight: isWeb && !isMobileWeb ? 10 : 6 }}
-          />
-          <Text
+        {/* Count Section */}
+        {activeStep === 1 && (
+          <Surface
             style={[
-              styles.countText,
-              { fontSize: isWeb && !isMobileWeb ? 16 : 12 },
+              styles.countContainer,
+              { marginTop: isWeb && !isMobileWeb ? -15 : 10 },
             ]}
           >
-            {t("selected")}:{" "}
+            <Ionicons
+              name="people-circle-outline"
+              size={isWeb && !isMobileWeb ? 28 : 20}
+              color={colors.primary}
+              style={{ marginRight: isWeb && !isMobileWeb ? 10 : 6 }}
+            />
             <Text
               style={[
-                styles.countHighlight,
+                styles.countText,
                 { fontSize: isWeb && !isMobileWeb ? 16 : 12 },
               ]}
             >
-              {selectedVoterCount} /{" "}
+              {t("selected")}:{" "}
+              <Text
+                style={[
+                  styles.countHighlight,
+                  { fontSize: isWeb && !isMobileWeb ? 16 : 12 },
+                ]}
+              >
+                {selectedVoterCount} /{" "}
+              </Text>
+              {totalVoterCount}
             </Text>
-            {totalVoterCount}
-          </Text>
-        </Surface>
-      )}
+          </Surface>
+        )}
 
-      {/* Step Content */}
-      <View style={[styles.content, { marginTop: activeStep === 1 ? 0 : 10 }]}>
-        {renderStepContent()}
-      </View>
-
-      {/* Navigation Buttons */}
-      {!isWeb && activeStep === steps.length - 1 && (
-        <View>
-          <Button
-            mode="contained"
-            onPress={handleGenerateAll}
-            loading={isLoading}
-            disabled={isLoading}
-            style={styles.selectAllBtn}
-          >
-            {t("video.generateAllVideos")}
-          </Button>
+        {/* Step Content */}
+        <View
+          style={[styles.content, { marginTop: activeStep === 1 ? 0 : 10 }]}
+        >
+          {renderStepContent()}
         </View>
-      )}
 
-      <View style={styles.buttons}>
-        <Button
-          mode="outlined"
-          onPress={handleBack}
-          disabled={activeStep === 0}
-          style={styles.btn}
-        >
-          {t("previous")}
-        </Button>
-        <Button
-          mode="contained"
-          onPress={
-            activeStep === steps.length - 1 ? handleGenerate : handleNext
-          }
-          loading={isLoading}
-          disabled={
-            !stepData[0] ||
-            (activeStep === 1 && stepData[1].length === 0) ||
-            isLoading
-          }
-          style={styles.btn}
-        >
-          {activeStep === steps.length - 1
-            ? isLoading
-              ? t("video.generating")
-              : t("video.generateVideo")
-            : t("next")}
-        </Button>
-        {isWeb && !isMobileWeb && activeStep === steps.length - 1 && (
+        {/* Navigation Buttons */}
+        {!isWeb && activeStep === steps.length - 1 && (
+          <View>
+            <Button
+              mode="contained"
+              onPress={handleGenerateAll}
+              loading={isLoading}
+              disabled={isLoading}
+              style={styles.selectAllBtn}
+            >
+              {t("video.generateAllVideos")}
+            </Button>
+          </View>
+        )}
+
+        <View style={styles.buttons}>
           <Button
-            mode="contained"
-            onPress={handleGenerateAll}
-            loading={isLoading}
-            disabled={isLoading}
+            mode="outlined"
+            onPress={handleBack}
+            disabled={activeStep === 0}
             style={styles.btn}
           >
-            {t("video.generateAllVideos")}
+            {t("previous")}
           </Button>
-        )}
-      </View>
-
-      {/* Blocking Overlay */}
-      {showOverlay && (
-        <View style={styles.overlay}>
-          <View style={styles.overlayMessageContainer}>
-            <Ionicons
-              name="time-outline"
-              size={50}
-              color={colors.primary}
-              style={{ marginBottom: 20, opacity: 0.85 }}
-            />
-            <Text style={styles.overlayMessageTitle}>
-              {t("video.processingProgress")}
-            </Text>
-            <Text style={styles.overlayMessageText}>
-              {t("video.videoGenerationProgress")}
-            </Text>
-            <Text style={styles.overlayMessageText}>
-              {t("video.waitForCompletion")}
-            </Text>
-          </View>
+          <Button
+            mode="contained"
+            onPress={
+              activeStep === steps.length - 1 ? handleGenerate : handleNext
+            }
+            loading={isLoading}
+            disabled={
+              !stepData[0] ||
+              (activeStep === 1 && stepData[1].length === 0) ||
+              isLoading
+            }
+            style={styles.btn}
+          >
+            {activeStep === steps.length - 1
+              ? isLoading
+                ? t("video.generating")
+                : t("video.generateVideo")
+              : t("next")}
+          </Button>
+          {isWeb && !isMobileWeb && activeStep === steps.length - 1 && (
+            <Button
+              mode="contained"
+              onPress={handleGenerateAll}
+              loading={isLoading}
+              disabled={isLoading}
+              style={styles.btn}
+            >
+              {t("video.generateAllVideos")}
+            </Button>
+          )}
         </View>
-      )}
-    </Surface>
+
+        {/* Blocking Overlay */}
+        {showOverlay && (
+          <View style={styles.overlay}>
+            <View style={styles.overlayMessageContainer}>
+              <Ionicons
+                name="time-outline"
+                size={50}
+                color={colors.primary}
+                style={{ marginBottom: 20, opacity: 0.85 }}
+              />
+              <Text style={styles.overlayMessageTitle}>
+                {t("video.processingProgress")}
+              </Text>
+              <Text style={styles.overlayMessageText}>
+                {t("video.videoGenerationProgress")}
+              </Text>
+              <Text style={styles.overlayMessageText}>
+                {t("video.waitForCompletion")}
+              </Text>
+            </View>
+          </View>
+        )}
+      </Surface>
+    </ResponsiveKeyboardView>
   );
 }
 

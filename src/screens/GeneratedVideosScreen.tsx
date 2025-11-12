@@ -42,6 +42,7 @@ import {
 } from "../api/whatsappApi";
 import { useServerTable } from "../hooks/useServerTable";
 import { usePlatformInfo } from "../hooks/usePlatformInfo";
+import ResponsiveKeyboardView from "../components/ResponsiveKeyboardView";
 import { AppTheme } from "../theme";
 
 let RNFS: any = null;
@@ -762,36 +763,38 @@ export default function GeneratedVideoScreen() {
       )}
 
       {/* Table */}
-      <View style={{ flex: 1 }}>
-        <CommonTable
-          data={table.data}
-          columns={columns}
-          loading={loading}
-          emptyIcon={
-            <Ionicons
-              name="videocam-outline"
-              size={48}
-              color={colors.disabledText}
-            />
-          }
-          emptyText={t("video.noData")}
-          tableHeight={
-            isWeb && !isMobileWeb ? "calc(100vh - 345px)" : undefined
-          }
-          enableSearch
-          onSearchChange={(filters) => {
-            handleVoterSearch(filters.search);
-          }}
-          onPageChange={table.setPage}
-          onRowsPerPageChange={(size) => {
-            table.setRowsPerPage(size);
-            table.setPage(0);
-          }}
-          page={table.page}
-          rowsPerPage={table.rowsPerPage}
-          totalCount={table.total}
-        />
-      </View>
+      <ResponsiveKeyboardView>
+        <View style={{ flex: 1 }}>
+          <CommonTable
+            data={table.data}
+            columns={columns}
+            loading={loading}
+            emptyIcon={
+              <Ionicons
+                name="videocam-outline"
+                size={48}
+                color={colors.disabledText}
+              />
+            }
+            emptyText={t("video.noData")}
+            tableHeight={
+              isWeb && !isMobileWeb ? "calc(100vh - 345px)" : undefined
+            }
+            enableSearch
+            onSearchChange={(filters) => {
+              handleVoterSearch(filters.search);
+            }}
+            onPageChange={table.setPage}
+            onRowsPerPageChange={(size) => {
+              table.setRowsPerPage(size);
+              table.setPage(0);
+            }}
+            page={table.page}
+            rowsPerPage={table.rowsPerPage}
+            totalCount={table.total}
+          />
+        </View>
+      </ResponsiveKeyboardView>
 
       {/* WhatsApp QR Modal */}
       <Portal>

@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import dayjs from "dayjs";
 import { Voter } from "../types/Voter";
 import CommonTable from "./CommonTable";
+import ResponsiveKeyboardView from "./ResponsiveKeyboardView";
 import { AppTheme } from "../theme";
 
 type Props = {
@@ -82,26 +83,32 @@ export default function VoterTable({
   ];
 
   return (
-    <CommonTable
-      data={data}
-      columns={columns}
-      loading={loading}
-      tableWithSelection={false}
-      keyExtractor={(item) => item.id}
-      emptyIcon={
-        <Ionicons name="people-outline" size={48} color={colors.disabledText} />
-      }
-      emptyText={t("voter.noData")}
-      page={page}
-      rowsPerPage={rowsPerPage}
-      totalCount={totalCount}
-      enableSearch
-      onSearchChange={(filters) => {
-        handleVoterSearch(filters.search);
-      }}
-      onPageChange={onPageChange}
-      onRowsPerPageChange={onRowsPerPageChange}
-    />
+    <ResponsiveKeyboardView>
+      <CommonTable
+        data={data}
+        columns={columns}
+        loading={loading}
+        tableWithSelection={false}
+        keyExtractor={(item) => item.id}
+        emptyIcon={
+          <Ionicons
+            name="people-outline"
+            size={48}
+            color={colors.disabledText}
+          />
+        }
+        emptyText={t("voter.noData")}
+        page={page}
+        rowsPerPage={rowsPerPage}
+        totalCount={totalCount}
+        enableSearch
+        onSearchChange={(filters) => {
+          handleVoterSearch(filters.search);
+        }}
+        onPageChange={onPageChange}
+        onRowsPerPageChange={onRowsPerPageChange}
+      />
+    </ResponsiveKeyboardView>
   );
 }
 

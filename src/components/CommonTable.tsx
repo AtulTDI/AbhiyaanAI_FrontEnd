@@ -9,6 +9,7 @@ import {
   useWindowDimensions,
   Animated,
   Pressable,
+  Keyboard,
 } from "react-native";
 import {
   Menu,
@@ -97,25 +98,38 @@ export default function CommonTable<T>({
     totalCount > 0 ? totalCount / rowsPerPage : data.length / rowsPerPage
   );
   const searchInputRef = React.useRef(null);
+  const horizontalScrollRef = React.useRef<ScrollView | null>(null);
 
   const toggleSearch = () => {
     if (showSearch) {
+      if (searchInputRef.current) {
+        searchInputRef.current.blur?.();
+      }
+      Keyboard.dismiss();
+
       Animated.timing(fadeAnim, {
         toValue: 0,
         duration: 200,
         useNativeDriver: true,
-      }).start(() => setShowSearch(false));
-      setFilters((prev) => ({
-        ...prev,
-        search: "",
-      }));
+      }).start(() => {
+        setShowSearch(false);
+        setFilters((prev) => ({
+          ...prev,
+          search: "",
+        }));
+      });
     } else {
       setShowSearch(true);
+
       Animated.timing(fadeAnim, {
         toValue: 1,
         duration: 200,
         useNativeDriver: true,
-      }).start();
+      }).start(() => {
+        setTimeout(() => {
+          searchInputRef.current?.focus?.();
+        }, 100);
+      });
     }
   };
 
@@ -157,7 +171,9 @@ export default function CommonTable<T>({
               <Text style={styles.headerCell}>{t("sno")}</Text>
             ),
           render: (_: T, index: number) => (
-            <Text style={styles.dataCell}>{startIndex + index + 1}</Text>
+            <View style={enableSearch ? styles.srNoContainer : styles.dataCell}>
+              <Text>{startIndex + index + 1}</Text>
+            </View>
           ),
         },
         ...baseColumns,
@@ -230,11 +246,29 @@ export default function CommonTable<T>({
     }
   } else {
     if (customMobileHeight) {
-      availableHeight = screenHeight * (showSearch ? 0.33 : 0.43);
+      availableHeight = screenHeight * (showSearch ? 0.37 : 0.43);
     } else {
       availableHeight = screenHeight * (showSearch ? 0.56 : 0.66);
     }
   }
+
+  useEffect(() => {
+    const onKeyboardHide = () => {
+      if (!filters.search || filters.search.trim() === "") {
+        setShowSearch(false);
+        setFilters((prev) => ({ ...prev, search: "" }));
+      }
+    };
+
+    const keyboardDidHideListener = Keyboard.addListener(
+      "keyboardDidHide",
+      onKeyboardHide
+    );
+
+    return () => {
+      keyboardDidHideListener.remove();
+    };
+  }, [filters.search]);
 
   useEffect(() => {
     let timer;
@@ -249,13 +283,42 @@ export default function CommonTable<T>({
   }, [loading]);
 
   useEffect(() => {
-    if (showSearch) {
-      const timer = setTimeout(() => {
-        searchInputRef.current?.focus();
-      }, 300);
-      return () => clearTimeout(timer);
-    }
+    if (!showSearch) return;
+
+    let cancelled = false;
+
+    const doSmoothFocusScroll = async () => {
+      await new Promise((r) => setTimeout(r, 350));
+      if (cancelled) return;
+
+      searchInputRef.current?.focus();
+
+      await new Promise((r) => setTimeout(r, 400));
+      if (cancelled) return;
+
+      requestAnimationFrame(() => {
+        horizontalScrollRef.current?.scrollTo({
+          x: 0,
+          animated: true,
+        });
+      });
+    };
+
+    doSmoothFocusScroll();
+
+    return () => {
+      cancelled = true;
+    };
   }, [showSearch]);
+
+  useEffect(() => {
+    const onShow = Keyboard.addListener("keyboardDidShow", () => {
+      requestAnimationFrame(() => {
+        horizontalScrollRef.current?.scrollTo({ x: 0, animated: true });
+      });
+    });
+    return () => onShow.remove();
+  }, []);
 
   const handlePageChange = (newPage: number) => {
     if (onPageChange) onPageChange(newPage);
@@ -396,6 +459,7 @@ export default function CommonTable<T>({
         ) : (
           <>
             <ScrollView
+              ref={horizontalScrollRef}
               horizontal={enableHorizontalScroll}
               nestedScrollEnabled
               showsHorizontalScrollIndicator={enableHorizontalScroll}
@@ -706,6 +770,9 @@ const createStyles = (
       height: 48,
       borderBottomWidth: 1,
       borderColor: theme.colors.borderGray,
+    },
+    srNoContainer: {
+      paddingLeft: 10,
     },
     dataCell: {
       fontSize: 13,
