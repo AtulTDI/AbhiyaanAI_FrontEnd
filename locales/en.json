@@ -53,6 +53,7 @@
   "password": "Password",
   "campaign": "Campaign",
   "campaignMessage": "Campaign Message",
+  "cloningSpeed": "Cloning Speed",
   "approval": "Approval",
 
   "loadingData": "Loading data...",

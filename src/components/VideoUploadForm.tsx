@@ -38,10 +38,12 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
 interface FormData {
   campaign: string;
   message?: string;
+  cloningSpeed?: number;
   file: DocumentPicker.DocumentPickerAsset | null;
   errors: {
     campaign?: string;
     message?: string;
+    cloningSpeed?: string;
     file?: string;
   };
 }
@@ -71,6 +73,7 @@ export default function VideoUploadForm({
   const [formData, setFormData] = useState<FormData>({
     campaign: "",
     message: "",
+    cloningSpeed: 1,
     file: null,
     errors: {},
   });
@@ -146,6 +149,7 @@ export default function VideoUploadForm({
     const payload = {
       campaign: formData.campaign.trim(),
       message: formData.message.trim(),
+      cloningSpeed: formData.cloningSpeed,
       file: formData.file,
     };
 
@@ -239,6 +243,67 @@ export default function VideoUploadForm({
               style={{ paddingLeft: 0 }}
             >
               {formData.errors.message}
+            </HelperText>
+          </View>
+
+          {/* Cloning Speed */}
+          <View style={{ flex: 1 }}>
+            <TextInput
+              label={t("cloningSpeed")}
+              value={`${formData.cloningSpeed.toFixed(1)}x`}
+              mode="outlined"
+              onChangeText={(text) => {
+                let num = parseFloat(text);
+                if (isNaN(num)) num = 1;
+                if (num < 0.8) num = 0.8;
+                if (num > 1.2) num = 1.2;
+                num = +num.toFixed(1);
+
+                setFormData((prev) => ({
+                  ...prev,
+                  cloningSpeed: num,
+                  errors: { ...prev.errors, cloningSpeed: undefined },
+                }));
+              }}
+              style={styles.input}
+              contentStyle={{ textAlign: "center" }}
+              editable={false}
+              right={
+                <TextInput.Affix
+                  text="＋"
+                  onPress={() =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      cloningSpeed: Math.min(
+                        1.2,
+                        +(prev.cloningSpeed + 0.1).toFixed(1)
+                      ),
+                    }))
+                  }
+                />
+              }
+              left={
+                <TextInput.Affix
+                  text="－"
+                  onPress={() =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      cloningSpeed: Math.max(
+                        0.8,
+                        +(prev.cloningSpeed - 0.1).toFixed(1)
+                      ),
+                    }))
+                  }
+                />
+              }
+            />
+
+            <HelperText
+              type="error"
+              visible={!!formData.errors.cloningSpeed}
+              style={{ paddingLeft: 0 }}
+            >
+              {formData.errors.cloningSpeed}
             </HelperText>
           </View>
         </View>

@@ -85,6 +85,7 @@ export const uploadVideo = async (payload: Video) => {
   // --- Other Form Fields ---
   formData.append("campaignName", payload.campaign);
   formData.append("message", payload.message);
+  formData.append("cloningSpeed", payload.cloningSpeed);
 
   // --- Upload API ---
   const response = await axios.post("/BaseVideos/upload", formData, {
