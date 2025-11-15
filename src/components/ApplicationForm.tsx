@@ -87,6 +87,12 @@ export default function ApplicationForm({
       max: 15,
       required: true,
     },
+    {
+      name: "premiumVoice",
+      label: t("premiumVoice"),
+      type: "checkbox",
+      required: false,
+    },
   ];
 
   return (
@@ -104,6 +110,7 @@ export default function ApplicationForm({
           videoCount: applicationToEdit ? "0" : "100",
           salesAgent: applicationToEdit?.salesAgentId || "",
           videoGenerationRate: applicationToEdit?.videoGenerationRate || "",
+          premiumVoice: applicationToEdit?.premiumVoice || false
         }}
         mode={mode}
         onSubmit={(data) => onCreate(data as any)}

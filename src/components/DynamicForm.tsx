@@ -8,6 +8,7 @@ import {
   Surface,
   useTheme,
   Text,
+  Checkbox,
 } from "react-native-paper";
 import { usePlatformInfo } from "../hooks/usePlatformInfo";
 import FormDropdown from "./FormDropdown";
@@ -16,11 +17,11 @@ import { AppTheme } from "../theme";
 
 type Props = {
   fields: FieldConfig[];
-  initialValues: Record<string, string>;
+  initialValues: Record<string, string | boolean>;
   mode: "create" | "edit";
   formSubmitLoading?: boolean;
-  onChange?: (data: FieldConfig, value: string) => void;
-  onSubmit?: (data: Record<string, string>) => void;
+  onChange?: (data: FieldConfig, value: string | boolean) => void;
+  onSubmit?: (data: Record<string, string | boolean>) => void;
   onCancel?: () => void;
 };
 
@@ -39,7 +40,8 @@ export default function DynamicForm({
   const { colors } = theme;
   const styles = createStyles(theme, { isWeb, isMobileWeb });
 
-  const [formData, setFormData] = useState(initialValues);
+  const [formData, setFormData] =
+    useState<Record<string, string | boolean>>(initialValues);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [showPassword, setShowPassword] = useState(false);
   const [hasInitialized, setHasInitialized] = useState(false);
@@ -58,32 +60,48 @@ export default function DynamicForm({
     fields.forEach((field) => {
       const rawValue = formData[field.name];
       const value = typeof rawValue === "string" ? rawValue.trim() : rawValue;
-      const numericValue = parseFloat(value);
 
-      if (field.required && !value) {
-        errors[field.name] = t("fieldRequired", { field: t(field.label) });
-        return;
+      const numericValue = typeof value === "string" ? parseFloat(value) : NaN;
+
+      if (field.required) {
+        if (field.type === "checkbox") {
+          if (value !== true) {
+            errors[field.name] = t("fieldRequired", { field: t(field.label) });
+            return;
+          }
+        } else {
+          if (!value) {
+            errors[field.name] = t("fieldRequired", { field: t(field.label) });
+            return;
+          }
+        }
       }
 
-      if (field.type === "email" && value && !/^\S+@\S+\.\S+$/.test(value)) {
-        errors[field.name] = "Invalid email format";
+      if (field.type === "checkbox") return;
+
+      if (field.type === "email" && typeof value === "string") {
+        if (!/^\S+@\S+\.\S+$/.test(value)) {
+          errors[field.name] = "Invalid email format";
+        }
       }
 
-      if (field.type === "password" && mode === "create" && value) {
-        const errorsList: string[] = [];
-
+      if (
+        field.type === "password" &&
+        mode === "create" &&
+        typeof value === "string"
+      ) {
         if (value.length < 6) {
-          errorsList.push("Passwords must be at least 6 characters");
-        }
-
-        if (errorsList.length > 0) {
-          errors[field.name] = errorsList.join("\n");
+          errors[field.name] = "Passwords must be at least 6 characters";
         }
       }
 
-      if (field.validationRules && Array.isArray(field.validationRules)) {
+      if (
+        field.validationRules &&
+        Array.isArray(field.validationRules) &&
+        typeof value === "string"
+      ) {
         const failedRules = field.validationRules
-          .filter((rule) => !rule.test(value || ""))
+          .filter((rule) => !rule.test(value))
           .map((rule) => rule.message);
 
         if (failedRules.length > 0) {
@@ -91,45 +109,42 @@ export default function DynamicForm({
         }
       }
 
-      if (field.type === "number") {
+      if (field.type === "number" && typeof value === "string") {
         if (value && isNaN(numericValue)) {
           errors[field.name] = `${field.label} must be a valid number`;
-        } else if (
-          value &&
+        }
+
+        if (
           field.decimalPlaces != null &&
+          value &&
           !new RegExp(`^\\d+(\\.\\d{1,${field.decimalPlaces}})?$`).test(value)
         ) {
           errors[
             field.name
           ] = `Only up to ${field.decimalPlaces} decimal place(s) allowed`;
-        } else if (
-          value &&
+        }
+
+        if (
           field.decimalPlaces == null &&
-          value.toString().includes(".")
+          typeof value === "string" &&
+          value.includes(".")
         ) {
           errors[field.name] = `${field.label} must be a whole number`;
         }
 
-        if (
-          value &&
-          !isNaN(numericValue) &&
-          field.min != null &&
-          numericValue < field.min
-        ) {
+        if (field.min != null && numericValue < field.min) {
           errors[field.name] = `${field.label} must be ≥ ${field.min}`;
         }
 
-        if (
-          value &&
-          !isNaN(numericValue) &&
-          field.max != null &&
-          numericValue > field.max
-        ) {
+        if (field.max != null && numericValue > field.max) {
           errors[field.name] = `${field.label} must be ≤ ${field.max}`;
         }
       }
 
-      if ((field.name === "mobile" || field.name === "phoneNumber") && value) {
+      if (
+        (field.name === "mobile" || field.name === "phoneNumber") &&
+        typeof value === "string"
+      ) {
         if (!/^\d{10}$/.test(value)) {
           errors[field.name] = `${field.label} must be exactly 10 digits`;
         }
@@ -137,7 +152,7 @@ export default function DynamicForm({
 
       if (
         (field.name === "firstName" || field.name === "lastName") &&
-        value &&
+        typeof value === "string" &&
         /[^a-zA-Z\s]/.test(value)
       ) {
         errors[
@@ -150,8 +165,20 @@ export default function DynamicForm({
     return Object.keys(errors).length === 0;
   };
 
-  const handleChange = (field: FieldConfig, value: string) => {
+  const handleChange = (field: FieldConfig, value: string | boolean) => {
     const { name, type } = field;
+
+    if (type === "checkbox") {
+      const boolValue = value === true;
+      setFormData({ ...formData, [name]: boolValue });
+
+      if (onChange) onChange(field, boolValue);
+      if (formErrors[name]) setFormErrors({ ...formErrors, [name]: "" });
+      return;
+    }
+
+    if (typeof value !== "string") return;
+
     let newValue = value;
 
     if (type === "number") {
@@ -168,7 +195,7 @@ export default function DynamicForm({
     if (name === "mobile" || name === "phoneNumber") {
       let digitsOnly = value.replace(/[^0-9]/g, "");
 
-      if (digitsOnly.length > formData[name].length + 1) {
+      if (digitsOnly.length > (formData[name] as string).length + 1) {
         digitsOnly = digitsOnly.slice(-10);
       } else if (digitsOnly.length > 10) {
         digitsOnly = digitsOnly.substring(0, 10);
@@ -183,20 +210,15 @@ export default function DynamicForm({
 
     setFormData({ ...formData, [name]: newValue });
 
-    if (onChange) {
-      onChange(field, newValue);
-    }
-
-    if (formErrors[name]) {
-      setFormErrors({ ...formErrors, [name]: "" });
-    }
+    if (onChange) onChange(field, newValue);
+    if (formErrors[name]) setFormErrors({ ...formErrors, [name]: "" });
   };
 
   const handleFormSubmit = () => {
     if (validate()) {
-      onSubmit({
+      onSubmit?.({
         ...formData,
-        password: mode === "edit" ? undefined : formData?.password,
+        password: mode === "edit" ? undefined : formData.password,
       });
     }
   };
@@ -219,7 +241,42 @@ export default function DynamicForm({
                 : { marginRight: 0 },
             ]}
           >
-            {field.type === "dropdown" ? (
+            {field.type === "checkbox" ? (
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  marginLeft: -8,
+                  marginBottom: !isWeb || isMobileWeb ? 8 : 0,
+                }}
+              >
+                <Checkbox
+                  status={
+                    formData[field.name] === true ? "checked" : "unchecked"
+                  }
+                  onPress={() =>
+                    handleChange(field, !(formData[field.name] === true))
+                  }
+                  disabled={field.disabled}
+                />
+                <Text style={{ fontSize: 15 }}>
+                  {field.label}
+                  {field.required && (
+                    <Text style={{ color: colors.error }}> *</Text>
+                  )}
+                </Text>
+
+                {formErrors[field.name] && (
+                  <HelperText
+                    type="error"
+                    visible={true}
+                    style={{ paddingLeft: 0 }}
+                  >
+                    {formErrors[field.name]}
+                  </HelperText>
+                )}
+              </View>
+            ) : field.type === "dropdown" ? (
               <FormDropdown
                 label={
                   <Text>
@@ -229,10 +286,10 @@ export default function DynamicForm({
                     )}
                   </Text>
                 }
-                value={formData[field.name]}
+                value={formData[field.name] as string}
                 options={
                   Array.isArray(field.options)
-                    ? typeof (field.options as unknown[])[0] === "string"
+                    ? typeof (field.options as any[])[0] === "string"
                       ? (field.options as string[]).map((opt) => ({
                           label: opt,
                           value: opt,
@@ -240,7 +297,7 @@ export default function DynamicForm({
                       : (field.options as { label: string; value: string }[])
                     : []
                 }
-                disabled={field?.disabled}
+                disabled={field.disabled}
                 error={formErrors[field.name]}
                 onSelect={(val) => handleChange(field, val)}
               />
@@ -255,7 +312,7 @@ export default function DynamicForm({
                       )}
                     </Text>
                   }
-                  value={formData[field.name]}
+                  value={formData[field.name] as string}
                   onChangeText={(text) => handleChange(field, text)}
                   mode="outlined"
                   secureTextEntry={field.type === "password" && !showPassword}
@@ -289,7 +346,7 @@ export default function DynamicForm({
                       : "none"
                   }
                   multiline={field.type === "textarea"}
-                  disabled={field?.disabled}
+                  disabled={field.disabled}
                   numberOfLines={field.type === "textarea" ? 4 : 1}
                   style={[
                     { backgroundColor: theme.colors.white },

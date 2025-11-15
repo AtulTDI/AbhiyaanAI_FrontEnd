@@ -7,6 +7,7 @@ export type Application = {
   salesAgent: string;
   salesAgentId?: string;
   videoGenerationRate?: string;
+  premiumVoice?: boolean;
   isActive: boolean;
 }
 
@@ -16,6 +17,7 @@ export type GetPaginatedApplications = {
   pageSize: number;
   totalPages: number;
   totalRecords: number;
+  premiumVoice: boolean;
 }
 
 export type CreateApplicationPayload = {
@@ -23,6 +25,7 @@ export type CreateApplicationPayload = {
   totalVideoCount: number;
   salesAgent: string;
   videoGenerationRate?: string;
+  premiumVoice?: boolean;
 }
 
 export type EditApplicationPayload = {
@@ -30,5 +33,6 @@ export type EditApplicationPayload = {
   totalVideoCount: number;
   salesAgent: string;
   videoGenerationRate?: string;
+  premiumVoice?: boolean;
   isActive: boolean;
 }

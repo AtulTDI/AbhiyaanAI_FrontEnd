@@ -26,7 +26,7 @@ export interface AuthProps {
   setShowSignInPage: (show: boolean) => void;
 }
 
-export type FieldType = "text" | "email" | "password" | "number" | "textarea" | "dropdown";
+export type FieldType = "text" | "email" | "password" | "number" | "textarea" | "dropdown" | "checkbox";
 
 export type FieldConfig = {
   name: string;

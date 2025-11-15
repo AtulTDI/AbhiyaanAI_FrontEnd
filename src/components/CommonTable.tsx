@@ -156,7 +156,7 @@ export default function CommonTable<T>({
         {
           key: "__sno__",
           label: enableSearch ? "" : t("sno"),
-          flex: columns?.length > 7 ? 0.35 : totalCount >= 100 ? 0.3 : 0.2,
+          flex: columns?.length > 7 ? 0.40 : totalCount >= 100 ? 0.3 : 0.2,
           smallColumn: true,
           renderHeader: () =>
             enableSearch ? (
