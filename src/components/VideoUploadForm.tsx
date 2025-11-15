@@ -280,6 +280,9 @@ export default function VideoUploadForm({
                       ),
                     }))
                   }
+                  textStyle={{
+                    fontSize: 22,
+                  }}
                 />
               }
               left={
@@ -294,6 +297,9 @@ export default function VideoUploadForm({
                       ),
                     }))
                   }
+                  textStyle={{
+                    fontSize: 22,
+                  }}
                 />
               }
             />
