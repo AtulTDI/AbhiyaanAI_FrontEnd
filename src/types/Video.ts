@@ -33,4 +33,5 @@ export type GetVideoLink = {
 export type SampleVideo = {
   file: any;
   recipientName: string;
+  cloningSpeed?: number; 
 }

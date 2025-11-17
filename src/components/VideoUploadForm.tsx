@@ -109,6 +109,7 @@ export default function VideoUploadForm({
       await generateSampleVideo({
         file: formData?.file,
         recipientName: name.trim(),
+        cloningSpeed: formData?.cloningSpeed
       });
     } catch (error) {
       showToast(

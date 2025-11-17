@@ -157,6 +157,7 @@ export const generateSampleVideo = async (payload: SampleVideo) => {
   }
 
   formData.append("RecipientName", payload.recipientName);
+  formData.append("CloningSpeed", payload.cloningSpeed);
 
   const response = await axios.post(
     `/CustomizedAIVideo/createsamplevideo`,
