@@ -77,9 +77,11 @@ export default function VideoUploadForm({
     file: null,
     errors: {},
   });
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true);
   const [name, setName] = useState("");
   const [generatedUri, setGeneratedUri] = useState<string | null>(null);
+  const [voiceCloneId, setVoiceCloneId] = useState<string | null>(null);
+
   const [loading, setLoading] = useState(false);
   const [videoDimensions, setVideoDimensions] = useState({
     width: 0,
@@ -95,9 +97,15 @@ export default function VideoUploadForm({
 
       onEvent(
         "ReceiveVideoUpdate",
-        (recipientId: string, status: string, customizedVideoLink: string) => {
+        (
+          recipientId: string,
+          status: string,
+          customizedVideoLink: string,
+          voiceCloneId: string
+        ) => {
           if (status === "Completed" && customizedVideoLink) {
             setGeneratedUri(customizedVideoLink);
+            setVoiceCloneId(voiceCloneId);
             setLoading(false);
             leaveGroups(userId);
             stopConnection();
@@ -151,7 +159,8 @@ export default function VideoUploadForm({
       campaign: formData.campaign.trim(),
       message: formData.message.trim(),
       cloningSpeed: formData.cloningSpeed,
-      file: formData.file,
+      voiceCloneId: voiceCloneId,
+      file: formData.file
     };
 
     onAddVideo(payload);
@@ -467,7 +476,7 @@ export default function VideoUploadForm({
           mode="contained"
           icon="upload"
           onPress={handleSubmit}
-          disabled={!formData.file || uploading}
+          disabled={!formData.file || uploading || !voiceCloneId}
           loading={uploading}
           style={styles.actionButton}
         >

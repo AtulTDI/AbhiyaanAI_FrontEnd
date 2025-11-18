@@ -5,6 +5,7 @@ export type Video = {
   campaignName?: string;
   message?: string;
   cloningSpeed?: number;
+  voiceCloneId?: string;
   status: string;
   file: any;
 }
