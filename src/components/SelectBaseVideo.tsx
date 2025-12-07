@@ -153,6 +153,7 @@ export default function SelectBaseVideo({ stepData, setStepData }) {
         emptyText={t("video.noData")}
         loading={loading}
         tableWithSelection={true}
+        tableHeight={"calc(100vh - 330px)"}
         page={table.page}
         rowsPerPage={table.rowsPerPage}
         totalCount={table.total}
