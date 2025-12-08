@@ -140,7 +140,7 @@ export default function VideoUploadForm({
   const handleSubmit = () => {
     const errors: FormData["errors"] = {};
     if (!formData.campaign.trim())
-      errors.campaign = "Campaign name is required";
+      errors.campaign = t("fieldRequired", { field: t("campaign") });
     if (!formData.file) errors.file = "Please upload a base video";
 
     if (Object.keys(errors).length > 0) {

@@ -4,6 +4,7 @@
   "userTabLabel": "यूजर",
   "activateSenderTabLabel": "सेंडर सक्रिय करें",
   "uploadBaseVideoTabLabel": "बेस वीडियो अपलोड करें",
+  "uploadImageTabLabel": "छवि अपलोड करें",
   "voterTabLabel": "मतदाता",
   "applicationTabLabel": "ऐप्लिकेशन",
   "senderTabLabel": "सेंडर",
@@ -162,6 +163,20 @@
     "sendConfirmMessage": "क्या आपने वीडियो सफलतापूर्वक भेजा?",
     "markSendVideoError": "स्टेटस पुष्टि में समस्या",
     "noData": "कोई वीडियो नहीं मिला"
+  },
+  "image": {
+    "singular": "छवि",
+    "plural": "छवियाँ",
+    "add": "छवि जोड़ें",
+    "addSingular": "छवि जोड़ें",
+    "upload": "छवि अपलोड करें",
+    "delete": "छवि डिलीट करें",
+    "confirmDelete": "क्या आप इस छवि को डिलीट करना चाहते हैं?",
+    "deleteSucessMessage": "छवि सफलतापूर्वक डिलीट किया गया!",
+    "deleteFailMessage": "छवि डिलीट करने में असफल",
+    "imageRequired": "कृपया कम से कम एक छवि अपलोड करें",
+    "uploadMax": "अधिकतम {{max}} छवियाँ अपलोड करें। पूर्वावलोकन पर क्लिक करें बड़ा करने के लिए; हटाने के लिए कैंसल का उपयोग करें",
+    "noData": "कोई छवियाँ नहीं मिलीं"
   },
   "voter": {
     "singular": "मतदाता",

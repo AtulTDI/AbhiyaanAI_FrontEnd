@@ -4,6 +4,7 @@
   "userTabLabel": "User(s)",
   "activateSenderTabLabel": "Activate Sender(s)",
   "uploadBaseVideoTabLabel": "Upload Base Video",
+  "uploadImageTabLabel": "Upload Image(s)",
   "voterTabLabel": "Voter(s)",
   "applicationTabLabel": "Application(s)",
   "senderTabLabel": "Sender(s)",
@@ -162,6 +163,20 @@
     "sendConfirmMessage": "Have you successfully sent the video?",
     "markSendVideoError": "Error in confirming status",
     "noData": "No videos found"
+  },
+  "image": {
+    "singular": "Image",
+    "plural": "Images",
+    "add": "Add Image(s)",
+    "addSingular": "Add Image",
+    "upload": "Upload Image(s)",
+    "delete": "Delete Image",
+    "confirmDelete": "Are you sure you want to delete this image?",
+    "deleteSucessMessage": "Image deleted successfully!",
+    "deleteFailMessage": "Failed to delete image",
+    "imageRequired": "Please upload at least one image",
+    "uploadMax": "Upload up to {{max}} images. Click a preview to enlarge; Use Cancel to remove",
+    "noData": "No images found"
   },
   "voter": {
     "singular": "Voter",

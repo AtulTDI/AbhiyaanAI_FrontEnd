@@ -11,6 +11,7 @@ import { stopConnection } from "../services/signalrService";
 import AdminDashboardScreen from "../screens/AdminDashboardScreen";
 import AddUserScreen from "../screens/AddUserScreen";
 import UploadVideoScreen from "../screens/UploadVideoScreen";
+import UploadImageScreen from "../screens/UploadImageScreen";
 import AddVoterScreen from "../screens/AddVoterScreen";
 import AddSenderScreen from "../screens/AddSenderScreen";
 import GenerateVideoScreen from "../screens/GenerateVideoScreen";
@@ -48,7 +49,7 @@ export default function AppLayout() {
         userEmail: email,
         role: storedRole,
         videoCount: count,
-        applicationName: userApplication
+        applicationName: userApplication,
       } = await getAuthData();
 
       if (name) setUserName(name);
@@ -323,28 +324,53 @@ export default function AppLayout() {
           )}
 
           {role === "Admin" && (
-            <Drawer.Screen
-              name="Upload"
-              component={UploadVideoScreen}
-              options={{
-                headerShown: true,
-                headerTitle: "",
-                headerRight: headerRightComponent,
-                drawerLabel: (props) => (
-                  <CustomLabel
-                    {...props}
-                    label={t("uploadBaseVideoTabLabel")}
-                    icon={
-                      <Ionicons
-                        name="cloud-upload"
-                        size={20}
-                        color={props.color || colors.onPrimary}
-                      />
-                    }
-                  />
-                ),
-              }}
-            />
+            <>
+              <Drawer.Screen
+                name="Upload"
+                component={UploadVideoScreen}
+                options={{
+                  headerShown: true,
+                  headerTitle: "",
+                  headerRight: headerRightComponent,
+                  drawerLabel: (props) => (
+                    <CustomLabel
+                      {...props}
+                      label={t("uploadBaseVideoTabLabel")}
+                      icon={
+                        <Ionicons
+                          name="cloud-upload"
+                          size={20}
+                          color={props.color || colors.onPrimary}
+                        />
+                      }
+                    />
+                  ),
+                }}
+              />
+
+              <Drawer.Screen
+                name="UploadImage"
+                component={UploadImageScreen}
+                options={{
+                  headerShown: true,
+                  headerTitle: "",
+                  headerRight: headerRightComponent,
+                  drawerLabel: (props) => (
+                    <CustomLabel
+                      {...props}
+                      label={t("uploadImageTabLabel")}
+                      icon={
+                        <Ionicons
+                          name="images-outline"
+                          size={20}
+                          color={props.color || colors.onPrimary}
+                        />
+                      }
+                    />
+                  ),
+                }}
+              />
+            </>
           )}
         </>
       )}
