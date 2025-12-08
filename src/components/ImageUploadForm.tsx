@@ -76,22 +76,8 @@ export default function ImageUploadForm({
 
   const isWeb = Platform.OS === "web";
 
-  // Debug startup
-  console.log(
-    "[ImageUploadForm] init",
-    "platform:",
-    Platform.OS,
-    "screenWidth:",
-    screenWidth,
-    "previewSize:",
-    previewSize,
-    "MAX_IMAGES:",
-    MAX_IMAGES
-  );
-
   /* ---------- Web file picker (keeps your original behavior) ---------- */
   const pickImageWeb = () => {
-    console.log("[pickImageWeb] invoked");
     let input = fileInputRef.current;
     if (!input) {
       input = document.createElement("input");
@@ -101,7 +87,6 @@ export default function ImageUploadForm({
       input.style.display = "none";
       input.onchange = () => {
         const file = input!.files && input!.files[0];
-        console.log("[pickImageWeb] input.onchange file:", file);
         if (!file) return;
         const objectUrl = URL.createObjectURL(file);
         setImages((prev) => {
@@ -115,7 +100,6 @@ export default function ImageUploadForm({
               file,
             },
           ];
-          console.log("[pickImageWeb] images updated:", next);
           return next;
         });
         setErrors((e) => ({ ...e, images: undefined }));
@@ -132,27 +116,21 @@ export default function ImageUploadForm({
   /* ---------- Native image picker (expo-image-picker) ---------- */
   const pickImageNative = async () => {
     try {
-      console.log("[pickImageNative] invoked, current images length:", images.length);
       if (images.length >= MAX_IMAGES) {
         const msg = `Maximum of ${MAX_IMAGES} images allowed`;
-        console.log("[pickImageNative] abort:", msg);
         setErrors((e) => ({ ...e, images: msg }));
         return;
       }
 
       // Request permission
-      console.log("[pickImageNative] requesting media library permission...");
       const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      console.log("[pickImageNative] permission result:", perm);
 
       if (perm.status !== "granted") {
         const message = "Permission to access photos was denied.";
-        console.log("[pickImageNative] permission denied");
         setErrors((e) => ({ ...e, images: message }));
         return;
       }
 
-      console.log("[pickImageNative] launching image library...");
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsMultipleSelection: false,
@@ -160,7 +138,6 @@ export default function ImageUploadForm({
         base64: false,
       });
 
-      console.log("[pickImageNative] raw picker result:", result);
 
       // Handle old and new shapes
       // old: { cancelled: boolean, uri: string }
@@ -176,10 +153,7 @@ export default function ImageUploadForm({
           assetUri = (result as any).assets[0].uri;
       }
 
-      console.log("[pickImageNative] cancelled:", cancelled, "assetUri:", assetUri);
-
       if (cancelled) {
-        console.log("[pickImageNative] user cancelled selection");
         return;
       }
 
@@ -190,12 +164,9 @@ export default function ImageUploadForm({
       }
 
       // Very common culprit: content:// URIs on Android. Log it.
-      console.log("[pickImageNative] picked uri:", assetUri);
       if (assetUri.startsWith("content://")) {
-        console.log("[pickImageNative] uri is content:// — attempting to get info and copy to cache");
         try {
           const infoBefore = await FileSystem.getInfoAsync(assetUri);
-          console.log("[pickImageNative] FileSystem.getInfoAsync(content) =>", infoBefore);
         } catch (err) {
           console.warn("[pickImageNative] getInfoAsync(content) failed:", err);
         }
@@ -204,20 +175,15 @@ export default function ImageUploadForm({
         try {
           const filename = `img_${Date.now()}.jpg`;
           const dest = `${FileSystem.cacheDirectory || ""}${filename}`;
-          console.log("[pickImageNative] attempting FileSystem.copyAsync to:", dest);
           const copyResult = await FileSystem.copyAsync({ from: assetUri, to: dest });
-          console.log("[pickImageNative] copyAsync result:", copyResult);
           assetUri = copyResult.uri;
-          console.log("[pickImageNative] using copied uri:", assetUri);
         } catch (copyErr) {
           console.warn("[pickImageNative] copyAsync failed:", copyErr);
           // fallback — try downloadAsync (sometimes works)
           try {
             const filename = `img_${Date.now()}.jpg`;
             const dest = `${FileSystem.cacheDirectory || ""}${filename}`;
-            console.log("[pickImageNative] attempting FileSystem.downloadAsync fallback to:", dest);
             const downloadResult = await FileSystem.downloadAsync(assetUri, dest);
-            console.log("[pickImageNative] downloadAsync result:", downloadResult);
             assetUri = downloadResult.uri;
           } catch (dlErr) {
             console.warn("[pickImageNative] downloadAsync failed:", dlErr);
@@ -230,7 +196,6 @@ export default function ImageUploadForm({
       let info: FileSystem.FileInfoResult | null = null;
       try {
         info = await FileSystem.getInfoAsync(assetUri, { size: true });
-        console.log("[pickImageNative] final FileSystem.getInfoAsync =>", info);
       } catch (infoErr) {
         console.warn("[pickImageNative] getInfoAsync failed on final uri:", infoErr);
       }
@@ -246,7 +211,6 @@ export default function ImageUploadForm({
 
       setImages((prev) => {
         const next = [...prev, newImage];
-        console.log("[pickImageNative] images updated:", next);
         return next;
       });
       setErrors((e) => ({ ...e, images: undefined }));
@@ -257,10 +221,8 @@ export default function ImageUploadForm({
   };
 
   const pickImage = () => {
-    console.log("[pickImage] invoked; images.length:", images.length);
     if (images.length >= MAX_IMAGES) {
       const msg = `Maximum of ${MAX_IMAGES} images allowed`;
-      console.log("[pickImage] abort:", msg);
       setErrors((e) => ({ ...e, images: msg }));
       return;
     }
@@ -271,20 +233,17 @@ export default function ImageUploadForm({
 
   /* ---------- Deleting images ---------- */
   const promptDeleteImage = (index: number) => {
-    console.log("[promptDeleteImage] index:", index);
     setIndexToDelete(index);
     setDeleteDialogVisible(true);
   };
 
   const confirmDeleteImage = () => {
-    console.log("[confirmDeleteImage] indexToDelete:", indexToDelete);
     if (indexToDelete === null) return;
 
     const img = images[indexToDelete];
     if (isWeb && img?.file) {
       try {
         URL.revokeObjectURL(img.uri);
-        console.log("[confirmDeleteImage] revoked object URL:", img.uri);
       } catch (e) {
         console.warn("[confirmDeleteImage] revokeObjectURL failed:", e);
       }
@@ -292,7 +251,6 @@ export default function ImageUploadForm({
 
     setImages((prev) => {
       const next = prev.filter((_, i) => i !== indexToDelete);
-      console.log("[confirmDeleteImage] images after remove:", next);
       return next;
     });
     setIndexToDelete(null);
@@ -301,26 +259,22 @@ export default function ImageUploadForm({
 
   /* ---------- Viewer ---------- */
   const openViewer = (index: number) => {
-    console.log("[openViewer] index:", index, "images length:", images.length);
     setViewerIndex(index);
     setViewerVisible(true);
   };
 
   /* ---------- submit ---------- */
   const validateAndSubmit = async () => {
-    console.log("[validateAndSubmit] images:", images);
     const errs: typeof errors = {};
     if (!campaign.trim())
       errs.campaign = t("fieldRequired", { field: t("campaign") });
     if (images.length === 0) errs.images = t("image.imageRequired");
 
     if (Object.keys(errs).length) {
-      console.log("[validateAndSubmit] validation errors:", errs);
       setErrors(errs);
       return;
     }
 
-    console.log("[validateAndSubmit] submitting payload");
     onAddImage &&
       onAddImage({ campaignName: campaign.trim(), caption: message.trim(), images });
   };
