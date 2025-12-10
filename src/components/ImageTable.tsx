@@ -123,12 +123,12 @@ export default function ImageTable({
         loading={loading}
         emptyIcon={
           <Ionicons
-            name="videocam-outline"
+            name="images-outline"
             size={48}
             color={colors.disabledText}
           />
         }
-        emptyText="No videos found"
+        emptyText={t('image.noData')}
         keyExtractor={(item) => item.id}
         page={page}
         rowsPerPage={rowsPerPage}

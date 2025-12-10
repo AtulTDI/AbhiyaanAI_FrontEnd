@@ -97,7 +97,7 @@ export default function UploadImageScreen() {
       setShowAddView(false);
     } catch (error) {
       showToast(
-        extractErrorMessage(error, t("video.addVideoFailMessage")),
+        extractErrorMessage(error, t("image.addImageFailMessage")),
         "error"
       );
     } finally {
