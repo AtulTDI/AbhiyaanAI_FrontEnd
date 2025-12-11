@@ -22,7 +22,7 @@ import {
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { Ionicons } from "@expo/vector-icons";
 import * as FileSystem from "expo-file-system";
-import * as ImagePicker from "expo-image-picker";
+import { Image as ImageType } from "../types/Image";
 import DeleteConfirmationDialog from "./DeleteConfirmationDialog";
 
 type ImageAsset = {
@@ -30,7 +30,8 @@ type ImageAsset = {
   name?: string;
   size?: number | null;
   type?: string | null;
-  file?: File | null; // only for web
+  file?: File | null;
+  locked?: boolean;
 };
 
 type Props = {
@@ -41,6 +42,9 @@ type Props = {
   }) => void;
   uploading?: boolean;
   setShowAddView: (val: boolean) => void;
+  imageToEdit: ImageType;
+  setImageToEdit: (image: ImageType) => void;
+  initialImages?: ImageAsset[];
 };
 
 const MAX_IMAGES = 2;
@@ -49,6 +53,8 @@ export default function ImageUploadForm({
   onAddImage,
   uploading = false,
   setShowAddView,
+  imageToEdit,
+  setImageToEdit,
 }: Props) {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -56,9 +62,22 @@ export default function ImageUploadForm({
   const styles = createStyles(theme as any);
   const screenWidth = Dimensions.get("window").width;
 
-  const [campaign, setCampaign] = useState("");
-  const [message, setMessage] = useState("");
-  const [images, setImages] = useState<ImageAsset[]>([]);
+  const [campaign, setCampaign] = useState(
+    imageToEdit ? imageToEdit.campaignName : ""
+  );
+  const [message, setMessage] = useState(
+    imageToEdit ? imageToEdit.message : ""
+  );
+
+  const [images, setImages] = useState<ImageAsset[]>(() => {
+    return imageToEdit
+      ? imageToEdit.images.map((img) => ({
+          uri: img,
+          locked: true,
+        }))
+      : [];
+  });
+
   const [errors, setErrors] = useState<{ campaign?: string; images?: string }>(
     {}
   );
@@ -75,8 +94,9 @@ export default function ImageUploadForm({
     : Math.min(Math.floor((screenWidth - 64) / 2), 420);
 
   const isWeb = Platform.OS === "web";
+  const isWide = isWeb && screenWidth > 900;
 
-  /* ---------- Web file picker (keeps your original behavior) ---------- */
+  /* ---------- Web file picker ---------- */
   const pickImageWeb = () => {
     let input = fileInputRef.current;
     if (!input) {
@@ -98,6 +118,7 @@ export default function ImageUploadForm({
               size: file.size,
               type: file.type,
               file,
+              locked: false, // new user-selected image
             },
           ];
           return next;
@@ -108,7 +129,6 @@ export default function ImageUploadForm({
       fileInputRef.current = input;
     }
 
-    // reset and trigger
     input.value = "";
     input.click();
   };
@@ -122,10 +142,20 @@ export default function ImageUploadForm({
         return;
       }
 
-      // Request permission
-      const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      let ImagePickerModule: typeof import("expo-image-picker") | null = null;
+      try {
+        ImagePickerModule = await import("expo-image-picker");
+      } catch (impErr) {
+        console.warn(
+          "[pickImageNative] expo-image-picker dynamic import failed:",
+          impErr
+        );
+      }
 
-      if (perm.status !== "granted") {
+      const ImagePicker = ImagePickerModule as any;
+
+      const perm = await ImagePicker.requestMediaLibraryPermissionsAsync?.();
+      if (perm && perm.status !== "granted") {
         const message = "Permission to access photos was denied.";
         setErrors((e) => ({ ...e, images: message }));
         return;
@@ -138,81 +168,71 @@ export default function ImageUploadForm({
         base64: false,
       });
 
-
-      // Handle old and new shapes
-      // old: { cancelled: boolean, uri: string }
-      // new: { cancelled: boolean, assets: [ { uri, ... } ] }
       const cancelled = (result as any).cancelled ?? false;
+
+      if (cancelled) return;
+
       let assetUri: string | null = null;
-
-      if (!cancelled) {
-        // try direct uri
-        // @ts-ignore
-        if ((result as any).uri) assetUri = (result as any).uri;
-        else if (Array.isArray((result as any).assets) && (result as any).assets.length)
-          assetUri = (result as any).assets[0].uri;
-      }
-
-      if (cancelled) {
-        return;
-      }
+      if ((result as any).uri) assetUri = (result as any).uri;
+      else if (
+        Array.isArray((result as any).assets) &&
+        (result as any).assets.length
+      )
+        assetUri = (result as any).assets[0].uri;
 
       if (!assetUri) {
-        console.warn("[pickImageNative] no uri returned from picker");
         setErrors((e) => ({ ...e, images: "No image URI returned" }));
         return;
       }
 
-      // Very common culprit: content:// URIs on Android. Log it.
       if (assetUri.startsWith("content://")) {
         try {
-          const infoBefore = await FileSystem.getInfoAsync(assetUri);
+          await FileSystem.getInfoAsync(assetUri);
         } catch (err) {
           console.warn("[pickImageNative] getInfoAsync(content) failed:", err);
         }
 
-        // Try to copy to cache if necessary (FileSystem.copyAsync may throw for content:// on some setups)
         try {
           const filename = `img_${Date.now()}.jpg`;
           const dest = `${FileSystem.cacheDirectory || ""}${filename}`;
-          const copyResult = await FileSystem.copyAsync({ from: assetUri, to: dest });
-          assetUri = copyResult.uri;
+          const copyResult = await FileSystem.copyAsync({
+            from: assetUri,
+            to: dest,
+          });
+          assetUri = (copyResult?.uri as string) || dest;
         } catch (copyErr) {
           console.warn("[pickImageNative] copyAsync failed:", copyErr);
-          // fallback — try downloadAsync (sometimes works)
           try {
             const filename = `img_${Date.now()}.jpg`;
             const dest = `${FileSystem.cacheDirectory || ""}${filename}`;
-            const downloadResult = await FileSystem.downloadAsync(assetUri, dest);
+            const downloadResult = await FileSystem.downloadAsync(
+              assetUri,
+              dest
+            );
             assetUri = downloadResult.uri;
           } catch (dlErr) {
             console.warn("[pickImageNative] downloadAsync failed:", dlErr);
-            // continue with original content:// uri — might still render on some devices
           }
         }
       }
 
-      // Get file info for picked (or copied) uri
       let info: FileSystem.FileInfoResult | null = null;
       try {
         info = await FileSystem.getInfoAsync(assetUri, { size: true });
       } catch (infoErr) {
-        console.warn("[pickImageNative] getInfoAsync failed on final uri:", infoErr);
+        console.warn("[pickImageNative] getInfoAsync failed:", infoErr);
       }
 
       const filename = assetUri.split("/").pop() || `img_${Date.now()}.jpg`;
-
       const newImage: ImageAsset = {
         uri: assetUri,
         name: filename,
         size: info?.size ?? null,
         type: null,
+        locked: false,
       };
 
-      setImages((prev) => {
-        const next = [...prev, newImage];
-        return next;
-      });
+      setImages((prev) => [...prev, newImage]);
       setErrors((e) => ({ ...e, images: undefined }));
     } catch (err) {
       console.error("[pickImageNative] unexpected error:", err);
@@ -231,8 +251,13 @@ export default function ImageUploadForm({
     else pickImageNative();
   };
 
-  /* ---------- Deleting images ---------- */
+  /* ---------- Deleting images (only if not locked) ---------- */
   const promptDeleteImage = (index: number) => {
+    const img = images[index];
+    if (img?.locked) {
+      // Safety: locked images cannot be removed
+      return;
+    }
     setIndexToDelete(index);
     setDeleteDialogVisible(true);
   };
@@ -241,6 +266,14 @@ export default function ImageUploadForm({
     if (indexToDelete === null) return;
 
     const img = images[indexToDelete];
+
+    if (img.locked) {
+      // safeguard – locked images should never be here
+      setIndexToDelete(null);
+      setDeleteDialogVisible(false);
+      return;
+    }
+
     if (isWeb && img?.file) {
       try {
         URL.revokeObjectURL(img.uri);
@@ -249,10 +282,7 @@ export default function ImageUploadForm({
       }
     }
 
-    setImages((prev) => {
-      const next = prev.filter((_, i) => i !== indexToDelete);
-      return next;
-    });
+    setImages((prev) => prev.filter((_, i) => i !== indexToDelete));
     setIndexToDelete(null);
     setDeleteDialogVisible(false);
   };
@@ -264,7 +294,7 @@ export default function ImageUploadForm({
   };
 
   /* ---------- submit ---------- */
-  const validateAndSubmit = async () => {
+  const validateAndSubmit = () => {
     const errs: typeof errors = {};
     if (!campaign.trim())
       errs.campaign = t("fieldRequired", { field: t("campaign") });
@@ -276,12 +306,14 @@ export default function ImageUploadForm({
     }
 
     onAddImage &&
-      onAddImage({ campaignName: campaign.trim(), caption: message.trim(), images });
+      onAddImage({
+        campaignName: campaign.trim(),
+        caption: message.trim(),
+        images,
+      });
   };
 
-  const isWide = isWeb && screenWidth > 900;
-
-  return ( 
+  return (
     <View style={{ flex: 1 }}>
       <KeyboardAwareScrollView
         contentContainerStyle={{ padding: 10, paddingBottom: 160 }}
@@ -316,9 +348,9 @@ export default function ImageUploadForm({
               value={message}
               onChangeText={setMessage}
               mode="outlined"
-              multiline
-              numberOfLines={4}
-              style={[styles.input, { minHeight: 110 }]}
+              // multiline
+              // numberOfLines={4}
+              style={[styles.input]}
             />
           </View>
         </View>
@@ -328,26 +360,28 @@ export default function ImageUploadForm({
         <Text
           variant="titleMedium"
           style={{
-            marginBottom: 6,
+            marginBottom: imageToEdit ? 14 : 6,
             color: colors.primary,
             fontWeight: "600",
             fontSize: 20,
           }}
         >
-          {t("image.upload")}
+          {t(imageToEdit ? "image.view" : "image.upload")}
         </Text>
-        <Text
-          style={{
-            marginBottom: 14,
-            color: colors.textSecondary,
-            fontSize: 14,
-          }}
-        >
-          {t("image.uploadMax", { max: MAX_IMAGES })}
-        </Text>
+        {!imageToEdit && (
+          <Text
+            style={{
+              marginBottom: 14,
+              color: colors.textSecondary,
+              fontSize: 14,
+            }}
+          >
+            {t("image.uploadMax", { max: MAX_IMAGES })}
+          </Text>
+        )}
 
-        {/* Row for large previews */}
-        <View style={[styles.previewRow]}>
+        {/* Previews */}
+        <View style={styles.previewRow}>
           {images.map((img, idx) => (
             <TouchableOpacity
               key={idx}
@@ -366,25 +400,36 @@ export default function ImageUploadForm({
                   style={styles.preview}
                   resizeMode="contain"
                   onError={(e) => {
-                    console.warn("[Image] onError for uri:", img.uri, e.nativeEvent);
-                    setErrors((e) => ({ ...e, images: "Failed to render image (see logs)" }));
+                    console.warn(
+                      "[Image] onError for uri:",
+                      img.uri,
+                      e.nativeEvent
+                    );
+                    setErrors((err) => ({
+                      ...err,
+                      images: "Failed to render image (see logs)",
+                    }));
                   }}
                 />
 
-                <TouchableOpacity
-                  style={styles.cancelOverlay}
-                  onPress={() => promptDeleteImage(idx)}
-                  hitSlop={{ top: 10, left: 10, right: 10, bottom: 10 }}
-                  accessibilityLabel={t("image.remove")}
-                >
-                  <Ionicons name="close" size={18} color="#fff" />
-                  <Text style={styles.cancelText}>{t("cancel")}</Text>
-                </TouchableOpacity>
+                {/* Delete button only for non-locked images */}
+                {!img.locked && (
+                  <TouchableOpacity
+                    style={styles.cancelOverlay}
+                    onPress={() => promptDeleteImage(idx)}
+                    hitSlop={{ top: 10, left: 10, right: 10, bottom: 10 }}
+                    accessibilityLabel={t("image.remove")}
+                  >
+                    <Ionicons name="close" size={18} color="#fff" />
+                    <Text style={styles.cancelText}>{t("cancel")}</Text>
+                  </TouchableOpacity>
+                )}
               </View>
             </TouchableOpacity>
           ))}
 
-          {images.length < MAX_IMAGES && (
+          {/* Add button – still allowed in edit mode, but respects MAX_IMAGES */}
+          {!imageToEdit && images.length < MAX_IMAGES && (
             <TouchableOpacity
               onPress={pickImage}
               activeOpacity={0.75}
@@ -402,7 +447,6 @@ export default function ImageUploadForm({
           )}
         </View>
 
-        {/* Centered error message under previews */}
         {errors.images && (
           <View style={{ width: "100%", alignItems: "center", marginTop: 8 }}>
             <HelperText
@@ -420,6 +464,7 @@ export default function ImageUploadForm({
         )}
       </KeyboardAwareScrollView>
 
+      {/* Viewer Modal */}
       <Portal>
         <Modal
           visible={viewerVisible}
@@ -444,7 +489,11 @@ export default function ImageUploadForm({
                 style={styles.modalImage}
                 resizeMode="contain"
                 onError={(e) => {
-                  console.warn("[Modal Image] onError:", images[viewerIndex].uri, e.nativeEvent);
+                  console.warn(
+                    "[Modal Image] onError:",
+                    images[viewerIndex].uri,
+                    e.nativeEvent
+                  );
                 }}
               />
             )}
@@ -467,7 +516,10 @@ export default function ImageUploadForm({
       <View style={styles.footer}>
         <Button
           mode="outlined"
-          onPress={() => setShowAddView(false)}
+          onPress={() => {
+            setImageToEdit(null);
+            setShowAddView(false);
+          }}
           style={styles.actionButton}
         >
           {t("cancel")}
@@ -481,7 +533,7 @@ export default function ImageUploadForm({
           loading={uploading}
           style={styles.actionButton}
         >
-          {t("image.upload")}
+          {imageToEdit ? t("update") : t("image.upload")}
         </Button>
       </View>
     </View>
@@ -510,7 +562,6 @@ const createStyles = (theme: any) =>
       borderWidth: 1,
       borderColor: theme.colors.subtleBorder,
       position: "relative",
-
       elevation: 4,
       shadowColor: "#000",
       shadowOpacity: 0.12,
@@ -545,7 +596,6 @@ const createStyles = (theme: any) =>
       borderColor: theme.colors.outline,
       alignItems: "center",
       justifyContent: "center",
-
       backgroundColor: theme.colors.background,
     },
     footer: {

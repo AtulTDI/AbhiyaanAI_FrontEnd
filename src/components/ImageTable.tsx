@@ -7,18 +7,11 @@ import { Ionicons } from "@expo/vector-icons";
 import { ResizeMode, Video as ExpoVideo } from "expo-av";
 import CommonTable from "./CommonTable";
 import ApprovalToggle from "./ApprovalToggle";
+import { Image } from "../types/Image";
 import { AppTheme } from "../theme";
 
-type Video = {
-  id: string;
-  campaignName: string;
-  createdAt: string;
-  isShared: boolean;
-  s3Url?: string;
-};
-
 type Props = {
-  data: Video[];
+  data: Image[];
   page: number;
   rowsPerPage: number;
   totalCount: number;
@@ -27,6 +20,7 @@ type Props = {
   onRowsPerPageChange: (size: number) => void;
   onShare: (id: string) => void;
   onUnshare: (id: string) => void;
+  onEdit: (image: Image) => void;
   onDelete: (id: string) => void;
 };
 
@@ -40,6 +34,7 @@ export default function ImageTable({
   onRowsPerPageChange,
   onShare,
   onUnshare,
+  onEdit,
   onDelete,
 }: Props) {
   const { t } = useTranslation();
@@ -78,7 +73,7 @@ export default function ImageTable({
       key: "actions",
       flex: 0.9,
       smallColumn: true,
-      render: (item: Video) => (
+      render: (item: Image) => (
         <View
           style={{
             flexDirection: "row",
@@ -87,16 +82,12 @@ export default function ImageTable({
             marginLeft: true,
           }}
         >
-          {/* Play */}
+          {/* Edit */}
           <TouchableOpacity
-            onPress={() => setSelectedVideoUri(item.s3Url || "")}
+            onPress={() => onEdit(item)}
             style={{ alignItems: "center" }}
           >
-            <Ionicons
-              name="play-circle-outline"
-              size={24}
-              color={colors.greenAccent}
-            />
+            <Ionicons name="pencil" size={20} color={colors.primary} />
           </TouchableOpacity>
 
           {/* Delete */}
@@ -128,7 +119,7 @@ export default function ImageTable({
             color={colors.disabledText}
           />
         }
-        emptyText={t('image.noData')}
+        emptyText={t("image.noData")}
         keyExtractor={(item) => item.id}
         page={page}
         rowsPerPage={rowsPerPage}

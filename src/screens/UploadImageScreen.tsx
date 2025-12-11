@@ -7,17 +7,21 @@ import ImageTable from "../components/ImageTable";
 import ImageUploadForm from "../components/ImageUploadForm";
 import { useToast } from "../components/ToastProvider";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
-import { deleteVideoById, getVideos, shareVideoById } from "../api/videoApi";
 import { useServerTable } from "../hooks/useServerTable";
 import { usePlatformInfo } from "../hooks/usePlatformInfo";
-import { GetPaginatedVideos } from "../types/Video";
+import { GetPaginatedImages, Image } from "../types/Image";
+import {
+  deleteImageById,
+  getImages,
+  shareImageById,
+  uploadImages,
+} from "../api/imageApi";
+import { getAuthData } from "../utils/storage";
 import { extractErrorMessage, sortByDateDesc } from "../utils/common";
 import { AppTheme } from "../theme";
-import { uploadImages } from "../api/whatsappApi";
-import { getAuthData } from "../utils/storage";
 
 export default function UploadImageScreen() {
-  const { isIOS } = usePlatformInfo();
+  const { isWeb, isIOS } = usePlatformInfo();
   const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
   const { colors } = theme;
@@ -25,15 +29,16 @@ export default function UploadImageScreen() {
 
   const [showAddView, setShowAddView] = useState(false);
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
-  const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
+  const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [imageToEdit, setImageToEdit] = useState<Image | null>(null);
 
   const fetchImages = useCallback(async (page: number, pageSize: number) => {
     setLoading(true);
     try {
-      const response = await getVideos(page, pageSize);
-      const sortedVideos = sortByDateDesc(
+      const response = await getImages(page, pageSize);
+      const sortedImages = sortByDateDesc(
         response?.data && Array.isArray(response.data.items)
           ? response.data.items
           : [],
@@ -41,12 +46,12 @@ export default function UploadImageScreen() {
       );
 
       return {
-        items: sortedVideos ?? [],
+        items: sortedImages ?? [],
         totalCount: response?.data?.totalRecords ?? 0,
       };
     } catch (error: any) {
       showToast(
-        extractErrorMessage(error, t("video.loadVideoFailMessage")),
+        extractErrorMessage(error, t("image.loadImageFailMessage")),
         "error"
       );
     } finally {
@@ -54,7 +59,7 @@ export default function UploadImageScreen() {
     }
   }, []);
 
-  const table = useServerTable<GetPaginatedVideos>(fetchImages, {
+  const table = useServerTable<GetPaginatedImages>(fetchImages, {
     initialPage: 0,
     initialRowsPerPage: 10,
   });
@@ -68,25 +73,76 @@ export default function UploadImageScreen() {
     }, [])
   );
 
+  const guessMimeType = (filename?: string) => {
+    if (!filename) return "image/jpeg";
+    const ext = filename.split(".").pop()?.toLowerCase();
+    switch (ext) {
+      case "jpg":
+      case "jpeg":
+        return "image/jpeg";
+      case "png":
+        return "image/png";
+      case "gif":
+        return "image/gif";
+      case "heic":
+        return "image/heic";
+      case "webp":
+        return "image/webp";
+      default:
+        return "application/octet-stream";
+    }
+  };
+
   const handleAddImage = async (imageData: any) => {
     const { userId } = await getAuthData();
     const formData = new FormData();
     const { campaignName, caption, images } = imageData;
+    console.log("upload payload images:", images);
 
     formData.append("userId", String(userId));
     formData.append("campaignName", campaignName);
-    formData.append("caption", caption);
+    formData.append("caption", caption || "");
 
-    images.forEach((img, index) => {
-      if (img.file instanceof File) {
-        formData.append("Images", img.file);
-      } else {
-        formData.append("Images", {
-          uri: img.uri,
-          type: img.type || "image/jpeg",
-          name: img.name || `photo_${index}.jpg`,
-        } as any);
+    images.forEach((img: any, index: number) => {
+      if (img.locked) {
+        if (img.uri) formData.append("existingImages[]", img.uri);
+        return;
       }
+
+      if (isWeb && img.file instanceof File) {
+        formData.append("Images", img.file);
+        return;
+      }
+
+      const name = img.name || `photo_${Date.now()}_${index}.jpg`;
+      const type = img.type || guessMimeType(name);
+
+      formData.append("Images", {
+        uri: img.uri,
+        name,
+        type,
+      } as any);
+
+      console.log("formData._parts length:", formData._parts?.length);
+      formData._parts?.forEach((p, i) => {
+        const [key, value] = p;
+        if (
+          typeof value === "object" &&
+          value !== null &&
+          ("uri" in value || "name" in value)
+        ) {
+          console.log(
+            `[${i}] ${key} -> uri:`,
+            value.uri,
+            "name:",
+            value.name,
+            "type:",
+            value.type
+          );
+        } else {
+          console.log(`[${i}] ${key} ->`, value);
+        }
+      });
     });
 
     try {
@@ -106,17 +162,17 @@ export default function UploadImageScreen() {
   };
 
   const handleDeleteRequest = (id: string) => {
-    setSelectedVideoId(id);
+    setSelectedImageId(id);
     setDeleteDialogVisible(true);
   };
 
   const handleShareRequest = async (id: string) => {
     try {
-      await shareVideoById(id, true);
+      await shareImageById(id, true);
       await table.fetchData(table.page, table.rowsPerPage);
     } catch (error) {
       showToast(
-        extractErrorMessage(error, t("video.shareVideoFailMessage")),
+        extractErrorMessage(error, t("image.shareImageFailMessage")),
         "error"
       );
     }
@@ -124,20 +180,25 @@ export default function UploadImageScreen() {
 
   const handleUnShareRequest = async (id: string) => {
     try {
-      await shareVideoById(id, false);
+      await shareImageById(id, false);
       await table.fetchData(table.page, table.rowsPerPage);
     } catch (error) {
       showToast(
-        extractErrorMessage(error, t("image.shareVideoFailMessage")),
+        extractErrorMessage(error, t("image.shareImageFailMessage")),
         "error"
       );
     }
   };
 
-  const confirmDeleteVideo = async () => {
-    if (selectedVideoId) {
+  const handleEdit = (item: Image) => {
+    setImageToEdit(item);
+    setShowAddView(true);
+  };
+
+  const confirmDeleteImage = async () => {
+    if (selectedImageId) {
       try {
-        await deleteVideoById(selectedVideoId);
+        await deleteImageById(selectedImageId);
         await table.fetchData(table.page, table.rowsPerPage);
         showToast(t("image.deleteSucessMessage"), "success");
       } catch (error: any) {
@@ -146,7 +207,7 @@ export default function UploadImageScreen() {
           "error"
         );
       }
-      setSelectedVideoId(null);
+      setSelectedImageId(null);
       setDeleteDialogVisible(false);
     }
   };
@@ -194,6 +255,7 @@ export default function UploadImageScreen() {
                 }}
                 onShare={handleShareRequest}
                 onUnshare={handleUnShareRequest}
+                onEdit={handleEdit}
                 onDelete={handleDeleteRequest}
               />
             </>
@@ -204,13 +266,15 @@ export default function UploadImageScreen() {
                   variant="titleLarge"
                   style={[styles.heading, { color: colors.primary }]}
                 >
-                  {t("image.add")}
+                  {t(imageToEdit ? "image.edit" : "image.add")}
                 </Text>
               </View>
 
               <ImageUploadForm
-                onAddImage={handleAddImage}
+                imageToEdit={imageToEdit}
+                setImageToEdit={setImageToEdit}
                 setShowAddView={setShowAddView}
+                onAddImage={handleAddImage}
                 uploading={uploading}
               />
             </>
@@ -223,7 +287,7 @@ export default function UploadImageScreen() {
         title={t("image.delete")}
         message={t("image.confirmDelete")}
         onCancel={() => setDeleteDialogVisible(false)}
-        onConfirm={confirmDeleteVideo}
+        onConfirm={confirmDeleteImage}
       />
     </>
   );

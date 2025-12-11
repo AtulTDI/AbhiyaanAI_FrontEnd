@@ -24,7 +24,7 @@ export const getInProgressVideoCount = () =>
 
 
 /**
- * Get video by ID
+ * Share video by ID
  */
 export const shareVideoById = (id: string, payload: boolean) =>
   axios.put<Video>(`/BaseVideos/${id}/shareforcampaign`, payload, { useApiPrefix: true });
