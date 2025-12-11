@@ -39,3 +39,9 @@ export const sendVideo = (data: any, userId) =>
  */
 export const markVideoSent = (data: any) =>
   axios.put("/WhatsApp/markvideoassent", data, { useApiPrefix: true, useAltBase: true });
+
+/**
+ * Send Image
+ */
+export const sendImage = (data: any, userId) =>
+  axios.post(`/WhatsApp/sendImage/${userId}`, data, { useApiPrefix: true, useAltBase: true });

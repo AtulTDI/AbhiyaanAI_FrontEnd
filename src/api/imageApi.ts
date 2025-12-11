@@ -8,6 +8,12 @@ export const getImages = (pageNumber, pageSize) =>
   axios.get<GetPaginatedImages>(`/ImageCampaign/get-image-campaigns?page=${pageNumber + 1}&pageSize=${pageSize}`, { useApiPrefix: true });
 
 /**
+ * Get paginated campaigns with optional search
+ */
+export const getCampaigns = (pageNumber, pageSize) =>
+  axios.get(`/ImageCampaign/get-shared-image-campaigns?page=${pageNumber + 1}&pageSize=${pageSize}`, { useApiPrefix: true });
+
+/**
  * Upload Images
  */
 export const uploadImages = (data: any) =>

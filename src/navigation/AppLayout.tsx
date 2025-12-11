@@ -19,6 +19,7 @@ import GeneratedVideoScreen from "../screens/GeneratedVideosScreen";
 import AddApplicationScreen from "../screens/AddApplicationScreen";
 import ActivateSenderScreen from "../screens/ActivateSenderScreen";
 import ProcessingVideosScreen from "../screens/ProcessingVideosScreen";
+import GeneratedImagesScreen from "../screens/GeneratedImagesScreen";
 import CustomDrawer from "../components/CustomDrawer";
 import CustomLabel from "../components/CustomLabel";
 import UserAvatarMenu from "../components/UserAvatarMenu";
@@ -491,6 +492,29 @@ export default function AppLayout() {
               ),
             }}
           />
+
+          <Drawer.Screen
+            name="GeneratedImages"
+            component={GeneratedImagesScreen}
+            options={{
+              headerShown: true,
+              headerTitle: "",
+              headerRight: headerRightComponent,
+              drawerLabel: (props) => (
+                <CustomLabel
+                  {...props}
+                  label={t("generatedImageTabLabel")}
+                  icon={
+                    <Ionicons
+                      name="images-outline"
+                      size={20}
+                      color={props.color || colors.onPrimary}
+                    />
+                  }
+                />
+              ),
+            }}
+          />
         </>
       )}
 
@@ -510,6 +534,29 @@ export default function AppLayout() {
                   icon={
                     <Ionicons
                       name="film-outline"
+                      size={20}
+                      color={props.color || colors.onPrimary}
+                    />
+                  }
+                />
+              ),
+            }}
+          />
+
+          <Drawer.Screen
+            name="GeneratedImages"
+            component={GeneratedImagesScreen}
+            options={{
+              headerShown: true,
+              headerTitle: "",
+              headerRight: headerRightComponent,
+              drawerLabel: (props) => (
+                <CustomLabel
+                  {...props}
+                  label={t("generatedImageTabLabel")}
+                  icon={
+                    <Ionicons
+                      name="images-outline"
                       size={20}
                       color={props.color || colors.onPrimary}
                     />

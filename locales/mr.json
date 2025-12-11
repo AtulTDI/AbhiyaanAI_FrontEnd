@@ -11,6 +11,7 @@
   "generateVideoTabLabel": "व्हिडिओ तयार करा",
   "processingVideoTabLabel": "प्रोसेसिंग व्हिडिओ",
   "generatedVideoTabLabel": "तयार केलेले व्हिडिओ",
+  "generatedImageTabLabel": "निर्मित प्रतिमा",
   "dashboardTabLabel": "डॅशबोर्ड",
 
   "distributorButtonLabel": "डिस्ट्रिब्युटर",
@@ -25,6 +26,7 @@
   "uploadBaseVideoPageLabel": "व्हिडिओज",
   "processingVideoPageLabel": "प्रोसेसिंग व्हिडिओज",
   "generatedVideoPageLabel": "तयार केलेले व्हिडिओज",
+  "generatedImagePageLabel": "निर्मित प्रतिमा",
 
   "addDistributorLabel": "डिस्ट्रिब्युटर जोडा",
   "addAdminLabel": "अ‍ॅडमिन जोडा",

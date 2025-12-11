@@ -11,6 +11,7 @@
   "generateVideoTabLabel": "वीडियो बनाएं",
   "processingVideoTabLabel": "प्रोसेसिंग वीडियो",
   "generatedVideoTabLabel": "बनाए गए वीडियो",
+  "generatedImageTabLabel": "जनरेट की गई छवियाँ",
   "dashboardTabLabel": "डैशबोर्ड",
 
   "distributorButtonLabel": "डिस्ट्रिब्यूटर",
@@ -25,6 +26,7 @@
   "uploadBaseVideoPageLabel": "वीडियोज़",
   "processingVideoPageLabel": "प्रोसेसिंग वीडियोज़",
   "generatedVideoPageLabel": "बनाए गए वीडियोज़",
+  "generatedImagePageLabel": "जनरेट की गई छवियाँ",
 
   "addDistributorLabel": "डिस्ट्रिब्यूटर जोड़ें",
   "addAdminLabel": "एडमिन जोड़ें",
@@ -54,7 +56,7 @@
   "password": "पासवर्ड",
   "campaign": "कैंपेन",
   "campaignMessage": "कैंपेन संदेश",
-  "cloningSpeed": " क्लोनिंग गति﻿",
+  "cloningSpeed": " क्लोनिंग गति",
   "approval": "मंजूरी",
 
   "loadingData": "डेटा लोड हो रहा है...",
