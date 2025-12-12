@@ -30,22 +30,21 @@ import { getAuthData } from "../utils/storage";
 import { useToast } from "../components/ToastProvider";
 import FormDropdown from "../components/FormDropdown";
 import VideoSendConfirmationDialog from "../components/VideoSendConfirmationDialog";
-import { getVoters, getVotersWithCompletedVideoId } from "../api/voterApi";
-import { getVideos } from "../api/videoApi";
+import { getVotersByCampaignId } from "../api/voterApi";
 import {
   getRegistrationStatus,
   generateQr,
   whatsAppLogout,
-  sendVideo,
   getWhatsAppVideoDetails,
   markVideoSent,
   sendImage,
+  sendBulkImages,
 } from "../api/whatsappApi";
+import { getCampaigns } from "../api/imageApi";
 import { useServerTable } from "../hooks/useServerTable";
 import { usePlatformInfo } from "../hooks/usePlatformInfo";
 import ResponsiveKeyboardView from "../components/ResponsiveKeyboardView";
 import { AppTheme } from "../theme";
-import { getCampaigns } from "../api/imageApi";
 
 let RNFS: any = null;
 let Share: any = null;
@@ -111,7 +110,7 @@ export default function GeneratedImagesScreen() {
       }
     } catch (error: any) {
       showToast(
-        extractErrorMessage(error, t("video.loadVideoFailMessage")),
+        extractErrorMessage(error, t("image.loadImageFailMessage")),
         "error"
       );
     }
@@ -123,11 +122,12 @@ export default function GeneratedImagesScreen() {
       pageSize: number,
       params?: { campaignId?: string | null; searchText?: string }
     ) => {
-      // if (!params?.campaignId) return { items: [], totalCount: 0 };
+      if (!params?.campaignId) return { items: [], totalCount: 0 };
 
       setLoading(true);
       try {
-        const response = await getVoters(
+        const response = await getVotersByCampaignId(
+          params.campaignId,
           page,
           pageSize,
           params?.searchText ?? ""
@@ -382,7 +382,7 @@ export default function GeneratedImagesScreen() {
     }
   };
 
-  const handleSendVideo = async (item: Voter) => {
+  const handleSendImage = async (item: Voter) => {
     const { userId } = await getAuthData();
     setSendingId(item.id);
     setProgressMap((prev) => ({ ...prev, [item.id]: 0 }));
@@ -394,10 +394,10 @@ export default function GeneratedImagesScreen() {
           { userId, recipientId: item.id, campaignID: selectedCampaignId },
           userId
         );
-        showToast(t("video.sendSuccess"), "success");
+        showToast(t("image.sendSuccess"), "success");
         updateRowStatus(item.id, { sendStatus: "sent" });
       } catch (error) {
-        showToast(extractErrorMessage(error, t("video.sendFail")), "error");
+        showToast(extractErrorMessage(error, t("image.sendFail")), "error");
         updateRowStatus(item.id, { sendStatus: "pending" });
       } finally {
         setSendingId(null);
@@ -447,7 +447,7 @@ export default function GeneratedImagesScreen() {
       return;
     }
 
-    // --- Share video flow ---
+    // --- Share image flow ---
     try {
       let savedContact: any = null;
       let contactExists = false;
@@ -558,6 +558,11 @@ export default function GeneratedImagesScreen() {
     }
   };
 
+  const handleSendBulkImages = async () => {
+    const { userId } = await getAuthData();
+    await sendBulkImages(userId, selectedCampaignId);
+  };
+
   const columns = [
     { label: t("name"), key: "fullName", flex: 0.8 },
     { label: t("mobile"), key: "phoneNumber", flex: 0.4 },
@@ -631,7 +636,7 @@ export default function GeneratedImagesScreen() {
                     }
                   />
                 )}
-                onPress={() => handleSendVideo(item)}
+                onPress={() => handleSendImage(item)}
                 style={{ margin: 0 }}
                 disabled={disableRowActions}
               />
@@ -680,82 +685,116 @@ export default function GeneratedImagesScreen() {
           {memoizedDropdown}
 
           <View
-            style={[
-              styles.waChip,
-              {
-                backgroundColor: waRegistered
-                  ? colors.successBackground
-                  : colors.errorBackground,
-                borderColor: waRegistered ? colors.success : colors.error,
-                gap: 12,
-              },
-            ]}
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 10,
+            }}
           >
-            <FontAwesome
-              name="whatsapp"
-              size={24}
-              color={waRegistered ? colors.whatsappGreen : colors.errorIcon}
-            />
+            <View
+              style={[
+                styles.waChip,
+                {
+                  backgroundColor: waRegistered
+                    ? colors.successBackground
+                    : colors.errorBackground,
+                  borderColor: waRegistered ? colors.success : colors.error,
+                  gap: 12,
+                },
+              ]}
+            >
+              <FontAwesome
+                name="whatsapp"
+                size={24}
+                color={waRegistered ? colors.whatsappGreen : colors.errorIcon}
+              />
 
-            <View style={{ flex: 1 }}>
-              {waLoading ? (
-                <View
-                  style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
+              <View style={{ flex: 1 }}>
+                {waLoading ? (
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 6,
+                    }}
+                  >
+                    <ActivityIndicator size="small" color={colors.primary} />
+                    <Text
+                      style={[
+                        styles.waChipText,
+                        { color: colors.textSecondary },
+                      ]}
+                    >
+                      {t("whatsapp.checkingStatus")}
+                    </Text>
+                  </View>
+                ) : (
+                  <>
+                    <Text
+                      style={[
+                        styles.waChipText,
+                        {
+                          color: waRegistered
+                            ? colors.successText
+                            : colors.errorText,
+                        },
+                      ]}
+                    >
+                      {waRegistered
+                        ? t("whatsapp.connected")
+                        : t("whatsapp.notConnected")}
+                    </Text>
+                    <Text style={styles.waChipSubText}>
+                      {waRegistered
+                        ? t("whatsapp.shareDirectly")
+                        : t("whatsapp.connectToShare")}
+                    </Text>
+                  </>
+                )}
+              </View>
+
+              {!waLoading && (
+                <Button
+                  mode={waRegistered ? "outlined" : "contained"}
+                  compact
+                  onPress={() => {
+                    waRegistered ? handleLogout() : handleConnect();
+                  }}
+                  textColor={waRegistered ? colors.deepRed : colors.white}
+                  buttonColor={
+                    waRegistered ? "transparent" : colors.whatsappGreen
+                  }
+                  style={{
+                    borderRadius: 20,
+                    borderColor: waRegistered
+                      ? colors.deepRed
+                      : colors.whatsappGreen,
+                  }}
+                  labelStyle={{ fontSize: 13, fontWeight: "600" }}
                 >
-                  <ActivityIndicator size="small" color={colors.primary} />
-                  <Text
-                    style={[styles.waChipText, { color: colors.textSecondary }]}
-                  >
-                    {t("whatsapp.checkingStatus")}
-                  </Text>
-                </View>
-              ) : (
-                <>
-                  <Text
-                    style={[
-                      styles.waChipText,
-                      {
-                        color: waRegistered
-                          ? colors.successText
-                          : colors.errorText,
-                      },
-                    ]}
-                  >
-                    {waRegistered
-                      ? t("whatsapp.connected")
-                      : t("whatsapp.notConnected")}
-                  </Text>
-                  <Text style={styles.waChipSubText}>
-                    {waRegistered
-                      ? t("whatsapp.shareDirectly")
-                      : t("whatsapp.connectToShare")}
-                  </Text>
-                </>
+                  {waRegistered ? t("logout") : t("connect")}
+                </Button>
               )}
             </View>
 
-            {!waLoading && (
+            <View>
               <Button
-                mode={waRegistered ? "outlined" : "contained"}
-                compact
-                onPress={() => {
-                  waRegistered ? handleLogout() : handleConnect();
+                mode="contained"
+                onPress={() => handleSendBulkImages()}
+                icon="send"
+                labelStyle={{
+                  fontWeight: "bold",
+                  fontSize: 14,
+                  color: theme.colors.white,
                 }}
-                textColor={waRegistered ? colors.deepRed : colors.white}
-                buttonColor={
-                  waRegistered ? "transparent" : colors.whatsappGreen
-                }
-                style={{
-                  borderRadius: 20,
-                  borderColor: waRegistered
-                    ? colors.deepRed
-                    : colors.whatsappGreen,
-                }}
-                labelStyle={{ fontSize: 13, fontWeight: "600" }}
+                buttonColor={theme.colors.primary}
+                disabled={!waRegistered}
+                style={{ borderRadius: 5 }}
               >
-                {waRegistered ? t("logout") : t("connect")}
+                {t("image.sendAll")}
               </Button>
-            )}
+            </View>
           </View>
         </Surface>
       )}
@@ -774,12 +813,12 @@ export default function GeneratedImagesScreen() {
             loading={loading}
             emptyIcon={
               <Ionicons
-                name="videocam-outline"
+                name="images-outline"
                 size={48}
                 color={colors.disabledText}
               />
             }
-            emptyText={t("video.noData")}
+            emptyText={t("image.noData")}
             tableHeight={
               isWeb && !isMobileWeb ? "calc(100vh - 345px)" : undefined
             }

@@ -181,6 +181,9 @@
     "shareImageFailMessage": "Failed to share image",
     "addImageFailMessage": "Failed to add image",
     "loadImageFailMessage": "Failed to load images",
+    "sendAll": "Send All", 
+    "sendSuccess": "Image sent successfully",
+    "sendFail": "Error sending image",
     "imageRequired": "Please upload at least one image",
     "uploadMax": "Upload up to {{max}} images. Click a preview to enlarge; Use Cancel to remove",
     "noData": "No images found"

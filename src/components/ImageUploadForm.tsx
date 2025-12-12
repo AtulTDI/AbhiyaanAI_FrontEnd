@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import {
   View,
@@ -48,6 +48,7 @@ type Props = {
 };
 
 const MAX_IMAGES = 2;
+const INPUT_NATIVE_ID = "campaignMessageInput";
 
 export default function ImageUploadForm({
   onAddImage,
@@ -66,7 +67,7 @@ export default function ImageUploadForm({
     imageToEdit ? imageToEdit.campaignName : ""
   );
   const [message, setMessage] = useState(
-    imageToEdit ? imageToEdit.message : ""
+    imageToEdit ? imageToEdit.message ?? "" : ""
   );
 
   const [images, setImages] = useState<ImageAsset[]>(() => {
@@ -86,6 +87,7 @@ export default function ImageUploadForm({
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
   const [indexToDelete, setIndexToDelete] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const inputRef = useRef<any>(null);
 
   // responsive preview sizing
   const isSmall = screenWidth < 600;
@@ -95,6 +97,44 @@ export default function ImageUploadForm({
 
   const isWeb = Platform.OS === "web";
   const isWide = isWeb && screenWidth > 900;
+
+  // normalize pasted text (preserve markdown, emojis, internal whitespace)
+  const normalizePastedText = (txt: string) => {
+    let normalized = txt.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+    // trim only overall leading/trailing whitespace/newlines, preserve internal spacing
+    normalized = normalized.replace(/^\s+/, "").replace(/\s+$/, "");
+    return normalized;
+  };
+
+  // Web paste handling: capture text/plain when our input is focused
+  useEffect(() => {
+    if (Platform.OS !== "web") return;
+
+    const handlePaste = (e: any) => {
+      try {
+        const clipboard = (e.clipboardData ??
+          (window as any).clipboardData) as DataTransfer;
+        if (!clipboard) return;
+        const plain = clipboard.getData("text/plain");
+        if (plain == null || plain === "") return;
+
+        const activeId =
+          (document.activeElement &&
+            (document.activeElement as HTMLElement).id) ||
+          "";
+        if (activeId === INPUT_NATIVE_ID) {
+          e.preventDefault();
+          setMessage(normalizePastedText(plain));
+          setErrors((err) => ({ ...err, images: undefined }));
+        }
+      } catch (err) {
+        // don't break app if browser behaves differently
+      }
+    };
+
+    document.addEventListener("paste", handlePaste);
+    return () => document.removeEventListener("paste", handlePaste);
+  }, []);
 
   /* ---------- Web file picker ---------- */
   const pickImageWeb = () => {
@@ -305,10 +345,12 @@ export default function ImageUploadForm({
       return;
     }
 
+    const payloadMessage = normalizePastedText(message);
+
     onAddImage &&
       onAddImage({
         campaignName: campaign.trim(),
-        caption: message.trim(),
+        caption: payloadMessage,
         images,
       });
   };
@@ -344,12 +386,13 @@ export default function ImageUploadForm({
 
           <View style={{ flex: 1 }}>
             <TextInput
+              nativeID={INPUT_NATIVE_ID}
+              ref={inputRef}
               label={t("campaignMessage")}
-              value={message}
-              onChangeText={setMessage}
+              value={message.replace(/\n/g, " ")}
+              onChangeText={(txt) => setMessage(txt)}
               mode="outlined"
-              // multiline
-              // numberOfLines={4}
+              multiline={false}
               style={[styles.input]}
             />
           </View>

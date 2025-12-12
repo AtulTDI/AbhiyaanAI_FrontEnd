@@ -27,6 +27,13 @@ export const uploadImages = (data: any) =>
 export const shareImageById = (id: string, payload: boolean) =>
   axios.put<Image>(`/ImageCampaign/${id}/share-image-campaign`, payload, { useApiPrefix: true });
 
+
+/**
+ * Update image by ID
+ */
+export const updateImageById = (id: string, payload) =>
+  axios.put(`/ImageCampaign/${id}/update-campaign`, payload, { useApiPrefix: true });
+
 /**
  * Delete image by ID
  */

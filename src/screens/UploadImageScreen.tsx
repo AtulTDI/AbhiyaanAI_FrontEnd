@@ -14,6 +14,7 @@ import {
   deleteImageById,
   getImages,
   shareImageById,
+  updateImageById,
   uploadImages,
 } from "../api/imageApi";
 import { getAuthData } from "../utils/storage";
@@ -97,13 +98,12 @@ export default function UploadImageScreen() {
     const { userId } = await getAuthData();
     const formData = new FormData();
     const { campaignName, caption, images } = imageData;
-    console.log("upload payload images:", images);
 
     formData.append("userId", String(userId));
     formData.append("campaignName", campaignName);
     formData.append("caption", caption || "");
 
-    images.forEach((img: any, index: number) => {
+    !imageToEdit && images.forEach((img: any, index: number) => {
       if (img.locked) {
         if (img.uri) formData.append("existingImages[]", img.uri);
         return;
@@ -122,32 +122,13 @@ export default function UploadImageScreen() {
         name,
         type,
       } as any);
-
-      console.log("formData._parts length:", formData._parts?.length);
-      formData._parts?.forEach((p, i) => {
-        const [key, value] = p;
-        if (
-          typeof value === "object" &&
-          value !== null &&
-          ("uri" in value || "name" in value)
-        ) {
-          console.log(
-            `[${i}] ${key} -> uri:`,
-            value.uri,
-            "name:",
-            value.name,
-            "type:",
-            value.type
-          );
-        } else {
-          console.log(`[${i}] ${key} ->`, value);
-        }
-      });
     });
 
     try {
       setUploading(true);
-      await uploadImages(formData);
+      imageToEdit
+        ? await updateImageById(imageToEdit.id, formData)
+        : await uploadImages(formData);
       setUploading(false);
       await table.fetchData(0, table.rowsPerPage);
       setShowAddView(false);

@@ -45,3 +45,9 @@ export const markVideoSent = (data: any) =>
  */
 export const sendImage = (data: any, userId) =>
   axios.post(`/WhatsApp/sendImage/${userId}`, data, { useApiPrefix: true, useAltBase: true });
+
+/**
+ * Send bulk images
+ */
+export const sendBulkImages = (userId: string, campaignId: string) =>
+  axios.post(`/WhatsApp/run-Image-Campaign/${userId}/${campaignId}`, { useApiPrefix: true });

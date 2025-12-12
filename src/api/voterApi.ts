@@ -109,6 +109,16 @@ export const uploadVoters = async (file: any) => {
 };
 
 /**
+ * Get voters by Campaign for images
+ */
+export const getVotersByCampaignId = (id: string, pageNumber, pageSize, searchText) =>
+  axios.get('/Recipients/recipients-with-image-campaign',
+    {
+      params: { campaignId: id, searchText: searchText, page: pageNumber + 1, pageSize: pageSize },
+      useApiPrefix: true
+    });
+
+/**
  * Edit user by ID
  */
 export const editVoterById = (id: string, payload: EditVoterPayload) =>
