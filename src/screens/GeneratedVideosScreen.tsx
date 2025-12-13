@@ -174,11 +174,11 @@ export default function GeneratedVideoScreen() {
       const isRegistered = JSON.parse(response.data)?.isReady;
       setWaRegistered(isRegistered);
     } catch (error) {
-      setWaRegistered(false);
-      showToast(
-        extractErrorMessage(error, t("whatsapp.loadStatusFail")),
-        "error"
-      );
+      setWaRegistered(true);
+      // showToast(
+      //   extractErrorMessage(error, t("whatsapp.loadStatusFail")),
+      //   "error"
+      // );
     } finally {
       setWaLoading(false);
     }
