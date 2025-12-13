@@ -32,7 +32,7 @@ export const whatsAppLogout = (userId) =>
  * Send video
  */
 export const sendVideo = (data: any, userId) =>
-  axios.post(`/WhatsApp/sendvideo/${userId}`, data, { useApiPrefix: true, useAltBase: true });
+  axios.post(`/WHMessage/sendvideo/${userId}`, data, { useApiPrefix: true, useAltBase: true });
 
 /**
  * Mark video as sent
@@ -44,7 +44,7 @@ export const markVideoSent = (data: any) =>
  * Send Image
  */
 export const sendImage = (data: any, userId) =>
-  axios.post(`/WhatsApp/sendImage/${userId}`, data, { useApiPrefix: true, useAltBase: true });
+  axios.post(`/WHMessage/sendImage/${userId}`, data, { useApiPrefix: true, useAltBase: true });
 
 /**
  * Send bulk images

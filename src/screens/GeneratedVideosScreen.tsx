@@ -388,7 +388,11 @@ export default function GeneratedVideoScreen() {
     if (isWeb && !isMobileWeb) {
       try {
         await sendVideo(
-          { userId, recipientId: item.id, baseVideoID: selectedVideoId },
+          {
+            channelId: "SHAZAM-XK9A8",
+            recipientId: item.id,
+            baseVideoID: selectedVideoId,
+          },
           userId
         );
         showToast(t("video.sendSuccess"), "success");

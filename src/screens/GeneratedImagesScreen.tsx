@@ -391,7 +391,11 @@ export default function GeneratedImagesScreen() {
     if (isWeb && !isMobileWeb) {
       try {
         await sendImage(
-          { userId, recipientId: item.id, campaignID: selectedCampaignId },
+          {
+            channelId: "SHAZAM-XK9A8",
+            recipientId: item.id,
+            campaignID: selectedCampaignId,
+          },
           userId
         );
         showToast(t("image.sendSuccess"), "success");
