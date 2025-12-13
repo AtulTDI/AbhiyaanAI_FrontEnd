@@ -391,7 +391,7 @@ export default function GeneratedVideoScreen() {
           {
             channelId: "SHAZAM-XK9A8",
             recipientId: item.id,
-            baseVideoID: selectedVideoId,
+            campaignID: selectedVideoId,
           },
           userId
         );
