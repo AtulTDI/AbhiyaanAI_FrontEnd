@@ -380,7 +380,7 @@ export default function GeneratedVideoScreen() {
   };
 
   const handleSendVideo = async (item: Voter) => {
-    const { userId } = await getAuthData();
+    const { userId, channelId } = await getAuthData();
     setSendingId(item.id);
     setProgressMap((prev) => ({ ...prev, [item.id]: 0 }));
 
@@ -389,7 +389,7 @@ export default function GeneratedVideoScreen() {
       try {
         await sendVideo(
           {
-            channelId: "SHAZAM-XK9A8",
+            channelId: channelId,
             recipientId: item.id,
             campaignID: selectedVideoId,
           },

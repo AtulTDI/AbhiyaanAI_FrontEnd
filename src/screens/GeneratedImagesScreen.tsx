@@ -383,7 +383,7 @@ export default function GeneratedImagesScreen() {
   };
 
   const handleSendImage = async (item: Voter) => {
-    const { userId } = await getAuthData();
+    const { userId, channelId } = await getAuthData();
     setSendingId(item.id);
     setProgressMap((prev) => ({ ...prev, [item.id]: 0 }));
 
@@ -392,7 +392,7 @@ export default function GeneratedImagesScreen() {
       try {
         await sendImage(
           {
-            channelId: "SHAZAM-XK9A8",
+            channelId: channelId,
             recipientId: item.id,
             campaignID: selectedCampaignId,
           },
