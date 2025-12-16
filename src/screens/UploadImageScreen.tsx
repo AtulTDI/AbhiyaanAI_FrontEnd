@@ -95,13 +95,11 @@ export default function UploadImageScreen() {
   };
 
   const handleAddImage = async (imageData: any) => {
-    const { userId } = await getAuthData();
     const formData = new FormData();
     const { campaignName, caption, images } = imageData;
 
-    formData.append("userId", String(userId));
     formData.append("campaignName", campaignName);
-    formData.append("caption", caption || "");
+    formData.append(imageToEdit ? "message" : "caption", caption || "");
 
     !imageToEdit && images.forEach((img: any, index: number) => {
       if (img.locked) {

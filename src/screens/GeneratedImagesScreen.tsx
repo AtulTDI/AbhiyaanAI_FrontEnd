@@ -35,10 +35,10 @@ import {
   getRegistrationStatus,
   generateQr,
   whatsAppLogout,
-  getWhatsAppVideoDetails,
-  markVideoSent,
   sendImage,
   sendBulkImages,
+  getWhatsAppImageDetails,
+  markImageSent,
 } from "../api/whatsappApi";
 import { getCampaigns } from "../api/imageApi";
 import { useServerTable } from "../hooks/useServerTable";
@@ -177,11 +177,7 @@ export default function GeneratedImagesScreen() {
       const isRegistered = JSON.parse(response.data)?.isReady;
       setWaRegistered(isRegistered);
     } catch (error) {
-      setWaRegistered(true);
-      // showToast(
-      //   extractErrorMessage(error, t("whatsapp.loadStatusFail")),
-      //   "error"
-      // );
+      setWaRegistered(false);
     } finally {
       setWaLoading(false);
     }
@@ -360,25 +356,71 @@ export default function GeneratedImagesScreen() {
     }
   };
 
-  const downloadVideo = async (url: string, voterId: string) => {
-    const localPath = `${RNFS.CachesDirectoryPath}/video_${Date.now()}.mp4`;
+  const getFileExtensionFromUrl = (url: string): string => {
+    if (!url) return "jpg";
+
+    const cleanUrl = url.split("?")[0].split("#")[0];
+
+    const lastDotIndex = cleanUrl.lastIndexOf(".");
+    if (lastDotIndex === -1) return "jpg";
+
+    return cleanUrl.substring(lastDotIndex + 1).toLowerCase();
+  };
+
+  const getImageMimeType = (extension: string): string => {
+    switch (extension.toLowerCase()) {
+      case "png":
+        return "image/png";
+      case "webp":
+        return "image/webp";
+      case "gif":
+        return "image/gif";
+      case "bmp":
+        return "image/bmp";
+      case "svg":
+        return "image/svg+xml";
+      case "jpg":
+      case "jpeg":
+      default:
+        return "image/jpeg";
+    }
+  };
+
+  const downloadImage = async (
+    url: string,
+    voterId: string,
+    extension: string = "jpg"
+  ) => {
+    const localPath = `${
+      RNFS.CachesDirectoryPath
+    }/image_${Date.now()}.${extension}`;
 
     const download = RNFS.downloadFile({
       fromUrl: url,
       toFile: localPath,
       progress: ({ bytesWritten, contentLength }) => {
+        if (!contentLength) return;
+
         const percentage = bytesWritten / contentLength;
-        setProgressMap((prev) => ({ ...prev, [voterId]: percentage }));
+        setProgressMap((prev) => ({
+          ...prev,
+          [voterId]: percentage,
+        }));
       },
       progressDivider: 1,
     });
 
     const result = await download.promise;
-    setProgressMap((prev) => ({ ...prev, [voterId]: 1 }));
+
+    setProgressMap((prev) => ({
+      ...prev,
+      [voterId]: 1,
+    }));
+
     if (result.statusCode === 200) {
       return `file://${localPath}`;
     } else {
-      console.error("Download failed");
+      throw new Error("Image download failed");
     }
   };
 
@@ -415,7 +457,7 @@ export default function GeneratedImagesScreen() {
 
     // --- Mobile flow ---
     let isWhatsAppAvailable = false;
-    const whatsAppVideoDetails: any = await getWhatsAppVideoDetails(
+    const whatsAppImageDetails: any = await getWhatsAppImageDetails(
       userId,
       item.id,
       selectedCampaignId
@@ -483,10 +525,11 @@ export default function GeneratedImagesScreen() {
         }
       }
 
-      // Download video before sharing
-      const localPath = await downloadVideo(
-        whatsAppVideoDetails?.data?.videoUrl,
-        item.id
+      // Download image before sharing
+      const localPath = await downloadImage(
+        whatsAppImageDetails?.data?.imageUrl,
+        item.id,
+        getFileExtensionFromUrl(whatsAppImageDetails?.data?.imageUrl)
       );
 
       // Only proceed if contact exists
@@ -495,21 +538,25 @@ export default function GeneratedImagesScreen() {
 
         if (Platform.OS === "android") {
           await Share.shareSingle({
-            title: "Video",
+            title: "Image",
             url: localPath,
-            type: "video/mp4",
+            type: getImageMimeType(
+              getFileExtensionFromUrl(whatsAppImageDetails?.data?.imageUrl)
+            ),
             social: Share.Social.WHATSAPP,
             whatsAppNumber: `91${item.phoneNumber}`,
-            message: `🙏 ${whatsAppVideoDetails?.data?.message}`,
+            message: `🙏 ${whatsAppImageDetails?.data?.message}`,
           });
         } else {
           await Share.shareSingle({
-            title: "Video",
+            title: "Image",
             url: Platform.OS === "ios" ? localPath : "file://" + localPath,
-            type: "video/mp4",
+            type: getImageMimeType(
+              getFileExtensionFromUrl(whatsAppImageDetails?.data?.imageUrl)
+            ),
             social: Share.Social.WHATSAPP,
             whatsAppNumber: `91${item.phoneNumber}`,
-            message: `🙏 ${whatsAppVideoDetails?.data?.message}`,
+            message: `🙏 ${whatsAppImageDetails?.data?.message}`,
           });
         }
       } else {
@@ -530,9 +577,9 @@ export default function GeneratedImagesScreen() {
         }, 5000);
       }
     } catch (err) {
-      console.error("Error sending video:", err);
+      console.error("Error sending image:", err);
       updateRowStatus(item.id, { sendStatus: "pending" });
-      showToast(t("video.sendFail"), "error");
+      showToast(t("image.sendFail"), "error");
     } finally {
       setProgressMap((prev) => {
         const { [item.id]: _, ...rest } = prev;
@@ -541,14 +588,16 @@ export default function GeneratedImagesScreen() {
     }
   };
 
-  const confirmVideoSent = async () => {
+  const confirmImageSent = async () => {
+    const { userId } = await getAuthData();
+
     try {
-      await markVideoSent({
+      await markImageSent(userId, {
         recepientId: sendingId,
         baseVideoId: selectedCampaignId,
       });
       updateRowStatus(sendingId, { sendStatus: "sent" });
-      showToast(t("video.sendSuccess"), "success");
+      showToast(t("image.sendSuccess"), "success");
     } catch (error) {
       showToast(
         extractErrorMessage(error, t("video.markSendVideoError")),
@@ -884,7 +933,7 @@ export default function GeneratedImagesScreen() {
           setPendingConfirmationId(null);
           clearAllTempContacts();
         }}
-        onConfirm={confirmVideoSent}
+        onConfirm={confirmImageSent}
       />
     </Surface>
   );

@@ -47,7 +47,19 @@ export const sendImage = (data: any, userId) =>
   axios.post(`/WHMessage/sendImage/${userId}`, data, { useApiPrefix: true, useAltBase: true });
 
 /**
+ * Get Image details to send
+ */
+export const getWhatsAppImageDetails = (userId: string, voterId: string, campaignId: string) =>
+  axios.get(`/WhatsApp/getimagesendingdetails/${userId}/${voterId}/${campaignId}`, { useApiPrefix: true, useAltBase: true })
+
+/**
  * Send bulk images
  */
 export const sendBulkImages = (userId: string, campaignId: string) =>
   axios.post(`/WhatsApp/run-Image-Campaign/${userId}/${campaignId}`, { useApiPrefix: true });
+
+/**
+ * Mark image as sent
+ */
+export const markImageSent = (id: string, data: any) =>
+  axios.put(`/WhatsApp/markimageassent/${id}`, data, { useApiPrefix: true, useAltBase: true });
