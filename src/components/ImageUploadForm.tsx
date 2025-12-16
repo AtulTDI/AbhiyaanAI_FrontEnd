@@ -18,6 +18,7 @@ import {
   Portal,
   Modal,
   IconButton,
+  Surface,
 } from "react-native-paper";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { Ionicons } from "@expo/vector-icons";
@@ -69,6 +70,7 @@ export default function ImageUploadForm({
   const [message, setMessage] = useState(
     imageToEdit ? imageToEdit.message ?? "" : ""
   );
+  const [messageEditorVisible, setMessageEditorVisible] = useState(false);
 
   const [images, setImages] = useState<ImageAsset[]>(() => {
     return imageToEdit
@@ -87,7 +89,6 @@ export default function ImageUploadForm({
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
   const [indexToDelete, setIndexToDelete] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const inputRef = useRef<any>(null);
 
   // responsive preview sizing
   const isSmall = screenWidth < 600;
@@ -385,16 +386,27 @@ export default function ImageUploadForm({
           </View>
 
           <View style={{ flex: 1 }}>
-            <TextInput
-              nativeID={INPUT_NATIVE_ID}
-              ref={inputRef}
-              label={t("campaignMessage")}
-              value={message.replace(/\n/g, " ")}
-              onChangeText={(txt) => setMessage(txt)}
-              mode="outlined"
-              multiline={false}
-              style={[styles.input]}
-            />
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => setMessageEditorVisible(true)}
+            >
+              <TextInput
+                label={t("campaignMessage")}
+                value={message}
+                mode="outlined"
+                editable={false}
+                pointerEvents="none"
+                style={[styles.input]}
+                right={
+                  <TextInput.Icon
+                    icon="pencil"
+                    size={20}
+                    color={colors.primary}
+                    onPress={() => setMessageEditorVisible(true)}
+                  />
+                }
+              />
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -555,6 +567,62 @@ export default function ImageUploadForm({
         onConfirm={confirmDeleteImage}
       />
 
+      <Portal>
+        <Modal
+          visible={messageEditorVisible}
+          onDismiss={() => setMessageEditorVisible(false)}
+          contentContainerStyle={styles.dialogContainer}
+        >
+          <Surface style={styles.messageModalCard} elevation={4}>
+            {/* Header */}
+            <View style={styles.messageHeader}>
+              <Text style={styles.messageTitle}>{t("campaignMessage")}</Text>
+
+              <IconButton
+                icon="close"
+                size={20}
+                onPress={() => setMessageEditorVisible(false)}
+                style={styles.closeIcon}
+              />
+            </View>
+
+            {/* Input */}
+            <TextInput
+              value={message}
+              onChangeText={setMessage}
+              mode="outlined"
+              multiline
+              textAlignVertical="top"
+              style={styles.messageInput}
+              outlineColor={colors.inputBorder}
+              activeOutlineColor={colors.primary}
+            />
+
+            {/* Actions */}
+            <View style={styles.modalActions}>
+              <Button
+                mode="outlined"
+                onPress={() => setMessageEditorVisible(false)}
+                style={styles.secondaryButton}
+                textColor={colors.darkGrayText}
+              >
+                {t("cancel")}
+              </Button>
+
+              <Button
+                mode="contained"
+                onPress={() => setMessageEditorVisible(false)}
+                style={styles.primaryButton}
+                buttonColor={colors.primary}
+                textColor={colors.white}
+              >
+                {t("save")}
+              </Button>
+            </View>
+          </Surface>
+        </Modal>
+      </Portal>
+
       {/* Footer */}
       <View style={styles.footer}>
         <Button
@@ -678,5 +746,65 @@ const createStyles = (theme: any) =>
     modalImage: {
       width: "100%",
       height: "100%",
+    },
+    messageModalCard: {
+      width: "92%",
+      maxWidth: 520,
+      maxHeight: "75%",
+      backgroundColor: theme.colors.white,
+      borderRadius: 18,
+      padding: 20,
+      borderWidth: 1,
+      borderColor: theme.colors.mutedBorder,
+      shadowColor: theme.colors.black,
+      shadowOpacity: 0.12,
+      shadowRadius: 12,
+      shadowOffset: { width: 0, height: 6 },
+      elevation: 6,
+    },
+    messageHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      marginBottom: 4,
+    },
+    dialogContainer: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      paddingHorizontal: 16,
+      paddingVertical: 24,
+    },
+    messageTitle: {
+      fontSize: 18,
+      fontWeight: "700",
+      color: theme.colors.primary,
+    },
+    closeIcon: {
+      margin: 0,
+    },
+    messageSubtitle: {
+      fontSize: 13,
+      color: theme.colors.textSecondary,
+      marginBottom: 14,
+    },
+    messageInput: {
+      height: 180,
+      backgroundColor: theme.colors.paperBackground,
+      fontSize: 15,
+    },
+    modalActions: {
+      flexDirection: "row",
+      gap: 12,
+      marginTop: 22,
+    },
+    secondaryButton: {
+      flex: 1,
+      borderRadius: 10,
+      borderColor: theme.colors.borderGray,
+    },
+    primaryButton: {
+      flex: 1,
+      borderRadius: 10,
     },
   });

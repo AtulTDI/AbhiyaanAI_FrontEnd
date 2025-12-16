@@ -62,6 +62,7 @@
   "loadingData": "Loading data...",
   "create": "Create",
   "update": "Update",
+  "save": "Save",
   "cancel": "Cancel",
   "delete": "Delete",
   "active": "Active",

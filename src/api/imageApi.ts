@@ -16,10 +16,15 @@ export const getCampaigns = (pageNumber, pageSize) =>
 /**
  * Upload Images
  */
-export const uploadImages = (data: any) =>
-  axios.post("/ImageCampaign/upload-images", data, {
-    useApiPrefix: true
+export const uploadImages = async (data: any) => {
+  const response = await axios.post("/ImageCampaign/upload-images", data, {
+    headers: { "Content-Type": "multipart/form-data" },
+    useApiPrefix: true,
+    transformRequest: (data) => data,
   });
+
+  return response;
+}
 
 /**
  * Share image by ID
