@@ -493,6 +493,8 @@ export default function GeneratedImagesScreen() {
             phoneNumbers: [
               { label: "mobile", number: `+91 ${item.phoneNumber}` },
             ],
+            accountType: null,
+            accountName: null
           };
           const savedContact = await Contacts.addContact(tempContact);
           setTempContact(savedContact);
