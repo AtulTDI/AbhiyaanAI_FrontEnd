@@ -240,6 +240,7 @@ export default function GeneratedImagesScreen() {
   };
 
   useEffect(() => {
+    clearAllTempContacts();
     setTableParams((prev) => ({
       ...prev,
       campaignId: selectedCampaignId,
@@ -298,6 +299,35 @@ export default function GeneratedImagesScreen() {
     table.setData((prev) =>
       prev.map((row) => (row.id === id ? { ...row, ...newStatus } : row))
     );
+  };
+
+  const clearAllTempContacts = async () => {
+    if (Platform.OS !== "android") return;
+
+    try {
+      const contacts = await Contacts.getAll();
+      const tempContacts = contacts.filter((c) => {
+        const fieldsToCheck = [
+          c.displayName,
+          c.givenName,
+          c.familyName,
+          c.middleName,
+        ];
+
+        return fieldsToCheck.some((field) => field?.includes("_AbhiyanAI_"));
+      });
+
+      for (const contact of tempContacts) {
+        try {
+          await Contacts.deleteContact(contact);
+          console.log("Deleted all temp contact:", contact.givenName);
+        } catch (err) {
+          console.warn("Failed to delete all temp contact", contact.givenName, err);
+        }
+      }
+    } catch (err) {
+      console.error("Error clearing all temp contacts", err);
+    }
   };
 
   const requestAndroidPermissions = async () => {
