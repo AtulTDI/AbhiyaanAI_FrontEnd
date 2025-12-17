@@ -95,32 +95,38 @@ export default function UploadImageScreen() {
   };
 
   const handleAddImage = async (imageData: any) => {
+    const { userId } = await getAuthData();
     const formData = new FormData();
     const { campaignName, caption, images } = imageData;
+
+    if (!imageToEdit) {
+      formData.append("userId", String(userId));
+    }
 
     formData.append("campaignName", campaignName);
     formData.append(imageToEdit ? "message" : "caption", caption || "");
 
-    !imageToEdit && images.forEach((img: any, index: number) => {
-      if (img.locked) {
-        if (img.uri) formData.append("existingImages[]", img.uri);
-        return;
-      }
+    !imageToEdit &&
+      images.forEach((img: any, index: number) => {
+        if (img.locked) {
+          if (img.uri) formData.append("existingImages[]", img.uri);
+          return;
+        }
 
-      if (isWeb && img.file instanceof File) {
-        formData.append("Images", img.file);
-        return;
-      }
+        if (isWeb && img.file instanceof File) {
+          formData.append("Images", img.file);
+          return;
+        }
 
-      const name = img.name || `photo_${Date.now()}_${index}.jpg`;
-      const type = img.type || guessMimeType(name);
+        const name = img.name || `photo_${Date.now()}_${index}.jpg`;
+        const type = img.type || guessMimeType(name);
 
-      formData.append("Images", {
-        uri: img.uri,
-        name,
-        type,
-      } as any);
-    });
+        formData.append("Images", {
+          uri: img.uri,
+          name,
+          type,
+        } as any);
+      });
 
     try {
       setUploading(true);
