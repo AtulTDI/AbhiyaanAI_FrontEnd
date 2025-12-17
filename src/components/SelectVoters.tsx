@@ -215,7 +215,7 @@ export default function SelectVoters({
         }}
         loading={loading}
         tableWithSelection={true}
-        customMobileHeight={true}
+        tableType={"tableUnderStepper"}
         tableHeight={"calc(100vh - 360px)"}
         onPageChange={table.setPage}
         onRowsPerPageChange={(size) => {

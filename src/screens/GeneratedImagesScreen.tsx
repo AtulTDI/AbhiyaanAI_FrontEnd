@@ -29,7 +29,7 @@ import { extractErrorMessage } from "../utils/common";
 import { getAuthData } from "../utils/storage";
 import { useToast } from "../components/ToastProvider";
 import FormDropdown from "../components/FormDropdown";
-import VideoSendConfirmationDialog from "../components/VideoSendConfirmationDialog";
+import SendConfirmationDialog from "../components/SendConfirmationDialog";
 import { getVotersByCampaignId } from "../api/voterApi";
 import {
   getRegistrationStatus,
@@ -90,6 +90,7 @@ export default function GeneratedImagesScreen() {
     campaignId: null,
     searchText: "",
   });
+  const [tempContact, setTempContact] = useState(null);
 
   const fetchCampaigns = useCallback(async () => {
     try {
@@ -225,35 +226,6 @@ export default function GeneratedImagesScreen() {
     }
   };
 
-  const clearAllTempContacts = async () => {
-    if (Platform.OS !== "android") return;
-
-    try {
-      const contacts = await Contacts.getAll();
-      const tempContacts = contacts.filter((c) => {
-        const fieldsToCheck = [
-          c.displayName,
-          c.givenName,
-          c.familyName,
-          c.middleName,
-        ];
-
-        return fieldsToCheck.some((field) => field?.includes("_AbhiyanAI_"));
-      });
-
-      for (const contact of tempContacts) {
-        try {
-          await Contacts.deleteContact(contact);
-          console.log("Deleted temp contact:", contact.givenName);
-        } catch (err) {
-          console.warn("Failed to delete temp contact", contact.givenName, err);
-        }
-      }
-    } catch (err) {
-      console.error("Error clearing temp contacts", err);
-    }
-  };
-
   const clearCacheFiles = async () => {
     if ((isWeb && !isMobileWeb) || !RNFS) return;
 
@@ -278,7 +250,9 @@ export default function GeneratedImagesScreen() {
   useFocusEffect(
     useCallback(() => {
       setSelectedCampaignId(null);
-      clearAllTempContacts();
+      if (tempContact) {
+        deleteTempContactById();
+      }
       fetchCampaigns();
       clearCacheFiles();
 
@@ -495,7 +469,6 @@ export default function GeneratedImagesScreen() {
 
     // --- Share image flow ---
     try {
-      let savedContact: any = null;
       let contactExists = false;
 
       if (Platform.OS === "android") {
@@ -517,9 +490,12 @@ export default function GeneratedImagesScreen() {
         } else {
           const tempContact = {
             givenName: `${item.fullName}_AbhiyanAI_${item.id}`,
-            phoneNumbers: [{ label: "mobile", number: item.phoneNumber }],
+            phoneNumbers: [
+              { label: "mobile", number: `+91 ${item.phoneNumber}` },
+            ],
           };
-          savedContact = await Contacts.addContact(tempContact);
+          const savedContact = await Contacts.addContact(tempContact);
+          setTempContact(savedContact);
           console.log("Saved new temp contact:", savedContact);
           contactExists = true;
         }
@@ -564,18 +540,6 @@ export default function GeneratedImagesScreen() {
       }
 
       setPendingConfirmationId(item.id);
-
-      // Delete only temp contact (not existing ones)
-      if (Platform.OS === "android" && savedContact?.recordID) {
-        setTimeout(async () => {
-          try {
-            await Contacts.deleteContact(savedContact);
-            console.log("Deleted temp contact:", savedContact.givenName);
-          } catch (err) {
-            console.warn("Failed to delete temp contact", err);
-          }
-        }, 5000);
-      }
     } catch (err) {
       console.error("Error sending image:", err);
       updateRowStatus(item.id, { sendStatus: "pending" });
@@ -585,6 +549,19 @@ export default function GeneratedImagesScreen() {
         const { [item.id]: _, ...rest } = prev;
         return rest;
       });
+    }
+  };
+
+  const deleteTempContactById = async () => {
+    if (Platform.OS === "android" && tempContact && tempContact?.recordID) {
+      try {
+        await Contacts.deleteContact(tempContact);
+        console.log("Deleted temp contact:", tempContact.givenName);
+      } catch (err) {
+        console.warn("Failed to delete temp contact", err);
+      } finally {
+        setTempContact(null);
+      }
     }
   };
 
@@ -607,7 +584,7 @@ export default function GeneratedImagesScreen() {
       setOpenSentPopup(false);
       setPendingConfirmationId(null);
       setSendingId(null);
-      clearAllTempContacts();
+      deleteTempContactById();
     }
   };
 
@@ -875,6 +852,7 @@ export default function GeneratedImagesScreen() {
             tableHeight={
               isWeb && !isMobileWeb ? "calc(100vh - 345px)" : undefined
             }
+            tableType="tableUnderDropdown"
             enableSearch
             onSearchChange={(filters) => {
               handleVoterSearch(filters.search);
@@ -925,13 +903,14 @@ export default function GeneratedImagesScreen() {
         </Modal>
       </Portal>
 
-      <VideoSendConfirmationDialog
+      <SendConfirmationDialog
+        type="image"
         visible={openSentPopup}
         onCancel={() => {
           setSendingId(null);
           setOpenSentPopup(false);
           setPendingConfirmationId(null);
-          clearAllTempContacts();
+          deleteTempContactById();
         }}
         onConfirm={confirmImageSent}
       />

@@ -29,7 +29,7 @@ import { extractErrorMessage } from "../utils/common";
 import { getAuthData } from "../utils/storage";
 import { useToast } from "../components/ToastProvider";
 import FormDropdown from "../components/FormDropdown";
-import VideoSendConfirmationDialog from "../components/VideoSendConfirmationDialog";
+import SendConfirmationDialog from "../components/SendConfirmationDialog";
 import { getVotersWithCompletedVideoId } from "../api/voterApi";
 import { getVideos } from "../api/videoApi";
 import {
@@ -784,6 +784,7 @@ export default function GeneratedVideoScreen() {
             tableHeight={
               isWeb && !isMobileWeb ? "calc(100vh - 345px)" : undefined
             }
+            tableType="tableUnderDropdown"
             enableSearch
             onSearchChange={(filters) => {
               handleVoterSearch(filters.search);
@@ -834,7 +835,8 @@ export default function GeneratedVideoScreen() {
         </Modal>
       </Portal>
 
-      <VideoSendConfirmationDialog
+      <SendConfirmationDialog
+        type="video"
         visible={openSentPopup}
         onCancel={() => {
           setSendingId(null);

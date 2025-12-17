@@ -40,7 +40,7 @@ type Props<T> = {
   emptyIcon?: React.ReactNode;
   loading?: boolean;
   tableWithSelection?: boolean;
-  customMobileHeight?: boolean;
+  tableType?: "tableUnderStepper" | "tableUnderDropdown" | "tableUnderHeader";
   tableHeight?: string;
   page?: number;
   rowsPerPage?: number;
@@ -62,7 +62,7 @@ export default function CommonTable<T>({
   enableSearch,
   loading = false,
   tableWithSelection,
-  customMobileHeight,
+  tableType,
   tableHeight,
   page: controlledPage,
   rowsPerPage: controlledRowsPerPage,
@@ -245,8 +245,10 @@ export default function CommonTable<T>({
         : tableHeight ?? "calc(100vh - 260px)";
     }
   } else {
-    if (customMobileHeight) {
-      availableHeight = screenHeight * (showSearch ? 0.37 : 0.43);
+    if (tableType === "tableUnderStepper") {
+      availableHeight = screenHeight * (showSearch ? 0.37 : 0.45);
+    } else if (tableType === "tableUnderDropdown") {
+      availableHeight = screenHeight * (showSearch ? 0.50 : 0.60);
     } else {
       availableHeight = screenHeight * (showSearch ? 0.56 : 0.66);
     }

@@ -185,6 +185,8 @@
     "sendAll": "Send All", 
     "sendSuccess": "Image sent successfully",
     "sendFail": "Error sending image",
+    "sendConfirmTitle": "Image Sent?",
+    "sendConfirmMessage": "Have you successfully sent the image?",
     "imageRequired": "Please upload at least one image",
     "uploadMax": "Upload up to {{max}} images. Click a preview to enlarge; Use Cancel to remove",
     "noData": "No images found"

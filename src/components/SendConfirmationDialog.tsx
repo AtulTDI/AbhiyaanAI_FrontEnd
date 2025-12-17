@@ -6,13 +6,15 @@ import { Ionicons } from "@expo/vector-icons";
 import { AppTheme } from "../theme";
 
 type Props = {
+  type: "image" | "video";
   visible: boolean;
   confirmLoading?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
 };
 
-const VideoSendConfirmationDialog = ({
+const SendConfirmationDialog = ({
+  type,
   visible,
   confirmLoading,
   onConfirm,
@@ -56,7 +58,7 @@ const VideoSendConfirmationDialog = ({
         <Dialog.Title
           style={[styles.title, { color: colors.primary, textAlign: "center" }]}
         >
-          {t("video.sendConfirmTitle")}
+          {t(`${type}.sendConfirmTitle`)}
         </Dialog.Title>
 
         <Dialog.Content>
@@ -68,7 +70,7 @@ const VideoSendConfirmationDialog = ({
               fontSize: 14,
             }}
           >
-            {t("video.sendConfirmMessage")}
+            {t(`${type}.sendConfirmMessage`)}
           </Text>
         </Dialog.Content>
 
@@ -137,4 +139,4 @@ const createStyles = (theme: AppTheme) =>
     },
   });
 
-export default VideoSendConfirmationDialog;
+export default SendConfirmationDialog;
