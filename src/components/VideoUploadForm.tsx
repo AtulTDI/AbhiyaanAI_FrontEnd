@@ -1,5 +1,11 @@
 import React, { useState, useRef } from "react";
-import { View, StyleSheet, Platform, Dimensions } from "react-native";
+import {
+  View,
+  StyleSheet,
+  Platform,
+  Dimensions,
+  TouchableOpacity,
+} from "react-native";
 import {
   Text,
   TextInput,
@@ -8,6 +14,10 @@ import {
   HelperText,
   Divider,
   List,
+  Portal,
+  Modal,
+  Surface,
+  IconButton,
 } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 import {
@@ -81,7 +91,7 @@ export default function VideoUploadForm({
   const [name, setName] = useState("");
   const [generatedUri, setGeneratedUri] = useState<string | null>(null);
   const [voiceCloneId, setVoiceCloneId] = useState<string | null>(null);
-
+  const [messageEditorVisible, setMessageEditorVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [videoDimensions, setVideoDimensions] = useState({
     width: 0,
@@ -137,6 +147,12 @@ export default function VideoUploadForm({
     setupSignalR();
   };
 
+  const normalizePastedText = (txt: string) => {
+    let normalized = txt.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+    normalized = normalized.replace(/^\s+/, "").replace(/\s+$/, "");
+    return normalized;
+  };
+
   const handleSubmit = () => {
     const errors: FormData["errors"] = {};
     if (!formData.campaign.trim())
@@ -157,7 +173,7 @@ export default function VideoUploadForm({
 
     const payload = {
       campaign: formData.campaign.trim(),
-      message: formData.message.trim(),
+      message: normalizePastedText(formData.message),
       cloningSpeed: formData.cloningSpeed,
       voiceCloneId: voiceCloneId,
       file: formData.file
@@ -233,27 +249,34 @@ export default function VideoUploadForm({
 
           {/* Message */}
           <View style={{ flex: 1 }}>
-            <TextInput
-              label={t("campaignMessage")}
-              value={formData.message}
-              onChangeText={(text) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  message: text,
-                  errors: { ...prev.errors, message: undefined },
-                }))
-              }
-              mode="outlined"
-              style={styles.input}
-              error={!!formData.errors.message}
-            />
-            <HelperText
-              type="error"
-              visible={!!formData.errors.message}
-              style={{ paddingLeft: 0 }}
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => setMessageEditorVisible(true)}
             >
-              {formData.errors.message}
-            </HelperText>
+              <TextInput
+                label={t("campaignMessage")}
+                value={formData.message}
+                mode="outlined"
+                editable={false}
+                pointerEvents="none"
+                style={styles.input}
+                right={
+                  <TextInput.Icon
+                    icon="pencil"
+                    size={20}
+                    color={colors.primary}
+                    onPress={() => setMessageEditorVisible(true)}
+                  />
+                }
+              />
+              <HelperText
+                type="error"
+                visible={!!formData.errors.message}
+                style={{ paddingLeft: 0 }}
+              >
+                {formData.errors.message}
+              </HelperText>
+            </TouchableOpacity>
           </View>
 
           {/* Cloning Speed */}
@@ -463,6 +486,68 @@ export default function VideoUploadForm({
         )}
       </KeyboardAwareScrollView>
 
+      <Portal>
+        <Modal
+          visible={messageEditorVisible}
+          onDismiss={() => setMessageEditorVisible(false)}
+          contentContainerStyle={styles.dialogContainer}
+        >
+          <Surface style={styles.messageModalCard} elevation={4}>
+            {/* Header */}
+            <View style={styles.messageHeader}>
+              <Text style={styles.messageTitle}>{t("campaignMessage")}</Text>
+
+              <IconButton
+                icon="close"
+                size={20}
+                onPress={() => setMessageEditorVisible(false)}
+                style={styles.closeIcon}
+              />
+            </View>
+
+            {/* Input */}
+            <TextInput
+              value={formData.message}
+              onChangeText={(text) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  message: text,
+                  errors: { ...prev.errors, message: undefined },
+                }))
+              }
+              mode="outlined"
+              multiline
+              textAlignVertical="top"
+              style={styles.messageInput}
+              outlineColor={colors.inputBorder}
+              activeOutlineColor={colors.primary}
+            />
+
+            {/* Actions */}
+            <View style={styles.modalActions}>
+              <Button
+                mode="outlined"
+                onPress={() => setMessageEditorVisible(false)}
+                style={styles.secondaryButton}
+                textColor={colors.darkGrayText}
+              >
+                {t("cancel")}
+              </Button>
+
+              <Button
+                mode="contained"
+                onPress={() => setMessageEditorVisible(false)}
+                style={styles.primaryButton}
+                buttonColor={colors.primary}
+                textColor={colors.white}
+              >
+                {t("save")}
+              </Button>
+            </View>
+          </Surface>
+        </Modal>
+      </Portal>
+
       {/* Footer */}
       <View style={styles.footer}>
         <Button
@@ -476,7 +561,7 @@ export default function VideoUploadForm({
           mode="contained"
           icon="upload"
           onPress={handleSubmit}
-          disabled={!formData.file || uploading || !voiceCloneId}
+          // disabled={!formData.file || uploading || !voiceCloneId}
           loading={uploading}
           style={styles.actionButton}
         >
@@ -513,5 +598,65 @@ const createStyles = (theme: AppTheme) =>
       display: "flex",
       alignItems: "flex-end",
       marginTop: 12,
+    },
+    messageModalCard: {
+      width: "92%",
+      maxWidth: 520,
+      maxHeight: "75%",
+      backgroundColor: theme.colors.white,
+      borderRadius: 18,
+      padding: 20,
+      borderWidth: 1,
+      borderColor: theme.colors.mutedBorder,
+      shadowColor: theme.colors.black,
+      shadowOpacity: 0.12,
+      shadowRadius: 12,
+      shadowOffset: { width: 0, height: 6 },
+      elevation: 6,
+    },
+    messageHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      marginBottom: 4,
+    },
+    dialogContainer: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      paddingHorizontal: 16,
+      paddingVertical: 24,
+    },
+    messageTitle: {
+      fontSize: 18,
+      fontWeight: "700",
+      color: theme.colors.primary,
+    },
+    closeIcon: {
+      margin: 0,
+    },
+    messageSubtitle: {
+      fontSize: 13,
+      color: theme.colors.textSecondary,
+      marginBottom: 14,
+    },
+    messageInput: {
+      height: 180,
+      backgroundColor: theme.colors.paperBackground,
+      fontSize: 15,
+    },
+    modalActions: {
+      flexDirection: "row",
+      gap: 12,
+      marginTop: 22,
+    },
+    secondaryButton: {
+      flex: 1,
+      borderRadius: 10,
+      borderColor: theme.colors.borderGray,
+    },
+    primaryButton: {
+      flex: 1,
+      borderRadius: 10,
     },
   });
