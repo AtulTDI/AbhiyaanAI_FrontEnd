@@ -1,6 +1,7 @@
 {
   "distributorTabLabel": "Distributor(s)",
   "customerAdminTabLabel": "Customer Admin(s)",
+  "premiumVoicesTabLabel": "Premium Voices",
   "userTabLabel": "User(s)",
   "activateSenderTabLabel": "Activate Sender(s)",
   "uploadBaseVideoTabLabel": "Upload Base Video",
@@ -38,6 +39,7 @@
   "editUserLabel": "Edit User",
 
   "sno": "S.No.",
+  "id": "Id",
   "name": "Name",
   "fullName": "Full name",
   "mobile": "Mobile",
@@ -190,6 +192,15 @@
     "imageRequired": "Please upload at least one image",
     "uploadMax": "Upload up to {{max}} images. Click a preview to enlarge; Use Cancel to remove",
     "noData": "No images found"
+  },
+  "voice": {
+    "delete": "Delete Voice",
+    "confirmDelete": "Are you sure you want to delete this voice?",
+    "loadFailed": "Failed to load voices",
+    "deleteSucessMessage": "Voice deleted successfully!",
+    "deleteFailMessage": "Failed to delete voice",
+    "lastCampaignRunDate": "Last Campaign Run",
+    "noData": "No voices found"
   },
   "voter": {
     "singular": "Voter",

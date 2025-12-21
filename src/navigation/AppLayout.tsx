@@ -20,6 +20,7 @@ import AddApplicationScreen from "../screens/AddApplicationScreen";
 import ActivateSenderScreen from "../screens/ActivateSenderScreen";
 import ProcessingVideosScreen from "../screens/ProcessingVideosScreen";
 import GeneratedImagesScreen from "../screens/GeneratedImagesScreen";
+import PremiumVoicesScreen from "../screens/PremiumVoicesScreen";
 import CustomDrawer from "../components/CustomDrawer";
 import CustomLabel from "../components/CustomLabel";
 import UserAvatarMenu from "../components/UserAvatarMenu";
@@ -77,7 +78,6 @@ export default function AppLayout() {
       await clearAuthData();
     } catch (error: any) {
       const msg = error?.response?.data?.error || "Something went wrong.";
-      alert(msg);
     } finally {
       navigate("Login");
     }
@@ -238,6 +238,29 @@ export default function AppLayout() {
                       icon={
                         <Ionicons
                           name="people-outline"
+                          size={20}
+                          color={props.color || colors.onPrimary}
+                        />
+                      }
+                    />
+                  ),
+                }}
+              />
+
+              <Drawer.Screen
+                name="PremiumVoices"
+                children={() => <PremiumVoicesScreen />}
+                options={{
+                  headerShown: true,
+                  headerTitle: "",
+                  headerRight: headerRightComponent,
+                  drawerLabel: (props) => (
+                    <CustomLabel
+                      {...props}
+                      label={t("premiumVoicesTabLabel")}
+                      icon={
+                        <Ionicons
+                          name="radio-outline"
                           size={20}
                           color={props.color || colors.onPrimary}
                         />

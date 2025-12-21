@@ -1,6 +1,7 @@
 {
   "distributorTabLabel": "डिस्ट्रिब्युटर",
   "customerAdminTabLabel": "कस्टमर अ‍ॅडमिन",
+  "premiumVoicesTabLabel": "प्रीमियम आवाजे",
   "userTabLabel": "यूजर",
   "activateSenderTabLabel": "सेंडर सक्रिय करा",
   "uploadBaseVideoTabLabel": "बेस व्हिडिओ अपलोड करा",
@@ -38,6 +39,7 @@
   "editUserLabel": "यूजर एडिट करा",
 
   "sno": "क्रमांक",
+  "id": "ओळख क्रमांक",
   "name": "नाव",
   "fullName": "पूर्ण नाव",
   "mobile": "मोबाइल",
@@ -190,6 +192,15 @@
     "imageRequired": "कृपया किमान एक प्रतिमा अपलोड करा",
     "uploadMax": "कमाल {{max}} प्रतिमा अपलोड करा। मोठे करण्यासाठी पूर्वावलोकनावर क्लिक करा; रद्द करण्यासाठी कॅन्सल वापरा",
     "noData": "कोणतेही प्रतिमा सापडले नाहीत"
+  },
+  "voice": {
+    "delete": "आवाज हटवा",
+    "confirmDelete": "आपण हा आवाज डिलीट करू इच्छिता का?",
+    "loadFailed": "आवाजे लोड करण्यात अयशस्वी",
+    "deleteSucessMessage": "आवाज यशस्वीपणे डिलीट केला!",
+    "deleteFailMessage": "आवाज डिलीट करण्यात अयशस्वी",
+    "lastCampaignRunDate": "शेवटची मोहिम चालवण्याची तारीख",
+    "noData": "कोणतेही आवाज सापडले नाहीत"
   },
   "voter": {
     "singular": "मतदार",
