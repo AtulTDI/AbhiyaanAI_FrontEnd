@@ -561,7 +561,7 @@ export default function VideoUploadForm({
           mode="contained"
           icon="upload"
           onPress={handleSubmit}
-          // disabled={!formData.file || uploading || !voiceCloneId}
+          disabled={!formData.file || uploading || !voiceCloneId}
           loading={uploading}
           style={styles.actionButton}
         >
