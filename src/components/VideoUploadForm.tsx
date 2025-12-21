@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   StyleSheet,
@@ -97,6 +97,20 @@ export default function VideoUploadForm({
     width: 0,
     height: 0,
   });
+  const [authData, setAuthData] = useState(null);
+
+  useEffect(() => {
+    const loadAuth = async () => {
+      try {
+        const data = await getAuthData();
+        setAuthData(data);
+      } catch (e) {
+        console.error("Failed to load auth data", e);
+      }
+    };
+
+    loadAuth();
+  }, []);
 
   const setupSignalR = async () => {
     const { accessToken, userId } = await getAuthData();
@@ -561,7 +575,11 @@ export default function VideoUploadForm({
           mode="contained"
           icon="upload"
           onPress={handleSubmit}
-          disabled={!formData.file || uploading || !voiceCloneId}
+          disabled={
+            !formData.file ||
+            uploading ||
+            (authData.isProfessionalVoiceCloning && !voiceCloneId)
+          }
           loading={uploading}
           style={styles.actionButton}
         >
