@@ -37,7 +37,12 @@ export default function PremiumVoicesTable({
     {
       label: t("id"),
       key: "voiceId",
-      flex: 0.6,
+      flex: 0.4,
+    },
+    {
+      label: t("application.singular"),
+      key: "applicationName",
+      flex: 0.4,
     },
     {
       label: t("campaign"),
@@ -47,7 +52,7 @@ export default function PremiumVoicesTable({
     {
       label: t("voice.lastCampaignRunDate"),
       key: "lastCampaignRunDate",
-      flex: 0.4,
+      flex: 0.3,
       render: (item: Voice) => (
         <Text>
           {dayjs(item.lastCampaignRunDate).format("DD MMM YYYY, hh:mm A")}
