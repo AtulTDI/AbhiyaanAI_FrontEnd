@@ -578,7 +578,9 @@ export default function VideoUploadForm({
           disabled={
             !formData.file ||
             uploading ||
-            (authData.isProfessionalVoiceCloning && !voiceCloneId)
+            ((authData.isProfessionalVoiceCloning === true ||
+              authData.isProfessionalVoiceCloning === "true") &&
+              !voiceCloneId)
           }
           loading={uploading}
           style={styles.actionButton}
