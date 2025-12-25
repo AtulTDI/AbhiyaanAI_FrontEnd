@@ -1,10 +1,15 @@
-import React, { useState } from "react";
-import { View, Modal, StyleSheet, TouchableOpacity } from "react-native";
-import { Button, Text, useTheme } from "react-native-paper";
+import React, { useRef } from "react";
+import { View, StyleSheet, TouchableOpacity } from "react-native";
+import { Text, useTheme } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 import dayjs from "dayjs";
 import { Ionicons } from "@expo/vector-icons";
-import { ResizeMode, Video as ExpoVideo } from "expo-av";
+import {
+  Video as ExpoVideo,
+  ResizeMode,
+  VideoFullscreenUpdate,
+  VideoFullscreenUpdateEvent,
+} from "expo-av";
 import CommonTable from "./CommonTable";
 import ApprovalToggle from "./ApprovalToggle";
 import { AppTheme } from "../theme";
@@ -46,7 +51,39 @@ export default function VideoTable({
   const theme = useTheme<AppTheme>();
   const styles = createStyles(theme);
   const { colors } = theme;
-  const [selectedVideoUri, setSelectedVideoUri] = useState<string | null>(null);
+
+  const videoRef = useRef<ExpoVideo>(null);
+  const currentUriRef = useRef<string | null>(null);
+
+  const playVideo = async (uri?: string) => {
+    if (!uri || !videoRef.current) return;
+
+    currentUriRef.current = uri;
+
+    try {
+      await videoRef.current.setPositionAsync(0);
+      await videoRef.current.presentFullscreenPlayer();
+      await videoRef.current.playAsync();
+    } catch (e) {
+      console.warn("Failed to play video", e);
+    }
+  };
+
+  const closeVideo = async () => {
+    try {
+      await videoRef.current?.stopAsync();
+      await videoRef.current?.dismissFullscreenPlayer();
+      await videoRef.current?.setPositionAsync(0);
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleFullscreenUpdate = async (event: VideoFullscreenUpdateEvent) => {
+    if (event.fullscreenUpdate === VideoFullscreenUpdate.PLAYER_DID_DISMISS) {
+      await closeVideo();
+    }
+  };
 
   const columns = [
     { label: t("campaign"), key: "campaignName", flex: 0.8 },
@@ -54,7 +91,7 @@ export default function VideoTable({
       label: t("uploadedAt"),
       key: "createdAt",
       flex: 0.4,
-      render: (item) => (
+      render: (item: Video) => (
         <Text>{dayjs(item.createdAt).format("DD MMM YYYY, hh:mm A")}</Text>
       ),
     },
@@ -62,7 +99,7 @@ export default function VideoTable({
       label: t("approval"),
       key: "isShared",
       flex: 0.4,
-      render: (item) => (
+      render: (item: Video) => (
         <ApprovalToggle
           isApproved={item.isShared}
           onToggle={() =>
@@ -79,19 +116,8 @@ export default function VideoTable({
       flex: 0.9,
       smallColumn: true,
       render: (item: Video) => (
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            gap: 5,
-            marginLeft: true,
-          }}
-        >
-          {/* Play */}
-          <TouchableOpacity
-            onPress={() => setSelectedVideoUri(item.s3Url || "")}
-            style={{ alignItems: "center" }}
-          >
+        <View style={styles.actions}>
+          <TouchableOpacity onPress={() => playVideo(item.s3Url)}>
             <Ionicons
               name="play-circle-outline"
               size={24}
@@ -99,11 +125,7 @@ export default function VideoTable({
             />
           </TouchableOpacity>
 
-          {/* Delete */}
-          <TouchableOpacity
-            onPress={() => onDelete(item.id)}
-            style={{ alignItems: "center" }}
-          >
+          <TouchableOpacity onPress={() => onDelete(item.id)}>
             <Ionicons
               name="trash-outline"
               size={24}
@@ -121,14 +143,6 @@ export default function VideoTable({
         data={data}
         columns={columns}
         loading={loading}
-        emptyIcon={
-          <Ionicons
-            name="videocam-outline"
-            size={48}
-            color={colors.disabledText}
-          />
-        }
-        emptyText="No videos found"
         keyExtractor={(item) => item.id}
         page={page}
         rowsPerPage={rowsPerPage}
@@ -137,32 +151,18 @@ export default function VideoTable({
         onRowsPerPageChange={onRowsPerPageChange}
       />
 
-      {/* Video Player Modal */}
-      <Modal
-        visible={!!selectedVideoUri}
-        animationType="slide"
-        transparent={false}
-      >
-        <View style={styles.fullscreenContainer}>
-          {selectedVideoUri && (
-            <ExpoVideo
-              source={{ uri: selectedVideoUri }}
-              useNativeControls
-              resizeMode={ResizeMode.CONTAIN}
-              shouldPlay
-              style={styles.video}
-            />
-          )}
-
-          <Button
-            mode="contained"
-            onPress={() => setSelectedVideoUri(null)}
-            style={styles.closeButton}
-          >
-            Close
-          </Button>
-        </View>
-      </Modal>
+      {/* Hidden fullscreen video player */}
+      <ExpoVideo
+        ref={videoRef}
+        source={
+          currentUriRef.current ? { uri: currentUriRef.current } : undefined
+        }
+        useNativeControls
+        resizeMode={ResizeMode.CONTAIN}
+        shouldPlay={false}
+        onFullscreenUpdate={handleFullscreenUpdate}
+        style={styles.hiddenVideo}
+      />
     </>
   );
 }
@@ -172,20 +172,19 @@ const createStyles = (theme: AppTheme) =>
     actions: {
       flexDirection: "row",
       alignItems: "center",
+      gap: 8,
     },
-    fullscreenContainer: {
-      flex: 1,
-      backgroundColor: theme.colors.black,
-      justifyContent: "center",
-      alignItems: "center",
-      paddingTop: 40,
+
+    hiddenVideo: {
+      width: 0,
+      height: 0,
     },
-    video: {
-      width: "100%",
-      flex: 1,
-    },
+
     closeButton: {
-      margin: 16,
-      alignSelf: "center",
+      position: "absolute",
+      top: 12,
+      right: 12,
+      backgroundColor: "rgba(0,0,0,0.6)",
+      zIndex: 1000,
     },
   });

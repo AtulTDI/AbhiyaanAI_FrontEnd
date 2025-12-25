@@ -766,7 +766,7 @@ const createStyles = (theme: any) =>
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
-      marginBottom: 4,
+      marginBottom: 10,
     },
     dialogContainer: {
       flex: 1,
@@ -789,7 +789,7 @@ const createStyles = (theme: any) =>
       marginBottom: 14,
     },
     messageInput: {
-      height: 180,
+      height: 250,
       backgroundColor: theme.colors.paperBackground,
       fontSize: 15,
     },

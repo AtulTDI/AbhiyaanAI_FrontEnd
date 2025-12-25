@@ -75,7 +75,6 @@ export default function VideoUploadForm({
   const { showToast } = useToast();
   const styles = createStyles(theme);
   const { colors } = theme;
-  const screenWidth = Dimensions.get("window").width;
 
   const scrollRef = useRef<KeyboardAwareScrollView>(null);
   const campaignInputRef = useRef<any>(null);
@@ -93,10 +92,7 @@ export default function VideoUploadForm({
   const [voiceCloneId, setVoiceCloneId] = useState<string | null>(null);
   const [messageEditorVisible, setMessageEditorVisible] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [videoDimensions, setVideoDimensions] = useState({
-    width: 0,
-    height: 0,
-  });
+  const [videoAspect, setVideoAspect] = useState<number | null>(null);
   const [authData, setAuthData] = useState(null);
 
   useEffect(() => {
@@ -223,7 +219,9 @@ export default function VideoUploadForm({
     <View style={{ flex: 1 }}>
       <KeyboardAwareScrollView
         ref={scrollRef}
-        contentContainerStyle={{ padding: 16, paddingBottom: 160 }}
+        contentContainerStyle={{
+          padding: 16
+        }}
         enableOnAndroid
         extraScrollHeight={Platform.OS === "ios" ? 100 : 120}
         keyboardShouldPersistTaps="handled"
@@ -447,46 +445,29 @@ export default function VideoUploadForm({
                       source={{ uri: generatedUri }}
                       useNativeControls
                       resizeMode={ResizeMode.CONTAIN}
-                      shouldPlay
+                      shouldPlay={false}
                       onLoad={(status) => {
-                        if ("isLoaded" in status && status.isLoaded) {
-                          const { naturalSize } =
-                            status as AVPlaybackStatusSuccess & {
-                              naturalSize: {
-                                width: number;
-                                height: number;
-                                orientation?: "portrait" | "landscape";
-                              };
+                        if (!status.isLoaded) return;
+
+                        const { naturalSize } =
+                          status as AVPlaybackStatusSuccess & {
+                            naturalSize: {
+                              width: number;
+                              height: number;
+                              orientation?: "portrait" | "landscape";
                             };
+                          };
 
-                          if (naturalSize?.width && naturalSize?.height) {
-                            const isPortrait =
-                              naturalSize.orientation === "portrait" &&
-                              naturalSize.height > naturalSize.width;
-
-                            setVideoDimensions({
-                              width: isPortrait
-                                ? naturalSize.height
-                                : naturalSize.width,
-                              height: isPortrait
-                                ? naturalSize.width
-                                : naturalSize.height,
-                            });
-                          }
+                        if (naturalSize?.width && naturalSize?.height) {
+                          setVideoAspect(
+                            naturalSize.height / naturalSize.width
+                          );
                         }
                       }}
                       style={{
                         width: "100%",
-                        height:
-                          Platform.OS !== "web" &&
-                          videoDimensions.width &&
-                          videoDimensions.height
-                            ? (videoDimensions.height / videoDimensions.width) *
-                              screenWidth
-                            : undefined,
-                        maxWidth: 800,
-                        aspectRatio: 16 / 9,
-                        backgroundColor: colors.black,
+                        height: "150%",
+                        aspectRatio: videoAspect ?? 16 / 9,
                         borderRadius: 8,
                         marginTop: 12,
                         alignSelf: "center",
@@ -638,7 +619,7 @@ const createStyles = (theme: AppTheme) =>
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
-      marginBottom: 4,
+      marginBottom: 10,
     },
     dialogContainer: {
       flex: 1,
@@ -661,7 +642,7 @@ const createStyles = (theme: AppTheme) =>
       marginBottom: 14,
     },
     messageInput: {
-      height: 180,
+      height: 250,
       backgroundColor: theme.colors.paperBackground,
       fontSize: 15,
     },
