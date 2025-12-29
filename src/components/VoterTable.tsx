@@ -4,20 +4,20 @@ import { StyleSheet, View } from "react-native";
 import { useTheme } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 import dayjs from "dayjs";
-import { Voter } from "../types/Voter";
+import { Recipient } from "../types/Recipient";
 import CommonTable from "./CommonTable";
 import ResponsiveKeyboardView from "./ResponsiveKeyboardView";
 import { AppTheme } from "../theme";
 
 type Props = {
-  data: Voter[];
+  data: Recipient[];
   page: number;
   rowsPerPage: number;
   totalCount: number;
   loading: boolean;
   onPageChange: (page: number) => void;
   onRowsPerPageChange: (size: number) => void;
-  onEdit: (item: Voter) => void;
+  onEdit: (item: Recipient) => void;
   onDelete: (id: string) => void;
   handleVoterSearch: (text: string) => void;
 };
@@ -53,7 +53,7 @@ export default function VoterTable({
       label: t("createdAt"),
       key: "createdAt",
       flex: 0.4,
-      render: (item: Voter) =>
+      render: (item: Recipient) =>
         item.createdAt
           ? dayjs(item.createdAt).format("DD MMM YYYY, hh:mm A")
           : "-",
@@ -63,7 +63,7 @@ export default function VoterTable({
       key: "actions",
       flex: 0.9,
       smallColumn: true,
-      render: (item: Voter) => (
+      render: (item: Recipient) => (
         <View style={styles.actions}>
           <Ionicons
             name="pencil"

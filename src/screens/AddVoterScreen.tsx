@@ -23,15 +23,15 @@ import VoterUpload from "../components/VoterUpload";
 import VoterTable from "../components/VoterTable";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 import { useToast } from "../components/ToastProvider";
-import { CreateVoterPayload, EditVoterPayload, Voter } from "../types/Voter";
+import { CreateRecipientPayload, EditRecipientPayload, Recipient } from "../types/Recipient";
 import { useServerTable } from "../hooks/useServerTable";
 import { usePlatformInfo } from "../hooks/usePlatformInfo";
 import {
-  createVoter,
-  deleteVoterById,
-  editVoterById,
-  getVoters,
-} from "../api/voterApi";
+  createRecipient,
+  deleteRecipientById,
+  editRecipientById,
+  getRecipients,
+} from "../api/recipientApi";
 import { extractErrorMessage } from "../utils/common";
 import { AppTheme } from "../theme";
 
@@ -52,7 +52,7 @@ export default function AddVoterScreen() {
   const [showAddVoterView, setShowAddVoterView] = useState(false);
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
   const [selectedVoterId, setSelectedVoterId] = useState<string | null>(null);
-  const [voterToEdit, setVoterToEdit] = useState<Voter | null>(null);
+  const [voterToEdit, setVoterToEdit] = useState<Recipient | null>(null);
   const [searchText, setSearchText] = useState("");
   const [tableParams, setTableParams] = useState<{ searchText?: string }>({
     searchText: "",
@@ -72,7 +72,7 @@ export default function AddVoterScreen() {
       pageSize: number,
       params?: { searchText?: string }
     ) => {
-      const response = await getVoters(
+      const response = await getRecipients(
         page,
         pageSize,
         params?.searchText ?? ""
@@ -85,7 +85,7 @@ export default function AddVoterScreen() {
     []
   );
 
-  const table = useServerTable<Voter, { searchText?: string }>(
+  const table = useServerTable<Recipient, { searchText?: string }>(
     fetchVoters,
     { initialPage: 0, initialRowsPerPage: 10 },
     tableParams
@@ -110,9 +110,9 @@ export default function AddVoterScreen() {
     [table]
   );
 
-  const addVoter = async (voterData: CreateVoterPayload) => {
+  const addVoter = async (voterData: CreateRecipientPayload) => {
     try {
-      await createVoter(voterData);
+      await createRecipient(voterData);
       table.fetchData(0, table.rowsPerPage, { searchText: "" });
       setSearchText("");
       showToast(t("voter.addSuccess"), "success");
@@ -123,10 +123,10 @@ export default function AddVoterScreen() {
     }
   };
 
-  const editVoter = async (voterData: EditVoterPayload) => {
+  const editVoter = async (voterData: EditRecipientPayload) => {
     if (!voterToEdit) return;
     try {
-      await editVoterById(voterToEdit.id, voterData);
+      await editRecipientById(voterToEdit.id, voterData);
       await table.fetchData(table.page, table.rowsPerPage, { searchText: "" });
       setSearchText("");
       showToast(t("voter.editSuccess"), "success");
@@ -137,7 +137,7 @@ export default function AddVoterScreen() {
     }
   };
 
-  const handleEdit = (item: Voter) => {
+  const handleEdit = (item: Recipient) => {
     setVoterToEdit(item);
     setShowAddVoterView(true);
   };
@@ -150,7 +150,7 @@ export default function AddVoterScreen() {
   const confirmDeleteVoter = async () => {
     if (selectedVoterId) {
       try {
-        await deleteVoterById(selectedVoterId);
+        await deleteRecipientById(selectedVoterId);
         setSearchText("");
         table.fetchData(table.page, table.rowsPerPage, { searchText: "" });
         showToast(t("voter.deleteSucess"), "success");

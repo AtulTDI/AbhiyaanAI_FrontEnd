@@ -24,13 +24,13 @@ import dayjs from "dayjs";
 import { useFocusEffect } from "@react-navigation/native";
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import CommonTable from "../components/CommonTable";
-import { Voter } from "../types/Voter";
+import { Recipient } from "../types/Recipient";
 import { extractErrorMessage } from "../utils/common";
 import { getAuthData } from "../utils/storage";
 import { useToast } from "../components/ToastProvider";
 import FormDropdown from "../components/FormDropdown";
 import SendConfirmationDialog from "../components/SendConfirmationDialog";
-import { getVotersByCampaignId } from "../api/voterApi";
+import { getRecipientsByCampaignId } from "../api/recipientApi";
 import {
   getRegistrationStatus,
   generateQr,
@@ -127,7 +127,7 @@ export default function GeneratedImagesScreen() {
 
       setLoading(true);
       try {
-        const response = await getVotersByCampaignId(
+        const response = await getRecipientsByCampaignId(
           params.campaignId,
           page,
           pageSize,
@@ -154,7 +154,7 @@ export default function GeneratedImagesScreen() {
   );
 
   const table = useServerTable<
-    Voter,
+    Recipient,
     { campaignId: string | null; searchText: string }
   >(fetchVoters, { initialPage: 0, initialRowsPerPage: 10 }, tableParams);
 
@@ -295,7 +295,7 @@ export default function GeneratedImagesScreen() {
     return () => subscription.remove();
   }, [pendingConfirmationId]);
 
-  const updateRowStatus = (id: string, newStatus: Partial<Voter>) => {
+  const updateRowStatus = (id: string, newStatus: Partial<Recipient>) => {
     table.setData((prev) =>
       prev.map((row) => (row.id === id ? { ...row, ...newStatus } : row))
     );
@@ -428,7 +428,7 @@ export default function GeneratedImagesScreen() {
     }
   };
 
-  const handleSendImage = async (item: Voter) => {
+  const handleSendImage = async (item: Recipient) => {
     const { userId, channelId } = await getAuthData();
     setSendingId(item.id);
     setProgressMap((prev) => ({ ...prev, [item.id]: 0 }));
@@ -642,7 +642,7 @@ export default function GeneratedImagesScreen() {
       key: "actions",
       flex: 1,
       smallColumn: true,
-      render: (item: Voter) => {
+      render: (item: Recipient) => {
         const sendStatus = item?.sendStatus?.toLowerCase?.() ?? "pending";
         const disableRowActions =
           (sendingId !== null && sendingId !== item.id) ||

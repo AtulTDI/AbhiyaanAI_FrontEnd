@@ -11,13 +11,13 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
 import dayjs from "dayjs";
 import { Feather, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { Voter } from "../types/Voter";
+import { Recipient } from "../types/Recipient";
 import { extractErrorMessage } from "../utils/common";
 import { useToast } from "../components/ToastProvider";
 import ProgressChip from "../components/ProgressChip";
 import CommonTable from "../components/CommonTable";
 import { getAuthData } from "../utils/storage";
-import { getVotersWithInProgressVidoes } from "../api/voterApi";
+import { getRecipientsWithInProgressVidoes } from "../api/recipientApi";
 import {
   startConnection,
   joinGroups,
@@ -39,7 +39,7 @@ export default function ProcessingVideosScreen() {
   const styles = createStyles(theme);
   const { colors } = theme;
   const { showToast } = useToast();
-  const [voters, setVoters] = useState<Voter[]>([]);
+  const [voters, setVoters] = useState<Recipient[]>([]);
   const [voterStatuses, setVoterStatuses] = useState<
     Record<string, VoterStatus>
   >({});
@@ -68,7 +68,7 @@ export default function ProcessingVideosScreen() {
   const fetchVoters = async () => {
     setLoading(true);
     try {
-      const response = await getVotersWithInProgressVidoes();
+      const response = await getRecipientsWithInProgressVidoes();
       const voterList = Array.isArray(response?.data) ? response.data : [];
 
       setVoters(voterList);
@@ -93,7 +93,7 @@ export default function ProcessingVideosScreen() {
     }, [])
   );
 
-  const getStatusView = (status: VoterStatus, item: Voter) => {
+  const getStatusView = (status: VoterStatus, item: Recipient) => {
     switch (status) {
       case "InQueue":
         return (
@@ -198,7 +198,7 @@ export default function ProcessingVideosScreen() {
       label: t("status"),
       key: "actions",
       flex: 1,
-      render: (item: Voter) =>
+      render: (item: Recipient) =>
         getStatusView(voterStatuses[item.id] || "InQueue", item),
     },
   ];

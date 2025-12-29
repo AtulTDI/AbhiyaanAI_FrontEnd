@@ -1,4 +1,4 @@
-export type Voter = {
+export type Recipient = {
   id?: string;
   fullName: string;
   phoneNumber: string;
@@ -8,20 +8,20 @@ export type Voter = {
   sendStatus?: string;
 }
 
-export type GetPaginatedVoters = {
-  items: Voter[];
+export type GetPaginatedRecipients = {
+  items: Recipient[];
   pageNumber: number;
   pageSize: number;
   totalPages: number;
   totalRecords: number;
 }
 
-export type CreateVoterPayload = {
+export type CreateRecipientPayload = {
   fullName: string;
   phoneNumber: string;
 }
 
-export type EditVoterPayload = {
+export type EditRecipientPayload = {
   fullName?: string;
   phoneNumber?: string;
 }

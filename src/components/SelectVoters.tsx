@@ -4,8 +4,8 @@ import { Checkbox, useTheme } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 import { Ionicons } from "@expo/vector-icons";
 import CommonTable from "../components/CommonTable";
-import { GetPaginatedVoters, Voter } from "../types/Voter";
-import { getVotersForProcessing } from "../api/voterApi";
+import { GetPaginatedRecipients, Recipient } from "../types/Recipient";
+import { getRecipientsForProcessing } from "../api/recipientApi";
 import { useFocusEffect } from "@react-navigation/native";
 import { useServerTable } from "../hooks/useServerTable";
 import { AppTheme } from "../theme";
@@ -83,7 +83,7 @@ export default function SelectVoters({
         return Promise.resolve({ items: [], totalCount: 0 });
       }
 
-      return getVotersForProcessing(
+      return getRecipientsForProcessing(
         baseVideoId,
         page,
         pageSize,
@@ -105,7 +105,7 @@ export default function SelectVoters({
   );
 
   const table = useServerTable<
-    GetPaginatedVoters,
+    GetPaginatedRecipients,
     { baseVideoId?: string; searchText?: string }
   >(fetchVoters, { initialPage: 0, initialRowsPerPage: 10 }, params);
 
@@ -174,7 +174,7 @@ export default function SelectVoters({
     () => [
       {
         ...columns[0],
-        render: (item: Voter) => (
+        render: (item: Recipient) => (
           <Pressable onPress={() => toggleSelection(item.id)}>
             <Checkbox status={isSelected(item.id) ? "checked" : "unchecked"} />
           </Pressable>

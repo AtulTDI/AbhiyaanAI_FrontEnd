@@ -24,13 +24,13 @@ import dayjs from "dayjs";
 import { useFocusEffect } from "@react-navigation/native";
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import CommonTable from "../components/CommonTable";
-import { Voter } from "../types/Voter";
+import { Recipient } from "../types/Recipient";
 import { extractErrorMessage } from "../utils/common";
 import { getAuthData } from "../utils/storage";
 import { useToast } from "../components/ToastProvider";
 import FormDropdown from "../components/FormDropdown";
 import SendConfirmationDialog from "../components/SendConfirmationDialog";
-import { getVotersWithCompletedVideoId } from "../api/voterApi";
+import { getRecipientsWithCompletedVideoId } from "../api/recipientApi";
 import { getVideos } from "../api/videoApi";
 import {
   getRegistrationStatus,
@@ -123,7 +123,7 @@ export default function GeneratedVideoScreen() {
 
       setLoading(true);
       try {
-        const response = await getVotersWithCompletedVideoId(
+        const response = await getRecipientsWithCompletedVideoId(
           params.videoId,
           page,
           pageSize,
@@ -150,7 +150,7 @@ export default function GeneratedVideoScreen() {
   );
 
   const table = useServerTable<
-    Voter,
+    Recipient,
     { videoId: string | null; searchText: string }
   >(fetchVoters, { initialPage: 0, initialRowsPerPage: 10 }, tableParams);
 
@@ -321,7 +321,7 @@ export default function GeneratedVideoScreen() {
     return () => subscription.remove();
   }, [pendingConfirmationId]);
 
-  const updateRowStatus = (id: string, newStatus: Partial<Voter>) => {
+  const updateRowStatus = (id: string, newStatus: Partial<Recipient>) => {
     table.setData((prev) =>
       prev.map((row) => (row.id === id ? { ...row, ...newStatus } : row))
     );
@@ -379,7 +379,7 @@ export default function GeneratedVideoScreen() {
     }
   };
 
-  const handleSendVideo = async (item: Voter) => {
+  const handleSendVideo = async (item: Recipient) => {
     const { userId, channelId } = await getAuthData();
     setSendingId(item.id);
     setProgressMap((prev) => ({ ...prev, [item.id]: 0 }));
@@ -576,7 +576,7 @@ export default function GeneratedVideoScreen() {
       key: "actions",
       flex: 1,
       smallColumn: true,
-      render: (item: Voter) => {
+      render: (item: Recipient) => {
         const sendStatus = item?.sendStatus?.toLowerCase?.() ?? "pending";
         const disableRowActions =
           (sendingId !== null && sendingId !== item.id) ||
