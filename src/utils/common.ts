@@ -58,3 +58,11 @@ export const sortByDateDesc = (data, key) => {
     (a, b) => new Date(b[key]).getTime() - new Date(a[key]).getTime()
   );
 }
+
+export const getGender = (genderEnum: number) => {
+  if (genderEnum === 1) {
+    return "Male";
+  }
+
+  return "Female"
+}

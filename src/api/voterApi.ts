@@ -1,62 +1,26 @@
 import { Platform } from "react-native";
 import * as FileSystem from "expo-file-system";
 import axios from "./axiosInstance";
-import { CreateVoterPayload, EditVoterPayload, GetPaginatedVoters, Voter } from "../types/Voter";
+import { GetFamilyMembers, GetPaginatedVoters, Voter } from "../types/Voter";
 import { base64ToBlob } from "../utils/common";
 
 /**
  * Get paginated voters with optional search
  */
 export const getVoters = (pageNumber, pageSize, searchText) =>
-  axios.get<GetPaginatedVoters>(`/Recipients/getrecipients?searchText=${searchText}&page=${pageNumber + 1}&pageSize=${pageSize}`, { useApiPrefix: true });
-
+  axios.get<GetPaginatedVoters>(`/Voters/getvoters?page=${pageNumber}&pageSize=${pageSize}&searchText=${searchText}`, { useApiPrefix: true });
 
 /**
- * Get paginated voters without processing videos
+ * Get voter by id
  */
-export const getVotersForProcessing = (id: string, pageNumber, pageSize, searchText) =>
-  axios.get<GetPaginatedVoters>(`/Recipients/getrecipientsforprocessing`, {
-    params: { baseVideoID: id, searchText: searchText ?? "", page: pageNumber + 1, pageSize: pageSize },
-    useApiPrefix: true,
-  });
+export const getVoterById = (id) =>
+  axios.get<Voter>(`/Voters/get-voters-by-id/${id}`, { useApiPrefix: true });
+
 
 /**
- * Get voters with in progress vidoes using base video id
+ * Add multiple voters
  */
-export const getVotersWithInProgressVidoes = () =>
-  axios.get('/Recipients/getinProgressaivideos', {
-    useApiPrefix: true,
-  });
-
-
-/**
-* Get paginated voters with completed vidoes using base video id
-*/
-export const getVotersWithCompletedVideoId = (id: string, pageNumber, pageSize, searchText) =>
-  axios.get('/Recipients/getcompletedaivideoswithbaseid',
-    {
-      params: { baseVideoID: id, searchText: searchText, page: pageNumber + 1, pageSize: pageSize },
-      useApiPrefix: true
-    });
-
-
-/**
- * Get user by ID
- */
-export const getVoterById = (id: string) =>
-  axios.get<Voter>(`/Recipients/${id}`, { useApiPrefix: true });
-
-/**
- * Add new user
- */
-export const createVoter = (payload: CreateVoterPayload) =>
-  axios.post<Voter>("/Recipients", payload, { useApiPrefix: true });
-
-
-/**
- * Add multiple users
- */
-export const uploadVoters = async (file: any) => {
+export const uploadVoters = async (file: any, applicationId: string) => {
   const formData = new FormData();
   const fileName = file.name || "upload.xlsx";
   const mimeType =
@@ -97,35 +61,50 @@ export const uploadVoters = async (file: any) => {
     throw new Error("Unsupported file format");
   }
 
-  const response = await axios.post("/Recipients/import", formData, {
+  const response = await axios.post(`/Voters/import?applicationId=${applicationId}`, formData, {
     headers: {
       "Content-Type": "multipart/form-data",
     },
     useApiPrefix: true,
-    transformRequest: (data) => data, // ensure FormData isn't serialized
+    transformRequest: (data) => data,
   });
 
   return response.data;
 };
 
 /**
- * Get voters by Campaign for images
+ * Update voter mobile number
  */
-export const getVotersByCampaignId = (id: string, pageNumber, pageSize, searchText) =>
-  axios.get('/Recipients/recipients-with-image-campaign',
-    {
-      params: { campaignId: id, searchText: searchText, page: pageNumber + 1, pageSize: pageSize },
-      useApiPrefix: true
-    });
+export const updateMobileNumber = (id, number) =>
+  axios.put<Voter>(`/Voters/update-mobile-number/${id}?mobileNumber=${number}`, {}, { useApiPrefix: true });
 
 /**
- * Edit user by ID
+ * Verify
  */
-export const editVoterById = (id: string, payload: EditVoterPayload) =>
-  axios.put<Voter>(`/Recipients/${id}`, payload, { useApiPrefix: true });
+export const verifyVoter = (id) =>
+  axios.put<Voter>(`/Voters/verify-voter/${id}`, {}, { useApiPrefix: true });
 
 /**
- * Delete user by ID
+ * Get family members
  */
-export const deleteVoterById = (id: string) =>
-  axios.delete(`/Recipients/${id}`, { useApiPrefix: true });
+export const getFamilyMembers = (id) =>
+  axios.get<GetFamilyMembers>(`/Voters/get-family-members/${id}`, { useApiPrefix: true });
+
+/**
+ * Get eligible family members
+ */
+export const getEligibleFamilyMembers = (applicationId, pageNumber, pageSize, searchText) =>
+  axios.get<GetFamilyMembers>(`/Voters/getvoters-eligible-for-family/${applicationId}?page=${pageNumber}&pageSize=${pageSize}&searchText=${searchText}`, { useApiPrefix: true });
+
+
+/**
+ * Add family member
+ */
+export const addFamilyMember = (data) =>
+  axios.post<Voter>("/Voters/addvoter-to-family", data, { useApiPrefix: true });
+
+/**
+ * Remove family member
+ */
+export const removeFamilyMember = (id) =>
+  axios.post<Voter>(`/Voters/remove-from-family/${id}`, {}, { useApiPrefix: true });

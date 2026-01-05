@@ -20,6 +20,7 @@ import { useToast } from "../components/ToastProvider";
 import ApplicationsTable from "../components/ApplicationsTable";
 import ApplicationForm from "../components/ApplicationForm";
 import { extractErrorMessage, sortByDateDesc } from "../utils/common";
+import { uploadVoters } from "../api/voterApi";
 import { useServerTable } from "../hooks/useServerTable";
 import { AppTheme } from "../theme";
 
@@ -32,6 +33,7 @@ export default function AddApplicationScreen() {
   const [showAddApplicationView, setShowAddApplicationView] = useState(false);
   const [applicationToEdit, setApplicationToEdit] =
     useState<Application | null>(null);
+  const [voterFile, setVoterFile] = useState<any>(null);
 
   const fetchApplications = useCallback(
     async (page: number, pageSize: number) => {
@@ -70,9 +72,21 @@ export default function AddApplicationScreen() {
     }, [])
   );
 
+  const handleVoterFileUpload = async (applicationId: string) => {
+    try {
+      await uploadVoters(voterFile, applicationId);
+    } catch (error) {
+      showToast(extractErrorMessage(error, t("voter.addFailed")), "error");
+    }
+  };
+
   const addApplication = async (data: CreateApplicationPayload) => {
     try {
-      await createApplication(data);
+      const response = await createApplication(data);
+      console.log(response);
+      if (voterFile) {
+        await handleVoterFileUpload(response.data.id);
+      }
       await table.fetchData(0, table.rowsPerPage);
       setShowAddApplicationView(false);
       setApplicationToEdit(null);
@@ -156,6 +170,7 @@ export default function AddApplicationScreen() {
         <ApplicationForm
           mode={applicationToEdit ? "edit" : "create"}
           onCreate={applicationToEdit ? editApplication : addApplication}
+          onVoterFileUpload={(file) => setVoterFile(file)}
           applicationToEdit={applicationToEdit}
           setApplicationToEdit={setApplicationToEdit}
           setShowAddApplicationView={setShowAddApplicationView}

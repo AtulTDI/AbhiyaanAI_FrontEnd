@@ -8,6 +8,7 @@ export type Application = {
   salesAgentId?: string;
   videoGenerationRate?: string;
   premiumVoice?: boolean;
+  electionRelated?: boolean;
   isActive: boolean;
 }
 
@@ -18,6 +19,7 @@ export type GetPaginatedApplications = {
   totalPages: number;
   totalRecords: number;
   premiumVoice: boolean;
+  electionRelated?: boolean;
 }
 
 export type CreateApplicationPayload = {
@@ -26,6 +28,7 @@ export type CreateApplicationPayload = {
   salesAgent: string;
   videoGenerationRate?: string;
   premiumVoice?: boolean;
+  electionRelated?: boolean;
 }
 
 export type EditApplicationPayload = {
@@ -34,5 +37,6 @@ export type EditApplicationPayload = {
   salesAgent: string;
   videoGenerationRate?: string;
   premiumVoice?: boolean;
+  electionRelated?: boolean;
   isActive: boolean;
 }

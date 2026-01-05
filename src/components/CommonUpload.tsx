@@ -17,15 +17,15 @@ type FileType = "excel" | "video";
 type Props = {
   fileType: FileType;
   onUpload: (file: DocumentPicker.DocumentPickerAsset) => void;
-  onCancel: () => void;
   label?: string;
+  directUpload?: boolean;
 };
 
 export default function CommonUpload({
   fileType,
   onUpload,
-  onCancel,
   label,
+  directUpload,
 }: Props) {
   const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
@@ -85,7 +85,7 @@ export default function CommonUpload({
 
       setFile(selectedFile);
 
-      if (fileType === "video") {
+      if (fileType === "video" || directUpload === true) {
         onUpload(selectedFile);
       }
     } catch (err) {
@@ -132,7 +132,7 @@ export default function CommonUpload({
         </TouchableOpacity>
       </Surface>
 
-      {fileType === "excel" && (
+      {fileType === "excel" && !directUpload && (
         <View style={styles.buttonRow}>
           <Button
             mode="contained"

@@ -23,7 +23,6 @@ export default function VoterUpload({ fetchVoters, setShowAddVoterView }) {
     <CommonUpload
       label={t("voter.uploadVoterExcel")}
       fileType="excel"
-      onCancel={() => setShowAddVoterView(false)}
       onUpload={(file) => handleUpload(file)}
     />
   );

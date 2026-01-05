@@ -5,10 +5,12 @@ import { FieldConfig } from "../types";
 import { Application } from "../types/Application";
 import { getDistributors } from "../api/salesAgentApi";
 import DynamicForm from "./DynamicForm";
+import CommonUpload from "./CommonUpload";
 
 type Props = {
   mode: "create" | "edit";
   onCreate: (data: { appName: string; videoCount: number }) => void;
+  onVoterFileUpload: (data: any) => void;
   applicationToEdit: Application;
   setApplicationToEdit: (user: Application | null) => void;
   setShowAddApplicationView: (visible: boolean) => void;
@@ -17,12 +19,16 @@ type Props = {
 export default function ApplicationForm({
   mode,
   onCreate,
+  onVoterFileUpload,
   applicationToEdit,
   setApplicationToEdit,
   setShowAddApplicationView,
 }: Props) {
   const { t } = useTranslation();
   const [salesAgentOptions, setSalesAgentOptions] = useState<any[]>([]);
+  const [showVoterUpload, setShowVoterUpload] = useState<string | Boolean>(
+    false
+  );
 
   useEffect(() => {
     const fetchSalesAgents = async () => {
@@ -93,6 +99,12 @@ export default function ApplicationForm({
       type: "checkbox",
       required: false,
     },
+    {
+      name: "electionRelated",
+      label: t("electionRelated"),
+      type: "checkbox",
+      required: false,
+    },
   ];
 
   return (
@@ -110,15 +122,30 @@ export default function ApplicationForm({
           videoCount: applicationToEdit ? "0" : "100",
           salesAgent: applicationToEdit?.salesAgentId || "",
           videoGenerationRate: applicationToEdit?.videoGenerationRate || "",
-          premiumVoice: applicationToEdit?.premiumVoice || false
+          premiumVoice: applicationToEdit?.premiumVoice || false,
+          electionRelated: applicationToEdit?.electionRelated || false,
         }}
         mode={mode}
+        onChange={(data, value) => {
+          if (data.name === "electionRelated") {
+            setShowVoterUpload(value);
+          }
+        }}
         onSubmit={(data) => onCreate(data as any)}
         onCancel={() => {
           setApplicationToEdit(null);
           setShowAddApplicationView(false);
         }}
-      />
+      >
+        {showVoterUpload && (
+          <CommonUpload
+            label={t("voter.uploadVoterExcel")}
+            fileType="excel"
+            directUpload={true}
+            onUpload={(file) => onVoterFileUpload(file)}
+          />
+        )}
+      </DynamicForm>
     </KeyboardAwareScrollView>
   );
 }

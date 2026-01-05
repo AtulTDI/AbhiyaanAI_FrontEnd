@@ -13,6 +13,7 @@ import AddUserScreen from "../screens/AddUserScreen";
 import UploadVideoScreen from "../screens/UploadVideoScreen";
 import UploadImageScreen from "../screens/UploadImageScreen";
 import AddVoterScreen from "../screens/AddVoterScreen";
+import VotersScreen from "../screens/VotersScreen";
 import AddSenderScreen from "../screens/AddSenderScreen";
 import GenerateVideoScreen from "../screens/GenerateVideoScreen";
 import GeneratedVideoScreen from "../screens/GeneratedVideosScreen";
@@ -395,6 +396,31 @@ export default function AppLayout() {
                 }}
               />
             </>
+          )}
+
+          {role === "Admin" && (
+            <Drawer.Screen
+              name="VotersList"
+              component={VotersScreen}
+              options={{
+                headerShown: true,
+                headerTitle: "",
+                headerRight: headerRightComponent,
+                drawerLabel: (props) => (
+                  <CustomLabel
+                    {...props}
+                    label={t("voter.plural")}
+                    icon={
+                      <Ionicons
+                        name="people-outline"
+                        size={20}
+                        color={props.color || colors.onPrimary}
+                      />
+                    }
+                  />
+                ),
+              }}
+            />
           )}
         </>
       )}

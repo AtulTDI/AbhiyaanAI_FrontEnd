@@ -23,6 +23,7 @@ type Props = {
   onChange?: (data: FieldConfig, value: string | boolean) => void;
   onSubmit?: (data: Record<string, string | boolean>) => void;
   onCancel?: () => void;
+  children?: React.ReactNode;
 };
 
 export default function DynamicForm({
@@ -33,6 +34,7 @@ export default function DynamicForm({
   onChange,
   onSubmit,
   onCancel,
+  children,
 }: Props) {
   const { t } = useTranslation();
   const { isWeb, isMobileWeb } = usePlatformInfo();
@@ -376,6 +378,8 @@ export default function DynamicForm({
         ))}
       </View>
 
+      {children && <View style={styles.dynamicContent}>{children}</View>}
+
       <View style={styles.buttonRow}>
         <Button mode="outlined" onPress={onCancel} style={styles.resetBtn}>
           {t("cancel")}
@@ -430,5 +434,8 @@ const createStyles = (
     },
     fullWidth: {
       width: "100%",
+    },
+    dynamicContent: {
+      marginBottom: 12,
     },
   });
