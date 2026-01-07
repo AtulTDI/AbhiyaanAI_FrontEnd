@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
   StyleSheet,
@@ -19,15 +19,17 @@ import {
   Divider,
 } from "react-native-paper";
 import { useTranslation } from "react-i18next";
+import { useFocusEffect } from "@react-navigation/native";
 import VoterDetailView from "../components/VoterDetailView";
 import { Voter } from "../types/Voter";
 import { useDebounce } from "../hooks/useDebounce";
 import { getVoterById, getVoters } from "../api/voterApi";
-import { AppTheme } from "../theme";
 import { getGender } from "../utils/common";
+import { AppTheme } from "../theme";
 
 type AgeMode = "none" | "lt" | "gt" | "between";
 type ScreenView = "list" | "detail";
+
 const PAGE_SIZE = 8;
 
 /* ---------------- SCREEN ---------------- */
@@ -36,46 +38,59 @@ export default function VotersScreen() {
   const theme = useTheme<AppTheme>();
   const styles = createStyles(theme);
   const { width } = useWindowDimensions();
+
   const isWeb = width >= 768;
   const numColumns = isWeb ? 2 : 1;
+
   const [view, setView] = useState<ScreenView>("list");
   const [selectedVoter, setSelectedVoter] = useState<Voter | null>(null);
+
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [gender, setGender] = useState<"All" | "Male" | "Female">("All");
+
   const [ageMode, setAgeMode] = useState<AgeMode>("none");
   const [ageValue, setAgeValue] = useState("");
   const [minAge, setMinAge] = useState("");
   const [maxAge, setMaxAge] = useState("");
+
   const [page, setPage] = useState(1);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+
   const [voters, setVoters] = useState<Voter[]>([]);
-  const [voterCount, setVoterCount] = useState<number>(0);
+  const [voterCount, setVoterCount] = useState(0);
+
   const debouncedSearch = useDebounce(search, 500);
 
+  /* ---------------- INITIAL LOADER ---------------- */
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 600);
     return () => clearTimeout(timer);
   }, []);
 
-  useEffect(() => {
-    fetchVoters();
-  }, [debouncedSearch, gender, ageMode, ageValue, minAge, maxAge, page]);
+  /* ---------------- FETCH VOTERS ---------------- */
+  const fetchVoters = useCallback(async () => {
+    try {
+      const res = await getVoters(page, PAGE_SIZE, debouncedSearch ?? "");
+      setVoterCount(res?.data?.totalRecords ?? 0);
+      setVoters(res?.data?.data ?? []);
+    } catch (err) {}
+  }, [page, debouncedSearch, gender, ageMode, ageValue, minAge, maxAge]);
+
+  /* ---------------- FOCUS EFFECT (SINGLE SOURCE) ---------------- */
+  useFocusEffect(
+    useCallback(() => {
+      fetchVoters();
+    }, [fetchVoters])
+  );
 
   const totalPages = Math.ceil(voterCount / PAGE_SIZE);
 
-  const fetchVoters = async () => {
+  /* ---------------- FETCH SINGLE VOTER ---------------- */
+  const fetchVoter = async (id: string) => {
     try {
-      const response = await getVoters(page, 8, search ?? "");
-      setVoterCount(response?.data?.totalRecords);
-      setVoters(response?.data?.data);
-    } catch (err) {}
-  };
-
-  const fetchVoter = async (id) => {
-    try {
-      const response = await getVoterById(id);
-      setSelectedVoter(response.data);
+      const res = await getVoterById(id);
+      setSelectedVoter(res.data);
       setView("detail");
     } catch (err) {}
   };
@@ -234,12 +249,9 @@ export default function VotersScreen() {
         numColumns={numColumns}
         keyExtractor={(item) => item.id}
         columnWrapperStyle={numColumns > 1 ? styles.row : undefined}
-        scrollEnabled={true}
         renderItem={({ item }) => (
           <Pressable
-            onPress={() => {
-              fetchVoter(item.id);
-            }}
+            onPress={() => fetchVoter(item.id)}
             onHoverIn={() => Platform.OS === "web" && setHoveredId(item.id)}
             onHoverOut={() => Platform.OS === "web" && setHoveredId(null)}
             style={styles.cardPressable}
@@ -441,24 +453,5 @@ const createStyles = (theme: AppTheme) =>
       marginHorizontal: 8,
       fontWeight: "500",
       color: theme.colors.primary,
-    },
-
-    /* Detail */
-    detailCard: {
-      borderWidth: 1,
-      borderColor: theme.colors.subtleBorder,
-      borderRadius: 12,
-      padding: 16,
-      marginTop: 16,
-      backgroundColor: theme.colors.white,
-    },
-    detailName: {
-      fontWeight: "700",
-      color: theme.colors.primary,
-    },
-    detailRow: {
-      marginTop: 8,
-      fontSize: 15,
-      color: theme.colors.textPrimary,
     },
   });

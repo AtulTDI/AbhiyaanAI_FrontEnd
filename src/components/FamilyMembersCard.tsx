@@ -71,7 +71,7 @@ export default function FamilyMembersCard({ voter }: Props) {
 
   /* ================= ADD MEMBER ================= */
 
-  const handleAddMembers = async (members) => {
+  const handleAddMembers = async (members: string[]) => {
     const data = {
       sourceVoterId: voter.id,
       targetVoterId: members[0],
@@ -89,14 +89,14 @@ export default function FamilyMembersCard({ voter }: Props) {
   /* ================= RENDER ================= */
 
   return (
-    <View style={{ gap: 12 }}>
+    <View style={{ width: "100%", gap: 12 }}>
       {/* Header */}
       <View
         style={{
+          width: "100%",
           flexDirection: "row",
           justifyContent: "space-between",
           alignItems: "center",
-          maxWidth: isWeb ? 520 : "100%",
         }}
       >
         <Text
@@ -111,8 +111,8 @@ export default function FamilyMembersCard({ voter }: Props) {
 
         <Button
           mode="contained"
-          style={{ borderRadius: 10, paddingHorizontal: 3 }}
           compact
+          style={{ borderRadius: 10, paddingHorizontal: 6 }}
           onPress={() => setAddOpen(true)}
         >
           Add
@@ -128,7 +128,7 @@ export default function FamilyMembersCard({ voter }: Props) {
       {!loading && members.length === 0 && (
         <View
           style={{
-            maxWidth: isWeb ? 520 : "100%",
+            width: "100%",
             backgroundColor: theme.colors.paperBackground,
             borderRadius: 12,
             borderWidth: 1,
@@ -142,135 +142,143 @@ export default function FamilyMembersCard({ voter }: Props) {
         </View>
       )}
 
-      {/* Cards */}
-      {members.map((m) => (
-        <View
-          key={m.id}
-          style={{
-            maxWidth: isWeb ? 520 : "100%",
-          }}
-        >
-          <Pressable>
-            <View
-              style={{
-                backgroundColor: theme.colors.white,
-                borderRadius: 12,
-                borderWidth: 1,
-                borderColor: theme.colors.subtleBorder,
-                flexDirection: "row",
-                overflow: "hidden",
-              }}
-            >
-              {/* Accent strip */}
+      {/* Cards Grid */}
+      <View
+        style={{
+          width: "100%",
+          flexDirection: isWeb ? "row" : "column",
+          flexWrap: "wrap",
+        }}
+      >
+        {members.map((m) => (
+          <View
+            key={m.id}
+            style={{
+              flexBasis: isWeb ? "50%" : "100%",
+              padding: 6,
+            }}
+          >
+            <Pressable>
               <View
                 style={{
-                  width: 4,
-                  backgroundColor: theme.colors.primaryLight,
-                }}
-              />
-
-              {/* Content */}
-              <View
-                style={{
-                  flex: 1,
-                  paddingVertical: 12,
-                  paddingHorizontal: 14,
+                  backgroundColor: theme.colors.white,
+                  borderRadius: 12,
+                  borderWidth: 1,
+                  borderColor: theme.colors.subtleBorder,
+                  flexDirection: "row",
+                  overflow: "hidden",
                 }}
               >
-                {/* Top row */}
+                {/* Accent strip */}
                 <View
                   style={{
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    alignItems: "flex-start",
+                    width: 4,
+                    backgroundColor: theme.colors.primaryLight,
+                  }}
+                />
+
+                {/* Content */}
+                <View
+                  style={{
+                    flex: 1,
+                    paddingVertical: 12,
+                    paddingHorizontal: 14,
                   }}
                 >
-                  <View style={{ flex: 1, paddingRight: 8 }}>
-                    <Text
-                      variant="titleMedium"
-                      style={{
-                        fontWeight: "600",
-                        color: theme.colors.primary,
-                      }}
-                    >
-                      {m.fullName}
-                    </Text>
+                  {/* Top row */}
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                      alignItems: "flex-start",
+                    }}
+                  >
+                    <View style={{ flex: 1, paddingRight: 8 }}>
+                      <Text
+                        variant="titleMedium"
+                        style={{
+                          fontWeight: "600",
+                          color: theme.colors.primary,
+                        }}
+                      >
+                        {m.fullName}
+                      </Text>
 
+                      <Text
+                        style={{
+                          marginTop: 2,
+                          fontSize: 13,
+                          color: theme.colors.textSecondary,
+                        }}
+                      >
+                        Age {m.age} • {getGender(m.gender)}
+                      </Text>
+                    </View>
+
+                    <IconButton
+                      icon="delete"
+                      size={18}
+                      iconColor={theme.colors.error}
+                      style={{ margin: 0 }}
+                      onPress={() => {
+                        setDeleteId(m.id);
+                        setDeleteOpen(true);
+                      }}
+                    />
+                  </View>
+
+                  {!!m.fatherHusbandName && (
                     <Text
                       style={{
-                        marginTop: 2,
+                        marginTop: 6,
                         fontSize: 13,
                         color: theme.colors.textSecondary,
                       }}
                     >
-                      Age {m.age} • {getGender(m.gender)}
+                      Father / Husband:{" "}
+                      <Text style={{ color: theme.colors.textPrimary }}>
+                        {m.fatherHusbandName}
+                      </Text>
+                    </Text>
+                  )}
+
+                  {/* Status */}
+                  <View
+                    style={{
+                      marginTop: 8,
+                      alignSelf: "flex-start",
+                      paddingHorizontal: 8,
+                      paddingVertical: 2,
+                      borderRadius: 8,
+                      backgroundColor: m.isVerified
+                        ? theme.colors.successBackground
+                        : theme.colors.errorBackground,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        fontSize: 12,
+                        fontWeight: "500",
+                        color: m.isVerified
+                          ? theme.colors.successText
+                          : theme.colors.errorText,
+                      }}
+                    >
+                      {m.isVerified ? "Verified" : "Not Verified"}
                     </Text>
                   </View>
-
-                  <IconButton
-                    icon="delete"
-                    size={18}
-                    iconColor={theme.colors.error}
-                    onPress={() => {
-                      setDeleteId(m.id);
-                      setDeleteOpen(true);
-                    }}
-                    style={{ margin: 0 }}
-                  />
-                </View>
-
-                {/* Secondary info */}
-                {!!m.fatherHusbandName && (
-                  <Text
-                    style={{
-                      marginTop: 6,
-                      fontSize: 13,
-                      color: theme.colors.textSecondary,
-                    }}
-                  >
-                    Father / Husband:{" "}
-                    <Text style={{ color: theme.colors.textPrimary }}>
-                      {m.fatherHusbandName}
-                    </Text>
-                  </Text>
-                )}
-
-                {/* Status */}
-                <View
-                  style={{
-                    marginTop: 8,
-                    alignSelf: "flex-start",
-                    paddingHorizontal: 8,
-                    paddingVertical: 2,
-                    borderRadius: 8,
-                    backgroundColor: m.isVerified
-                      ? theme.colors.successBackground
-                      : theme.colors.errorBackground,
-                  }}
-                >
-                  <Text
-                    style={{
-                      fontSize: 12,
-                      fontWeight: "500",
-                      color: m.isVerified
-                        ? theme.colors.successText
-                        : theme.colors.errorText,
-                    }}
-                  >
-                    {m.isVerified ? "Verified" : "Not Verified"}
-                  </Text>
                 </View>
               </View>
-            </View>
-          </Pressable>
-        </View>
-      ))}
+            </Pressable>
+          </View>
+        ))}
+      </View>
 
       {/* Delete Dialog */}
       <DeleteConfirmationDialog
         visible={deleteOpen}
-        title={t("image.delete")}
-        message={t("image.confirmDelete")}
+        title={t("voter.delete")}
+        message={t("voter.confirmDelete")}
         onCancel={() => setDeleteOpen(false)}
         onConfirm={confirmDelete}
       />

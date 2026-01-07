@@ -79,10 +79,10 @@ export const updateMobileNumber = (id, number) =>
   axios.put<Voter>(`/Voters/update-mobile-number/${id}?mobileNumber=${number}`, {}, { useApiPrefix: true });
 
 /**
- * Verify
+ * Verify voter
  */
-export const verifyVoter = (id) =>
-  axios.put<Voter>(`/Voters/verify-voter/${id}`, {}, { useApiPrefix: true });
+export const verifyVoter = (id, type) =>
+  axios.put<Voter>(`/Voters/verify-voter/${id}?isVerify=${type}`, {}, { useApiPrefix: true });
 
 /**
  * Get family members
@@ -107,4 +107,4 @@ export const addFamilyMember = (data) =>
  * Remove family member
  */
 export const removeFamilyMember = (id) =>
-  axios.post<Voter>(`/Voters/remove-from-family/${id}`, {}, { useApiPrefix: true });
+  axios.post<Voter>(`/Voters/remove-from-family?voterId=${id}`, {}, { useApiPrefix: true });

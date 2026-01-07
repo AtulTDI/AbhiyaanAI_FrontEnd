@@ -15,9 +15,11 @@ import {
 } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import { Voter } from "../types/Voter";
-import { getGender } from "../utils/common";
+import { extractErrorMessage, getGender } from "../utils/common";
 import FamilyMembersCard from "../components/FamilyMembersCard";
 import Tabs from "../components/Tabs";
+import { updateMobileNumber, verifyVoter } from "../api/voterApi";
+import { useToast } from "./ToastProvider";
 import { AppTheme } from "../theme";
 
 type Props = {
@@ -29,8 +31,9 @@ type TabKey = "details" | "family" | "survey";
 
 export default function VoterDetailView({ voter, onBack }: Props) {
   const theme = useTheme<AppTheme>();
-  const styles = createStyles(theme);
+  const { showToast } = useToast();
   const { width } = useWindowDimensions();
+  const styles = createStyles(theme);
   const isTablet = width >= 768;
 
   const [tab, setTab] = useState<TabKey>("details");
@@ -42,10 +45,33 @@ export default function VoterDetailView({ voter, onBack }: Props) {
     {
       key: "family",
       label: "Family Members",
-      badge: voter.familyMembers?.length ?? 0,
     },
     { key: "survey", label: "Survey" },
   ];
+
+  const handleMobileNumberUpdate = async (number) => {
+    try {
+      await updateMobileNumber(voter.id, number);
+      setMobile(number);
+      showToast("Mobile number updated successfully", "success");
+    } catch (error) {
+      setMobile("-");
+      showToast(extractErrorMessage(error), "error");
+    }
+  };
+
+  const handleVerifyVoter = async () => {
+    try {
+      await verifyVoter(voter.id, !isVerified);
+      setIsVerified(!isVerified);
+      showToast(
+        `Voter ${!isVerified ? "verified" : "unverified"} successfully`,
+        "success"
+      );
+    } catch (error) {
+      showToast(extractErrorMessage(error), "error");
+    }
+  };
 
   return (
     <ScrollView
@@ -97,7 +123,7 @@ export default function VoterDetailView({ voter, onBack }: Props) {
                   value={mobile || "-"}
                   keyboardType="phone-pad"
                   maxLength={10}
-                  onSave={setMobile}
+                  onSave={handleMobileNumberUpdate}
                 />
               </View>
             </View>
@@ -170,7 +196,7 @@ export default function VoterDetailView({ voter, onBack }: Props) {
                     contentStyle={{ paddingHorizontal: 8 }}
                     labelStyle={{ fontSize: 13 }}
                     style={styles.button}
-                    onPress={() => setIsVerified((p) => !p)}
+                    onPress={handleVerifyVoter}
                   >
                     {isVerified ? "Unverify" : "Verify"}
                   </Button>
@@ -368,10 +394,6 @@ const createStyles = (theme: AppTheme) =>
     statusText: {
       fontSize: 15,
       fontWeight: "600",
-    },
-
-    singleColumn: {
-      maxWidth: 720,
     },
 
     emptyState: {
