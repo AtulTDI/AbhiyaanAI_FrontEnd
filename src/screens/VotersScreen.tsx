@@ -41,7 +41,7 @@ export default function VotersScreen() {
   const isWeb = width >= 768;
   const numColumns = isWeb ? 2 : 1;
 
-  const [view, setView] = useState<ScreenView>("list");
+  const [view, setView] = useState<ScreenView>("detail");
   const [selectedVoter, setSelectedVoter] = useState<Voter | null>(null);
 
   const [loading, setLoading] = useState(true);
@@ -58,12 +58,19 @@ export default function VotersScreen() {
 
   const [voters, setVoters] = useState<Voter[]>([]);
   const [voterCount, setVoterCount] = useState(0);
+  const [voterStack, setVoterStack] = useState<Voter[]>([]);
+  const [transitionLoading, setTransitionLoading] = useState(false);
 
   /* ---------------- DEBOUNCED VALUES ---------------- */
   const debouncedSearch = useDebounce(search, 500);
   const debouncedAgeValue = useDebounce(ageValue, 500);
   const debouncedMinAge = useDebounce(minAge, 500);
   const debouncedMaxAge = useDebounce(maxAge, 500);
+
+  const delay = (ms: number): Promise<void> =>
+    new Promise<void>((resolve) => {
+      setTimeout(() => resolve(), ms);
+    });
 
   /* ---------------- INITIAL LOADER ---------------- */
   useEffect(() => {
@@ -129,6 +136,51 @@ export default function VotersScreen() {
     setPage(1);
   };
 
+  const openVoterDetail = async (voterOrId: Voter | string) => {
+    try {
+      setTransitionLoading(true);
+
+      const [voter] = await Promise.all([
+        typeof voterOrId === "string"
+          ? getVoterById(voterOrId).then((r) => r.data)
+          : Promise.resolve(voterOrId),
+        delay(500),
+      ]);
+
+      setVoterStack((prev) =>
+        selectedVoter ? [...prev, selectedVoter] : prev
+      );
+
+      setSelectedVoter(voter);
+      setView("detail");
+    } finally {
+      setTransitionLoading(false);
+    }
+  };
+
+  const goBackFromDetail = async () => {
+    try {
+      setTransitionLoading(true);
+
+      await delay(500);
+
+      setVoterStack((prev) => {
+        if (prev.length === 0) {
+          setSelectedVoter(null);
+          setView("list");
+          return [];
+        }
+
+        const copy = [...prev];
+        const last = copy.pop();
+        setSelectedVoter(last!);
+        return copy;
+      });
+    } finally {
+      setTransitionLoading(false);
+    }
+  };
+
   /* ---------------- LOADER ---------------- */
   if (loading) {
     return (
@@ -139,15 +191,21 @@ export default function VotersScreen() {
     );
   }
 
+  if (transitionLoading) {
+    return (
+      <View style={styles.transitionOverlay}>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+      </View>
+    );
+  }
+
   /* ================= DETAIL VIEW ================= */
   if (view === "detail" && selectedVoter) {
     return (
       <VoterDetailView
         voter={selectedVoter}
-        onBack={() => {
-          setSelectedVoter(null);
-          setView("list");
-        }}
+        onBack={goBackFromDetail}
+        onOpenVoter={openVoterDetail}
       />
     );
   }
@@ -278,7 +336,10 @@ export default function VotersScreen() {
         columnWrapperStyle={numColumns > 1 ? styles.row : undefined}
         renderItem={({ item }) => (
           <Pressable
-            onPress={() => fetchVoter(item.id)}
+            onPress={async () => {
+              const res = await getVoterById(item.id);
+              openVoterDetail(item.id);
+            }}
             onHoverIn={() => Platform.OS === "web" && setHoveredId(item.id)}
             onHoverOut={() => Platform.OS === "web" && setHoveredId(null)}
             style={styles.cardPressable}
@@ -303,7 +364,10 @@ export default function VotersScreen() {
                 </View>
 
                 <View style={styles.genderBadge}>
-                  <Text style={styles.genderText}> {t(`voter.gender${item.gender}`)}</Text>
+                  <Text style={styles.genderText}>
+                    {" "}
+                    {t(`voter.gender${item.gender}`)}
+                  </Text>
                 </View>
               </View>
             </View>
@@ -484,5 +548,12 @@ const createStyles = (theme: AppTheme) =>
       marginHorizontal: 8,
       fontWeight: "500",
       color: theme.colors.primary,
+    },
+    transitionOverlay: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor: theme.colors.white,
+      justifyContent: "center",
+      alignItems: "center",
+      zIndex: 999,
     },
   });

@@ -21,9 +21,10 @@ import { AppTheme } from "../theme";
 
 type Props = {
   voter: Voter;
+  onSelectMember: (id: string) => void;
 };
 
-export default function FamilyMembersCard({ voter }: Props) {
+export default function FamilyMembersCard({ voter, onSelectMember }: Props) {
   const { t } = useTranslation();
   const { showToast } = useToast();
   const theme = useTheme<AppTheme>();
@@ -162,7 +163,7 @@ export default function FamilyMembersCard({ voter }: Props) {
               padding: isWeb ? 6 : 4,
             }}
           >
-            <Pressable>
+            <Pressable onPress={() => onSelectMember(m.id)}>
               <View
                 style={{
                   backgroundColor: theme.colors.white,

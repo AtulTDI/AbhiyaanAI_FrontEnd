@@ -27,11 +27,12 @@ import { AppTheme } from "../theme";
 type Props = {
   voter: Voter;
   onBack: () => void;
+  onOpenVoter: (id: string) => void;
 };
 
 type TabKey = "details" | "family" | "survey";
 
-export default function VoterDetailView({ voter, onBack }: Props) {
+export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
   const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
   const { showToast } = useToast();
@@ -230,7 +231,9 @@ export default function VoterDetailView({ voter, onBack }: Props) {
         </View>
       )}
 
-      {tab === "family" && <FamilyMembersCard voter={voter} />}
+      {tab === "family" && (
+        <FamilyMembersCard voter={voter} onSelectMember={onOpenVoter} />
+      )}
       {tab === "survey" && <SurveyTab />}
     </ScrollView>
   );
