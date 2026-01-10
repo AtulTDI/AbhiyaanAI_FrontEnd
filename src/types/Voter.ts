@@ -4,7 +4,7 @@ export type Voter = {
   fullName: string;
   fatherHusbandName: string;
   age: number;
-  gender: number;
+  gender: string;
   mobileNumber: string;
   caste: string;
   address: string;

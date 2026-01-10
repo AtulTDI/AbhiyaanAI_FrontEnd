@@ -7,8 +7,26 @@ import { base64ToBlob } from "../utils/common";
 /**
  * Get paginated voters with optional search
  */
-export const getVoters = (pageNumber, pageSize, searchText) =>
-  axios.get<GetPaginatedVoters>(`/Voters/getvoters?page=${pageNumber}&pageSize=${pageSize}&searchText=${searchText}`, { useApiPrefix: true });
+export const getVoters = (
+  pageNumber: number,
+  pageSize: number,
+  searchText?: string,
+  age?: string,
+  gender?: string
+) =>
+  axios.get<GetPaginatedVoters>(
+    "/Voters/getvoters",
+    {
+      useApiPrefix: true,
+      params: {
+        page: pageNumber,
+        pageSize,
+        ...(searchText ? { searchText } : {}),
+        ...(age !== undefined ? { age } : {}),
+        ...(gender ? { gender } : {}),
+      },
+    }
+  );
 
 /**
  * Get voter by id

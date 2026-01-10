@@ -24,7 +24,6 @@ import VoterDetailView from "../components/VoterDetailView";
 import { Voter } from "../types/Voter";
 import { useDebounce } from "../hooks/useDebounce";
 import { getVoterById, getVoters } from "../api/voterApi";
-import { getGender } from "../utils/common";
 import { AppTheme } from "../theme";
 
 type AgeMode = "none" | "lt" | "gt" | "between";
@@ -60,7 +59,11 @@ export default function VotersScreen() {
   const [voters, setVoters] = useState<Voter[]>([]);
   const [voterCount, setVoterCount] = useState(0);
 
+  /* ---------------- DEBOUNCED VALUES ---------------- */
   const debouncedSearch = useDebounce(search, 500);
+  const debouncedAgeValue = useDebounce(ageValue, 500);
+  const debouncedMinAge = useDebounce(minAge, 500);
+  const debouncedMaxAge = useDebounce(maxAge, 500);
 
   /* ---------------- INITIAL LOADER ---------------- */
   useEffect(() => {
@@ -71,13 +74,35 @@ export default function VotersScreen() {
   /* ---------------- FETCH VOTERS ---------------- */
   const fetchVoters = useCallback(async () => {
     try {
-      const res = await getVoters(page, PAGE_SIZE, debouncedSearch ?? "");
+      let ageParam: string | undefined;
+
+      if (ageMode === "between" && debouncedMinAge && debouncedMaxAge) {
+        ageParam = `${debouncedMinAge}-${debouncedMaxAge}`;
+      } else if ((ageMode === "lt" || ageMode === "gt") && debouncedAgeValue) {
+        ageParam = `${ageMode === "lt" ? "<" : ">"}${debouncedAgeValue}`;
+      }
+
+      const res = await getVoters(
+        page,
+        PAGE_SIZE,
+        debouncedSearch ?? "",
+        ageParam,
+        gender === "All" ? undefined : gender
+      );
+
       setVoterCount(res?.data?.totalRecords ?? 0);
       setVoters(res?.data?.data ?? []);
-    } catch (err) {}
-  }, [page, debouncedSearch, gender, ageMode, ageValue, minAge, maxAge]);
+    } catch {}
+  }, [
+    page,
+    debouncedSearch,
+    debouncedAgeValue,
+    debouncedMinAge,
+    debouncedMaxAge,
+    gender,
+  ]);
 
-  /* ---------------- FOCUS EFFECT (SINGLE SOURCE) ---------------- */
+  /* ---------------- FOCUS EFFECT ---------------- */
   useFocusEffect(
     useCallback(() => {
       fetchVoters();
@@ -92,7 +117,7 @@ export default function VotersScreen() {
       const res = await getVoterById(id);
       setSelectedVoter(res.data);
       setView("detail");
-    } catch (err) {}
+    } catch {}
   };
 
   const clearFilters = () => {
@@ -109,7 +134,7 @@ export default function VotersScreen() {
     return (
       <View style={styles.loaderContainer}>
         <ActivityIndicator size="large" color={theme.colors.primary} />
-        <Text style={styles.loaderText}>Loading voters…</Text>
+        <Text style={styles.loaderText}>{t("voter.loading")}</Text>
       </View>
     );
   }
@@ -137,7 +162,7 @@ export default function VotersScreen() {
       {/* Search */}
       <View style={styles.searchContainer}>
         <Searchbar
-          placeholder="Search voter"
+          placeholder={t("voter.searchPlaceholder")}
           value={search}
           onChangeText={(text) => {
             setSearch(text);
@@ -149,12 +174,13 @@ export default function VotersScreen() {
 
       {/* Filters */}
       <View style={styles.filterPanel}>
-        <Text style={styles.filterTitle}>Filters</Text>
+        <Text style={styles.filterTitle}>{t("voter.filters")}</Text>
         <Divider style={styles.filterDivider} />
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <View style={styles.filtersRow}>
-            <Text style={styles.filterSectionLabel}>Gender</Text>
+            <Text style={styles.filterSectionLabel}>{t("voter.gender")}</Text>
+
             {["All", "Male", "Female"].map((g) => (
               <Chip
                 key={g}
@@ -168,17 +194,18 @@ export default function VotersScreen() {
                   gender === g && styles.filterChipSelected,
                 ]}
               >
-                {g}
+                {t(`voter.gender${g}`)}
               </Chip>
             ))}
 
             <View style={styles.verticalDivider} />
 
-            <Text style={styles.filterSectionLabel}>Age</Text>
+            <Text style={styles.filterSectionLabel}>{t("voter.age")}</Text>
+
             {[
-              { key: "lt", label: "<" },
-              { key: "gt", label: ">" },
-              { key: "between", label: "Between" },
+              { key: "lt", label: t("voter.ageLt") },
+              { key: "gt", label: t("voter.ageGt") },
+              { key: "between", label: t("voter.ageBetween") },
             ].map((m) => (
               <Chip
                 key={m.key}
@@ -202,7 +229,7 @@ export default function VotersScreen() {
             {(ageMode === "lt" || ageMode === "gt") && (
               <TextInput
                 mode="outlined"
-                label="Age"
+                label={t("voter.ageLabel")}
                 value={ageValue}
                 onChangeText={setAgeValue}
                 keyboardType="numeric"
@@ -215,7 +242,7 @@ export default function VotersScreen() {
               <>
                 <TextInput
                   mode="outlined"
-                  label="Min"
+                  label={t("voter.minAge")}
                   value={minAge}
                   onChangeText={setMinAge}
                   keyboardType="numeric"
@@ -224,7 +251,7 @@ export default function VotersScreen() {
                 />
                 <TextInput
                   mode="outlined"
-                  label="Max"
+                  label={t("voter.maxAge")}
                   value={maxAge}
                   onChangeText={setMaxAge}
                   keyboardType="numeric"
@@ -236,7 +263,7 @@ export default function VotersScreen() {
 
             <View style={styles.verticalDivider} />
             <Chip icon="close" onPress={clearFilters} style={styles.clearChip}>
-              Clear
+              {t("voter.clear")}
             </Chip>
           </View>
         </ScrollView>
@@ -268,14 +295,15 @@ export default function VotersScreen() {
                     {item.fullName}
                   </Text>
                   <Text style={styles.meta}>
-                    Age {item.age} • {item.address}
+                    {t("voter.ageAddress", {
+                      age: item.age,
+                      address: item.address,
+                    })}
                   </Text>
                 </View>
 
                 <View style={styles.genderBadge}>
-                  <Text style={styles.genderText}>
-                    {getGender(item.gender)}
-                  </Text>
+                  <Text style={styles.genderText}> {t(`voter.gender${item.gender}`)}</Text>
                 </View>
               </View>
             </View>
@@ -292,7 +320,10 @@ export default function VotersScreen() {
             onPress={() => setPage((p) => Math.max(1, p - 1))}
           />
           <Text style={styles.pageText}>
-            Page {page} of {totalPages}
+            {t("voter.pageInfo", {
+              current: page,
+              total: totalPages,
+            })}
           </Text>
           <IconButton
             icon="chevron-right"

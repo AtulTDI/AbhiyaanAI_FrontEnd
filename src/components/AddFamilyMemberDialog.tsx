@@ -11,12 +11,12 @@ import {
   useTheme,
   Portal,
 } from "react-native-paper";
+import { useTranslation } from "react-i18next";
 import { Voter } from "../types/Voter";
 import { getEligibleFamilyMembers } from "../api/voterApi";
 import { useDebounce } from "../hooks/useDebounce";
 import { getAuthData } from "../utils/storage";
 import { AppTheme } from "../theme";
-import { getGender } from "../utils/common";
 
 type Props = {
   visible: boolean;
@@ -33,6 +33,7 @@ export default function AddFamilyMembersDialog({
   onClose,
   onAdd,
 }: Props) {
+  const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
   const styles = createStyles(theme);
   const { width, height } = useWindowDimensions();
@@ -99,8 +100,8 @@ export default function AddFamilyMembersDialog({
       >
         {/* ---------- HEADER ---------- */}
         <View style={styles.header}>
-          <Text style={styles.title}>Add Family Members</Text>
-          <Text style={styles.subtitle}>Select voters to link as family</Text>
+          <Text style={styles.title}>{t("voter.addFamilyMembers")}</Text>
+          <Text style={styles.subtitle}>{t("voter.addFamilySubtitle")}</Text>
         </View>
 
         <Divider style={styles.divider} />
@@ -108,7 +109,7 @@ export default function AddFamilyMembersDialog({
         {/* ---------- CONTENT ---------- */}
         <Dialog.Content style={styles.content}>
           <Searchbar
-            placeholder="Search voters"
+            placeholder={t("voter.searchVoters")}
             value={search}
             onChangeText={setSearch}
             style={styles.search}
@@ -117,7 +118,9 @@ export default function AddFamilyMembersDialog({
 
           <View style={styles.selectionBar}>
             <Text style={styles.selectionText}>
-              Selected: {Object.keys(selected).length}
+              {t("voter.selectedCount", {
+                count: Object.keys(selected).length,
+              })}
             </Text>
           </View>
 
@@ -131,7 +134,9 @@ export default function AddFamilyMembersDialog({
                 return (
                   <List.Item
                     title={item.fullName}
-                    description={getGender(item.gender)}
+                    description={t(`voter.gender${item.gender}`, {
+                      defaultValue: item.gender,
+                    })}
                     titleStyle={styles.listTitle}
                     descriptionStyle={styles.listDescription}
                     onPress={() => toggle(item)}
@@ -150,7 +155,9 @@ export default function AddFamilyMembersDialog({
               }}
               ListEmptyComponent={
                 !loading ? (
-                  <Text style={styles.emptyText}>No voters found</Text>
+                  <Text style={styles.emptyText}>
+                    {t("voter.noData")}
+                  </Text>
                 ) : null
               }
             />
@@ -166,7 +173,7 @@ export default function AddFamilyMembersDialog({
             style={{ borderRadius: 10 }}
             textColor={theme.colors.textSecondary}
           >
-            Cancel
+            {t("cancel")}
           </Button>
           <Button
             mode="contained"
@@ -174,7 +181,9 @@ export default function AddFamilyMembersDialog({
             style={{ borderRadius: 10 }}
             onPress={confirm}
           >
-            Add ({Object.keys(selected).length})
+            {t("voter.addWithCount", {
+              count: Object.keys(selected).length,
+            })}
           </Button>
         </Dialog.Actions>
       </Dialog>
@@ -191,53 +200,44 @@ const createStyles = (theme: AppTheme) =>
       backgroundColor: theme.colors.white,
       alignSelf: "center",
     },
-
     header: {
       paddingHorizontal: 20,
       paddingTop: 18,
       paddingBottom: 14,
       backgroundColor: theme.colors.paperBackground,
     },
-
     title: {
       fontSize: 18,
       fontWeight: "700",
       color: theme.colors.primary,
     },
-
     subtitle: {
       marginTop: 4,
       fontSize: 13,
       color: theme.colors.textSecondary,
     },
-
     divider: {
       backgroundColor: theme.colors.divider,
     },
-
     content: {
       paddingHorizontal: 16,
       paddingTop: 12,
       paddingBottom: 16,
     },
-
     search: {
       backgroundColor: theme.colors.white,
       borderWidth: 1,
       borderColor: theme.colors.subtleBorder,
       borderRadius: 12,
     },
-
     selectionBar: {
       marginTop: 10,
       marginBottom: 6,
     },
-
     selectionText: {
       fontSize: 13,
       color: theme.colors.textTertiary,
     },
-
     listContainer: {
       marginTop: 8,
       borderWidth: 1,
@@ -247,35 +247,29 @@ const createStyles = (theme: AppTheme) =>
       maxHeight: 300,
       overflow: "hidden",
     },
-
     listItem: {
       paddingVertical: 4,
       paddingRight: 8,
       backgroundColor: theme.colors.white,
     },
-
     listItemSelected: {
       backgroundColor: theme.colors.softOrange,
     },
-
     listTitle: {
       fontSize: 14,
       fontWeight: "600",
       color: theme.colors.textPrimary,
     },
-
     listDescription: {
       fontSize: 12,
       color: theme.colors.textSecondary,
     },
-
     emptyText: {
       textAlign: "center",
       paddingVertical: 24,
       color: theme.colors.textSecondary,
       fontSize: 13,
     },
-
     actions: {
       paddingHorizontal: 16,
       paddingVertical: 10,
