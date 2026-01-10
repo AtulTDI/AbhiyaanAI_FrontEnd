@@ -236,7 +236,7 @@ export default function DynamicForm({
             key={field.name}
             style={[
               styles.inputWrapper,
-              field.name === "address" || field.type === "textarea"
+              field.name === "address" || field.type === "textarea" || field.fullWidth
                 ? styles.fullWidth
                 : index % 2 === 0
                 ? { marginRight: "4%" }

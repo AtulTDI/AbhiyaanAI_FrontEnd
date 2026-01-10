@@ -94,13 +94,32 @@ export default function ApplicationForm({
       required: true,
     },
     {
+      name: "WHAPIVendorUid",
+      label: t("application.whatsappApiVendorId"),
+      type: "text",
+      required: false,
+    },
+    {
+      name: "WHAPIBearerToken",
+      label: t("application.whatsappApiToken"),
+      type: "text",
+      required: false,
+    },
+    {
+      name: "WHAPIBaseUrl",
+      label: t("application.whatsappApiBaseUrl"),
+      type: "text",
+      required: false,
+      fullWidth: true
+    },
+    {
       name: "premiumVoice",
       label: t("premiumVoice"),
       type: "checkbox",
       required: false,
     },
     {
-      name: "electionRelated",
+      name: "isElection",
       label: t("electionRelated"),
       type: "checkbox",
       required: false,
@@ -122,12 +141,15 @@ export default function ApplicationForm({
           videoCount: applicationToEdit ? "0" : "100",
           salesAgent: applicationToEdit?.salesAgentId || "",
           videoGenerationRate: applicationToEdit?.videoGenerationRate || "",
+          WHAPIVendorUid: applicationToEdit?.WHAPIVendorUid || "",
+          WHAPIBearerToken: applicationToEdit?.WHAPIBearerToken || "",
+          WHAPIBaseUrl: applicationToEdit?.WHAPIBaseUrl || "",
           premiumVoice: applicationToEdit?.premiumVoice || false,
-          electionRelated: applicationToEdit?.electionRelated || false,
+          isElection: applicationToEdit?.isElection || false,
         }}
         mode={mode}
         onChange={(data, value) => {
-          if (data.name === "electionRelated") {
+          if (data.name === "isElection") {
             setShowVoterUpload(value);
           }
         }}

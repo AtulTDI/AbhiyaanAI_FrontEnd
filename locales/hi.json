@@ -119,6 +119,9 @@
     "editSuccess": "ऐप्लिकेशन अपडेट किया गया",
     "editFailed": "ऐप्लिकेशन अपडेट करने में असफल",
     "loadFailed": "ऐप्लिकेशन्स लोड करने में असफल",
+    "whatsappApiBaseUrl": "Api बेस Url",
+    "whatsappApiVendorId": "Api वेंडर Id",
+    "whatsappApiToken": "Api टोकन",
     "noData": "कोई ऐप्लिकेशन नहीं मिला"
   },
   "sender": {

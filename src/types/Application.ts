@@ -8,7 +8,10 @@ export type Application = {
   salesAgentId?: string;
   videoGenerationRate?: string;
   premiumVoice?: boolean;
-  electionRelated?: boolean;
+  WHAPIBaseUrl?: string;
+  WHAPIVendorUid?: string;
+  WHAPIBearerToken?: string; 
+  isElection?: boolean;
   isActive: boolean;
 }
 
@@ -19,7 +22,7 @@ export type GetPaginatedApplications = {
   totalPages: number;
   totalRecords: number;
   premiumVoice: boolean;
-  electionRelated?: boolean;
+  isElection?: boolean;
 }
 
 export type CreateApplicationPayload = {
@@ -28,7 +31,10 @@ export type CreateApplicationPayload = {
   salesAgent: string;
   videoGenerationRate?: string;
   premiumVoice?: boolean;
-  electionRelated?: boolean;
+  isElection?: boolean;
+  WHAPIBaseUrl?: string;
+  WHAPIVendorUid?: string;
+  WHAPIBearerToken?: string; 
 }
 
 export type EditApplicationPayload = {
@@ -37,6 +43,9 @@ export type EditApplicationPayload = {
   salesAgent: string;
   videoGenerationRate?: string;
   premiumVoice?: boolean;
-  electionRelated?: boolean;
+  isElection?: boolean;
   isActive: boolean;
+  WHAPIBaseUrl?: string;
+  WHAPIVendorUid?: string;
+  WHAPIBearerToken?: string; 
 }
