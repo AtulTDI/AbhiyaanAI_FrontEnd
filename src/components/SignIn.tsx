@@ -107,7 +107,7 @@ export default function SignIn({
       const applicationName = response.data?.applicationName || "";
       const videoCount = response.data?.videoCount?.toString() ?? "0";
       const channelId = response.data?.channelId || "";
-      const isProfessionalVoiceCloning = response.data?.isProfessionalVoiceCloning || "false";
+      const isProfessionalVoiceCloning = response.data?.isProfessionalVoiceCloning || false;
 
       await saveAuthData({
         accessToken: token,

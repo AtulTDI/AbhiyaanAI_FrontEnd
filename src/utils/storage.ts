@@ -23,7 +23,7 @@ export type AuthData = {
   applicationName?: string;
   videoCount: string;
   channelId: string;
-  isProfessionalVoiceCloning: string;
+  isProfessionalVoiceCloning: string | boolean;
 };
 
 const DEFAULT_AUTH: AuthData = {
@@ -36,7 +36,7 @@ const DEFAULT_AUTH: AuthData = {
   applicationName: "",
   videoCount: "0",
   channelId: "",
-  isProfessionalVoiceCloning: "false"
+  isProfessionalVoiceCloning: false
 };
 
 export const saveAuthData = async (data: Partial<AuthData>) => {
