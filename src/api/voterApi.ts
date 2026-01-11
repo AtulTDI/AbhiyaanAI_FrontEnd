@@ -18,6 +18,7 @@ export const getVoters = (
     "/Voters/getvoters",
     {
       useApiPrefix: true,
+      useVoterBase: true,
       params: {
         page: pageNumber,
         pageSize,
@@ -32,7 +33,7 @@ export const getVoters = (
  * Get voter by id
  */
 export const getVoterById = (id) =>
-  axios.get<Voter>(`/Voters/get-voters-by-id/${id}`, { useApiPrefix: true });
+  axios.get<Voter>(`/Voters/get-voters-by-id/${id}`, { useApiPrefix: true, useVoterBase: true });
 
 
 /**
@@ -84,6 +85,7 @@ export const uploadVoters = async (file: any, applicationId: string) => {
       "Content-Type": "multipart/form-data",
     },
     useApiPrefix: true,
+    useVoterBase: true,
     transformRequest: (data) => data,
   });
 
@@ -94,35 +96,35 @@ export const uploadVoters = async (file: any, applicationId: string) => {
  * Update voter mobile number
  */
 export const updateMobileNumber = (id, number) =>
-  axios.put<Voter>(`/Voters/update-mobile-number/${id}?mobileNumber=${number}`, {}, { useApiPrefix: true });
+  axios.put<Voter>(`/Voters/update-mobile-number/${id}?mobileNumber=${number}`, {}, { useApiPrefix: true, useVoterBase: true });
 
 /**
  * Verify voter
  */
 export const verifyVoter = (id, type) =>
-  axios.put<Voter>(`/Voters/verify-voter/${id}?isVerify=${type}`, {}, { useApiPrefix: true });
+  axios.put<Voter>(`/Voters/verify-voter/${id}?isVerify=${type}`, {}, { useApiPrefix: true, useVoterBase: true });
 
 /**
  * Get family members
  */
 export const getFamilyMembers = (id) =>
-  axios.get<GetFamilyMembers>(`/Voters/get-family-members/${id}`, { useApiPrefix: true });
+  axios.get<GetFamilyMembers>(`/Voters/get-family-members/${id}`, { useApiPrefix: true, useVoterBase: true });
 
 /**
  * Get eligible family members
  */
 export const getEligibleFamilyMembers = (applicationId, pageNumber, pageSize, searchText) =>
-  axios.get<GetFamilyMembers>(`/Voters/getvoters-eligible-for-family/${applicationId}?page=${pageNumber}&pageSize=${pageSize}&searchText=${searchText}`, { useApiPrefix: true });
+  axios.get<GetFamilyMembers>(`/Voters/getvoters-eligible-for-family/${applicationId}?page=${pageNumber}&pageSize=${pageSize}&searchText=${searchText}`, { useApiPrefix: true, useVoterBase: true });
 
 
 /**
  * Add family member
  */
 export const addFamilyMember = (data) =>
-  axios.post<Voter>("/Voters/addvoter-to-family", data, { useApiPrefix: true });
+  axios.post<Voter>("/Voters/addvoter-to-family", data, { useApiPrefix: true, useVoterBase: true });
 
 /**
  * Remove family member
  */
 export const removeFamilyMember = (id) =>
-  axios.post<Voter>(`/Voters/remove-from-family?voterId=${id}`, {}, { useApiPrefix: true });
+  axios.post<Voter>(`/Voters/remove-from-family?voterId=${id}`, {}, { useApiPrefix: true, useVoterBase: true });

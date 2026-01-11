@@ -9,11 +9,13 @@ declare module "axios" {
   export interface AxiosRequestConfig {
     useApiPrefix?: boolean;
     useAltBase?: boolean;
+    useVoterBase?: boolean;
   }
 }
 
 const API_BASE = Constants.expoConfig.extra.API;
 const ALT_API_BASE = Constants.expoConfig.extra.ALT_API;
+const VOTER_API_BASE = Constants.expoConfig.extra.VOTER_API;
 
 const createAxiosInstance = (baseURL: string): AxiosInstance => {
   const instance = axios.create({
@@ -31,6 +33,10 @@ const createAxiosInstance = (baseURL: string): AxiosInstance => {
 
       if (config.useApiPrefix && config.url?.startsWith("/")) {
         config.url = `/api${config.url}`;
+      }
+
+      if (config.useVoterBase) {
+        config.baseURL = VOTER_API_BASE;
       }
 
       if (config.useAltBase) {

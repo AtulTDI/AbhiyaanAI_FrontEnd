@@ -11,6 +11,7 @@ services:
         BRAND: ${BRAND:-abhiyan}
         DEV_API: http://localhost:5201
         DEV_ALT_API: http://localhost:5202
+        DEV_VOTER_API: http://localhost:5204
     volumes:
       - .:/app
       - /app/node_modules
@@ -44,6 +45,7 @@ services:
         BRAND: ${BRAND:-abhiyan}
         UAT_API: http://3.6.255.8:5000
         UAT_ALT_API: http://3.6.255.8:5002
+        UAT_VOTER_API: http://3.6.255.8:5004
     image: abhiyan_ai_frontend:latest
     container_name: abhiyanai_frontend_uat
     ports:
@@ -65,6 +67,7 @@ services:
         BRAND: ${BRAND:-abhiyan}
         DEMO_API: http://65.2.28.225:5000
         DEMO_ALT_API: http://65.2.28.225:5002
+        DEMO_VOTER_API: http://65.2.28.225:5004
     image: abhiyan_ai_frontend:latest
     container_name: abhiyanai_frontend_demo
     ports:
@@ -86,6 +89,7 @@ services:
         BRAND: ${BRAND:-abhiyan}
         PROD_API: http://3.6.255.8:5000
         PROD_ALT_API: http://3.6.255.8:5002
+        PROD_VOTER_API: http://3.6.225.8:5004
     image: abhiyan_ai_frontend:latest
     container_name: abhiyanai_frontend_prod
     ports:

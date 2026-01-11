@@ -30,6 +30,19 @@ const resolveAltApi = () => {
   }
 };
 
+const resolveVoterApi = () => {
+  switch (APP_ENV) {
+    case "uat":
+      return process.env.UAT_VOTER_API;
+    case "demo":
+      return process.env.DEMO_VOTER_API;
+    case "production":
+      return process.env.PROD_VOTER_API;
+    default:
+      return process.env.DEV_VOTER_API;
+  }
+};
+
 // ---------- 2️⃣  LOAD BRAND CONFIG ----------
 const brandFile = `./branding/${BRAND}.json`;
 const brandConfig = fs.existsSync(brandFile)
@@ -107,6 +120,7 @@ export default ({ config }) => ({
       BRAND,
       API: resolveApi(),
       ALT_API: resolveAltApi(),
+      VOTER_API: resolveVoterApi(),
     },
   },
 });
