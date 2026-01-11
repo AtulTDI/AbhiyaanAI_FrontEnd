@@ -67,6 +67,7 @@
   "update": "Update",
   "save": "Save",
   "cancel": "Cancel",
+  "reset": "Reset",
   "delete": "Delete",
   "active": "Active",
   "inactive": "Inactive",
@@ -319,6 +320,25 @@
     "importVoters": "Import Voters",
     "loadVoterFailMessage": "Failed to fetch voters",
     "noData": "No voters found"
+  },
+  "survey": {
+    "supportTypeRequired": "Support Type is required",
+    "addSuccess": "Survey saved successfully!",
+    "addFailed": "Failed to add survey",
+    "updateSuccess": "Survey updated successfully!",
+    "updateFailed": "Failed to update survey",
+    "loadFailed": "Failed to load survey",
+    "noData": "No survey data found",
+    "supportType": {
+      "Unknown": "Unknown",
+      "WithUs": "With Us",
+      "Opponent": "Opponent",
+      "Neutral": "Neutral",
+      "NeedSpecialVisit": "Needs Special Visit",
+      "Fraud": "Fraud",
+      "Beneficiary": "Beneficiary",
+      "OutOfstation": "Out of Station"
+    }
   },
   "whatsapp": {
     "qrGenerationFail": "Failed to generate QR",

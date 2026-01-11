@@ -5,7 +5,11 @@ import { useTranslation } from "react-i18next";
 import { Dropdown } from "react-native-paper-dropdown";
 import { AppTheme } from "../theme";
 
-type Option = { label: string; value: string };
+type Option = {
+  label: string;
+  value: string;
+  colorCode?: string;
+};
 
 type Props = {
   label: any;
@@ -33,6 +37,8 @@ function FormDropdown({
   const styles = createStyles(theme);
   const { colors } = theme;
 
+  const selectedOption = options.find((o) => o.value === value);
+
   return (
     <View
       style={{ marginBottom: noMargin ? 0 : Platform.OS === "web" ? 12 : 20 }}
@@ -49,7 +55,15 @@ function FormDropdown({
         CustomDropdownInput={(props) => (
           <TextInput
             {...props}
-            style={{ backgroundColor: colors.white }}
+            mode="outlined"
+            dense
+            style={[
+              { backgroundColor: colors.white, height: 32, paddingLeft: 0 },
+            ]}
+            contentStyle={{
+              paddingVertical: 6,
+              paddingLeft: 0,
+            }}
             theme={{
               roundness: 8,
               colors: {
@@ -61,18 +75,42 @@ function FormDropdown({
             value={props.selectedLabel}
             disabled={props.disabled}
             error={!!error || props.error}
-            mode={props.mode}
             label={props.label}
             placeholder={props.placeholder}
+            left={
+              selectedOption?.colorCode ? (
+                <TextInput.Icon
+                  icon={() => (
+                    <View
+                      style={[
+                        styles.colorDot,
+                        { backgroundColor: selectedOption.colorCode },
+                      ]}
+                    />
+                  )}
+                />
+              ) : undefined
+            }
           />
         )}
         CustomDropdownItem={({ option, onSelect, toggleMenu, isLast }) => (
           <List.Item
-            title={option.label}
-            titleStyle={styles.optionText}
+            title={() => (
+              <View style={styles.optionRow}>
+                {option.colorCode && (
+                  <View
+                    style={[
+                      styles.colorDot,
+                      { backgroundColor: option.colorCode },
+                    ]}
+                  />
+                )}
+                <Text style={styles.optionText}>{option.label}</Text>
+              </View>
+            )}
             style={[
               styles.optionItem,
-              { backgroundColor: "white" },
+              { backgroundColor: "white", paddingLeft: 0 },
               !isLast && {
                 borderBottomWidth: 1,
                 borderColor: colors.lightGray,
@@ -121,12 +159,22 @@ const createStyles = (theme: AppTheme) =>
     input: {
       fontSize: 16,
     },
+    optionRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+    },
     optionText: {
       fontSize: 14,
     },
     optionItem: {
       paddingVertical: 8,
       paddingHorizontal: 12,
+    },
+    colorDot: {
+      width: 10,
+      height: 10,
+      borderRadius: 5,
     },
     headerContainer: {
       paddingHorizontal: 12,

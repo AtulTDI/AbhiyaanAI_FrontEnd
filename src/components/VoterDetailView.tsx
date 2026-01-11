@@ -234,7 +234,7 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
       {tab === "family" && (
         <FamilyMembersCard voter={voter} onSelectMember={onOpenVoter} />
       )}
-      {tab === "survey" && <SurveyTab />}
+      {tab === "survey" && <SurveyTab voterId={voter.id} />}
     </ScrollView>
   );
 }

@@ -16,7 +16,7 @@ export type Voter = {
   votingBoothAddress: string;
   votingBoothNumber: number;
   votingRoomNumber: number;
-  isActive?: boolean; 
+  isActive?: boolean;
   isVerified: boolean;
 };
 
@@ -33,3 +33,66 @@ export type GetFamilyMembers = {
   headVoterId: string;
   members: Voter[];
 }
+
+export interface VoterSurveyRequest {
+  voterId: string;
+  supportType: number;
+  supportStrength?: number;
+  dateOfBirth?: string | null;
+  remarks?: string;
+  needsFollowUp?: boolean;
+  voterDied?: boolean;
+  specialVisitDate?: string | null;
+  specialVisitRemarks?: string;
+  specialVisitUserId?: string | null;
+}
+
+export interface VoterSurveyResponse {
+  id: string;
+  voterId: string;
+  supportType: number;
+  supportStrength?: number;
+  remarks?: string;
+  surveyedAt: string;
+  surveyedByUserId: string;
+}
+
+export interface SupportTypeColor {
+  value: number;
+  key: string;
+  label: string;
+  colorCode: string;
+}
+
+export type DemandCategory = {
+  id: string;
+  nameMr: string;
+  nameEn: string;
+};
+
+export type Demand = {
+  id: string;
+  demandMr: string;
+  demandEn: string;
+};
+
+export type VoterDemandItem = {
+  demandId: string;
+  description?: string;
+};
+
+export type VoterDemandResponse = {
+  id: string;
+  demand: string;
+  demandMr: string;
+  category: string;
+  description?: string;
+  isResolved: boolean;
+  resolvedAt?: string;
+  resolutionNote?: string;
+};
+
+export type ResolveVoterDemand = {
+  voterDemandId: string;
+  resolutionNote?: string;
+};

@@ -67,6 +67,7 @@
   "update": "अपडेट करा",
   "save": "जतन करा",
   "cancel": "रद्द करा",
+  "reset": "रीसेट करा",
   "delete": "डिलीट करा",
   "active": "सक्रिय",
   "inactive": "निष्क्रिय",
@@ -319,6 +320,25 @@
     "importVoters": "मतदार आयात करा",
     "loadVoterFailMessage": "मतदार डेटा मिळवण्यात अयशस्वी",
     "noData": "कोणतेही मतदार सापडले नाहीत"
+  },
+  "survey": {
+    "supportTypeRequired": "समर्थन प्रकार आवश्यक आहे",
+    "addSuccess": "सर्वेक्षण यशस्वीपणे जतन केले!",
+    "addFailed": "सर्वेक्षण जोडण्यात अयशस्वी",
+    "updateSuccess": "सर्वेक्षण यशस्वीपणे अपडेट केले!",
+    "updateFailed": "सर्वेक्षण अपडेट करण्यात अयशस्वी",
+    "loadFailed": "सर्वेक्षण लोड करण्यात अयशस्वी",
+    "noData": "कोणताही सर्वेक्षण डेटा सापडला नाही",
+    "supportType": {
+      "Unknown": "अज्ञात",
+      "WithUs": "आमच्यासोबत",
+      "Opponent": "विपक्षी",
+      "Neutral": "तटस्थ",
+      "NeedSpecialVisit": "विशेष भेट आवश्यक आहे",
+      "Fraud": "फसवणूक",
+      "Beneficiary": "लाभार्थी",
+      "OutOfstation": "स्टेशनबाहेर"
+    }
   },
   "whatsapp": {
     "qrGenerationFail": "QR तयार करण्यात अयशस्वी",
