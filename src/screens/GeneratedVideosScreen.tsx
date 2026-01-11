@@ -389,7 +389,7 @@ export default function GeneratedVideoScreen() {
         {
           channelId: channelId,
           recipientId: item.id,
-          baseVideoID: selectedVideoId,
+          campaignID: selectedVideoId,
         },
         userId
       );
