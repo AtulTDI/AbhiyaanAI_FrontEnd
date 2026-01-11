@@ -2,7 +2,11 @@ import { Platform } from "react-native";
 import * as SecureStore from "expo-secure-store";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+/* ================= PLATFORM ================= */
+
 const isWeb = Platform.OS === "web";
+
+/* ================= HELPERS ================= */
 
 const encrypt = (text: string) => btoa(text);
 const decrypt = (text: string) => {
@@ -13,6 +17,11 @@ const decrypt = (text: string) => {
   }
 };
 
+const toStringSafe = (value: any): string =>
+  value === null || value === undefined ? "" : String(value);
+
+/* ================= TYPES ================= */
+
 export type AuthData = {
   accessToken: string;
   userId: string;
@@ -20,11 +29,13 @@ export type AuthData = {
   userEmail: string;
   role: string;
   applicationId: string;
-  applicationName?: string;
+  applicationName: string;
   videoCount: string;
   channelId: string;
-  isProfessionalVoiceCloning: string | boolean;
+  isProfessionalVoiceCloning: boolean;
 };
+
+/* ================= DEFAULT ================= */
 
 const DEFAULT_AUTH: AuthData = {
   accessToken: "",
@@ -36,50 +47,76 @@ const DEFAULT_AUTH: AuthData = {
   applicationName: "",
   videoCount: "0",
   channelId: "",
-  isProfessionalVoiceCloning: false
+  isProfessionalVoiceCloning: false,
 };
 
+/* ================= SAVE ================= */
+
 export const saveAuthData = async (data: Partial<AuthData>) => {
-  const finalData = { ...DEFAULT_AUTH, ...data };
+  const finalData: AuthData = {
+    ...DEFAULT_AUTH,
+    ...data,
+    videoCount: toStringSafe(data.videoCount),
+    isProfessionalVoiceCloning: Boolean(data.isProfessionalVoiceCloning),
+  };
 
   if (isWeb) {
-    Object.entries(finalData).forEach(([key, value]) =>
-      localStorage.setItem(key, encrypt(value))
-    );
+    Object.entries(finalData).forEach(([key, value]) => {
+      localStorage.setItem(key, encrypt(toStringSafe(value)));
+    });
   } else {
     await SecureStore.setItemAsync("accessToken", finalData.accessToken);
+
     await AsyncStorage.multiSet(
-      Object.entries(finalData).filter(([k]) => k !== "accessToken")
+      Object.entries(finalData)
+        .filter(([k]) => k !== "accessToken")
+        .map(([k, v]) => [k, toStringSafe(v)])
     );
   }
 };
 
+/* ================= GET ================= */
+
 export const getAuthData = async (): Promise<AuthData> => {
   if (isWeb) {
-    const raw: Partial<AuthData> = {};
+    const raw: any = {};
     Object.keys(DEFAULT_AUTH).forEach((key) => {
       const value = localStorage.getItem(key);
-      raw[key as keyof AuthData] = value ? decrypt(value) : DEFAULT_AUTH[key as keyof AuthData];
+      raw[key] = value ? decrypt(value) : DEFAULT_AUTH[key as keyof AuthData];
     });
+
+    raw.isProfessionalVoiceCloning = raw.isProfessionalVoiceCloning === "true";
+    raw.videoCount = raw.videoCount || "0";
+
     return raw as AuthData;
   } else {
     const accessToken = (await SecureStore.getItemAsync("accessToken")) ?? "";
+
     const items = await AsyncStorage.multiGet(
       Object.keys(DEFAULT_AUTH).filter((k) => k !== "accessToken")
     );
+
     const data: any = { accessToken };
     items.forEach(([key, value]) => {
       data[key] = value ?? DEFAULT_AUTH[key as keyof AuthData];
     });
+
+    data.isProfessionalVoiceCloning = data.isProfessionalVoiceCloning === "true";
+    data.videoCount = data.videoCount || "0";
+
     return data as AuthData;
   }
 };
+
+/* ================= CLEAR ================= */
 
 export const clearAuthData = async () => {
   if (isWeb) {
     Object.keys(DEFAULT_AUTH).forEach((key) => localStorage.removeItem(key));
   } else {
     await SecureStore.deleteItemAsync("accessToken");
-    await AsyncStorage.multiRemove(Object.keys(DEFAULT_AUTH).filter((k) => k !== "accessToken"));
+    await AsyncStorage.multiRemove(
+      Object.keys(DEFAULT_AUTH).filter((k) => k !== "accessToken")
+    );
   }
 };
