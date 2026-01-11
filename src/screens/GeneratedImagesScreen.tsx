@@ -258,7 +258,7 @@ export default function GeneratedImagesScreen() {
       clearCacheFiles();
 
       if (isWeb && !isMobileWeb) {
-        loadWhatsAppStatus();
+        // loadWhatsAppStatus();
       }
     }, [fetchCampaigns, loadWhatsAppStatus])
   );
@@ -322,7 +322,11 @@ export default function GeneratedImagesScreen() {
           await Contacts.deleteContact(contact);
           console.log("Deleted all temp contact:", contact.givenName);
         } catch (err) {
-          console.warn("Failed to delete all temp contact", contact.givenName, err);
+          console.warn(
+            "Failed to delete all temp contact",
+            contact.givenName,
+            err
+          );
         }
       }
     } catch (err) {
@@ -433,155 +437,151 @@ export default function GeneratedImagesScreen() {
     setSendingId(item.id);
     setProgressMap((prev) => ({ ...prev, [item.id]: 0 }));
 
-    // --- Web flow ---
-    if (isWeb && !isMobileWeb) {
-      try {
-        await sendImage(
-          {
-            channelId: channelId,
-            recipientId: item.id,
-            campaignID: selectedCampaignId,
-          },
-          userId
-        );
-        showToast(t("image.sendSuccess"), "success");
-        updateRowStatus(item.id, { sendStatus: "sent" });
-      } catch (error) {
-        showToast(extractErrorMessage(error, t("image.sendFail")), "error");
-        updateRowStatus(item.id, { sendStatus: "pending" });
-      } finally {
-        setSendingId(null);
-        setProgressMap((prev) => {
-          const { [item.id]: _, ...rest } = prev;
-          return rest;
-        });
-      }
-      return;
-    }
-
-    // --- Mobile flow ---
-    let isWhatsAppAvailable = false;
-    const whatsAppImageDetails: any = await getWhatsAppImageDetails(
-      userId,
-      item.id,
-      selectedCampaignId
-    );
-
-    // Platform-specific availability check
-    if (Platform.OS === "android") {
-      try {
-        const granted = await requestAndroidPermissions();
-        if (!granted) {
-          showToast("Storage & Contacts permissions are required", "error");
-          setSendingId(null);
-          return;
-        }
-
-        const personal = await Share.isPackageInstalled("com.whatsapp");
-        const business = await Share.isPackageInstalled("com.whatsapp.w4b");
-        isWhatsAppAvailable = personal?.isInstalled || business?.isInstalled;
-      } catch {
-        isWhatsAppAvailable = false;
-      }
-    } else {
-      try {
-        isWhatsAppAvailable = await Linking.canOpenURL("whatsapp://send");
-      } catch {
-        isWhatsAppAvailable = false;
-      }
-    }
-
-    if (!isWhatsAppAvailable) {
-      showToast(t("whatsapp.notInstalled"), "error");
-      setSendingId(null);
-      return;
-    }
-
-    // --- Share image flow ---
     try {
-      let contactExists = false;
-
-      if (Platform.OS === "android") {
-        const phoneNumber = item.phoneNumber.replace(/\D/g, "");
-
-        // Check if contact already exists
-        const allContacts = await Contacts.getAll();
-        const existing = allContacts.find((c) =>
-          c.phoneNumbers?.some(
-            (p) =>
-              p.number.replace(/\D/g, "").endsWith(phoneNumber) ||
-              phoneNumber.endsWith(p.number.replace(/\D/g, ""))
-          )
-        );
-
-        if (existing) {
-          console.log("Contact already exists:", existing.displayName);
-          contactExists = true;
-        } else {
-          const tempContact = {
-            givenName: `${item.fullName}_AbhiyanAI_${item.id}`,
-            phoneNumbers: [
-              { label: "mobile", number: `+91 ${item.phoneNumber}` },
-            ],
-            accountType: null,
-            accountName: null
-          };
-          const savedContact = await Contacts.addContact(tempContact);
-          setTempContact(savedContact);
-          console.log("Saved new temp contact:", savedContact);
-          contactExists = true;
-        }
-      }
-
-      // Download image before sharing
-      const localPath = await downloadImage(
-        whatsAppImageDetails?.data?.imageUrl,
-        item.id,
-        getFileExtensionFromUrl(whatsAppImageDetails?.data?.imageUrl)
+      await sendImage(
+        {
+          channelId: channelId,
+          recipientId: item.id,
+          campaignID: selectedCampaignId,
+        },
+        userId
       );
-
-      // Only proceed if contact exists
-      if (contactExists) {
-        await new Promise((r) => setTimeout(r, 1500));
-
-        if (Platform.OS === "android") {
-          await Share.shareSingle({
-            title: "Image",
-            url: localPath,
-            type: getImageMimeType(
-              getFileExtensionFromUrl(whatsAppImageDetails?.data?.imageUrl)
-            ),
-            social: Share.Social.WHATSAPP,
-            whatsAppNumber: `91${item.phoneNumber}`,
-            message: `🙏 ${whatsAppImageDetails?.data?.message}`,
-          });
-        } else {
-          await Share.shareSingle({
-            title: "Image",
-            url: Platform.OS === "ios" ? localPath : "file://" + localPath,
-            type: getImageMimeType(
-              getFileExtensionFromUrl(whatsAppImageDetails?.data?.imageUrl)
-            ),
-            social: Share.Social.WHATSAPP,
-            whatsAppNumber: `91${item.phoneNumber}`,
-            message: `🙏 ${whatsAppImageDetails?.data?.message}`,
-          });
-        }
-      } else {
-        console.log("Contact not found. Please check the number.", "error");
-      }
-
-      setPendingConfirmationId(item.id);
-    } catch (err) {
-      console.error("Error sending image:", err);
+      showToast(t("image.sendSuccess"), "success");
+      updateRowStatus(item.id, { sendStatus: "sent" });
+    } catch (error) {
+      showToast(extractErrorMessage(error, t("image.sendFail")), "error");
       updateRowStatus(item.id, { sendStatus: "pending" });
-      showToast(t("image.sendFail"), "error");
     } finally {
+      setSendingId(null);
       setProgressMap((prev) => {
         const { [item.id]: _, ...rest } = prev;
         return rest;
       });
     }
+
+    // // --- Mobile flow ---
+    // let isWhatsAppAvailable = false;
+    // const whatsAppImageDetails: any = await getWhatsAppImageDetails(
+    //   userId,
+    //   item.id,
+    //   selectedCampaignId
+    // );
+
+    // // Platform-specific availability check
+    // if (Platform.OS === "android") {
+    //   try {
+    //     const granted = await requestAndroidPermissions();
+    //     if (!granted) {
+    //       showToast("Storage & Contacts permissions are required", "error");
+    //       setSendingId(null);
+    //       return;
+    //     }
+
+    //     const personal = await Share.isPackageInstalled("com.whatsapp");
+    //     const business = await Share.isPackageInstalled("com.whatsapp.w4b");
+    //     isWhatsAppAvailable = personal?.isInstalled || business?.isInstalled;
+    //   } catch {
+    //     isWhatsAppAvailable = false;
+    //   }
+    // } else {
+    //   try {
+    //     isWhatsAppAvailable = await Linking.canOpenURL("whatsapp://send");
+    //   } catch {
+    //     isWhatsAppAvailable = false;
+    //   }
+    // }
+
+    // if (!isWhatsAppAvailable) {
+    //   showToast(t("whatsapp.notInstalled"), "error");
+    //   setSendingId(null);
+    //   return;
+    // }
+
+    // // --- Share image flow ---
+    // try {
+    //   let contactExists = false;
+
+    //   if (Platform.OS === "android") {
+    //     const phoneNumber = item.phoneNumber.replace(/\D/g, "");
+
+    //     // Check if contact already exists
+    //     const allContacts = await Contacts.getAll();
+    //     const existing = allContacts.find((c) =>
+    //       c.phoneNumbers?.some(
+    //         (p) =>
+    //           p.number.replace(/\D/g, "").endsWith(phoneNumber) ||
+    //           phoneNumber.endsWith(p.number.replace(/\D/g, ""))
+    //       )
+    //     );
+
+    //     if (existing) {
+    //       console.log("Contact already exists:", existing.displayName);
+    //       contactExists = true;
+    //     } else {
+    //       const tempContact = {
+    //         givenName: `${item.fullName}_AbhiyanAI_${item.id}`,
+    //         phoneNumbers: [
+    //           { label: "mobile", number: `+91 ${item.phoneNumber}` },
+    //         ],
+    //         accountType: null,
+    //         accountName: null
+    //       };
+    //       const savedContact = await Contacts.addContact(tempContact);
+    //       setTempContact(savedContact);
+    //       console.log("Saved new temp contact:", savedContact);
+    //       contactExists = true;
+    //     }
+    //   }
+
+    //   // Download image before sharing
+    //   const localPath = await downloadImage(
+    //     whatsAppImageDetails?.data?.imageUrl,
+    //     item.id,
+    //     getFileExtensionFromUrl(whatsAppImageDetails?.data?.imageUrl)
+    //   );
+
+    //   // Only proceed if contact exists
+    //   if (contactExists) {
+    //     await new Promise((r) => setTimeout(r, 1500));
+
+    //     if (Platform.OS === "android") {
+    //       await Share.shareSingle({
+    //         title: "Image",
+    //         url: localPath,
+    //         type: getImageMimeType(
+    //           getFileExtensionFromUrl(whatsAppImageDetails?.data?.imageUrl)
+    //         ),
+    //         social: Share.Social.WHATSAPP,
+    //         whatsAppNumber: `91${item.phoneNumber}`,
+    //         message: `🙏 ${whatsAppImageDetails?.data?.message}`,
+    //       });
+    //     } else {
+    //       await Share.shareSingle({
+    //         title: "Image",
+    //         url: Platform.OS === "ios" ? localPath : "file://" + localPath,
+    //         type: getImageMimeType(
+    //           getFileExtensionFromUrl(whatsAppImageDetails?.data?.imageUrl)
+    //         ),
+    //         social: Share.Social.WHATSAPP,
+    //         whatsAppNumber: `91${item.phoneNumber}`,
+    //         message: `🙏 ${whatsAppImageDetails?.data?.message}`,
+    //       });
+    //     }
+    //   } else {
+    //     console.log("Contact not found. Please check the number.", "error");
+    //   }
+
+    //   setPendingConfirmationId(item.id);
+    // } catch (err) {
+    //   console.error("Error sending image:", err);
+    //   updateRowStatus(item.id, { sendStatus: "pending" });
+    //   showToast(t("image.sendFail"), "error");
+    // } finally {
+    //   setProgressMap((prev) => {
+    //     const { [item.id]: _, ...rest } = prev;
+    //     return rest;
+    //   });
+    // }
   };
 
   const deleteTempContactById = async () => {
@@ -673,19 +673,20 @@ export default function GeneratedImagesScreen() {
                   }}
                 />
               </View>
-            ) : !waRegistered && isWeb && !isMobileWeb ? (
-              <IconButton
-                icon={() => (
-                  <FontAwesome
-                    name="whatsapp"
-                    size={22}
-                    color={colors.mediumGray}
-                  />
-                )}
-                style={{ margin: 0 }}
-                disabled
-              />
-            ) : sendStatus === "pending" ? (
+            ) : // : !waRegistered && isWeb && !isMobileWeb ? (
+            //   <IconButton
+            //     icon={() => (
+            //       <FontAwesome
+            //         name="whatsapp"
+            //         size={22}
+            //         color={colors.mediumGray}
+            //       />
+            //     )}
+            //     style={{ margin: 0 }}
+            //     disabled
+            //   />
+            // )
+            sendStatus === "pending" ? (
               <IconButton
                 icon={() => (
                   <FontAwesome
@@ -746,7 +747,7 @@ export default function GeneratedImagesScreen() {
         <Surface style={styles.toolbar} elevation={1}>
           {memoizedDropdown}
 
-          <View
+          {/* <View
             style={{
               display: "flex",
               flexDirection: "row",
@@ -857,7 +858,7 @@ export default function GeneratedImagesScreen() {
                 {t("image.sendAll")}
               </Button>
             </View>
-          </View>
+          </View> */}
         </Surface>
       )}
 

@@ -284,7 +284,7 @@ export default function GeneratedVideoScreen() {
       clearCacheFiles();
 
       if (isWeb && !isMobileWeb) {
-        loadWhatsAppStatus();
+        // loadWhatsAppStatus();
       }
     }, [fetchVideos, loadWhatsAppStatus])
   );
@@ -384,158 +384,154 @@ export default function GeneratedVideoScreen() {
     setSendingId(item.id);
     setProgressMap((prev) => ({ ...prev, [item.id]: 0 }));
 
-    // --- Web flow ---
-    if (isWeb && !isMobileWeb) {
-      try {
-        await sendVideo(
-          {
-            channelId: channelId,
-            recipientId: item.id,
-            campaignID: selectedVideoId,
-          },
-          userId
-        );
-        showToast(t("video.sendSuccess"), "success");
-        updateRowStatus(item.id, { sendStatus: "sent" });
-      } catch (error) {
-        showToast(extractErrorMessage(error, t("video.sendFail")), "error");
-        updateRowStatus(item.id, { sendStatus: "pending" });
-      } finally {
-        setSendingId(null);
-        setProgressMap((prev) => {
-          const { [item.id]: _, ...rest } = prev;
-          return rest;
-        });
-      }
-      return;
-    }
-
-    // --- Mobile flow ---
-    let isWhatsAppAvailable = false;
-    const whatsAppVideoDetails: any = await getWhatsAppVideoDetails(
-      userId,
-      item.id,
-      selectedVideoId
-    );
-
-    // Platform-specific availability check
-    if (Platform.OS === "android") {
-      try {
-        const granted = await requestAndroidPermissions();
-        if (!granted) {
-          showToast("Storage & Contacts permissions are required", "error");
-          setSendingId(null);
-          return;
-        }
-
-        const personal = await Share.isPackageInstalled("com.whatsapp");
-        const business = await Share.isPackageInstalled("com.whatsapp.w4b");
-        isWhatsAppAvailable = personal?.isInstalled || business?.isInstalled;
-      } catch {
-        isWhatsAppAvailable = false;
-      }
-    } else {
-      try {
-        isWhatsAppAvailable = await Linking.canOpenURL("whatsapp://send");
-      } catch {
-        isWhatsAppAvailable = false;
-      }
-    }
-
-    if (!isWhatsAppAvailable) {
-      showToast(t("whatsapp.notInstalled"), "error");
-      setSendingId(null);
-      return;
-    }
-
-    // --- Share video flow ---
     try {
-      let savedContact: any = null;
-      let contactExists = false;
-
-      if (Platform.OS === "android") {
-        const phoneNumber = item.phoneNumber.replace(/\D/g, "");
-
-        // Check if contact already exists
-        const allContacts = await Contacts.getAll();
-        const existing = allContacts.find((c) =>
-          c.phoneNumbers?.some(
-            (p) =>
-              p.number.replace(/\D/g, "").endsWith(phoneNumber) ||
-              phoneNumber.endsWith(p.number.replace(/\D/g, ""))
-          )
-        );
-
-        if (existing) {
-          console.log("Contact already exists:", existing.displayName);
-          contactExists = true;
-        } else {
-          const tempContact = {
-            givenName: `${item.fullName}_AbhiyanAI_${item.id}`,
-            phoneNumbers: [{ label: "mobile", number: item.phoneNumber }],
-          };
-          savedContact = await Contacts.addContact(tempContact);
-          console.log("Saved new temp contact:", savedContact);
-          contactExists = true;
-        }
-      }
-
-      // Download video before sharing
-      const localPath = await downloadVideo(
-        whatsAppVideoDetails?.data?.videoUrl,
-        item.id
+      await sendVideo(
+        {
+          channelId: channelId,
+          recipientId: item.id,
+          baseVideoID: selectedVideoId,
+        },
+        userId
       );
-
-      // Only proceed if contact exists
-      if (contactExists) {
-        await new Promise((r) => setTimeout(r, 1500));
-
-        if (Platform.OS === "android") {
-          await Share.shareSingle({
-            title: "Video",
-            url: localPath,
-            type: "video/mp4",
-            social: Share.Social.WHATSAPP,
-            whatsAppNumber: `91${item.phoneNumber}`,
-            message: `🙏 ${whatsAppVideoDetails?.data?.message}`,
-          });
-        } else {
-          await Share.shareSingle({
-            title: "Video",
-            url: Platform.OS === "ios" ? localPath : "file://" + localPath,
-            type: "video/mp4",
-            social: Share.Social.WHATSAPP,
-            whatsAppNumber: `91${item.phoneNumber}`,
-            message: `🙏 ${whatsAppVideoDetails?.data?.message}`,
-          });
-        }
-      } else {
-        console.log("Contact not found. Please check the number.", "error");
-      }
-
-      setPendingConfirmationId(item.id);
-
-      // Delete only temp contact (not existing ones)
-      if (Platform.OS === "android" && savedContact?.recordID) {
-        setTimeout(async () => {
-          try {
-            await Contacts.deleteContact(savedContact);
-            console.log("Deleted temp contact:", savedContact.givenName);
-          } catch (err) {
-            console.warn("Failed to delete temp contact", err);
-          }
-        }, 5000);
-      }
-    } catch (err) {
-      console.error("Error sending video:", err);
+      showToast(t("video.sendSuccess"), "success");
+      updateRowStatus(item.id, { sendStatus: "sent" });
+    } catch (error) {
+      showToast(extractErrorMessage(error, t("video.sendFail")), "error");
       updateRowStatus(item.id, { sendStatus: "pending" });
-      showToast(t("video.sendFail"), "error");
     } finally {
+      setSendingId(null);
       setProgressMap((prev) => {
         const { [item.id]: _, ...rest } = prev;
         return rest;
       });
     }
+
+    // // --- Mobile flow ---
+    // let isWhatsAppAvailable = false;
+    // const whatsAppVideoDetails: any = await getWhatsAppVideoDetails(
+    //   userId,
+    //   item.id,
+    //   selectedVideoId
+    // );
+
+    // // Platform-specific availability check
+    // if (Platform.OS === "android") {
+    //   try {
+    //     const granted = await requestAndroidPermissions();
+    //     if (!granted) {
+    //       showToast("Storage & Contacts permissions are required", "error");
+    //       setSendingId(null);
+    //       return;
+    //     }
+
+    //     const personal = await Share.isPackageInstalled("com.whatsapp");
+    //     const business = await Share.isPackageInstalled("com.whatsapp.w4b");
+    //     isWhatsAppAvailable = personal?.isInstalled || business?.isInstalled;
+    //   } catch {
+    //     isWhatsAppAvailable = false;
+    //   }
+    // } else {
+    //   try {
+    //     isWhatsAppAvailable = await Linking.canOpenURL("whatsapp://send");
+    //   } catch {
+    //     isWhatsAppAvailable = false;
+    //   }
+    // }
+
+    // if (!isWhatsAppAvailable) {
+    //   showToast(t("whatsapp.notInstalled"), "error");
+    //   setSendingId(null);
+    //   return;
+    // }
+
+    // // --- Share video flow ---
+    // try {
+    //   let savedContact: any = null;
+    //   let contactExists = false;
+
+    //   if (Platform.OS === "android") {
+    //     const phoneNumber = item.phoneNumber.replace(/\D/g, "");
+
+    //     // Check if contact already exists
+    //     const allContacts = await Contacts.getAll();
+    //     const existing = allContacts.find((c) =>
+    //       c.phoneNumbers?.some(
+    //         (p) =>
+    //           p.number.replace(/\D/g, "").endsWith(phoneNumber) ||
+    //           phoneNumber.endsWith(p.number.replace(/\D/g, ""))
+    //       )
+    //     );
+
+    //     if (existing) {
+    //       console.log("Contact already exists:", existing.displayName);
+    //       contactExists = true;
+    //     } else {
+    //       const tempContact = {
+    //         givenName: `${item.fullName}_AbhiyanAI_${item.id}`,
+    //         phoneNumbers: [{ label: "mobile", number: item.phoneNumber }],
+    //       };
+    //       savedContact = await Contacts.addContact(tempContact);
+    //       console.log("Saved new temp contact:", savedContact);
+    //       contactExists = true;
+    //     }
+    //   }
+
+    //   // Download video before sharing
+    //   const localPath = await downloadVideo(
+    //     whatsAppVideoDetails?.data?.videoUrl,
+    //     item.id
+    //   );
+
+    //   // Only proceed if contact exists
+    //   if (contactExists) {
+    //     await new Promise((r) => setTimeout(r, 1500));
+
+    //     if (Platform.OS === "android") {
+    //       await Share.shareSingle({
+    //         title: "Video",
+    //         url: localPath,
+    //         type: "video/mp4",
+    //         social: Share.Social.WHATSAPP,
+    //         whatsAppNumber: `91${item.phoneNumber}`,
+    //         message: `🙏 ${whatsAppVideoDetails?.data?.message}`,
+    //       });
+    //     } else {
+    //       await Share.shareSingle({
+    //         title: "Video",
+    //         url: Platform.OS === "ios" ? localPath : "file://" + localPath,
+    //         type: "video/mp4",
+    //         social: Share.Social.WHATSAPP,
+    //         whatsAppNumber: `91${item.phoneNumber}`,
+    //         message: `🙏 ${whatsAppVideoDetails?.data?.message}`,
+    //       });
+    //     }
+    //   } else {
+    //     console.log("Contact not found. Please check the number.", "error");
+    //   }
+
+    //   setPendingConfirmationId(item.id);
+
+    //   // Delete only temp contact (not existing ones)
+    //   if (Platform.OS === "android" && savedContact?.recordID) {
+    //     setTimeout(async () => {
+    //       try {
+    //         await Contacts.deleteContact(savedContact);
+    //         console.log("Deleted temp contact:", savedContact.givenName);
+    //       } catch (err) {
+    //         console.warn("Failed to delete temp contact", err);
+    //       }
+    //     }, 5000);
+    //   }
+    // } catch (err) {
+    //   console.error("Error sending video:", err);
+    //   updateRowStatus(item.id, { sendStatus: "pending" });
+    //   showToast(t("video.sendFail"), "error");
+    // } finally {
+    //   setProgressMap((prev) => {
+    //     const { [item.id]: _, ...rest } = prev;
+    //     return rest;
+    //   });
+    // }
   };
 
   const confirmVideoSent = async () => {
@@ -607,19 +603,20 @@ export default function GeneratedVideoScreen() {
                   }}
                 />
               </View>
-            ) : !waRegistered && isWeb && !isMobileWeb ? (
-              <IconButton
-                icon={() => (
-                  <FontAwesome
-                    name="whatsapp"
-                    size={22}
-                    color={colors.mediumGray}
-                  />
-                )}
-                style={{ margin: 0 }}
-                disabled
-              />
-            ) : sendStatus === "pending" ? (
+            ) : // : !waRegistered && isWeb && !isMobileWeb ? (
+            //   <IconButton
+            //     icon={() => (
+            //       <FontAwesome
+            //         name="whatsapp"
+            //         size={22}
+            //         color={colors.mediumGray}
+            //       />
+            //     )}
+            //     style={{ margin: 0 }}
+            //     disabled
+            //   />
+            // )
+            sendStatus === "pending" ? (
               <IconButton
                 icon={() => (
                   <FontAwesome
@@ -680,7 +677,7 @@ export default function GeneratedVideoScreen() {
         <Surface style={styles.toolbar} elevation={1}>
           {memoizedDropdown}
 
-          <View
+          {/* <View
             style={[
               styles.waChip,
               {
@@ -757,7 +754,7 @@ export default function GeneratedVideoScreen() {
                 {waRegistered ? t("logout") : t("connect")}
               </Button>
             )}
-          </View>
+          </View> */}
         </Surface>
       )}
 
