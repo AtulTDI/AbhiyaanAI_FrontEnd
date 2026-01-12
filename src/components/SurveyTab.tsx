@@ -19,7 +19,6 @@ import {
   getSupportTypes,
 } from "../api/voterSurveyApi";
 import { AppTheme } from "../theme";
-import { Dropdown } from "react-native-paper-dropdown";
 import FormDropdown from "./FormDropdown";
 
 /* ================= TYPES ================= */
@@ -167,6 +166,7 @@ export default function SurveyTab({ voterId }: Props) {
                 }))}
                 onSelect={(val) => update("supportType", Number(val))}
                 noMargin
+                customStyle
               />
             </Row>
 

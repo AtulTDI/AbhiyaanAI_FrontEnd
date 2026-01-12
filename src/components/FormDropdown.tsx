@@ -19,6 +19,7 @@ type Props = {
   disabled?: boolean;
   noMargin?: boolean;
   error?: string;
+  customStyle?: boolean;
   onSelect: (val: string) => void;
 };
 
@@ -31,6 +32,7 @@ function FormDropdown({
   noMargin,
   error,
   onSelect,
+  customStyle,
 }: Props) {
   const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
@@ -58,11 +60,13 @@ function FormDropdown({
             mode="outlined"
             dense
             style={[
-              { backgroundColor: colors.white, height: 32, paddingLeft: 0 },
+              {
+                backgroundColor: colors.white,
+                height: customStyle ? 32 : 48
+              },
             ]}
             contentStyle={{
               paddingVertical: 6,
-              paddingLeft: 0,
             }}
             theme={{
               roundness: 8,
