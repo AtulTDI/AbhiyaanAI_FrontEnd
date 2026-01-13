@@ -412,34 +412,39 @@ export default function SurveyTab({ voterId }: Props) {
           <Card title={t("voter.demands")}>
             {(data.demands ?? []).map((d, i) => (
               <View key={i} style={styles.demandCard}>
-                <FormDropdown
-                  label={t("survey.demandCategory")}
-                  value={String(d.categoryId ?? "")}
-                  options={demandCategories.map((c) => ({
-                    label: c.nameEn,
-                    value: c.id,
-                  }))}
-                  onSelect={(v) => {
-                    updateDemand(i, { categoryId: v, demandId: undefined });
-                    if (v) loadDemands(v);
-                  }}
-                  customStyle
-                />
+                <View style={styles.demandRow}>
+                  <View style={styles.demandCol}>
+                    <FormDropdown
+                      label={t("survey.demandCategory")}
+                      value={String(d.categoryId ?? "")}
+                      options={demandCategories.map((c) => ({
+                        label: c.nameEn,
+                        value: c.id,
+                      }))}
+                      onSelect={(v) => {
+                        updateDemand(i, { categoryId: v, demandId: undefined });
+                        if (v) loadDemands(v);
+                      }}
+                      customStyle
+                    />
+                  </View>
 
-                {d.categoryId && (
-                  <FormDropdown
-                    label={t("survey.demand")}
-                    value={String(d.demandId ?? "")}
-                    options={(demandsByCategory[d.categoryId] ?? []).map(
-                      (x) => ({
-                        label: x.demandEn,
-                        value: x.id,
-                      })
-                    )}
-                    onSelect={(v) => updateDemand(i, { demandId: v })}
-                    customStyle
-                  />
-                )}
+                  <View style={styles.demandCol}>
+                    <FormDropdown
+                      label={t("survey.demand")}
+                      value={String(d.demandId ?? "")}
+                      options={(demandsByCategory[d.categoryId] ?? []).map(
+                        (x) => ({
+                          label: x.demandEn,
+                          value: x.id,
+                        })
+                      )}
+                      onSelect={(v) => updateDemand(i, { demandId: v })}
+                      disabled={!d.categoryId}
+                      customStyle
+                    />
+                  </View>
+                </View>
 
                 <TextInput
                   mode="outlined"
@@ -561,7 +566,8 @@ function InputRow({ label, onChange, multiline, noDivider, ...props }: any) {
         numberOfLines={multiline ? 4 : 1}
         onChangeText={onChange}
         style={{
-          height: multiline ? 72 : 40,
+          height: multiline ? 72 : 38,
+          fontSize: 14,
           backgroundColor: theme.colors.white,
         }}
       />
@@ -639,7 +645,7 @@ const createStyles = (theme: AppTheme) =>
     },
 
     dateField: {
-      height: 40,
+      height: 38,
       borderWidth: 1,
       borderColor: theme.colors.inputBorder,
       borderRadius: 6,
@@ -673,6 +679,15 @@ const createStyles = (theme: AppTheme) =>
     addDemandText: {
       color: theme.colors.primary,
       fontWeight: "600",
+    },
+
+    demandRow: {
+      flexDirection: "row",
+      gap: 12,
+    },
+
+    demandCol: {
+      flex: 1,
     },
 
     removeDemand: {

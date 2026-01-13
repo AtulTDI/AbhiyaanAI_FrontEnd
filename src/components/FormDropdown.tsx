@@ -62,7 +62,8 @@ function FormDropdown({
             style={[
               {
                 backgroundColor: colors.white,
-                height: customStyle ? 40 : 48
+                height: customStyle ? 40 : 48,
+                fontSize: customStyle ? 14 : 16,
               },
             ]}
             contentStyle={{
@@ -161,7 +162,7 @@ export default React.memo(FormDropdown, (prev, next) => {
 const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
     input: {
-      fontSize: 16,
+      fontSize: 14,
     },
     optionRow: {
       flexDirection: "row",

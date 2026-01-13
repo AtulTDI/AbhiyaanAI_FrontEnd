@@ -121,10 +121,6 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
                   })}
                 />
                 <InfoRow label={t("voter.labelAge")} value={`${voter.age}`} />
-                <InfoRow
-                  label={t("voter.labelCaste")}
-                  value={voter.caste || t("voter.placeholderDash")}
-                />
 
                 <EditableInfoRow
                   label={t("voter.labelMobile")}

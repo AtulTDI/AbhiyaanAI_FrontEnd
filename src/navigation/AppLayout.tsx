@@ -300,6 +300,31 @@ export default function AppLayout() {
 
           {role === "Admin" && (
             <Drawer.Screen
+              name="VotersList"
+              component={VotersScreen}
+              options={{
+                headerShown: true,
+                headerTitle: "",
+                headerRight: headerRightComponent,
+                drawerLabel: (props) => (
+                  <CustomLabel
+                    {...props}
+                    label={t("voter.plural")}
+                    icon={
+                      <Ionicons
+                        name="people-outline"
+                        size={20}
+                        color={props.color || colors.onPrimary}
+                      />
+                    }
+                  />
+                ),
+              }}
+            />
+          )}
+
+          {role === "Admin" && (
+            <Drawer.Screen
               name="AddUser"
               component={AddUserScreen}
               options={{
@@ -323,7 +348,7 @@ export default function AppLayout() {
             />
           )}
 
-          {role === "Admin" && (
+          {/* {role === "Admin" && (
             <Drawer.Screen
               name="ActivateSender"
               component={ActivateSenderScreen}
@@ -346,7 +371,7 @@ export default function AppLayout() {
                 ),
               }}
             />
-          )}
+          )} */}
 
           {role === "Admin" && (
             <>
@@ -396,31 +421,6 @@ export default function AppLayout() {
                 }}
               />
             </>
-          )}
-
-          {role === "Admin" && (
-            <Drawer.Screen
-              name="VotersList"
-              component={VotersScreen}
-              options={{
-                headerShown: true,
-                headerTitle: "",
-                headerRight: headerRightComponent,
-                drawerLabel: (props) => (
-                  <CustomLabel
-                    {...props}
-                    label={t("voter.plural")}
-                    icon={
-                      <Ionicons
-                        name="people-outline"
-                        size={20}
-                        color={props.color || colors.onPrimary}
-                      />
-                    }
-                  />
-                ),
-              }}
-            />
           )}
         </>
       )}
