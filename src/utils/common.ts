@@ -1,3 +1,5 @@
+import { format } from "date-fns";
+
 export const base64ToBlob = (base64Data: string, contentType: string): Blob => {
   const byteCharacters = atob(base64Data);
   const byteArrays = [];
@@ -58,3 +60,18 @@ export const sortByDateDesc = (data, key) => {
     (a, b) => new Date(b[key]).getTime() - new Date(a[key]).getTime()
   );
 }
+
+export const toUtcIsoDate = (date: Date) => {
+  return new Date(
+    Date.UTC(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate()
+    )
+  ).toISOString();
+};
+
+export const formatForDisplay = (iso?: string) => {
+  if (!iso) return "";
+  return format(new Date(iso), "dd-MM-yyyy");
+};

@@ -62,7 +62,7 @@ function FormDropdown({
             style={[
               {
                 backgroundColor: colors.white,
-                height: customStyle ? 32 : 48
+                height: customStyle ? 40 : 48
               },
             ]}
             contentStyle={{

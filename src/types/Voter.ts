@@ -35,16 +35,23 @@ export type GetFamilyMembers = {
 }
 
 export interface VoterSurveyRequest {
-  voterId: string;
-  supportType: number;
+  id?: string;
+  voterId?: string;
+  supportType?: number;
   supportStrength?: number;
-  dateOfBirth?: string | null;
-  remarks?: string;
-  needsFollowUp?: boolean;
-  voterDied?: boolean;
-  specialVisitDate?: string | null;
-  specialVisitRemarks?: string;
-  specialVisitUserId?: string | null;
+  caste: string,
+  newAddress: string,
+  society: string,
+  flatNumber: string,
+  email: string,
+  secondaryMobileNumber: string,
+  dateOfBirth: string,
+  needsFollowUp: boolean,
+  specialVisitDate: string,
+  specialVisitRemarks: string,
+  voterDied: boolean,
+  remarks: string,
+  isVoted: boolean,
 }
 
 export interface VoterSurveyResponse {
@@ -77,6 +84,7 @@ export type Demand = {
 };
 
 export type VoterDemandItem = {
+  categoryId: string;
   demandId: string;
   description?: string;
 };

@@ -8,39 +8,57 @@ import {
   useTheme,
 } from "react-native-paper";
 import { DatePickerModal } from "react-native-paper-dates";
-import { format } from "date-fns";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import { useToast } from "./ToastProvider";
-import { extractErrorMessage } from "../utils/common";
+import {
+  extractErrorMessage,
+  formatForDisplay,
+  toUtcIsoDate,
+} from "../utils/common";
 import {
   getSurveyByVoterId,
   addSurvey,
   getSupportTypes,
+  updateSurvey,
 } from "../api/voterSurveyApi";
-import { AppTheme } from "../theme";
+import {
+  addVoterDemands,
+  deleteVoterDemand,
+  getDemandCategories,
+  getDemandsByCategory,
+  getVoterDemands,
+} from "../api/voterDemandApi";
 import FormDropdown from "./FormDropdown";
+import { VoterDemandItem } from "../types/Voter";
+import { AppTheme } from "../theme";
 
 /* ================= TYPES ================= */
 
+type DemandItem = {
+  categoryId?: string;
+  demandId?: string;
+  description?: string;
+};
+
 type SurveyData = {
+  id?: string;
   supportType?: number;
+  supportStrength?: number;
   caste?: string;
-  // post?: string;
-  // activist?: string;
   newAddress?: string;
   society?: string;
-  flatNo?: string;
+  flatNumber?: string;
   email?: string;
-  mobile1?: string;
+  secondaryMobileNumber?: string;
   dateOfBirth?: string;
-  demands?: string;
-  additionalInfo?: string;
-  additionalVerification?: boolean;
+  demands?: VoterDemandItem[];
+  needsFollowUp?: boolean;
+  specialVisitDate: string;
+  specialVisitRemarks: string;
   voterDied?: boolean;
-  remarks?: boolean;
-  // starVoter?: boolean;
-  voted?: boolean;
+  remarks?: string;
+  isVoted?: boolean;
 };
 
 type Props = {
@@ -49,23 +67,29 @@ type Props = {
 
 const DEFAULT_SURVEY_DATA: SurveyData = {
   supportType: 0,
+  supportStrength: 0,
   caste: "",
-  // post: "",
-  // activist: "",
   newAddress: "",
   society: "",
-  flatNo: "",
+  flatNumber: "",
   email: "",
-  mobile1: "",
+  secondaryMobileNumber: "",
   dateOfBirth: "",
-  demands: "",
-  additionalInfo: "",
-  additionalVerification: false,
+  demands: [],
+  needsFollowUp: false,
+  specialVisitDate: "",
+  specialVisitRemarks: "",
   voterDied: false,
-  remarks: false,
-  // starVoter: false,
-  voted: false,
+  remarks: "",
+  isVoted: false,
 };
+
+const SUPPORT_STRENGTH_OPTIONS = [
+  { label: "Unknown", value: 0 },
+  { label: "Strong", value: 1 },
+  { label: "Moderate", value: 2 },
+  { label: "Weak", value: 3 },
+];
 
 /* ================= COMPONENT ================= */
 
@@ -81,22 +105,30 @@ export default function SurveyTab({ voterId }: Props) {
   const [data, setData] = useState<SurveyData>({});
   const [loading, setLoading] = useState(true);
   const [dobOpen, setDobOpen] = useState(false);
+  const [specialVisitOpen, setSpecialVisitOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+
   const [supportTypes, setSupportTypes] = useState<any[]>([]);
+  const [demandCategories, setDemandCategories] = useState<any[]>([]);
+  const [demandsByCategory, setDemandsByCategory] = useState<
+    Record<string, any[]>
+  >({});
 
   useEffect(() => {
     loadSurvey();
-    getSupportTypesList();
+    loadSupportTypes();
+    loadDemandCategories();
   }, [voterId]);
 
   const loadSurvey = async () => {
     try {
-      const response = await getSurveyByVoterId(voterId);
-      if (response.status === 204) {
+      const res = await getSurveyByVoterId(voterId);
+      if (res.status === 204) {
         setData(DEFAULT_SURVEY_DATA);
         return;
       }
-      setData(response.data);
+      const demandRes = await getVoterDemands(voterId);
+      setData({ ...DEFAULT_SURVEY_DATA, demands: demandRes.data, ...res.data });
     } catch (e) {
       showToast(extractErrorMessage(e), "error");
     } finally {
@@ -104,30 +136,72 @@ export default function SurveyTab({ voterId }: Props) {
     }
   };
 
-  const getSupportTypesList = async () => {
+  const loadSupportTypes = async () => {
     try {
-      const response = await getSupportTypes();
-      setSupportTypes(response.data ?? []);
+      const res = await getSupportTypes();
+      setSupportTypes(res.data ?? []);
     } catch (e) {
       showToast(extractErrorMessage(e), "error");
     }
   };
 
+  const loadDemandCategories = async () => {
+    try {
+      const res = await getDemandCategories();
+      setDemandCategories(res.data ?? []);
+    } catch (e) {
+      showToast(extractErrorMessage(e), "error");
+    }
+  };
+
+  const loadDemands = async (categoryId: string) => {
+    if (demandsByCategory[categoryId]) return;
+    const res = await getDemandsByCategory(categoryId);
+    setDemandsByCategory((p) => ({ ...p, [categoryId]: res.data ?? [] }));
+  };
+
   const update = <K extends keyof SurveyData>(k: K, v: SurveyData[K]) =>
     setData((d) => ({ ...d, [k]: v }));
 
-  const updateMobile = (key: "mobile1", value: string) => {
+  const updateMobile = (value: string) => {
     const digits = value.replace(/[^0-9]/g, "");
-    if (digits.length <= 10) update(key, digits);
+    if (digits.length <= 10) update("secondaryMobileNumber", digits);
+  };
+
+  /* ================= DEMANDS ================= */
+
+  const addDemand = () => {
+    if ((data.demands?.length ?? 0) >= 5) return;
+    update("demands", [...(data.demands ?? []), {}]);
+  };
+
+  const updateDemand = (index: number, patch: Partial<DemandItem>) => {
+    const list = [...(data.demands ?? [])];
+    list[index] = { ...list[index], ...patch };
+    update("demands", list);
+  };
+
+  const removeDemand = async (index: number) => {
+    const list = [...(data.demands ?? [])];
+    if (list[index].id) {
+      await deleteVoterDemand(list[index].id);
+    }
+    list.splice(index, 1);
+    update("demands", list);
   };
 
   const handleSave = async () => {
-    if (!voterId) return;
-
     try {
       setSaving(true);
-      await addSurvey({ voterId, ...data });
-      showToast(t("survey.addSuccess"), "success");
+      const { demands, ...surveyPayload } = data;
+      data?.id
+        ? await updateSurvey(data.id, { voterId, ...surveyPayload })
+        : await addSurvey({ voterId, ...surveyPayload });
+      await addVoterDemands(voterId, demands);
+      showToast(
+        t(data?.id ? "survey.updateSuccess" : "survey.addSuccess"),
+        "success"
+      );
     } catch (e) {
       showToast(extractErrorMessage(e), "error");
     } finally {
@@ -153,18 +227,31 @@ export default function SurveyTab({ voterId }: Props) {
       <View style={styles.grid}>
         {/* BASIC */}
         <GridItem isWide={isWide}>
-          <View style={styles.card}>
-            <Text style={styles.sectionTitle}>{t("voter.surveyBasic")}</Text>
+          <Card title={t("voter.surveyBasic")}>
             <Row label={t("voter.colorCode")}>
               <FormDropdown
                 label=""
                 value={String(data.supportType ?? 0)}
-                options={(supportTypes ?? []).map((s) => ({
+                options={supportTypes.map((s) => ({
                   label: t(`survey.supportType.${s.label}`, s.label),
                   value: String(s.value),
                   colorCode: s.colorCode,
                 }))}
-                onSelect={(val) => update("supportType", Number(val))}
+                onSelect={(v) => update("supportType", Number(v))}
+                noMargin
+                customStyle
+              />
+            </Row>
+
+            <Row label={t("voter.supportStrength")}>
+              <FormDropdown
+                label=""
+                value={String(data.supportStrength ?? 0)}
+                options={SUPPORT_STRENGTH_OPTIONS.map((s) => ({
+                  label: t(`survey.supportStrength.${s.label}`, s.label),
+                  value: String(s.value),
+                }))}
+                onSelect={(v) => update("supportStrength", Number(v))}
                 noMargin
                 customStyle
               />
@@ -174,30 +261,18 @@ export default function SurveyTab({ voterId }: Props) {
               label={t("voter.caste")}
               value={data.caste}
               onChange={(v) => update("caste", v)}
-            />
-            {/* <InputRow
-              label={t("voter.post")}
-              value={data.post}
-              onChange={(v) => update("post", v)}
-            />
-            <InputRow
-              label={t("voter.activist")}
-              value={data.activist}
-              onChange={(v) => update("activist", v)}
               noDivider
-            /> */}
-          </View>
+            />
+          </Card>
         </GridItem>
 
         {/* ADDRESS */}
         <GridItem isWide={isWide}>
-          <View style={styles.card}>
-            <Text style={styles.sectionTitle}>{t("voter.surveyAddress")}</Text>
-
+          <Card title={t("voter.surveyAddress")}>
             <InputRow
               label={t("voter.newAddress")}
-              value={data.newAddress}
               multiline
+              value={data.newAddress}
               onChange={(v) => update("newAddress", v)}
             />
             <InputRow
@@ -207,28 +282,24 @@ export default function SurveyTab({ voterId }: Props) {
             />
             <InputRow
               label={t("voter.flatNo")}
-              value={data.flatNo}
-              onChange={(v) => update("flatNo", v)}
+              value={data.flatNumber}
+              onChange={(v) => update("flatNumber", v)}
               noDivider
             />
-          </View>
+          </Card>
         </GridItem>
 
         {/* CONTACT */}
         <GridItem isWide={isWide}>
-          <View style={styles.card}>
-            <Text style={styles.sectionTitle}>{t("voter.surveyContact")}</Text>
-
+          <Card title={t("voter.surveyContact")}>
             <InputRow
               label={t("voter.mobile1")}
-              value={data.mobile1}
-              keyboardType="phone-pad"
-              onChange={(v) => updateMobile("mobile1", v)}
+              value={data.secondaryMobileNumber}
+              onChange={updateMobile}
             />
             <InputRow
               label={t("voter.email")}
               value={data.email}
-              keyboardType="email-address"
               onChange={(v) => update("email", v)}
             />
 
@@ -238,13 +309,12 @@ export default function SurveyTab({ voterId }: Props) {
                 style={styles.dateField}
               >
                 <Text style={styles.dateText}>
-                  {data.dateOfBirth || t("voter.selectDate")}
+                  {data.dateOfBirth
+                    ? formatForDisplay(data.dateOfBirth)
+                    : t("voter.selectDate")}
                 </Text>
-                <Ionicons
-                  name="calendar-outline"
-                  size={16}
-                  color={theme.colors.textSecondary}
-                />
+
+                <Ionicons name="calendar-outline" size={16} />
               </Pressable>
             </Row>
 
@@ -256,44 +326,17 @@ export default function SurveyTab({ voterId }: Props) {
               onDismiss={() => setDobOpen(false)}
               onConfirm={({ date }) => {
                 setDobOpen(false);
-                if (date) update("dateOfBirth", format(date, "yyyy-MM-dd"));
+                if (date) {
+                  update("dateOfBirth", toUtcIsoDate(date));
+                }
               }}
-              validRange={{ endDate: new Date() }}
             />
-          </View>
-        </GridItem>
-
-        {/* ADDITIONAL */}
-        <GridItem isWide={isWide}>
-          <View style={styles.card}>
-            <Text style={styles.sectionTitle}>{t("voter.additionalInfo")}</Text>
-
-            <InputRow
-              label={t("voter.demands")}
-              value={data.demands}
-              multiline
-              onChange={(v) => update("demands", v)}
-            />
-            <InputRow
-              label={t("voter.additionalInfo")}
-              value={data.remarks}
-              multiline
-              onChange={(v) => update("remarks", v)}
-            />
-            <BooleanRow
-              label={t("voter.additionalVerification")}
-              value={data.additionalVerification}
-              onChange={(v) => update("additionalVerification", v)}
-              noDivider
-            />
-          </View>
+          </Card>
         </GridItem>
 
         {/* STATUS */}
         <GridItem isWide={isWide}>
-          <View style={styles.card}>
-            <Text style={styles.sectionTitle}>{t("voter.surveyStatus")}</Text>
-
+          <Card title={t("voter.surveyStatus")}>
             <BooleanRow
               label={t("voter.deceased")}
               value={data.voterDied}
@@ -301,30 +344,146 @@ export default function SurveyTab({ voterId }: Props) {
             />
             <BooleanRow
               label={t("voter.voted")}
-              value={data.voted}
-              onChange={(v) => update("voted", v)}
+              value={data.isVoted}
+              onChange={(v) => update("isVoted", v)}
+            />
+            <BooleanRow
+              label={t("voter.needsFollowUp")}
+              value={data.needsFollowUp}
+              onChange={(v) => update("needsFollowUp", v)}
+              noDivider
+            />
+          </Card>
+        </GridItem>
+
+        {/* ADDITIONAL INFO */}
+        <FullGridItem>
+          <Card title={t("voter.additionalInfo")}>
+            <InputRow
+              label={t("voter.remarks")}
+              multiline
+              value={data.remarks}
+              onChange={(v) => update("remarks", v)}
             />
 
-            {/* <Row label={t("voter.starVoter")} noDivider>
-              <Ionicons
-                name={data.starVoter ? "star" : "star-outline"}
-                size={20}
-                color={theme.colors.primary}
-                onPress={() => update("starVoter", !data.starVoter)}
-              />
-            </Row> */}
-          </View>
-        </GridItem>
+            <Row label={t("voter.specialVisitDate")}>
+              <Pressable
+                onPress={() => setSpecialVisitOpen(true)}
+                style={styles.dateField}
+              >
+                <Text style={styles.dateText}>
+                  {data.specialVisitDate
+                    ? formatForDisplay(data.specialVisitDate)
+                    : t("voter.selectDate")}
+                </Text>
+                <Ionicons name="calendar-outline" size={16} />
+              </Pressable>
+            </Row>
+
+            <InputRow
+              label={t("voter.specialVisitRemarks")}
+              multiline
+              value={data.specialVisitRemarks}
+              onChange={(v) => update("specialVisitRemarks", v)}
+              noDivider
+            />
+            <DatePickerModal
+              locale="en"
+              mode="single"
+              visible={specialVisitOpen}
+              date={
+                data.specialVisitDate
+                  ? new Date(data.specialVisitDate)
+                  : new Date()
+              }
+              onDismiss={() => setSpecialVisitOpen(false)}
+              onConfirm={({ date }) => {
+                setSpecialVisitOpen(false);
+                if (date) {
+                  update("specialVisitDate", toUtcIsoDate(date));
+                }
+              }}
+            />
+          </Card>
+        </FullGridItem>
+
+        {/* DEMANDS */}
+        <FullGridItem>
+          <Card title={t("voter.demands")}>
+            {(data.demands ?? []).map((d, i) => (
+              <View key={i} style={styles.demandCard}>
+                <FormDropdown
+                  label={t("survey.demandCategory")}
+                  value={String(d.categoryId ?? "")}
+                  options={demandCategories.map((c) => ({
+                    label: c.nameEn,
+                    value: c.id,
+                  }))}
+                  onSelect={(v) => {
+                    updateDemand(i, { categoryId: v, demandId: undefined });
+                    if (v) loadDemands(v);
+                  }}
+                  customStyle
+                />
+
+                {d.categoryId && (
+                  <FormDropdown
+                    label={t("survey.demand")}
+                    value={String(d.demandId ?? "")}
+                    options={(demandsByCategory[d.categoryId] ?? []).map(
+                      (x) => ({
+                        label: x.demandEn,
+                        value: x.id,
+                      })
+                    )}
+                    onSelect={(v) => updateDemand(i, { demandId: v })}
+                    customStyle
+                  />
+                )}
+
+                <TextInput
+                  mode="outlined"
+                  multiline
+                  numberOfLines={3}
+                  placeholder={t("survey.demandDescription")}
+                  value={d.description}
+                  style={{ backgroundColor: theme.colors.white }}
+                  onChangeText={(v) => updateDemand(i, { description: v })}
+                />
+
+                <Pressable
+                  onPress={() => removeDemand(i)}
+                  style={styles.removeDemand}
+                >
+                  <Ionicons
+                    name="trash-outline"
+                    size={18}
+                    color={theme.colors.error}
+                  />
+                </Pressable>
+              </View>
+            ))}
+
+            {(data.demands?.length ?? 0) < 5 && (
+              <Pressable onPress={addDemand} style={styles.addDemandBtn}>
+                <Ionicons
+                  name="add-circle-outline"
+                  size={18}
+                  color={theme.colors.primary}
+                />
+                <Text style={styles.addDemandText}>
+                  {t("survey.addDemand")}
+                </Text>
+              </Pressable>
+            )}
+          </Card>
+        </FullGridItem>
       </View>
 
-      {/* SAVE / RESET BAR */}
+      {/* SAVE BAR */}
       <View style={styles.saveBar}>
         <View style={styles.saveRow}>
-          <Pressable
-            onPress={handleReset}
-            disabled={saving}
-            style={styles.resetButton}
-          >
+          <Pressable onPress={handleReset} style={styles.resetButton}>
             <Ionicons
               name="refresh-outline"
               size={18}
@@ -333,23 +492,9 @@ export default function SurveyTab({ voterId }: Props) {
             <Text style={styles.resetText}>{t("reset")}</Text>
           </Pressable>
 
-          <Pressable
-            onPress={handleSave}
-            disabled={saving}
-            style={[styles.saveButton, saving && { opacity: 0.6 }]}
-          >
-            {saving ? (
-              <ActivityIndicator color={theme.colors.white} />
-            ) : (
-              <>
-                <Ionicons
-                  name="save-outline"
-                  size={18}
-                  color={theme.colors.white}
-                />
-                <Text style={styles.saveText}>{t("save")}</Text>
-              </>
-            )}
+          <Pressable onPress={handleSave} style={styles.saveButton}>
+            <Ionicons name="save-outline" size={18} color="white" />
+            <Text style={styles.saveText}>{t("save")}</Text>
           </Pressable>
         </View>
       </View>
@@ -361,7 +506,27 @@ export default function SurveyTab({ voterId }: Props) {
 
 function GridItem({ isWide, children }: any) {
   return (
-    <View style={{ flexBasis: isWide ? "50%" : "100%", padding: 8 }}>
+    <View
+      style={{
+        flexBasis: isWide ? "50%" : "100%",
+        padding: 8,
+        alignSelf: "stretch",
+      }}
+    >
+      {children}
+    </View>
+  );
+}
+function FullGridItem({ children }: any) {
+  return <View style={{ flexBasis: "100%", padding: 8 }}>{children}</View>;
+}
+
+function Card({ title, children }: any) {
+  const theme = useTheme<AppTheme>();
+  const styles = createStyles(theme);
+  return (
+    <View style={styles.card}>
+      <Text style={styles.sectionTitle}>{title}</Text>
       {children}
     </View>
   );
@@ -395,9 +560,8 @@ function InputRow({ label, onChange, multiline, noDivider, ...props }: any) {
         multiline={multiline}
         numberOfLines={multiline ? 4 : 1}
         onChangeText={onChange}
-        contentStyle={{ fontSize: 14, paddingVertical: 4 }}
         style={{
-          height: multiline ? 72 : 32,
+          height: multiline ? 72 : 40,
           backgroundColor: theme.colors.white,
         }}
       />
@@ -439,16 +603,14 @@ const rowStyles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 12,
-    borderBottomWidth: 1,
   },
   label: {
     width: 170,
     fontSize: 14,
     color: "#888",
-    paddingRight: 8,
   },
   value: { flex: 1 },
-  inlineWrap: { flexDirection: "row", gap: 8, flexWrap: "wrap" },
+  inlineWrap: { flexDirection: "row", gap: 8 },
 });
 
 const createStyles = (theme: AppTheme) =>
@@ -456,38 +618,68 @@ const createStyles = (theme: AppTheme) =>
     grid: {
       flexDirection: "row",
       flexWrap: "wrap",
+      alignItems: "stretch",
       marginHorizontal: -8,
     },
+
     card: {
-      height: "100%",
+      flex: 1,
       padding: 16,
       borderRadius: 16,
       borderWidth: 1,
       borderColor: theme.colors.subtleBorder,
       backgroundColor: theme.colors.paperBackground,
     },
+
     sectionTitle: {
       fontSize: 13,
       fontWeight: "700",
-      letterSpacing: 0.8,
-      color: theme.colors.textTertiary,
       marginBottom: 10,
+      color: theme.colors.textTertiary,
     },
+
     dateField: {
-      height: 32,
+      height: 40,
       borderWidth: 1,
       borderColor: theme.colors.inputBorder,
       borderRadius: 6,
       paddingHorizontal: 10,
       flexDirection: "row",
-      alignItems: "center",
       justifyContent: "space-between",
+      alignItems: "center",
       backgroundColor: theme.colors.white,
     },
+
     dateText: {
       fontSize: 14,
-      color: theme.colors.textPrimary,
     },
+
+    demandCard: {
+      marginBottom: 16,
+      padding: 12,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: theme.colors.divider,
+      backgroundColor: theme.colors.white,
+    },
+
+    addDemandBtn: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
+      marginVertical: 8,
+    },
+
+    addDemandText: {
+      color: theme.colors.primary,
+      fontWeight: "600",
+    },
+
+    removeDemand: {
+      alignSelf: "flex-end",
+      marginTop: 6,
+    },
+
     saveBar: {
       marginTop: 16,
       paddingVertical: 12,
@@ -495,55 +687,42 @@ const createStyles = (theme: AppTheme) =>
       borderTopColor: theme.colors.divider,
       backgroundColor: theme.colors.white,
     },
+
     saveRow: {
       flexDirection: "row",
       gap: 12,
     },
+
     resetButton: {
       flex: 1,
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: 6,
       borderWidth: 1,
       borderColor: theme.colors.primary,
       borderRadius: 10,
       paddingVertical: 12,
-      backgroundColor: theme.colors.white,
+      alignItems: "center",
+      flexDirection: "row",
+      justifyContent: "center",
+      gap: 6,
     },
+
     resetText: {
       color: theme.colors.primary,
       fontWeight: "600",
-      fontSize: 15,
     },
+
     saveButton: {
       flex: 1,
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: 8,
       backgroundColor: theme.colors.primary,
       borderRadius: 10,
       paddingVertical: 12,
+      alignItems: "center",
+      flexDirection: "row",
+      justifyContent: "center",
+      gap: 6,
     },
+
     saveText: {
       color: theme.colors.white,
       fontWeight: "600",
-      fontSize: 15,
-    },
-    supportItem: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 8,
-      paddingVertical: 8,
-      paddingHorizontal: 4,
-    },
-    supportItemText: {
-      fontSize: 14,
-    },
-    supportDot: {
-      width: 10,
-      height: 10,
-      borderRadius: 5,
     },
   });

@@ -62,7 +62,7 @@ export const addVoterDemands = (
  * Get voter demands
  */
 export const getVoterDemands = (voterId: string, isResolved?: boolean) => {
-  return axios.get<VoterDemandResponse[]>(
+  return axios.get<VoterDemandItem[]>(
     `/VotersDemand/get-voter-demands/${voterId}`,
     {
       params: { isResolved },
@@ -86,3 +86,14 @@ export const resolveVoterDemand = (payload: ResolveVoterDemand) => {
     useVoterBase: true,
   });
 };
+
+/**
+ * Delete voter demand
+ */
+export const deleteVoterDemand = (demandId: string) => {
+  return axios.delete(`/VotersDemand/delete-voter-demands/${demandId}`, {
+    useApiPrefix: true,
+    useVoterBase: true,
+  });
+};
+
