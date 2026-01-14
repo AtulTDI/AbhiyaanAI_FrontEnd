@@ -540,7 +540,12 @@ export default function SurveyTab({ voterId }: Props) {
                   {/* BODY */}
                   {isOpen && (
                     <>
-                      <View style={styles.demandRow}>
+                      <View
+                        style={[
+                          styles.demandRow,
+                          !isWide && styles.demandRowMobile,
+                        ]}
+                      >
                         <View style={styles.demandCol}>
                           <FixedLabel
                             label={t("survey.demandCategory")}
@@ -550,7 +555,7 @@ export default function SurveyTab({ voterId }: Props) {
                             placeholder={t("placeholder.selectCategory")}
                             value={String(d.categoryId ?? "")}
                             options={demandCategories.map((c) => ({
-                              label: c.nameEn,
+                              label: t(`survey.demandCategories.${c.nameEn}`),
                               value: c.id,
                             }))}
                             disabled={d.isResolved}
@@ -575,7 +580,7 @@ export default function SurveyTab({ voterId }: Props) {
                             options={(
                               demandsByCategory[d.categoryId] ?? []
                             ).map((x) => ({
-                              label: x.demandEn,
+                              label: t(`survey.demands.${x.demandEn}`),
                               value: x.id,
                             }))}
                             disabled={!d.categoryId || d.isResolved}
@@ -595,6 +600,7 @@ export default function SurveyTab({ voterId }: Props) {
                         style={{
                           fontSize: 14,
                           backgroundColor: theme.colors.white,
+                          paddingVertical: 8
                         }}
                         onChangeText={(v) =>
                           updateDemand(i, { description: v })
@@ -692,17 +698,34 @@ function Row({ label, children, noDivider }: any) {
   );
 }
 
-function InputRow({ label, onChange, multiline, noDivider, ...props }: any) {
+function InputRow({
+  label,
+  onChange,
+  multiline,
+  noDivider,
+  value,
+  ...props
+}: any) {
   const theme = useTheme<AppTheme>();
+  const [selection, setSelection] = useState<{ start: number; end: number }>();
+
   return (
     <Row label={label} noDivider={noDivider}>
       <TextInput
         {...props}
+        value={value}
         dense
         mode="outlined"
         multiline={multiline}
         numberOfLines={multiline ? 4 : 1}
         onChangeText={onChange}
+        selection={selection}
+        onBlur={() => {
+          setSelection({ start: 0, end: 0 });
+        }}
+        onFocus={() => {
+          setSelection(undefined);
+        }}
         style={{
           height: multiline ? 72 : 44,
           fontSize: 14,
@@ -846,6 +869,10 @@ const createStyles = (theme: AppTheme) =>
       flexDirection: "row",
       gap: 12,
       marginVertical: 12,
+    },
+
+    demandRowMobile: {
+      flexDirection: "column",
     },
 
     demandCol: {

@@ -327,6 +327,7 @@ export default function VotersScreen() {
         key={numColumns}
         numColumns={numColumns}
         keyExtractor={(item) => item.id}
+        scrollEnabled={false} 
         columnWrapperStyle={numColumns > 1 ? styles.row : undefined}
         renderItem={({ item }) => (
           <Pressable
