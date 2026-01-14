@@ -13,6 +13,7 @@ import {
 import { usePlatformInfo } from "../hooks/usePlatformInfo";
 import FormDropdown from "./FormDropdown";
 import { FieldConfig } from "../types";
+import { FixedLabel } from "./FixedLabel";
 import { AppTheme } from "../theme";
 
 type Props = {
@@ -236,7 +237,9 @@ export default function DynamicForm({
             key={field.name}
             style={[
               styles.inputWrapper,
-              field.name === "address" || field.type === "textarea" || field.fullWidth
+              field.name === "address" ||
+              field.type === "textarea" ||
+              field.fullWidth
                 ? styles.fullWidth
                 : index % 2 === 0
                 ? { marginRight: "4%" }
@@ -279,41 +282,32 @@ export default function DynamicForm({
                 )}
               </View>
             ) : field.type === "dropdown" ? (
-              <FormDropdown
-                label={
-                  <Text>
-                    {field.label}
-                    {field.required && (
-                      <Text style={{ color: colors.error }}> *</Text>
-                    )}
-                  </Text>
-                }
-                value={formData[field.name] as string}
-                options={
-                  Array.isArray(field.options)
-                    ? typeof (field.options as any[])[0] === "string"
-                      ? (field.options as string[]).map((opt) => ({
-                          label: opt,
-                          value: opt,
-                        }))
-                      : (field.options as { label: string; value: string }[])
-                    : []
-                }
-                disabled={field.disabled}
-                error={formErrors[field.name]}
-                onSelect={(val) => handleChange(field, val)}
-              />
+              <>
+                <FixedLabel label={field.label} required={field.required} />
+                <FormDropdown
+                  placeholder={field.placeholder}
+                  value={formData[field.name] as string}
+                  options={
+                    Array.isArray(field.options)
+                      ? typeof (field.options as any[])[0] === "string"
+                        ? (field.options as string[]).map((opt) => ({
+                            label: opt,
+                            value: opt,
+                          }))
+                        : (field.options as { label: string; value: string }[])
+                      : []
+                  }
+                  disabled={field.disabled}
+                  error={formErrors[field.name]}
+                  onSelect={(val) => handleChange(field, val)}
+                />
+              </>
             ) : (
               <>
+                <FixedLabel label={field.label} required={field.required} />
                 <TextInput
-                  label={
-                    <Text>
-                      {field.label}
-                      {field.required && (
-                        <Text style={{ color: colors.error }}> *</Text>
-                      )}
-                    </Text>
-                  }
+                  placeholder={field.placeholder}
+                  placeholderTextColor={theme.colors.placeholder}
                   value={formData[field.name] as string}
                   onChangeText={(text) => handleChange(field, text)}
                   mode="outlined"
@@ -351,7 +345,7 @@ export default function DynamicForm({
                   disabled={field.disabled}
                   numberOfLines={field.type === "textarea" ? 4 : 1}
                   style={[
-                    { backgroundColor: theme.colors.white },
+                    { backgroundColor: theme.colors.white, height: 44 },
                     field.type === "textarea" && { height: 100 },
                   ]}
                   right={

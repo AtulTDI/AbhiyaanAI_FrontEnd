@@ -61,6 +61,7 @@
   "campaignMessage": "कॅम्पेन संदेश",
   "cloningSpeed": " क्लोनिंग वेग",
   "approval": "मंजुरी",
+  "search": "शोधा",
 
   "loadingData": "डेटा लोड होत आहे...",
   "create": "तयार करा",
@@ -99,6 +100,7 @@
   "yes": "होय",
   "no": "नाही",
   "back": "मागे",
+  "defaultNoData": "कोणताही डेटा सापडला नाही",
 
   "role": {
     "distributor": "डिस्ट्रिब्युटर",
@@ -109,6 +111,29 @@
   "fieldRequired": "{{field}} आवश्यक आहे",
   "deleteRole": "{{role}} डिलीट करा",
   "confirmDeleteRole": "आपण हा {{role}} डिलीट करू इच्छिता का?",
+  "noDataFound": "कोणतेही {{header}} आढळले नाही",
+
+  "placeholder": {
+    "enterFirstName": "पहिले नाव दर्ज करा",
+    "enterLastName": "अंतिम नाव दर्ज करा",
+    "passwordHint": "न्यूनतम 6 अक्षर",
+    "mobileHint": "10 अंकांचा मोबाइल क्रमांक",
+    "selectApplicationPlaceholder": "अ‍ॅप्लिकेशन निवडा",
+    "applicationNamePlaceholder": "किमान 5 अक्षरे (फक्त अक्षरे आणि _)",
+    "videoCountPlaceholder": "किमान 100 व्हिडिओ",
+    "addVideoCountPlaceholder": "अतिरिक्त व्हिडिओ संख्या टाका",
+    "selectDistributorPlaceholder": "वितरक निवडा",
+    "videoRatePlaceholder": "1.00 ते 15.00 दरम्यान दर",
+    "whatsappApiVendorIdPlaceholder": "व्हॉट्सअ‍ॅप API विक्रेता ID प्रविष्ट करा",
+    "whatsappApiTokenPlaceholder": "व्हॉट्सअ‍ॅप API टोकन प्रविष्ट करा",
+    "whatsappApiBaseUrlPlaceholder": "व्हॉट्सअ‍ॅप API बेस URL प्रविष्ट करा",
+    "enterCampaign": "कॅम्पेन नाव प्रविष्ट करा",
+    "enterCampaignMessage": "कॅम्पेन संदेश प्रविष्ट करा",
+    "cloningSpeedPlaceholder": "उदा. सामान्य वेगासाठी 1.0",
+    "enterName": "नाव प्रविष्ट करा",
+    "selectCategory": "श्रेणी निवडा",
+    "selectDemand": "मागणी निवडा"
+  },
 
   "application": {
     "singular": "अ‍ॅप्लिकेशन",

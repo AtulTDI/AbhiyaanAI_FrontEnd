@@ -19,6 +19,7 @@ import {
   Surface,
   IconButton,
 } from "react-native-paper";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { useTranslation } from "react-i18next";
 import {
   ResizeMode,
@@ -33,6 +34,7 @@ import * as DocumentPicker from "expo-document-picker";
 import CommonUpload from "./CommonUpload";
 import { generateSampleVideo } from "../api/videoApi";
 import { getAuthData } from "../utils/storage";
+import { extractErrorMessage } from "../utils/common";
 import { usePlatformInfo } from "../hooks/usePlatformInfo";
 import {
   joinGroups,
@@ -41,9 +43,8 @@ import {
   startConnection,
   stopConnection,
 } from "../services/signalrService";
+import { FixedLabel } from "./FixedLabel";
 import { AppTheme } from "../theme";
-import { extractErrorMessage } from "../utils/common";
-import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 interface FormData {
   campaign: string;
@@ -137,7 +138,7 @@ export default function VideoUploadForm({
       await generateSampleVideo({
         file: formData?.file,
         recipientName: name.trim(),
-        cloningSpeed: formData?.cloningSpeed
+        cloningSpeed: formData?.cloningSpeed,
       });
     } catch (error) {
       showToast(
@@ -186,7 +187,7 @@ export default function VideoUploadForm({
       message: normalizePastedText(formData.message),
       cloningSpeed: formData.cloningSpeed,
       voiceCloneId: voiceCloneId,
-      file: formData.file
+      file: formData.file,
     };
 
     onAddVideo(payload);
@@ -220,7 +221,7 @@ export default function VideoUploadForm({
       <KeyboardAwareScrollView
         ref={scrollRef}
         contentContainerStyle={{
-          padding: 16
+          padding: 16,
         }}
         enableOnAndroid
         extraScrollHeight={Platform.OS === "ios" ? 100 : 120}
@@ -235,9 +236,11 @@ export default function VideoUploadForm({
         >
           {/* Campaign */}
           <View style={{ flex: 1 }}>
+            <FixedLabel label={t("campaign")} required />
             <TextInput
               ref={campaignInputRef}
-              label={t("campaign")}
+              placeholder={t("placeholder.enterCampaign")}
+              placeholderTextColor={theme.colors.placeholder}
               value={formData.campaign}
               onChangeText={(text) =>
                 setFormData((prev) => ({
@@ -265,8 +268,10 @@ export default function VideoUploadForm({
               activeOpacity={0.7}
               onPress={() => setMessageEditorVisible(true)}
             >
+              <FixedLabel label={t("campaignMessage")} required />
               <TextInput
-                label={t("campaignMessage")}
+                placeholder={t("placeholder.enterCampaignMessage")}
+                placeholderTextColor={theme.colors.placeholder}
                 value={formData.message}
                 mode="outlined"
                 editable={false}
@@ -293,8 +298,10 @@ export default function VideoUploadForm({
 
           {/* Cloning Speed */}
           <View style={{ flex: 1 }}>
+            <FixedLabel label={t("cloningSpeed")} required />
             <TextInput
-              label={t("cloningSpeed")}
+              placeholder={t("placeholder.cloningSpeedPlaceholder")}
+              placeholderTextColor={theme.colors.placeholder}
               value={`${formData.cloningSpeed.toFixed(1)}x`}
               mode="outlined"
               onChangeText={(text) => {
@@ -411,8 +418,10 @@ export default function VideoUploadForm({
               }}
             >
               <View style={{ marginTop: 16 }}>
+                <FixedLabel label={t("name")} />
                 <TextInput
-                  label={t("name")}
+                  placeholder={t("placeholder.enterName")}
+                  placeholderTextColor={theme.colors.placeholder}
                   value={name}
                   onChangeText={setName}
                   mode="outlined"
@@ -578,6 +587,7 @@ const createStyles = (theme: AppTheme) =>
     input: {
       marginBottom: 0,
       backgroundColor: theme.colors.white,
+      height: 44,
     },
     footer: {
       position: "absolute",

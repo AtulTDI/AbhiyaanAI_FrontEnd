@@ -30,42 +30,17 @@ import {
   getVoterDemands,
 } from "../api/voterDemandApi";
 import FormDropdown from "./FormDropdown";
-import { VoterDemandItem } from "../types/Voter";
+import { VoterDemandItem, VoterSurveyRequest } from "../types/Voter";
 import { AppTheme } from "../theme";
+import { FixedLabel } from "./FixedLabel";
 
 /* ================= TYPES ================= */
-
-type DemandItem = {
-  categoryId?: string;
-  demandId?: string;
-  description?: string;
-};
-
-type SurveyData = {
-  id?: string;
-  supportType?: number;
-  supportStrength?: number;
-  caste?: string;
-  newAddress?: string;
-  society?: string;
-  flatNumber?: string;
-  email?: string;
-  secondaryMobileNumber?: string;
-  dateOfBirth?: string;
-  demands?: VoterDemandItem[];
-  needsFollowUp?: boolean;
-  specialVisitDate: string;
-  specialVisitRemarks: string;
-  voterDied?: boolean;
-  remarks?: string;
-  isVoted?: boolean;
-};
 
 type Props = {
   voterId?: string;
 };
 
-const DEFAULT_SURVEY_DATA: SurveyData = {
+const DEFAULT_SURVEY_DATA: VoterSurveyRequest = {
   supportType: 0,
   supportStrength: 0,
   caste: "",
@@ -102,7 +77,7 @@ export default function SurveyTab({ voterId }: Props) {
 
   const isWide = width >= 1024;
 
-  const [data, setData] = useState<SurveyData>({});
+  const [data, setData] = useState<VoterSurveyRequest>();
   const [loading, setLoading] = useState(true);
   const [dobOpen, setDobOpen] = useState(false);
   const [specialVisitOpen, setSpecialVisitOpen] = useState(false);
@@ -113,6 +88,7 @@ export default function SurveyTab({ voterId }: Props) {
   const [demandsByCategory, setDemandsByCategory] = useState<
     Record<string, any[]>
   >({});
+  const [openDemands, setOpenDemands] = useState<Record<number, boolean>>({});
 
   useEffect(() => {
     loadSurvey();
@@ -160,8 +136,10 @@ export default function SurveyTab({ voterId }: Props) {
     setDemandsByCategory((p) => ({ ...p, [categoryId]: res.data ?? [] }));
   };
 
-  const update = <K extends keyof SurveyData>(k: K, v: SurveyData[K]) =>
-    setData((d) => ({ ...d, [k]: v }));
+  const update = <K extends keyof VoterSurveyRequest>(
+    k: K,
+    v: VoterSurveyRequest[K]
+  ) => setData((d) => ({ ...d, [k]: v }));
 
   const updateMobile = (value: string) => {
     const digits = value.replace(/[^0-9]/g, "");
@@ -172,10 +150,12 @@ export default function SurveyTab({ voterId }: Props) {
 
   const addDemand = () => {
     if ((data.demands?.length ?? 0) >= 5) return;
+    const newIndex = data.demands?.length ?? 0;
     update("demands", [...(data.demands ?? []), {}]);
+    setOpenDemands((p) => ({ ...p, [newIndex]: true }));
   };
 
-  const updateDemand = (index: number, patch: Partial<DemandItem>) => {
+  const updateDemand = (index: number, patch: Partial<VoterDemandItem>) => {
     const list = [...(data.demands ?? [])];
     list[index] = { ...list[index], ...patch };
     update("demands", list);
@@ -188,6 +168,18 @@ export default function SurveyTab({ voterId }: Props) {
     }
     list.splice(index, 1);
     update("demands", list);
+  };
+
+  const getDemandTitle = (d: VoterDemandItem, index: number) => {
+    if (!d.demandId || !d.categoryId) {
+      return `${t("survey.demand")} ${index + 1}`;
+    }
+
+    const demand = demandsByCategory[d.categoryId]?.find(
+      (x) => x.id === d.demandId
+    );
+
+    return demand?.demandEn || `${t("survey.demand")} ${index + 1}`;
   };
 
   const handleSave = async () => {
@@ -321,6 +313,8 @@ export default function SurveyTab({ voterId }: Props) {
             <DatePickerModal
               locale="en"
               mode="single"
+              label={t("voter.selectDate")}
+              saveLabel={t("save")}
               visible={dobOpen}
               date={data.dateOfBirth ? new Date(data.dateOfBirth) : new Date()}
               onDismiss={() => setDobOpen(false)}
@@ -410,64 +404,97 @@ export default function SurveyTab({ voterId }: Props) {
         {/* DEMANDS */}
         <FullGridItem>
           <Card title={t("voter.demands")}>
-            {(data.demands ?? []).map((d, i) => (
-              <View key={i} style={styles.demandCard}>
-                <View style={styles.demandRow}>
-                  <View style={styles.demandCol}>
-                    <FormDropdown
-                      label={t("survey.demandCategory")}
-                      value={String(d.categoryId ?? "")}
-                      options={demandCategories.map((c) => ({
-                        label: c.nameEn,
-                        value: c.id,
-                      }))}
-                      onSelect={(v) => {
-                        updateDemand(i, { categoryId: v, demandId: undefined });
-                        if (v) loadDemands(v);
-                      }}
-                      customStyle
-                    />
-                  </View>
+            {(data.demands ?? []).map((d, i) => {
+              const isOpen = openDemands[i];
 
-                  <View style={styles.demandCol}>
-                    <FormDropdown
-                      label={t("survey.demand")}
-                      value={String(d.demandId ?? "")}
-                      options={(demandsByCategory[d.categoryId] ?? []).map(
-                        (x) => ({
-                          label: x.demandEn,
-                          value: x.id,
-                        })
-                      )}
-                      onSelect={(v) => updateDemand(i, { demandId: v })}
-                      disabled={!d.categoryId}
-                      customStyle
-                    />
-                  </View>
+              return (
+                <View key={i} style={styles.demandCard}>
+                  {/* HEADER */}
+                  <Pressable
+                    style={styles.demandHeader}
+                    onPress={() =>
+                      setOpenDemands((p) => ({ ...p, [i]: !p[i] }))
+                    }
+                  >
+                    <Text style={styles.demandTitle} numberOfLines={1}>
+                      {isOpen ? getDemandTitle(d, i) : getDemandTitle(d, i)}
+                    </Text>
+
+                    <View style={styles.demandHeaderActions}>
+                      <Ionicons
+                        name={isOpen ? "chevron-up" : "chevron-down"}
+                        size={18}
+                      />
+                      <Pressable onPress={() => removeDemand(i)} hitSlop={10}>
+                        <Ionicons
+                          name="trash-outline"
+                          size={18}
+                          color={theme.colors.error}
+                        />
+                      </Pressable>
+                    </View>
+                  </Pressable>
+
+                  {/* BODY */}
+                  {isOpen && (
+                    <>
+                      <View style={styles.demandRow}>
+                        <View style={styles.demandCol}>
+                          <FixedLabel label={t("survey.demandCategory")} />
+                          <FormDropdown
+                            placeholder={t("placeholder.selectCategory")}
+                            value={String(d.categoryId ?? "")}
+                            options={demandCategories.map((c) => ({
+                              label: c.nameEn,
+                              value: c.id,
+                            }))}
+                            onSelect={(v) => {
+                              updateDemand(i, {
+                                categoryId: v,
+                                demandId: undefined,
+                              });
+                              if (v) loadDemands(v);
+                            }}
+                          />
+                        </View>
+
+                        <View style={styles.demandCol}>
+                          <FixedLabel label={t("survey.demand")} />
+                          <FormDropdown
+                            placeholder={t("placeholder.selectDemand")}
+                            value={String(d.demandId ?? "")}
+                            options={(
+                              demandsByCategory[d.categoryId] ?? []
+                            ).map((x) => ({
+                              label: x.demandEn,
+                              value: x.id,
+                            }))}
+                            onSelect={(v) => updateDemand(i, { demandId: v })}
+                            disabled={!d.categoryId}
+                          />
+                        </View>
+                      </View>
+
+                      <TextInput
+                        mode="outlined"
+                        multiline
+                        numberOfLines={3}
+                        placeholder={t("survey.demandDescription")}
+                        placeholderTextColor={theme.colors.placeholder}
+                        value={d.description}
+                        style={{
+                          fontSize: 14,
+                          backgroundColor: theme.colors.white,
+                        }}
+                        onChangeText={(v) =>
+                          updateDemand(i, { description: v })
+                        }
+                      />
+                    </>
+                  )}
                 </View>
-
-                <TextInput
-                  mode="outlined"
-                  multiline
-                  numberOfLines={3}
-                  placeholder={t("survey.demandDescription")}
-                  value={d.description}
-                  style={{ backgroundColor: theme.colors.white }}
-                  onChangeText={(v) => updateDemand(i, { description: v })}
-                />
-
-                <Pressable
-                  onPress={() => removeDemand(i)}
-                  style={styles.removeDemand}
-                >
-                  <Ionicons
-                    name="trash-outline"
-                    size={18}
-                    color={theme.colors.error}
-                  />
-                </Pressable>
-              </View>
-            ))}
+              );
+            })}
 
             {(data.demands?.length ?? 0) < 5 && (
               <Pressable onPress={addDemand} style={styles.addDemandBtn}>
@@ -522,6 +549,7 @@ function GridItem({ isWide, children }: any) {
     </View>
   );
 }
+
 function FullGridItem({ children }: any) {
   return <View style={{ flexBasis: "100%", padding: 8 }}>{children}</View>;
 }
@@ -566,7 +594,7 @@ function InputRow({ label, onChange, multiline, noDivider, ...props }: any) {
         numberOfLines={multiline ? 4 : 1}
         onChangeText={onChange}
         style={{
-          height: multiline ? 72 : 38,
+          height: multiline ? 72 : 44,
           fontSize: 14,
           backgroundColor: theme.colors.white,
         }}
@@ -638,14 +666,14 @@ const createStyles = (theme: AppTheme) =>
     },
 
     sectionTitle: {
-      fontSize: 13,
+      fontSize: 15,
       fontWeight: "700",
       marginBottom: 10,
       color: theme.colors.textTertiary,
     },
 
     dateField: {
-      height: 38,
+      height: 44,
       borderWidth: 1,
       borderColor: theme.colors.inputBorder,
       borderRadius: 6,
@@ -681,9 +709,27 @@ const createStyles = (theme: AppTheme) =>
       fontWeight: "600",
     },
 
+    demandHeader: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+    },
+
+    demandHeaderActions: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 12,
+    },
+
+    demandTitle: {
+      fontSize: 14,
+      fontWeight: "600",
+    },
+
     demandRow: {
       flexDirection: "row",
       gap: 12,
+      marginVertical: 12,
     },
 
     demandCol: {

@@ -16,6 +16,7 @@ const colors = {
   lightBackground: "#efefef",
   paperBackground: "#fafafa",
   subtleBorder: "#eaeaea", 
+  placeholder: "#9CA3AF",
 
   // === Text Colors ===
   textPrimary: "#111111",

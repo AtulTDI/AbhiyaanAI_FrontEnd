@@ -44,6 +44,7 @@ import { getCampaigns } from "../api/imageApi";
 import { useServerTable } from "../hooks/useServerTable";
 import { usePlatformInfo } from "../hooks/usePlatformInfo";
 import ResponsiveKeyboardView from "../components/ResponsiveKeyboardView";
+import { FixedLabel } from "../components/FixedLabel";
 import { AppTheme } from "../theme";
 
 let RNFS: any = null;
@@ -160,13 +161,17 @@ export default function GeneratedImagesScreen() {
 
   const memoizedDropdown = React.useMemo(() => {
     return (
-      <FormDropdown
-        label={t("selectCampaign")}
-        value={selectedCampaignId}
-        options={campaigns}
-        noMargin
-        onSelect={(val) => setSelectedCampaignId(val)}
-      />
+      <>
+        <FixedLabel label={t("campaign")} />
+        <View style={{ width: 300 }}>
+          <FormDropdown
+            placeholder={t("selectCampaign")}
+            value={selectedCampaignId}
+            options={campaigns}
+            onSelect={(val) => setSelectedCampaignId(val)}
+          />
+        </View>
+      </>
     );
   }, [selectedCampaignId, campaigns, t]);
 
@@ -744,7 +749,7 @@ export default function GeneratedImagesScreen() {
       </View>
 
       {isWeb && !isMobileWeb && (
-        <Surface style={styles.toolbar} elevation={1}>
+        <>
           {memoizedDropdown}
 
           {/* <View
@@ -859,7 +864,7 @@ export default function GeneratedImagesScreen() {
               </Button>
             </View>
           </View> */}
-        </Surface>
+        </>
       )}
 
       {/* Mobile top compact toolbar (contains campaign dropdown) */}

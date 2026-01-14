@@ -24,6 +24,7 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
 import { Ionicons } from "@expo/vector-icons";
 import * as FileSystem from "expo-file-system";
 import { Image as ImageType } from "../types/Image";
+import { FixedLabel } from "./FixedLabel";
 import DeleteConfirmationDialog from "./DeleteConfirmationDialog";
 
 type ImageAsset = {
@@ -366,8 +367,10 @@ export default function ImageUploadForm({
       >
         <View style={{ flexDirection: isWide ? "row" : "column", gap: 12 }}>
           <View style={{ flex: 1 }}>
+            <FixedLabel label={t("campaign")} required />
             <TextInput
-              label={t("campaign")}
+              placeholder={t("placeholder.enterCampaign")}
+              placeholderTextColor={theme.colors.placeholder}
               value={campaign}
               onChangeText={(text) => {
                 setCampaign(text);
@@ -390,8 +393,10 @@ export default function ImageUploadForm({
               activeOpacity={0.7}
               onPress={() => setMessageEditorVisible(true)}
             >
+              <FixedLabel label={t("campaignMessage")} />
               <TextInput
-                label={t("campaignMessage")}
+                placeholder={t("placeholder.enterCampaignMessage")}
+                placeholderTextColor={theme.colors.placeholder}
                 value={message}
                 mode="outlined"
                 editable={false}
@@ -656,6 +661,7 @@ const createStyles = (theme: any) =>
     input: {
       backgroundColor: theme.colors.white,
       marginBottom: 0,
+      height: 44,
     },
     previewRow: {
       flexDirection: "row",

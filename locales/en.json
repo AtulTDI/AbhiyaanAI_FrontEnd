@@ -61,6 +61,7 @@
   "campaignMessage": "Campaign Message",
   "cloningSpeed": "Cloning Speed",
   "approval": "Approval",
+  "search": "Search",
 
   "loadingData": "Loading data...",
   "create": "Create",
@@ -99,6 +100,7 @@
   "yes": "Yes",
   "no": "No",
   "back": "Back",
+  "defaultNoData": "No data found",
 
   "role": {
     "distributor": "Distributor",
@@ -109,6 +111,29 @@
   "fieldRequired": "{{field}} is required",
   "deleteRole": "Delete {{role}}",
   "confirmDeleteRole": "Are you sure you want to delete this {{role}}?",
+  "noDataFound": "No {{header}} found",
+
+  "placeholder": {
+    "enterFirstName": "Enter first name",
+    "enterLastName": "Enter last name",
+    "passwordHint": "Minimum 6 characters",
+    "mobileHint": "10 digit mobile number",
+    "selectApplicationPlaceholder": "Select application",
+    "applicationNamePlaceholder": "Minimum 5 characters (letters & _ only)",
+    "videoCountPlaceholder": "Minimum 100 videos",
+    "addVideoCountPlaceholder": "Enter additional video count",
+    "selectDistributorPlaceholder": "Select distributor",
+    "videoRatePlaceholder": "Rate between 1.00 and 15.00",
+    "whatsappApiVendorIdPlaceholder": "Provided by WhatsApp API vendor",
+    "whatsappApiTokenPlaceholder": "Bearer token from WhatsApp API",
+    "whatsappApiBaseUrlPlaceholder": "https://api.whatsappvendor.com",
+    "enterCampaign": "Enter campaign name",
+    "enterCampaignMessage": "Enter campaign message",
+    "cloningSpeedPlaceholder": "E.g. 1.0 for normal speed",
+    "enterName": "Enter name",
+    "selectCategory": "Select category",
+    "selectDemand": "Select demand"
+  },
 
   "application": {
     "singular": "Application",

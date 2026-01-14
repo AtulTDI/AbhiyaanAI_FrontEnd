@@ -107,7 +107,7 @@ export default function UserTable({
           color={colors.disabledText}
         />
       }
-      emptyText={`No ${getHeaderTitle().toLowerCase()} found`}
+      emptyText={t("noDataFound", { header: getHeaderTitle().toLowerCase() })}
       page={page}
       rowsPerPage={rowsPerPage}
       totalCount={totalCount}

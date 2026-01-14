@@ -144,6 +144,14 @@ export default function VideoTable({
         columns={columns}
         loading={loading}
         keyExtractor={(item) => item.id}
+        emptyIcon={
+          <Ionicons
+            name="sparkles-outline"
+            size={48}
+            color={colors.disabledText}
+          />
+        }
+        emptyText={t("video.noData")}
         page={page}
         rowsPerPage={rowsPerPage}
         totalCount={totalCount}

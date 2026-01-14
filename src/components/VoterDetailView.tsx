@@ -350,7 +350,7 @@ const createStyles = (theme: AppTheme) =>
       gap: 12,
     },
     sectionTitle: {
-      fontSize: 13,
+      fontSize: 15,
       fontWeight: "700",
       color: theme.colors.textTertiary,
       letterSpacing: 0.8,

@@ -57,7 +57,7 @@ export default function CommonTable<T>({
   data,
   columns,
   keyExtractor = (_, index) => index.toString(),
-  emptyText = "No data found",
+  emptyText,
   emptyIcon,
   enableSearch,
   loading = false,
@@ -156,7 +156,7 @@ export default function CommonTable<T>({
         {
           key: "__sno__",
           label: enableSearch ? "" : t("sno"),
-          flex: columns?.length > 7 ? 0.40 : totalCount >= 100 ? 0.3 : 0.2,
+          flex: columns?.length > 7 ? 0.4 : totalCount >= 100 ? 0.3 : 0.2,
           smallColumn: true,
           renderHeader: () =>
             enableSearch ? (
@@ -248,7 +248,7 @@ export default function CommonTable<T>({
     if (tableType === "tableUnderStepper") {
       availableHeight = screenHeight * (showSearch ? 0.37 : 0.45);
     } else if (tableType === "tableUnderDropdown") {
-      availableHeight = screenHeight * (showSearch ? 0.50 : 0.60);
+      availableHeight = screenHeight * (showSearch ? 0.5 : 0.6);
     } else {
       availableHeight = screenHeight * (showSearch ? 0.56 : 0.66);
     }
@@ -451,11 +451,13 @@ export default function CommonTable<T>({
               {emptyIcon ?? (
                 <MaterialIcons
                   name="info-outline"
-                  size={40}
+                  style={{ fontSize: 10 }}
                   color={colors.borderGray}
                 />
               )}
-              <Text style={styles.emptyText}>{emptyText}</Text>
+              <Text style={styles.emptyText}>
+                {emptyText ?? t("defaultNoData")}
+              </Text>
             </View>
           </>
         ) : (

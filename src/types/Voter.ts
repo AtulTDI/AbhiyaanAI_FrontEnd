@@ -52,6 +52,7 @@ export interface VoterSurveyRequest {
   voterDied: boolean,
   remarks: string,
   isVoted: boolean,
+  demands?: VoterDemandItem[];
 }
 
 export interface VoterSurveyResponse {

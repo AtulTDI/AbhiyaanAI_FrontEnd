@@ -79,13 +79,21 @@ export default function UserForm({
       {
         name: "firstName",
         label: t("firstName"),
+        placeholder: t("placeholder.enterFirstName"),
         type: "text",
         required: true,
       },
-      { name: "lastName", label: t("lastName"), type: "text", required: true },
+      {
+        name: "lastName",
+        label: t("lastName"),
+        placeholder: t("placeholder.enterLastName"),
+        type: "text",
+        required: true,
+      },
       {
         name: "email",
         label: t("email"),
+        placeholder: "example@domain.com",
         type: "email",
         required: true,
         disabled: mode === "edit",
@@ -93,6 +101,7 @@ export default function UserForm({
       {
         name: "password",
         label: t("password"),
+        placeholder: t("placeholder.passwordHint"),
         type: "password",
         required: true,
         disabled: mode === "edit",
@@ -100,6 +109,7 @@ export default function UserForm({
       {
         name: "phoneNumber",
         label: t("mobile"),
+        placeholder: t("placeholder.mobileHint"),
         type: "number",
         required: true,
       },
@@ -112,6 +122,7 @@ export default function UserForm({
       fields.push({
         name: "applicationId",
         label: t("application.singular"),
+        placeholder: t("placeholder.selectApplicationPlaceholder"),
         type: "dropdown" as FieldType,
         options: applicationOptions,
         required: true,

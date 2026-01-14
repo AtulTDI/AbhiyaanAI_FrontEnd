@@ -1,9 +1,19 @@
-import React from "react";
-import { StyleSheet, View, Text, Platform } from "react-native";
-import { TextInput, useTheme, List } from "react-native-paper";
+import React, { useMemo, useRef, useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Pressable,
+  FlatList,
+  Platform,
+  LayoutRectangle,
+  Dimensions,
+} from "react-native";
+import { Portal, TextInput, useTheme } from "react-native-paper";
 import { useTranslation } from "react-i18next";
-import { Dropdown } from "react-native-paper-dropdown";
 import { AppTheme } from "../theme";
+
+/* ================= TYPES ================= */
 
 type Option = {
   label: string;
@@ -12,196 +22,281 @@ type Option = {
 };
 
 type Props = {
-  label: any;
   placeholder?: string;
   value: string;
   options: Option[];
   disabled?: boolean;
-  noMargin?: boolean;
   error?: string;
-  customStyle?: boolean;
+  height?: number;
   onSelect: (val: string) => void;
 };
 
-function FormDropdown({
-  label,
+/* ================= CONSTANTS ================= */
+
+const SCREEN_HEIGHT = Dimensions.get("window").height;
+const MENU_MAX_HEIGHT = 280;
+const MENU_OFFSET = 6;
+
+/* ================= COMPONENT ================= */
+
+export default function FormDropdown({
   placeholder,
   value,
   options,
   disabled,
-  noMargin,
   error,
+  height = 48,
   onSelect,
-  customStyle,
 }: Props) {
   const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
-  const styles = createStyles(theme);
-  const { colors } = theme;
+  const styles = useMemo(() => createStyles(theme, height), [theme, height]);
 
-  const selectedOption = options.find((o) => o.value === value);
+  const anchorRef = useRef<View>(null);
+
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const [anchorLayout, setAnchorLayout] = useState<LayoutRectangle | null>(
+    null
+  );
+  const [openUpwards, setOpenUpwards] = useState(false);
+
+  /* ================= DERIVED ================= */
+
+  const selectedOption = useMemo(
+    () => options.find((o) => o.value === value),
+    [value, options]
+  );
+
+  const filteredOptions = useMemo(() => {
+    if (!search) return options;
+    return options.filter((o) =>
+      o.label.toLowerCase().includes(search.toLowerCase())
+    );
+  }, [search, options]);
+
+  /* ================= HANDLERS ================= */
+
+  const openMenu = () => {
+    if (disabled) return;
+
+    anchorRef.current?.measureInWindow((x, y, width, h) => {
+      const spaceBelow = SCREEN_HEIGHT - (y + h);
+      const spaceAbove = y;
+
+      const shouldOpenUpwards =
+        spaceBelow < MENU_MAX_HEIGHT && spaceAbove > spaceBelow;
+
+      setOpenUpwards(shouldOpenUpwards);
+      setAnchorLayout({ x, y, width, height: h });
+      setOpen(true);
+    });
+  };
+
+  const closeMenu = () => {
+    setOpen(false);
+    setSearch("");
+  };
+
+  /* ================= RENDER ================= */
 
   return (
-    <View
-      style={{ marginBottom: noMargin ? 0 : Platform.OS === "web" ? 12 : 20 }}
-    >
-      <Dropdown
-        label={label}
-        placeholder={placeholder || `Select ${label}`}
-        options={options}
-        value={value}
-        onSelect={onSelect}
-        mode="outlined"
-        menuContentStyle={styles.menuContent}
-        disabled={disabled}
-        CustomDropdownInput={(props) => (
-          <TextInput
-            {...props}
-            mode="outlined"
-            dense
-            style={[
-              {
-                backgroundColor: colors.white,
-                height: customStyle ? 40 : 48,
-                fontSize: customStyle ? 14 : 16,
-              },
-            ]}
-            contentStyle={{
-              paddingVertical: 6,
-            }}
-            theme={{
-              roundness: 8,
-              colors: {
-                primary: colors.primary,
-                outline: error ? colors.error : colors.outline,
-              },
-            }}
-            right={props.rightIcon}
-            value={props.selectedLabel}
-            disabled={props.disabled}
-            error={!!error || props.error}
-            label={props.label}
-            placeholder={props.placeholder}
-            left={
-              selectedOption?.colorCode ? (
-                <TextInput.Icon
-                  icon={() => (
-                    <View
-                      style={[
-                        styles.colorDot,
-                        { backgroundColor: selectedOption.colorCode },
-                      ]}
-                    />
-                  )}
-                />
-              ) : undefined
-            }
-          />
-        )}
-        CustomDropdownItem={({ option, onSelect, toggleMenu, isLast }) => (
-          <List.Item
-            title={() => (
-              <View style={styles.optionRow}>
-                {option.colorCode && (
+    <>
+      {/* ================= INPUT ================= */}
+      <Pressable ref={anchorRef} onPress={openMenu}>
+        <TextInput
+          pointerEvents="none"
+          mode="outlined"
+          value={selectedOption?.label || ""}
+          placeholder={placeholder}
+          placeholderTextColor={theme.colors.placeholder}
+          editable={false}
+          error={!!error}
+          style={styles.input}
+          outlineStyle={styles.outline}
+          right={
+            value ? (
+              <TextInput.Icon icon="close" onPress={() => onSelect("")} />
+            ) : (
+              <TextInput.Icon icon={openUpwards ? "menu-up" : "menu-down"} />
+            )
+          }
+          left={
+            selectedOption?.colorCode ? (
+              <TextInput.Icon
+                icon={() => (
                   <View
                     style={[
                       styles.colorDot,
-                      { backgroundColor: option.colorCode },
+                      { backgroundColor: selectedOption.colorCode },
                     ]}
                   />
                 )}
-                <Text style={styles.optionText}>{option.label}</Text>
-              </View>
-            )}
+              />
+            ) : undefined
+          }
+        />
+      </Pressable>
+
+      {/* ================= MENU ================= */}
+      {open && anchorLayout && (
+        <Portal>
+          <Pressable style={styles.backdrop} onPress={closeMenu} />
+
+          <View
             style={[
-              styles.optionItem,
-              { backgroundColor: "white", paddingLeft: 0 },
-              !isLast && {
-                borderBottomWidth: 1,
-                borderColor: colors.lightGray,
+              styles.menu,
+              {
+                left: anchorLayout.x,
+                width: anchorLayout.width,
+                top: openUpwards
+                  ? undefined
+                  : anchorLayout.y + anchorLayout.height + MENU_OFFSET,
+                bottom: openUpwards
+                  ? SCREEN_HEIGHT - anchorLayout.y + MENU_OFFSET
+                  : undefined,
               },
             ]}
-            rippleColor={"rgba(0,0,0,0.04)"}
-            onPress={() => {
-              onSelect?.(option.value);
-              toggleMenu();
-            }}
-          />
-        )}
-        CustomMenuHeader={({ label, value, resetMenu }) =>
-          label ? (
-            <View style={styles.headerContainer}>
-              <Text style={styles.headerText}>{label}</Text>
-              {value && (
-                <Text onPress={resetMenu} style={styles.clearText}>
-                  {t("clear")}
-                </Text>
-              )}
-            </View>
-          ) : null
-        }
-        error={error?.length > 0}
-      />
-      {error ? <Text style={styles.errorText}>{error}</Text> : null}
-    </View>
+          >
+            {/* Search */}
+            <TextInput
+              mode="outlined"
+              placeholder={t("search")}
+              placeholderTextColor={theme.colors.placeholder}
+              value={search}
+              onChangeText={setSearch}
+              style={styles.search}
+              outlineStyle={styles.searchOutline}
+              autoFocus={Platform.OS === "web"}
+            />
+
+            <FlatList
+              data={filteredOptions}
+              keyExtractor={(item) => item.value}
+              keyboardShouldPersistTaps="handled"
+              ItemSeparatorComponent={() => <View style={styles.divider} />}
+              renderItem={({ item }) => {
+                const selected = item.value === value;
+                return (
+                  <Pressable
+                    style={({ hovered }) => [
+                      styles.option,
+                      selected && styles.optionSelected,
+                      hovered && styles.optionHover,
+                    ]}
+                    onPress={() => {
+                      onSelect(item.value);
+                      closeMenu();
+                    }}
+                  >
+                    {item.colorCode && (
+                      <View
+                        style={[
+                          styles.colorDot,
+                          { backgroundColor: item.colorCode },
+                        ]}
+                      />
+                    )}
+                    <Text style={styles.optionText}>{item.label}</Text>
+                  </Pressable>
+                );
+              }}
+            />
+          </View>
+        </Portal>
+      )}
+
+      {!!error && <Text style={styles.error}>{error}</Text>}
+    </>
   );
 }
 
-export default React.memo(FormDropdown, (prev, next) => {
-  return (
-    prev.label === next.label &&
-    prev.value === next.value &&
-    prev.disabled === next.disabled &&
-    prev.noMargin === next.noMargin &&
-    prev.error === next.error &&
-    prev.onSelect === next.onSelect &&
-    JSON.stringify(prev.options) === JSON.stringify(next.options)
-  );
-});
+/* ================= STYLES ================= */
 
-const createStyles = (theme: AppTheme) =>
+const createStyles = (theme: AppTheme, height: number) =>
   StyleSheet.create({
+    /* INPUT */
     input: {
       fontSize: 14,
+      height: 44,
+      backgroundColor: theme.colors.white,
     },
-    optionRow: {
+
+    outline: {
+      borderRadius: 10,
+    },
+
+    /* BACKDROP */
+    backdrop: {
+      ...StyleSheet.absoluteFillObject,
+    },
+
+    /* MENU */
+    menu: {
+      position: "absolute",
+      maxHeight: MENU_MAX_HEIGHT,
+      backgroundColor: theme.colors.white,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: theme.colors.borderGray,
+      elevation: 12,
+      shadowColor: "#000",
+      shadowOpacity: 0.1,
+      shadowRadius: 20,
+      shadowOffset: { width: 0, height: 8 },
+    },
+
+    /* SEARCH */
+    search: {
+      margin: 10,
+      height: 40,
+      backgroundColor: theme.colors.white,
+    },
+
+    searchOutline: {
+      borderRadius: 8,
+    },
+
+    /* LIST */
+    option: {
       flexDirection: "row",
       alignItems: "center",
-      gap: 8,
+      paddingHorizontal: 16,
+      paddingVertical: 11,
+      gap: 10,
     },
+
+    optionHover: {
+      backgroundColor: theme.colors.lightGray,
+      borderRadius: 10,
+    },
+
+    optionSelected: {
+      backgroundColor: theme.colors.primary + "14",
+    },
+
     optionText: {
       fontSize: 14,
+      lineHeight: 20,
+      color: theme.colors.onSurface,
     },
-    optionItem: {
-      paddingVertical: 8,
-      paddingHorizontal: 12,
+
+    divider: {
+      height: 1,
+      backgroundColor: theme.colors.lightGray,
+      marginLeft: 16,
     },
+
     colorDot: {
       width: 10,
       height: 10,
       borderRadius: 5,
     },
-    headerContainer: {
-      paddingHorizontal: 12,
-      paddingVertical: 6,
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-    },
-    headerText: {
-      fontSize: 14,
-      fontWeight: "bold",
-    },
-    clearText: {
-      fontSize: 13,
-      color: theme.colors.warning,
-    },
-    menuContent: {
-      paddingVertical: 0,
-    },
-    errorText: {
-      color: theme.colors.error,
+
+    /* ERROR */
+    error: {
       fontSize: 12,
+      color: theme.colors.error,
       marginTop: 4,
       paddingLeft: 4,
     },

@@ -61,6 +61,7 @@
   "campaignMessage": "कैंपेन संदेश",
   "cloningSpeed": " क्लोनिंग गति",
   "approval": "मंजूरी",
+  "search": "खोजें",
 
   "loadingData": "डेटा लोड हो रहा है...",
   "create": "बनाएं",
@@ -99,6 +100,7 @@
   "yes": "हाँ",
   "no": "नहीं",
   "back": "पीछे",
+  "defaultNoData": "कोई डेटा नहीं मिला",
 
   "role": {
     "distributor": "डिस्ट्रिब्यूटर",
@@ -109,6 +111,29 @@
   "fieldRequired": "{{field}} आवश्यक है",
   "deleteRole": "{{role}} डिलीट करें",
   "confirmDeleteRole": "क्या आप इस {{role}} को डिलीट करना चाहते हैं?",
+  "noDataFound": "कोई {{header}} नहीं मिला",
+
+  "placeholder": {
+    "enterFirstName": "पहला नाम दर्ज करें",
+    "enterLastName": "अंतिम नाम दर्ज करें",
+    "passwordHint": "न्यूनतम 6 अक्षर",
+    "mobileHint": "10 अंकों का मोबाइल नंबर",
+    "selectApplicationPlaceholder": "ऐप्लिकेशन चुनें",
+    "applicationNamePlaceholder": "न्यूनतम 5 अक्षर (केवल अक्षर और _)",
+    "videoCountPlaceholder": "न्यूनतम 100 वीडियो",
+    "addVideoCountPlaceholder": "अतिरिक्त वीडियो संख्या दर्ज करें",
+    "selectDistributorPlaceholder": "वितरक चुनें",
+    "videoRatePlaceholder": "1.00 से 15.00 के बीच दर",
+    "whatsappApiVendorIdPlaceholder": "व्हाट्सएप API वेंडर ID दर्ज करें",
+    "whatsappApiTokenPlaceholder": "व्हाट्सएप API टोकन दर्ज करें",
+    "whatsappApiBaseUrlPlaceholder": "व्हाट्सएप API बेस URL दर्ज करें",
+    "enterCampaign": "कैंपेन दर्ज करें",
+    "enterCampaignMessage": "कैंपेन संदेश दर्ज करें",
+    "cloningSpeedPlaceholder": "उदाहरण: सामान्य गति के लिए 1.0",
+    "enterName": "नाम दर्ज करें",
+    "selectCategory": "श्रेणी चुनें",
+    "selectDemand": "मांग चुनें"
+  },
 
   "application": {
     "singular": "ऐप्लिकेशन",
@@ -289,7 +314,7 @@
     "flatNo": "फ्लैट नंबर",
     "mobile1": "द्वितीयक मोबाइल नंबर",
     "specialVisitDate": "विशेष दौरे की तारीख",
-    "specialVisitRemarks": "विशेष दौरे के टिप्पणी",  
+    "specialVisitRemarks": "विशेष दौरे के टिप्पणी",
     "email": "ईमेल",
     "dob": "जन्म तिथि",
     "selectDate": "तारीख चुनें",

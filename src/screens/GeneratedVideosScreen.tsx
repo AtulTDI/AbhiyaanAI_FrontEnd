@@ -43,6 +43,7 @@ import {
 import { useServerTable } from "../hooks/useServerTable";
 import { usePlatformInfo } from "../hooks/usePlatformInfo";
 import ResponsiveKeyboardView from "../components/ResponsiveKeyboardView";
+import { FixedLabel } from "../components/FixedLabel";
 import { AppTheme } from "../theme";
 
 let RNFS: any = null;
@@ -156,13 +157,17 @@ export default function GeneratedVideoScreen() {
 
   const memoizedDropdown = React.useMemo(() => {
     return (
-      <FormDropdown
-        label={t("selectCampaign")}
-        value={selectedVideoId}
-        options={baseVideos}
-        noMargin
-        onSelect={(val) => setSelectedVideoId(val)}
-      />
+      <>
+        <FixedLabel label={t("campaign")} />
+        <View style={{ width: 300 }}>
+          <FormDropdown
+            placeholder={t("selectCampaign")}
+            value={selectedVideoId}
+            options={baseVideos}
+            onSelect={(val) => setSelectedVideoId(val)}
+          />
+        </View>
+      </>
     );
   }, [selectedVideoId, baseVideos, t]);
 
@@ -674,7 +679,7 @@ export default function GeneratedVideoScreen() {
       </View>
 
       {isWeb && !isMobileWeb && (
-        <Surface style={styles.toolbar} elevation={1}>
+        <>
           {memoizedDropdown}
 
           {/* <View
@@ -755,7 +760,7 @@ export default function GeneratedVideoScreen() {
               </Button>
             )}
           </View> */}
-        </Surface>
+        </>
       )}
 
       {/* Mobile top compact toolbar (contains campaign dropdown) */}

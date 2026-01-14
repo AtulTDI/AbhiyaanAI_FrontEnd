@@ -54,6 +54,7 @@ export default function ApplicationForm({
     {
       name: "appName",
       label: t("name"),
+      placeholder: t("placeholder.applicationNamePlaceholder"),
       type: "text",
       validationRules: [
         {
@@ -71,6 +72,9 @@ export default function ApplicationForm({
     {
       name: "videoCount",
       label: applicationToEdit ? t("addVideoCount") : t("videoCount"),
+      placeholder: applicationToEdit
+        ? t("placeholder.addVideoCountPlaceholder")
+        : t("placeholder.videoCountPlaceholder"),
       type: "number",
       min: applicationToEdit ? 0 : 100,
       max: 500000,
@@ -79,6 +83,7 @@ export default function ApplicationForm({
     {
       name: "salesAgent",
       label: t("distributorButtonLabel"),
+      placeholder: t("placeholder.selectDistributorPlaceholder"),
       type: "dropdown",
       options: salesAgentOptions,
       required: true,
@@ -87,6 +92,7 @@ export default function ApplicationForm({
     {
       name: "videoGenerationRate",
       label: t("videoRate"),
+      placeholder: t("placeholder.videoRatePlaceholder"),
       type: "number",
       decimalPlaces: 2,
       min: 1,
@@ -96,21 +102,24 @@ export default function ApplicationForm({
     {
       name: "WHAPIVendorUid",
       label: t("application.whatsappApiVendorId"),
+      placeholder: t("placeholder.whatsappApiVendorIdPlaceholder"),
       type: "text",
       required: false,
     },
     {
       name: "WHAPIBearerToken",
       label: t("application.whatsappApiToken"),
+      placeholder: t("placeholder.whatsappApiTokenPlaceholder"),
       type: "text",
       required: false,
     },
     {
       name: "WHAPIBaseUrl",
       label: t("application.whatsappApiBaseUrl"),
+      placeholder: t("placeholder.whatsappApiBaseUrlPlaceholder"),
       type: "text",
       required: false,
-      fullWidth: true
+      fullWidth: true,
     },
     {
       name: "premiumVoice",
