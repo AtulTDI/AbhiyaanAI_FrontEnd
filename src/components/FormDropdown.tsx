@@ -28,6 +28,7 @@ type Props = {
   disabled?: boolean;
   error?: string;
   height?: number;
+  customStyle?: boolean;
   onSelect: (val: string) => void;
 };
 
@@ -46,6 +47,7 @@ export default function FormDropdown({
   disabled,
   error,
   height = 48,
+  customStyle,
   onSelect,
 }: Props) {
   const { t } = useTranslation();
@@ -113,7 +115,7 @@ export default function FormDropdown({
           editable={false}
           disabled={disabled}
           error={!!error}
-          style={styles.input}
+          style={[styles.input, { fontSize: customStyle ? 14 : 16 }]}
           outlineStyle={styles.outline}
           right={
             value ? (
@@ -218,7 +220,6 @@ const createStyles = (theme: AppTheme, height: number) =>
   StyleSheet.create({
     /* INPUT */
     input: {
-      fontSize: 14,
       height: 44,
       backgroundColor: theme.colors.white,
     },

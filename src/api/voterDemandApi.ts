@@ -3,8 +3,7 @@ import {
   DemandCategory,
   Demand,
   VoterDemandItem,
-  ResolveVoterDemand,
-  VoterDemandResponse,
+  ResolveVoterDemand
 } from "../types/Voter";
 
 /**

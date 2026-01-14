@@ -268,7 +268,6 @@ export default function SurveyTab({ voterId }: Props) {
           <Card title={t("voter.surveyBasic")}>
             <Row label={t("voter.colorCode")}>
               <FormDropdown
-                label=""
                 value={String(data.supportType ?? 0)}
                 options={supportTypes.map((s) => ({
                   label: t(`survey.supportType.${s.label}`, s.label),
@@ -276,21 +275,18 @@ export default function SurveyTab({ voterId }: Props) {
                   colorCode: s.colorCode,
                 }))}
                 onSelect={(v) => update("supportType", Number(v))}
-                noMargin
                 customStyle
               />
             </Row>
 
             <Row label={t("voter.supportStrength")}>
               <FormDropdown
-                label=""
                 value={String(data.supportStrength ?? 0)}
                 options={SUPPORT_STRENGTH_OPTIONS.map((s) => ({
                   label: t(`survey.supportStrength.${s.label}`, s.label),
                   value: String(s.value),
                 }))}
                 onSelect={(v) => update("supportStrength", Number(v))}
-                noMargin
                 customStyle
               />
             </Row>
@@ -566,6 +562,7 @@ export default function SurveyTab({ voterId }: Props) {
                               });
                               if (v) loadDemands(v);
                             }}
+                            customStyle
                           />
                         </View>
 
@@ -585,6 +582,7 @@ export default function SurveyTab({ voterId }: Props) {
                             }))}
                             disabled={!d.categoryId || d.isResolved}
                             onSelect={(v) => updateDemand(i, { demandId: v })}
+                            customStyle
                           />
                         </View>
                       </View>
