@@ -302,16 +302,26 @@ function EditableInfoRow({
   onSave,
 }: any) {
   const theme = useTheme<AppTheme>();
+  const { width } = useWindowDimensions();
+  const isMobile = width < 480;
+
   const [editing, setEditing] = useState(false);
   const [local, setLocal] = useState(value);
 
   return (
-    <View style={[rowStyles.row, { borderBottomColor: theme.colors.divider }]}>
+    <View
+      style={[
+        rowStyles.row,
+        { borderBottomColor: theme.colors.divider },
+        editing &&
+          isMobile && { flexDirection: "column", alignItems: "stretch" },
+      ]}
+    >
       <Text style={[rowStyles.label, { color: theme.colors.textSecondary }]}>
         {label}
       </Text>
 
-      {!editing ? (
+      {!editing && (
         <View style={rowStyles.valueRow}>
           <Text style={[rowStyles.value, { color: theme.colors.textPrimary }]}>
             {value}
@@ -323,7 +333,9 @@ function EditableInfoRow({
             onPress={() => setEditing(true)}
           />
         </View>
-      ) : (
+      )}
+
+      {editing && !isMobile && (
         <View style={rowStyles.editRow}>
           <TextInput
             dense
@@ -332,7 +344,7 @@ function EditableInfoRow({
             keyboardType={keyboardType}
             maxLength={maxLength}
             onChangeText={setLocal}
-            style={rowStyles.input}
+            style={[rowStyles.input, { backgroundColor: theme.colors.white }]}
           />
           <IconButton
             icon="check"
@@ -347,6 +359,46 @@ function EditableInfoRow({
             size={18}
             onPress={() => setEditing(false)}
           />
+        </View>
+      )}
+
+      {editing && isMobile && (
+        <View
+          style={{
+            marginTop: 6,
+            display: "flex",
+            flexDirection: "row",
+            gap: 6,
+          }}
+        >
+          <TextInput
+            dense
+            mode="outlined"
+            value={local}
+            keyboardType={keyboardType}
+            maxLength={maxLength}
+            onChangeText={setLocal}
+            style={{
+              width: "78%",
+              height: 40,
+              backgroundColor: theme.colors.white,
+            }}
+          />
+          <View style={{ flexDirection: "row", justifyContent: "flex-end" }}>
+            <IconButton
+              icon="check"
+              size={18}
+              onPress={() => {
+                onSave?.(local);
+                setEditing(false);
+              }}
+            />
+            <IconButton
+              icon="close"
+              size={18}
+              onPress={() => setEditing(false)}
+            />
+          </View>
         </View>
       )}
     </View>
