@@ -376,7 +376,11 @@
     "addDemand": "मागणी जोडा",
     "demandCategory": "मागणी श्रेणी",
     "demandDescription": "मागणीचे वर्णन",
-    "demand": "मागणी"
+    "deleteDemandSuccess": "मागणी यशस्वीपणे डिलीट केली!",
+    "demand": "मागणी",
+    "resolve": "निराकरण करा",
+    "pending": "प्रलंबित",
+    "resolved": "निराकरणित"
   },
   "whatsapp": {
     "qrGenerationFail": "QR तयार करण्यात अयशस्वी",

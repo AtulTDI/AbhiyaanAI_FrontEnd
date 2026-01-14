@@ -376,7 +376,11 @@
     "addDemand": "मांग जोड़ें",
     "demandCategory": "मांग श्रेणी",
     "demand": "मांग",
-    "demandDescription": "मांग विवरण"
+    "demandDescription": "मांग विवरण",
+    "deleteDemandSuccess": "मांग डिलीट की गई!",
+    "resolve": "समाधान करें",
+    "pending": "लंबित",
+    "resolved": "समाधानित"
   },
   "whatsapp": {
     "qrGenerationFail": "QR बनाने में असफल",

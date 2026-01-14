@@ -28,6 +28,7 @@ import {
   getDemandCategories,
   getDemandsByCategory,
   getVoterDemands,
+  resolveVoterDemand,
 } from "../api/voterDemandApi";
 import FormDropdown from "./FormDropdown";
 import { VoterDemandItem, VoterSurveyRequest } from "../types/Voter";
@@ -99,12 +100,25 @@ export default function SurveyTab({ voterId }: Props) {
   const loadSurvey = async () => {
     try {
       const res = await getSurveyByVoterId(voterId);
+
       if (res.status === 204) {
         setData(DEFAULT_SURVEY_DATA);
+        setOpenDemands({});
         return;
       }
+
       const demandRes = await getVoterDemands(voterId);
-      setData({ ...DEFAULT_SURVEY_DATA, demands: demandRes.data, ...res.data });
+      const demands = demandRes.data ?? [];
+
+      setData({ ...DEFAULT_SURVEY_DATA, demands, ...res.data });
+
+      const initialOpen: Record<number, boolean> = {};
+      demands.forEach((_, index) => {
+        initialOpen[index] = false;
+      });
+      setOpenDemands(initialOpen);
+
+      await loadDemandsForExisting(demands);
     } catch (e) {
       showToast(extractErrorMessage(e), "error");
     } finally {
@@ -119,6 +133,24 @@ export default function SurveyTab({ voterId }: Props) {
     } catch (e) {
       showToast(extractErrorMessage(e), "error");
     }
+  };
+
+  const loadDemandsForExisting = async (demands: VoterDemandItem[]) => {
+    const uniqueCategoryIds = [
+      ...new Set(demands.map((d) => d.categoryId).filter(Boolean)),
+    ];
+
+    await Promise.all(
+      uniqueCategoryIds.map(async (categoryId) => {
+        if (!demandsByCategory[categoryId]) {
+          const res = await getDemandsByCategory(categoryId);
+          setDemandsByCategory((prev) => ({
+            ...prev,
+            [categoryId]: res.data ?? [],
+          }));
+        }
+      })
+    );
   };
 
   const loadDemandCategories = async () => {
@@ -165,6 +197,7 @@ export default function SurveyTab({ voterId }: Props) {
     const list = [...(data.demands ?? [])];
     if (list[index].id) {
       await deleteVoterDemand(list[index].id);
+      showToast(t("survey.deleteDemandSuccess"), "success");
     }
     list.splice(index, 1);
     update("demands", list);
@@ -180,6 +213,19 @@ export default function SurveyTab({ voterId }: Props) {
     );
 
     return demand?.demandEn || `${t("survey.demand")} ${index + 1}`;
+  };
+
+  const toggleResolved = async (index: number) => {
+    const demand = data.demands[index];
+
+    await resolveVoterDemand({
+      voterDemandId: demand.id!,
+      resolutionNote: "",
+    });
+
+    updateDemand(index, {
+      isResolved: !demand.isResolved,
+    });
   };
 
   const handleSave = async () => {
@@ -384,6 +430,8 @@ export default function SurveyTab({ voterId }: Props) {
             <DatePickerModal
               locale="en"
               mode="single"
+              label={t("voter.selectDate")}
+              saveLabel={t("save")}
               visible={specialVisitOpen}
               date={
                 data.specialVisitDate
@@ -413,25 +461,79 @@ export default function SurveyTab({ voterId }: Props) {
                   <Pressable
                     style={styles.demandHeader}
                     onPress={() =>
-                      setOpenDemands((p) => ({ ...p, [i]: !p[i] }))
+                      setOpenDemands((prev) => ({
+                        ...prev,
+                        [i]: !prev[i],
+                      }))
                     }
                   >
                     <Text style={styles.demandTitle} numberOfLines={1}>
-                      {isOpen ? getDemandTitle(d, i) : getDemandTitle(d, i)}
+                      {getDemandTitle(d, i)}
                     </Text>
 
                     <View style={styles.demandHeaderActions}>
+                      {d.id && d.isResolved && (
+                        <Chip
+                          compact
+                          style={{
+                            backgroundColor: d.isResolved
+                              ? theme.colors.successBackground
+                              : theme.colors.warningBackground,
+                          }}
+                          textStyle={{ fontSize: 12 }}
+                        >
+                          {t("survey.resolved")}
+                        </Chip>
+                      )}
+
+                      {!d.isResolved && d.id && (
+                        <Pressable
+                          onPress={() => toggleResolved(i)}
+                          style={[
+                            styles.resolveButton,
+                            {
+                              borderColor: theme.colors.primary,
+                              backgroundColor: theme.colors.primary,
+                            },
+                          ]}
+                        >
+                          <Ionicons
+                            name="checkmark-done-outline"
+                            size={14}
+                            color={theme.colors.white}
+                          />
+                          <Text
+                            style={[
+                              styles.resolveText,
+                              { color: theme.colors.white },
+                            ]}
+                          >
+                            {t("survey.resolve")}
+                          </Text>
+                        </Pressable>
+                      )}
+
+                      {!d.isResolved && (
+                        <Pressable onPress={() => removeDemand(i)} hitSlop={10}>
+                          <Ionicons
+                            name="trash-outline"
+                            size={18}
+                            color={theme.colors.error}
+                          />
+                        </Pressable>
+                      )}
+
                       <Ionicons
-                        name={isOpen ? "chevron-up" : "chevron-down"}
+                        name={
+                          isOpen ? "chevron-up-outline" : "chevron-down-outline"
+                        }
                         size={18}
+                        color={
+                          d.isResolved
+                            ? theme.colors.disabledText
+                            : theme.colors.textPrimary
+                        }
                       />
-                      <Pressable onPress={() => removeDemand(i)} hitSlop={10}>
-                        <Ionicons
-                          name="trash-outline"
-                          size={18}
-                          color={theme.colors.error}
-                        />
-                      </Pressable>
                     </View>
                   </Pressable>
 
@@ -440,7 +542,10 @@ export default function SurveyTab({ voterId }: Props) {
                     <>
                       <View style={styles.demandRow}>
                         <View style={styles.demandCol}>
-                          <FixedLabel label={t("survey.demandCategory")} />
+                          <FixedLabel
+                            label={t("survey.demandCategory")}
+                            disabled={d.isResolved}
+                          />
                           <FormDropdown
                             placeholder={t("placeholder.selectCategory")}
                             value={String(d.categoryId ?? "")}
@@ -448,6 +553,7 @@ export default function SurveyTab({ voterId }: Props) {
                               label: c.nameEn,
                               value: c.id,
                             }))}
+                            disabled={d.isResolved}
                             onSelect={(v) => {
                               updateDemand(i, {
                                 categoryId: v,
@@ -459,7 +565,10 @@ export default function SurveyTab({ voterId }: Props) {
                         </View>
 
                         <View style={styles.demandCol}>
-                          <FixedLabel label={t("survey.demand")} />
+                          <FixedLabel
+                            label={t("survey.demand")}
+                            disabled={d.isResolved}
+                          />
                           <FormDropdown
                             placeholder={t("placeholder.selectDemand")}
                             value={String(d.demandId ?? "")}
@@ -469,8 +578,8 @@ export default function SurveyTab({ voterId }: Props) {
                               label: x.demandEn,
                               value: x.id,
                             }))}
+                            disabled={!d.categoryId || d.isResolved}
                             onSelect={(v) => updateDemand(i, { demandId: v })}
-                            disabled={!d.categoryId}
                           />
                         </View>
                       </View>
@@ -482,6 +591,7 @@ export default function SurveyTab({ voterId }: Props) {
                         placeholder={t("survey.demandDescription")}
                         placeholderTextColor={theme.colors.placeholder}
                         value={d.description}
+                        disabled={d.isResolved}
                         style={{
                           fontSize: 14,
                           backgroundColor: theme.colors.white,
@@ -721,6 +831,12 @@ const createStyles = (theme: AppTheme) =>
       gap: 12,
     },
 
+    demandHeaderRight: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+    },
+
     demandTitle: {
       fontSize: 14,
       fontWeight: "600",
@@ -785,5 +901,23 @@ const createStyles = (theme: AppTheme) =>
     saveText: {
       color: theme.colors.white,
       fontWeight: "600",
+    },
+
+    resolveButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 4,
+      paddingHorizontal: 8,
+      paddingVertical: 8,
+      borderRadius: 6,
+      borderWidth: 1,
+      borderColor: theme.colors.success,
+      backgroundColor: theme.colors.successBackground,
+    },
+
+    resolveText: {
+      fontSize: 12,
+      fontWeight: "600",
+      color: theme.colors.success,
     },
   });

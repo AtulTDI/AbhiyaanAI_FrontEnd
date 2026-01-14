@@ -376,7 +376,11 @@
     "addDemand": "Add Demand",
     "demandCategory": "Demand Category",
     "demand": "Demand",
-    "demandDescription": "Demand Description"
+    "demandDescription": "Demand Description",
+    "deleteDemandSuccess": "Demand deleted successfully",
+    "resolve": "Resolve",
+    "pending": "Pending",
+    "resolved": "Resolved"
   },
   "whatsapp": {
     "qrGenerationFail": "Failed to generate QR",

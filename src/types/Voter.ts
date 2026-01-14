@@ -85,20 +85,14 @@ export type Demand = {
 };
 
 export type VoterDemandItem = {
+  id?: string;
+  demand?: string;
+  demandMr?: string;
+  category?: string;
   categoryId: string;
+  description: string;
   demandId: string;
-  description?: string;
-};
-
-export type VoterDemandResponse = {
-  id: string;
-  demand: string;
-  demandMr: string;
-  category: string;
-  description?: string;
-  isResolved: boolean;
-  resolvedAt?: string;
-  resolutionNote?: string;
+  isResolved?: boolean;
 };
 
 export type ResolveVoterDemand = {

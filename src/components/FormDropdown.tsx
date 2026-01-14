@@ -111,6 +111,7 @@ export default function FormDropdown({
           placeholder={placeholder}
           placeholderTextColor={theme.colors.placeholder}
           editable={false}
+          disabled={disabled}
           error={!!error}
           style={styles.input}
           outlineStyle={styles.outline}

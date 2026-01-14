@@ -77,10 +77,10 @@ export const getVoterDemands = (voterId: string, isResolved?: boolean) => {
  */
 export const resolveVoterDemand = (payload: ResolveVoterDemand) => {
   return axios.post<{
-    message: string;
+    message?: string;
     id: string;
     isResolved: boolean;
-    resolvedAt: string;
+    resolvedAt?: string;
   }>("/VotersDemand/resolve-demand", payload, {
     useApiPrefix: true,
     useVoterBase: true,
