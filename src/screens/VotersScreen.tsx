@@ -112,20 +112,14 @@ export default function VotersScreen() {
   /* ---------------- FOCUS EFFECT ---------------- */
   useFocusEffect(
     useCallback(() => {
+      setVoterStack([]);
+      setSelectedVoter(null);
+      setView("list");
       fetchVoters();
     }, [fetchVoters])
   );
 
   const totalPages = Math.ceil(voterCount / PAGE_SIZE);
-
-  /* ---------------- FETCH SINGLE VOTER ---------------- */
-  const fetchVoter = async (id: string) => {
-    try {
-      const res = await getVoterById(id);
-      setSelectedVoter(res.data);
-      setView("detail");
-    } catch {}
-  };
 
   const clearFilters = () => {
     setGender("All");
@@ -337,7 +331,6 @@ export default function VotersScreen() {
         renderItem={({ item }) => (
           <Pressable
             onPress={async () => {
-              const res = await getVoterById(item.id);
               openVoterDetail(item.id);
             }}
             onHoverIn={() => Platform.OS === "web" && setHoveredId(item.id)}

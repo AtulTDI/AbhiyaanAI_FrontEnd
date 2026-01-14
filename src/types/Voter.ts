@@ -16,7 +16,7 @@ export type Voter = {
   votingBoothAddress: string;
   votingBoothNumber: number;
   votingRoomNumber: number;
-  isActive?: boolean;
+  isStarVoter?: boolean;
   isVerified: boolean;
 };
 

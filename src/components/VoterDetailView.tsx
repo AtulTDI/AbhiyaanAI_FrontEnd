@@ -43,6 +43,7 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
   const [tab, setTab] = useState<TabKey>("details");
   const [mobile, setMobile] = useState(voter.mobileNumber ?? "");
   const [isVerified, setIsVerified] = useState(voter.isVerified);
+  const [isStarVoter, setIsStarVoter] = useState(voter.isStarVoter);
 
   const tabs = [
     { key: "details", label: t("voter.tabDetails") },
@@ -193,10 +194,37 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
                   {t("voter.statusSection")}
                 </Text>
 
-                <InfoRow
-                  label={t("voter.labelActive")}
-                  value={voter.isActive ? t("yes") : t("no")}
-                />
+                <View
+                  style={[
+                    rowStyles.row,
+                    { borderBottomColor: theme.colors.divider },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      rowStyles.label,
+                      { color: theme.colors.textSecondary },
+                    ]}
+                  >
+                    {t("voter.starVoter")}
+                  </Text>
+
+                  <Ionicons
+                    name={isStarVoter ? "star" : "star-outline"}
+                    size={22}
+                    color={
+                      !isVerified
+                        ? theme.colors.disabledText
+                        : isStarVoter
+                        ? theme.colors.warning
+                        : theme.colors.textSecondary
+                    }
+                    onPress={() => {
+                      if (!isVerified) return;
+                      setIsStarVoter(!isStarVoter);
+                    }}
+                  />
+                </View>
 
                 <View style={styles.verifyRow}>
                   <Text
