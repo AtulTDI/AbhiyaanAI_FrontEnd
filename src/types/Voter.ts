@@ -95,6 +95,14 @@ export type VoterDemandItem = {
   isResolved?: boolean;
 };
 
+export type VoterDemandUpdatePayload = {
+  voterDemandId: string;
+  voterId: string;
+  demandCategoryId: string;
+  demandId: string;
+  description: string;
+};
+
 export type ResolveVoterDemand = {
   voterDemandId: string;
   resolutionNote?: string;

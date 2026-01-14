@@ -3,7 +3,8 @@ import {
   DemandCategory,
   Demand,
   VoterDemandItem,
-  ResolveVoterDemand
+  ResolveVoterDemand,
+  VoterDemandUpdatePayload,
 } from "../types/Voter";
 
 /**
@@ -49,6 +50,22 @@ export const addVoterDemands = (
 ) => {
   return axios.post<string>(
     `/VotersDemand/add-voter-demands/${voterId}`,
+    payload,
+    {
+      useApiPrefix: true,
+      useVoterBase: true,
+    }
+  );
+};
+
+/**
+ * Update voter demands
+ */
+export const updateVoterDemands = (
+  payload: VoterDemandUpdatePayload[]
+) => {
+  return axios.put<string>(
+    `/VotersDemand/update-demands`,
     payload,
     {
       useApiPrefix: true,

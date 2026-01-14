@@ -29,6 +29,7 @@ import {
   getDemandsByCategory,
   getVoterDemands,
   resolveVoterDemand,
+  updateVoterDemands,
 } from "../api/voterDemandApi";
 import FormDropdown from "./FormDropdown";
 import { VoterDemandItem, VoterSurveyRequest } from "../types/Voter";
@@ -235,7 +236,24 @@ export default function SurveyTab({ voterId }: Props) {
       data?.id
         ? await updateSurvey(data.id, { voterId, ...surveyPayload })
         : await addSurvey({ voterId, ...surveyPayload });
-      await addVoterDemands(voterId, demands);
+
+      const existingDemandsPayload = demands
+        .filter((d) => d.id)
+        .map((d) => ({
+          voterDemandId: d.id,
+          voterId: voterId,
+          demandCategoryId: d.categoryId ?? null,
+          demandId: d.demandId ?? null,
+          description: d.description ?? null,
+        }));
+      const newDemands = demands.filter((d) => !d.id);
+
+      await Promise.all([
+        existingDemandsPayload.length &&
+          updateVoterDemands(existingDemandsPayload),
+        newDemands.length && addVoterDemands(voterId, newDemands),
+      ]);
+
       showToast(
         t(data?.id ? "survey.updateSuccess" : "survey.addSuccess"),
         "success"
@@ -244,6 +262,7 @@ export default function SurveyTab({ voterId }: Props) {
       showToast(extractErrorMessage(e), "error");
     } finally {
       setSaving(false);
+      loadSurvey();
     }
   };
 
@@ -598,7 +617,6 @@ export default function SurveyTab({ voterId }: Props) {
                         style={{
                           fontSize: 14,
                           backgroundColor: theme.colors.white,
-                          paddingVertical: 8
                         }}
                         onChangeText={(v) =>
                           updateDemand(i, { description: v })
