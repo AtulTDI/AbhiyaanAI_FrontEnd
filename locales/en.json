@@ -283,6 +283,8 @@
     "mobileUpdateSuccess": "Mobile number updated successfully",
     "voterVerifiedSuccess": "Voter verified successfully",
     "voterUnverifiedSuccess": "Voter unverified successfully",
+    "voterStarredSuccess": "Voter marked as star successfully",
+    "voterUnstarredSuccess": "Voter unmarked as star successfully",
     "placeholderDash": "—",
     "familyMembers": "Family Members",
     "addFamilyMember": "Add",

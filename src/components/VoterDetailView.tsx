@@ -20,7 +20,11 @@ import { extractErrorMessage } from "../utils/common";
 import FamilyMembersCard from "../components/FamilyMembersCard";
 import Tabs from "../components/Tabs";
 import SurveyTab from "./SurveyTab";
-import { updateMobileNumber, verifyVoter } from "../api/voterApi";
+import {
+  updateMobileNumber,
+  updateStarVoter,
+  verifyVoter,
+} from "../api/voterApi";
 import { useToast } from "./ToastProvider";
 import { AppTheme } from "../theme";
 
@@ -70,6 +74,21 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
         !isVerified
           ? t("voter.voterVerifiedSuccess")
           : t("voter.voterUnverifiedSuccess"),
+        "success"
+      );
+    } catch (error) {
+      showToast(extractErrorMessage(error), "error");
+    }
+  };
+
+  const handleStarVoter = async () => {
+    try {
+      await updateStarVoter(voter.id, !isStarVoter);
+      setIsStarVoter(!isStarVoter);
+      showToast(
+        !isStarVoter
+          ? t("voter.voterStarredSuccess")
+          : t("voter.voterUnstarredSuccess"),
         "success"
       );
     } catch (error) {
@@ -213,16 +232,11 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
                     name={isStarVoter ? "star" : "star-outline"}
                     size={22}
                     color={
-                      !isVerified
-                        ? theme.colors.disabledText
-                        : isStarVoter
-                        ? theme.colors.warning
+                      isStarVoter
+                        ? theme.colors.primary
                         : theme.colors.textSecondary
                     }
-                    onPress={() => {
-                      if (!isVerified) return;
-                      setIsStarVoter(!isStarVoter);
-                    }}
+                    onPress={handleStarVoter}
                   />
                 </View>
 

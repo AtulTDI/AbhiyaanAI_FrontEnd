@@ -105,6 +105,12 @@ export const verifyVoter = (id, type) =>
   axios.put<Voter>(`/Voters/verify-voter/${id}?isVerify=${type}`, {}, { useApiPrefix: true, useVoterBase: true });
 
 /**
+ * Star voter
+ */
+export const updateStarVoter = (id, type) =>
+  axios.put<Voter>(`/Voters/update-star-voter/${id}?isStarVoter=${type}`, {}, { useApiPrefix: true, useVoterBase: true });
+
+/**
  * Get family members
  */
 export const getFamilyMembers = (id) =>

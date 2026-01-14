@@ -283,6 +283,8 @@
     "mobileUpdateSuccess": "मोबाइल क्रमांक यशस्वीरित्या अपडेट झाला",
     "voterVerifiedSuccess": "मतदार यशस्वीरित्या पडताळला गेला",
     "voterUnverifiedSuccess": "मतदाराची पडताळणी यशस्वीरित्या रद्द केली",
+    "voterStarredSuccess": "मतदार यशस्वीरित्या स्टार म्हणून चिन्हांकित केला गेला",
+    "voterUnstarredSuccess": "मतदार यशस्वीरित्या स्टार म्हणून अनचिन्हांकित केला गेला",
     "placeholderDash": "—",
     "familyMembers": "कुटुंबातील सदस्य",
     "addFamilyMember": "जोडा",
