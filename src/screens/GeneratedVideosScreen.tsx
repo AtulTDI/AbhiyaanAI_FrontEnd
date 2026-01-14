@@ -1,22 +1,10 @@
 import React, { useCallback, useEffect, useState } from "react";
-import {
-  View,
-  StyleSheet,
-  ActivityIndicator,
-  Image,
-  Platform,
-  Linking,
-  PermissionsAndroid,
-  AppState,
-} from "react-native";
+import { View, StyleSheet, Platform } from "react-native";
 import {
   IconButton,
   Surface,
   Text,
   useTheme,
-  Portal,
-  Modal,
-  Button,
   ProgressBar,
 } from "react-native-paper";
 import { useTranslation } from "react-i18next";
@@ -29,36 +17,14 @@ import { extractErrorMessage } from "../utils/common";
 import { getAuthData } from "../utils/storage";
 import { useToast } from "../components/ToastProvider";
 import FormDropdown from "../components/FormDropdown";
-import SendConfirmationDialog from "../components/SendConfirmationDialog";
 import { getRecipientsWithCompletedVideoId } from "../api/recipientApi";
 import { getVideos } from "../api/videoApi";
-import {
-  getRegistrationStatus,
-  generateQr,
-  whatsAppLogout,
-  sendVideo,
-  getWhatsAppVideoDetails,
-  markVideoSent,
-} from "../api/whatsappApi";
+import { sendVideo } from "../api/whatsappApi";
 import { useServerTable } from "../hooks/useServerTable";
 import { usePlatformInfo } from "../hooks/usePlatformInfo";
 import ResponsiveKeyboardView from "../components/ResponsiveKeyboardView";
 import { FixedLabel } from "../components/FixedLabel";
 import { AppTheme } from "../theme";
-
-let RNFS: any = null;
-let Share: any = null;
-let Contacts: any = null;
-
-if (Platform.OS !== "web") {
-  RNFS = require("react-native-fs");
-  Share = require("react-native-share").default;
-  if (Platform.OS === "android") {
-    Contacts =
-      require("react-native-contacts").default ||
-      require("react-native-contacts");
-  }
-}
 
 export default function GeneratedVideoScreen() {
   const { isWeb, isMobileWeb } = usePlatformInfo();
@@ -71,15 +37,7 @@ export default function GeneratedVideoScreen() {
   const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [sendingId, setSendingId] = useState<string | null>(null);
-  const [waRegistered, setWaRegistered] = useState(false);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [qrImageUrl, setQrImageUrl] = useState<string | null>(null);
-  const [waLoading, setWaLoading] = useState(false);
   const [progressMap, setProgressMap] = useState<Record<string, number>>({});
-  const [openSentPopup, setOpenSentPopup] = useState(false);
-  const [pendingConfirmationId, setPendingConfirmationId] = useState<
-    string | null
-  >(null);
   const [searchText, setSearchText] = useState("");
   const [tableParams, setTableParams] = useState<{
     videoId: string | null;
@@ -171,108 +129,6 @@ export default function GeneratedVideoScreen() {
     );
   }, [selectedVideoId, baseVideos, t]);
 
-  const loadWhatsAppStatus = useCallback(async () => {
-    setWaLoading(true);
-    try {
-      const { userId } = await getAuthData();
-      const response = await getRegistrationStatus(userId);
-      const isRegistered = JSON.parse(response.data)?.isReady;
-      setWaRegistered(isRegistered);
-    } catch (error) {
-      setWaRegistered(true);
-      // showToast(
-      //   extractErrorMessage(error, t("whatsapp.loadStatusFail")),
-      //   "error"
-      // );
-    } finally {
-      setWaLoading(false);
-    }
-  }, []);
-
-  const handleConnect = async () => {
-    setQrImageUrl(null);
-    setModalVisible(true);
-
-    try {
-      const { userId } = await getAuthData();
-      const qrRes = await generateQr(userId);
-      const base64Qr = JSON.parse(qrRes.data)?.qr;
-
-      if (base64Qr) {
-        setQrImageUrl(base64Qr);
-      } else {
-        showToast(t("whatsapp.qrGenerationFail"), "error");
-        setModalVisible(false);
-      }
-    } catch (error) {
-      showToast(
-        extractErrorMessage(error, t("whatsapp.qrGenerationFail")),
-        "error"
-      );
-      setModalVisible(false);
-    }
-  };
-
-  const handleLogout = async () => {
-    try {
-      const { userId } = await getAuthData();
-      const response = await whatsAppLogout(userId);
-      const parsedResponse = JSON.parse(response.data);
-
-      if (parsedResponse?.success) {
-        showToast(parsedResponse.message, "success");
-        setWaRegistered(false);
-        setQrImageUrl(null);
-      } else {
-        showToast(t("somethingWentWrong"), "error");
-      }
-    } catch (error: any) {
-      showToast(extractErrorMessage(error, t("logoutFailed")), "error");
-    }
-  };
-
-  const clearAllTempContacts = async () => {
-    if (Platform.OS !== "android") return;
-
-    try {
-      const contacts = await Contacts.getAll();
-      const tempContacts = contacts.filter((c) => {
-        const fieldsToCheck = [
-          c.displayName,
-          c.givenName,
-          c.familyName,
-          c.middleName,
-        ];
-
-        return fieldsToCheck.some((field) => field?.includes("_AbhiyanAI_"));
-      });
-
-      for (const contact of tempContacts) {
-        try {
-          await Contacts.deleteContact(contact);
-          console.log("Deleted temp contact:", contact.givenName);
-        } catch (err) {
-          console.warn("Failed to delete temp contact", contact.givenName, err);
-        }
-      }
-    } catch (err) {
-      console.error("Error clearing temp contacts", err);
-    }
-  };
-
-  const clearCacheFiles = async () => {
-    if ((isWeb && !isMobileWeb) || !RNFS) return;
-
-    try {
-      const files = await RNFS.readDir(RNFS.CachesDirectoryPath);
-      for (const file of files) {
-        await RNFS.unlink(file.path);
-      }
-    } catch (error) {
-      console.error("Error clearing cache:", error);
-    }
-  };
-
   useEffect(() => {
     setTableParams((prev) => ({
       ...prev,
@@ -284,104 +140,14 @@ export default function GeneratedVideoScreen() {
   useFocusEffect(
     useCallback(() => {
       setSelectedVideoId(null);
-      clearAllTempContacts();
       fetchVideos();
-      clearCacheFiles();
-
-      if (isWeb && !isMobileWeb) {
-        // loadWhatsAppStatus();
-      }
-    }, [fetchVideos, loadWhatsAppStatus])
+    }, [fetchVideos])
   );
-
-  useEffect(() => {
-    const openWhatsApp = async () => {
-      const url = "whatsapp://app";
-
-      try {
-        const supported = await Linking.canOpenURL(url);
-        if (supported) await Linking.openURL(url);
-        else showToast(t("whatsapp.notInstalled"), "error");
-      } catch (err) {
-        console.error("Error opening WhatsApp:", err);
-        showToast(t("notOpenWhatsApp"), "error");
-      }
-    };
-
-    if (modalVisible && Platform.OS !== "web") {
-      const timer = setTimeout(() => {
-        openWhatsApp();
-      }, 800);
-      return () => clearTimeout(timer);
-    }
-  }, [modalVisible]);
-
-  useEffect(() => {
-    const subscription = AppState.addEventListener("change", (state) => {
-      if (state === "active" && pendingConfirmationId) {
-        setOpenSentPopup(true);
-      }
-    });
-
-    return () => subscription.remove();
-  }, [pendingConfirmationId]);
 
   const updateRowStatus = (id: string, newStatus: Partial<Recipient>) => {
     table.setData((prev) =>
       prev.map((row) => (row.id === id ? { ...row, ...newStatus } : row))
     );
-  };
-
-  const requestAndroidPermissions = async () => {
-    if (Platform.OS !== "android") return true;
-
-    try {
-      if (Platform.Version >= 33) {
-        const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.READ_MEDIA_VIDEO
-        );
-        return granted === PermissionsAndroid.RESULTS.GRANTED;
-      } else {
-        const granted = await PermissionsAndroid.requestMultiple([
-          PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-          PermissionsAndroid.PERMISSIONS.WRITE_CONTACTS,
-        ]);
-        return (
-          granted["android.permission.READ_EXTERNAL_STORAGE"] ===
-            PermissionsAndroid.RESULTS.GRANTED &&
-          granted["android.permission.WRITE_EXTERNAL_STORAGE"] ===
-            PermissionsAndroid.RESULTS.GRANTED &&
-          granted["android.permission.WRITE_CONTACTS"] ===
-            PermissionsAndroid.RESULTS.GRANTED
-        );
-      }
-    } catch (err) {
-      console.warn("Permissions request error", err);
-      return false;
-    }
-  };
-
-  const downloadVideo = async (url: string, voterId: string) => {
-    const localPath = `${RNFS.CachesDirectoryPath}/video_${Date.now()}.mp4`;
-
-    const download = RNFS.downloadFile({
-      fromUrl: url,
-      toFile: localPath,
-      progress: ({ bytesWritten, contentLength }) => {
-        const percentage = bytesWritten / contentLength;
-        setProgressMap((prev) => ({ ...prev, [voterId]: percentage }));
-      },
-      progressDivider: 1,
-    });
-
-    const result = await download.promise;
-    setProgressMap((prev) => ({ ...prev, [voterId]: 1 }));
-    if (result.statusCode === 200) {
-      return `file://${localPath}`;
-    } else {
-      console.error("Download failed");
-    }
   };
 
   const handleSendVideo = async (item: Recipient) => {
@@ -410,154 +176,6 @@ export default function GeneratedVideoScreen() {
         return rest;
       });
     }
-
-    // // --- Mobile flow ---
-    // let isWhatsAppAvailable = false;
-    // const whatsAppVideoDetails: any = await getWhatsAppVideoDetails(
-    //   userId,
-    //   item.id,
-    //   selectedVideoId
-    // );
-
-    // // Platform-specific availability check
-    // if (Platform.OS === "android") {
-    //   try {
-    //     const granted = await requestAndroidPermissions();
-    //     if (!granted) {
-    //       showToast("Storage & Contacts permissions are required", "error");
-    //       setSendingId(null);
-    //       return;
-    //     }
-
-    //     const personal = await Share.isPackageInstalled("com.whatsapp");
-    //     const business = await Share.isPackageInstalled("com.whatsapp.w4b");
-    //     isWhatsAppAvailable = personal?.isInstalled || business?.isInstalled;
-    //   } catch {
-    //     isWhatsAppAvailable = false;
-    //   }
-    // } else {
-    //   try {
-    //     isWhatsAppAvailable = await Linking.canOpenURL("whatsapp://send");
-    //   } catch {
-    //     isWhatsAppAvailable = false;
-    //   }
-    // }
-
-    // if (!isWhatsAppAvailable) {
-    //   showToast(t("whatsapp.notInstalled"), "error");
-    //   setSendingId(null);
-    //   return;
-    // }
-
-    // // --- Share video flow ---
-    // try {
-    //   let savedContact: any = null;
-    //   let contactExists = false;
-
-    //   if (Platform.OS === "android") {
-    //     const phoneNumber = item.phoneNumber.replace(/\D/g, "");
-
-    //     // Check if contact already exists
-    //     const allContacts = await Contacts.getAll();
-    //     const existing = allContacts.find((c) =>
-    //       c.phoneNumbers?.some(
-    //         (p) =>
-    //           p.number.replace(/\D/g, "").endsWith(phoneNumber) ||
-    //           phoneNumber.endsWith(p.number.replace(/\D/g, ""))
-    //       )
-    //     );
-
-    //     if (existing) {
-    //       console.log("Contact already exists:", existing.displayName);
-    //       contactExists = true;
-    //     } else {
-    //       const tempContact = {
-    //         givenName: `${item.fullName}_AbhiyanAI_${item.id}`,
-    //         phoneNumbers: [{ label: "mobile", number: item.phoneNumber }],
-    //       };
-    //       savedContact = await Contacts.addContact(tempContact);
-    //       console.log("Saved new temp contact:", savedContact);
-    //       contactExists = true;
-    //     }
-    //   }
-
-    //   // Download video before sharing
-    //   const localPath = await downloadVideo(
-    //     whatsAppVideoDetails?.data?.videoUrl,
-    //     item.id
-    //   );
-
-    //   // Only proceed if contact exists
-    //   if (contactExists) {
-    //     await new Promise((r) => setTimeout(r, 1500));
-
-    //     if (Platform.OS === "android") {
-    //       await Share.shareSingle({
-    //         title: "Video",
-    //         url: localPath,
-    //         type: "video/mp4",
-    //         social: Share.Social.WHATSAPP,
-    //         whatsAppNumber: `91${item.phoneNumber}`,
-    //         message: `🙏 ${whatsAppVideoDetails?.data?.message}`,
-    //       });
-    //     } else {
-    //       await Share.shareSingle({
-    //         title: "Video",
-    //         url: Platform.OS === "ios" ? localPath : "file://" + localPath,
-    //         type: "video/mp4",
-    //         social: Share.Social.WHATSAPP,
-    //         whatsAppNumber: `91${item.phoneNumber}`,
-    //         message: `🙏 ${whatsAppVideoDetails?.data?.message}`,
-    //       });
-    //     }
-    //   } else {
-    //     console.log("Contact not found. Please check the number.", "error");
-    //   }
-
-    //   setPendingConfirmationId(item.id);
-
-    //   // Delete only temp contact (not existing ones)
-    //   if (Platform.OS === "android" && savedContact?.recordID) {
-    //     setTimeout(async () => {
-    //       try {
-    //         await Contacts.deleteContact(savedContact);
-    //         console.log("Deleted temp contact:", savedContact.givenName);
-    //       } catch (err) {
-    //         console.warn("Failed to delete temp contact", err);
-    //       }
-    //     }, 5000);
-    //   }
-    // } catch (err) {
-    //   console.error("Error sending video:", err);
-    //   updateRowStatus(item.id, { sendStatus: "pending" });
-    //   showToast(t("video.sendFail"), "error");
-    // } finally {
-    //   setProgressMap((prev) => {
-    //     const { [item.id]: _, ...rest } = prev;
-    //     return rest;
-    //   });
-    // }
-  };
-
-  const confirmVideoSent = async () => {
-    try {
-      await markVideoSent({
-        recepientId: sendingId,
-        baseVideoId: selectedVideoId,
-      });
-      updateRowStatus(sendingId, { sendStatus: "sent" });
-      showToast(t("video.sendSuccess"), "success");
-    } catch (error) {
-      showToast(
-        extractErrorMessage(error, t("video.markSendVideoError")),
-        "error"
-      );
-    } finally {
-      setOpenSentPopup(false);
-      setPendingConfirmationId(null);
-      setSendingId(null);
-      clearAllTempContacts();
-    }
   };
 
   const columns = [
@@ -579,9 +197,7 @@ export default function GeneratedVideoScreen() {
       smallColumn: true,
       render: (item: Recipient) => {
         const sendStatus = item?.sendStatus?.toLowerCase?.() ?? "pending";
-        const disableRowActions =
-          (sendingId !== null && sendingId !== item.id) ||
-          pendingConfirmationId !== null;
+        const disableRowActions = sendingId !== null && sendingId !== item.id;
         const progress = progressMap[item.id];
 
         return (
@@ -608,20 +224,7 @@ export default function GeneratedVideoScreen() {
                   }}
                 />
               </View>
-            ) : // : !waRegistered && isWeb && !isMobileWeb ? (
-            //   <IconButton
-            //     icon={() => (
-            //       <FontAwesome
-            //         name="whatsapp"
-            //         size={22}
-            //         color={colors.mediumGray}
-            //       />
-            //     )}
-            //     style={{ margin: 0 }}
-            //     disabled
-            //   />
-            // )
-            sendStatus === "pending" ? (
+            ) : sendStatus === "pending" ? (
               <IconButton
                 icon={() => (
                   <FontAwesome
@@ -678,90 +281,7 @@ export default function GeneratedVideoScreen() {
         </Text>
       </View>
 
-      {isWeb && !isMobileWeb && (
-        <>
-          {memoizedDropdown}
-
-          {/* <View
-            style={[
-              styles.waChip,
-              {
-                backgroundColor: waRegistered
-                  ? colors.successBackground
-                  : colors.errorBackground,
-                borderColor: waRegistered ? colors.success : colors.error,
-                gap: 12,
-              },
-            ]}
-          >
-            <FontAwesome
-              name="whatsapp"
-              size={24}
-              color={waRegistered ? colors.whatsappGreen : colors.errorIcon}
-            />
-
-            <View style={{ flex: 1 }}>
-              {waLoading ? (
-                <View
-                  style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
-                >
-                  <ActivityIndicator size="small" color={colors.primary} />
-                  <Text
-                    style={[styles.waChipText, { color: colors.textSecondary }]}
-                  >
-                    {t("whatsapp.checkingStatus")}
-                  </Text>
-                </View>
-              ) : (
-                <>
-                  <Text
-                    style={[
-                      styles.waChipText,
-                      {
-                        color: waRegistered
-                          ? colors.successText
-                          : colors.errorText,
-                      },
-                    ]}
-                  >
-                    {waRegistered
-                      ? t("whatsapp.connected")
-                      : t("whatsapp.notConnected")}
-                  </Text>
-                  <Text style={styles.waChipSubText}>
-                    {waRegistered
-                      ? t("whatsapp.shareDirectly")
-                      : t("whatsapp.connectToShare")}
-                  </Text>
-                </>
-              )}
-            </View>
-
-            {!waLoading && (
-              <Button
-                mode={waRegistered ? "outlined" : "contained"}
-                compact
-                onPress={() => {
-                  waRegistered ? handleLogout() : handleConnect();
-                }}
-                textColor={waRegistered ? colors.deepRed : colors.white}
-                buttonColor={
-                  waRegistered ? "transparent" : colors.whatsappGreen
-                }
-                style={{
-                  borderRadius: 20,
-                  borderColor: waRegistered
-                    ? colors.deepRed
-                    : colors.whatsappGreen,
-                }}
-                labelStyle={{ fontSize: 13, fontWeight: "600" }}
-              >
-                {waRegistered ? t("logout") : t("connect")}
-              </Button>
-            )}
-          </View> */}
-        </>
-      )}
+      {isWeb && !isMobileWeb && <>{memoizedDropdown}</>}
 
       {/* Mobile top compact toolbar (contains campaign dropdown) */}
       {Platform.OS !== "web" && (
@@ -802,52 +322,6 @@ export default function GeneratedVideoScreen() {
           />
         </View>
       </ResponsiveKeyboardView>
-
-      {/* WhatsApp QR Modal */}
-      <Portal>
-        <Modal
-          visible={modalVisible}
-          onDismiss={() => setModalVisible(false)}
-          contentContainerStyle={styles.modalContainer}
-        >
-          <Surface style={styles.modalCard} elevation={3}>
-            <Text style={styles.modalTitle}>{t("whatsapp.register")}</Text>
-            <Text style={styles.modalSubtitle}>{t("whatsapp.link")}</Text>
-
-            <View style={styles.qrWrapper}>
-              {qrImageUrl ? (
-                <Image source={{ uri: qrImageUrl }} style={styles.qrImage} />
-              ) : (
-                <ActivityIndicator size="large" color={colors.primary} />
-              )}
-            </View>
-
-            <Text style={styles.modalHint}>{t("whatsapp.scanQR")}</Text>
-
-            <Button
-              mode="contained"
-              style={styles.closeButton}
-              buttonColor={colors.primary}
-              textColor={colors.white}
-              onPress={() => setModalVisible(false)}
-            >
-              {t("close")}
-            </Button>
-          </Surface>
-        </Modal>
-      </Portal>
-
-      <SendConfirmationDialog
-        type="video"
-        visible={openSentPopup}
-        onCancel={() => {
-          setSendingId(null);
-          setOpenSentPopup(false);
-          setPendingConfirmationId(null);
-          clearAllTempContacts();
-        }}
-        onConfirm={confirmVideoSent}
-      />
     </Surface>
   );
 }
