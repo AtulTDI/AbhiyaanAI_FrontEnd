@@ -29,7 +29,7 @@ type Props = {
   disabled?: boolean;
   error?: string;
   height?: number;
-  customStyle?: boolean;
+  noMargin?: boolean;
   onSelect: (val: string) => void;
 };
 
@@ -48,8 +48,8 @@ export default function FormDropdown({
   disabled,
   error,
   height = 48,
-  customStyle,
   onSelect,
+  noMargin,
 }: Props) {
   const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
@@ -106,7 +106,9 @@ export default function FormDropdown({
   return (
     <>
       {/* ================= INPUT ================= */}
-      <View style={{ marginBottom: isAndroid || isIOS ? 25 : 0 }}>
+      <View
+        style={{ marginBottom: (isAndroid || isIOS) && !noMargin ? 25 : 0 }}
+      >
         <Pressable ref={anchorRef} onPress={openMenu}>
           <TextInput
             pointerEvents="none"

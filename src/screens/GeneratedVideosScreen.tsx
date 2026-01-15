@@ -123,6 +123,7 @@ export default function GeneratedVideoScreen() {
             value={selectedVideoId}
             options={baseVideos}
             onSelect={(val) => setSelectedVideoId(val)}
+            noMargin
           />
         </View>
       </>

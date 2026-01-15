@@ -125,6 +125,7 @@ export default function GeneratedImagesScreen() {
             value={selectedCampaignId}
             options={campaigns}
             onSelect={(val) => setSelectedCampaignId(val)}
+            noMargin
           />
         </View>
       </>
