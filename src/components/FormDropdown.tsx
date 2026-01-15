@@ -12,6 +12,7 @@ import {
 import { Portal, TextInput, useTheme } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 import { AppTheme } from "../theme";
+import { usePlatformInfo } from "../hooks/usePlatformInfo";
 
 /* ================= TYPES ================= */
 
@@ -53,7 +54,7 @@ export default function FormDropdown({
   const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
   const styles = useMemo(() => createStyles(theme, height), [theme, height]);
-
+  const { isWeb, isAndroid, isIOS } = usePlatformInfo();
   const anchorRef = useRef<View>(null);
 
   const [open, setOpen] = useState(false);
@@ -105,42 +106,44 @@ export default function FormDropdown({
   return (
     <>
       {/* ================= INPUT ================= */}
-      <Pressable ref={anchorRef} onPress={openMenu}>
-        <TextInput
-          pointerEvents="none"
-          mode="outlined"
-          value={selectedOption?.label || ""}
-          placeholder={placeholder}
-          placeholderTextColor={theme.colors.placeholder}
-          editable={false}
-          disabled={disabled}
-          error={!!error}
-          style={[styles.input, { fontSize: customStyle ? 14 : 16 }]}
-          outlineStyle={styles.outline}
-          right={
-            value ? (
-              <TextInput.Icon icon="close" onPress={() => onSelect("")} />
-            ) : (
-              <TextInput.Icon icon={openUpwards ? "menu-up" : "menu-down"} />
-            )
-          }
-          contentStyle={{ marginLeft: selectedOption?.colorCode ? 45 : 0 }}
-          left={
-            selectedOption?.colorCode ? (
-              <TextInput.Icon
-                icon={() => (
-                  <View
-                    style={[
-                      styles.colorDot,
-                      { backgroundColor: selectedOption.colorCode },
-                    ]}
-                  />
-                )}
-              />
-            ) : undefined
-          }
-        />
-      </Pressable>
+      <View style={{ marginBottom: isAndroid || isIOS ? 25 : 0 }}>
+        <Pressable ref={anchorRef} onPress={openMenu}>
+          <TextInput
+            pointerEvents="none"
+            mode="outlined"
+            value={selectedOption?.label || ""}
+            placeholder={placeholder}
+            placeholderTextColor={theme.colors.placeholder}
+            editable={false}
+            disabled={disabled}
+            error={!!error}
+            style={[styles.input, { fontSize: isWeb ? 15 : 14 }]}
+            outlineStyle={styles.outline}
+            right={
+              value ? (
+                <TextInput.Icon icon="close" onPress={() => onSelect("")} />
+              ) : (
+                <TextInput.Icon icon={openUpwards ? "menu-up" : "menu-down"} />
+              )
+            }
+            contentStyle={{ marginLeft: selectedOption?.colorCode ? 45 : 0 }}
+            left={
+              selectedOption?.colorCode ? (
+                <TextInput.Icon
+                  icon={() => (
+                    <View
+                      style={[
+                        styles.colorDot,
+                        { backgroundColor: selectedOption.colorCode },
+                      ]}
+                    />
+                  )}
+                />
+              ) : undefined
+            }
+          />
+        </Pressable>
+      </View>
 
       {/* ================= MENU ================= */}
       {open && anchorLayout && (

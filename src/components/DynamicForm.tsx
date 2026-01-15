@@ -345,7 +345,11 @@ export default function DynamicForm({
                   disabled={field.disabled}
                   numberOfLines={field.type === "textarea" ? 4 : 1}
                   style={[
-                    { backgroundColor: theme.colors.white, height: 44 },
+                    {
+                      fontSize: isWeb ? 15 : 14,
+                      backgroundColor: theme.colors.white,
+                      height: 44,
+                    },
                     field.type === "textarea" && { height: 100 },
                   ]}
                   right={
