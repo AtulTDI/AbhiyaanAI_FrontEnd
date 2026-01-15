@@ -61,7 +61,7 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
       setMobile(number);
       showToast(t("voter.mobileUpdateSuccess"), "success");
     } catch (error) {
-      setMobile("-");
+      setMobile("");
       showToast(extractErrorMessage(error), "error");
     }
   };
@@ -144,7 +144,7 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
 
                 <EditableInfoRow
                   label={t("voter.labelMobile")}
-                  value={mobile || "-"}
+                  value={mobile || ""}
                   keyboardType="phone-pad"
                   maxLength={10}
                   onSave={handleMobileNumberUpdate}
@@ -284,9 +284,13 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 
   return (
     <View style={[rowStyles.row, { borderBottomColor: theme.colors.divider }]}>
-      <Text style={[rowStyles.label, { color: theme.colors.textSecondary }]}>
+      <Text
+        style={[rowStyles.label, { color: theme.colors.textSecondary }]}
+        numberOfLines={1}
+      >
         {label}
       </Text>
+
       <Text style={[rowStyles.value, { color: theme.colors.textPrimary }]}>
         {value}
       </Text>
@@ -324,7 +328,7 @@ function EditableInfoRow({
       {!editing && (
         <View style={rowStyles.valueRow}>
           <Text style={[rowStyles.value, { color: theme.colors.textPrimary }]}>
-            {value}
+            {value === "" ? "-" : value}
           </Text>
           <Ionicons
             name="pencil"
@@ -466,13 +470,21 @@ const rowStyles = StyleSheet.create({
     paddingVertical: 8,
     borderBottomWidth: 1,
   },
-  label: { fontSize: 14 },
+  label: {
+    fontSize: 14,
+    width: "50%",
+  },
+  value: {
+    fontSize: 14,
+    fontWeight: "500",
+    flex: 1,
+    textAlign: "right",
+  },
   valueRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
   },
-  value: { fontSize: 14, fontWeight: "500" },
   editRow: {
     flexDirection: "row",
     alignItems: "center",

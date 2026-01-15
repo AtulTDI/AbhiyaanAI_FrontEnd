@@ -124,6 +124,7 @@ export default function FormDropdown({
               <TextInput.Icon icon={openUpwards ? "menu-up" : "menu-down"} />
             )
           }
+          contentStyle={{ marginLeft: selectedOption?.colorCode ? 45 : 0 }}
           left={
             selectedOption?.colorCode ? (
               <TextInput.Icon

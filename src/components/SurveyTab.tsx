@@ -33,8 +33,9 @@ import {
 } from "../api/voterDemandApi";
 import FormDropdown from "./FormDropdown";
 import { VoterDemandItem, VoterSurveyRequest } from "../types/Voter";
-import { AppTheme } from "../theme";
 import { FixedLabel } from "./FixedLabel";
+import { usePlatformInfo } from "../hooks/usePlatformInfo";
+import { AppTheme } from "../theme";
 
 /* ================= TYPES ================= */
 
@@ -76,6 +77,7 @@ export default function SurveyTab({ voterId }: Props) {
   const styles = createStyles(theme);
   const { showToast } = useToast();
   const { width } = useWindowDimensions();
+  const { isAndroid } = usePlatformInfo();
 
   const isWide = width >= 1024;
 
@@ -618,6 +620,7 @@ export default function SurveyTab({ voterId }: Props) {
                         style={{
                           fontSize: 14,
                           backgroundColor: theme.colors.white,
+                          paddingVertical: isAndroid ? 8 : 0
                         }}
                         onChangeText={(v) =>
                           updateDemand(i, { description: v })
