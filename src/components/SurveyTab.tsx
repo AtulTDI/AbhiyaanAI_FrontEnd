@@ -254,6 +254,8 @@ export default function SurveyTab({ voterId }: Props) {
         newDemands.length && addVoterDemands(voterId, newDemands),
       ]);
 
+      loadSurvey();
+
       showToast(
         t(data?.id ? "survey.updateSuccess" : "survey.addSuccess"),
         "success"
@@ -262,7 +264,6 @@ export default function SurveyTab({ voterId }: Props) {
       showToast(extractErrorMessage(e), "error");
     } finally {
       setSaving(false);
-      loadSurvey();
     }
   };
 
