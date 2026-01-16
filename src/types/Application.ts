@@ -8,9 +8,9 @@ export type Application = {
   salesAgentId?: string;
   videoGenerationRate?: string;
   premiumVoice?: boolean;
-  WHAPIBaseUrl?: string;
-  WHAPIVendorUid?: string;
-  WHAPIBearerToken?: string; 
+  whapiBaseUrl?: string;
+  whapiVendorUid?: string;
+  whapiBearerToken?: string; 
   isElection?: boolean;
   isActive: boolean;
 }
@@ -32,9 +32,9 @@ export type CreateApplicationPayload = {
   videoGenerationRate?: string;
   premiumVoice?: boolean;
   isElection?: boolean;
-  WHAPIBaseUrl?: string;
-  WHAPIVendorUid?: string;
-  WHAPIBearerToken?: string; 
+  whapiBaseUrl?: string;
+  whapiVendorUid?: string;
+  whapiBearerToken?: string; 
 }
 
 export type EditApplicationPayload = {
@@ -45,7 +45,7 @@ export type EditApplicationPayload = {
   premiumVoice?: boolean;
   isElection?: boolean;
   isActive: boolean;
-  WHAPIBaseUrl?: string;
-  WHAPIVendorUid?: string;
-  WHAPIBearerToken?: string; 
+  whapiBaseUrl?: string;
+  whapiVendorUid?: string;
+  whapiBearerToken?: string; 
 }

@@ -81,17 +81,24 @@ export default function FormDropdown({
   /* ================= HANDLERS ================= */
 
   const openMenu = () => {
-    if (disabled) return;
+    if (disabled || !anchorRef.current) return;
 
-    anchorRef.current?.measureInWindow((x, y, width, h) => {
-      const spaceBelow = SCREEN_HEIGHT - (y + h);
-      const spaceAbove = y;
+    anchorRef.current.measure((x, y, width, h, pageX, pageY) => {
+      const spaceBelow = SCREEN_HEIGHT - (pageY + h);
+      const spaceAbove = pageY;
 
       const shouldOpenUpwards =
         spaceBelow < MENU_MAX_HEIGHT && spaceAbove > spaceBelow;
 
       setOpenUpwards(shouldOpenUpwards);
-      setAnchorLayout({ x, y, width, height: h });
+
+      setAnchorLayout({
+        x: pageX,
+        y: pageY,
+        width,
+        height: h,
+      });
+
       setOpen(true);
     });
   };
@@ -109,7 +116,11 @@ export default function FormDropdown({
       <View
         style={{ marginBottom: (isAndroid || isIOS) && !noMargin ? 25 : 0 }}
       >
-        <Pressable ref={anchorRef} onPress={openMenu}>
+        <Pressable
+          ref={anchorRef}
+          onPress={openMenu}
+          onLayout={(e) => setAnchorLayout(e.nativeEvent.layout)}
+        >
           <TextInput
             pointerEvents="none"
             mode="outlined"
@@ -242,6 +253,7 @@ const createStyles = (theme: AppTheme, height: number) =>
     /* MENU */
     menu: {
       position: "absolute",
+      zIndex: 1000,
       maxHeight: MENU_MAX_HEIGHT,
       backgroundColor: theme.colors.white,
       borderRadius: 12,
