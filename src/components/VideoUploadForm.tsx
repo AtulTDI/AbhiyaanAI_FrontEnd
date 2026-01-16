@@ -222,9 +222,10 @@ export default function VideoUploadForm({
         ref={scrollRef}
         contentContainerStyle={{
           padding: 16,
+          paddingBottom: 100,
         }}
         enableOnAndroid
-        extraScrollHeight={Platform.OS === "ios" ? 100 : 120}
+        extraScrollHeight={Platform.OS === "ios" ? 120 : 140}
         keyboardShouldPersistTaps="handled"
       >
         <View
