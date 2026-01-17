@@ -3,6 +3,9 @@ const colors = {
   primary: "#fb923c",
   primaryLight: "#fdba74",
   primaryDark: "#f97316",
+  primarySurface: "#fff7ed",
+  primarySoft: "#fed7aa",
+  primaryMuted: "#ea580c",
 
   // === Backgrounds & Surfaces ===
   background: "#f3f3f3",
@@ -15,7 +18,7 @@ const colors = {
   softGray: "#d1d5db",
   lightBackground: "#efefef",
   paperBackground: "#fafafa",
-  subtleBorder: "#eaeaea", 
+  subtleBorder: "#eaeaea",
   placeholder: "#9CA3AF",
 
   // === Text Colors ===
