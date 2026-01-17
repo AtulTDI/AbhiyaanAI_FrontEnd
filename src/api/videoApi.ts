@@ -87,8 +87,6 @@ export const uploadVideo = async (payload: Video) => {
   formData.append("message", payload.message);
   formData.append("cloningSpeed", payload.cloningSpeed);
   formData.append("voiceCloneId", payload.voiceCloneId);
-  
-
   // --- Upload API ---
   const response = await axios.post("/BaseVideos/upload", formData, {
     headers: { "Content-Type": "multipart/form-data" },
@@ -117,58 +115,111 @@ export const deleteVideoById = (id: string) =>
 export const generateCustomisedVideo = (payload: GenerateVideo) =>
   axios.post<GenerateVideo>(`/CustomizedAIVideo/createcustomized-aivideo`, payload, { useApiPrefix: true });
 
-
-
 /**
  * Generate customised video
  */
 export const generateSampleVideo = async (payload: SampleVideo) => {
   const formData = new FormData();
 
-  const fileName = payload.file.name || "video.mp4";
+  // ---------- FILE NAME & MIME ----------
+  const fileName =
+    payload.file.name
+      ?.replace(/\s+/g, "_")
+      ?.replace(/[^a-zA-Z0-9._-]/g, "") || "video.mp4";
+
   const mimeType = payload.file.mimeType || "video/mp4";
 
-  if (payload.file.uri?.startsWith("file://")) {
+  // ---------- APPEND FILE (WEB FIRST) ----------
+  if (payload.file.file instanceof File) {
+    formData.append("file", payload.file.file);
+  }
+
+  // ---------- DATA URI ----------
+  else if (payload.file.uri?.startsWith("data:")) {
+    const blob = await (await fetch(payload.file.uri)).blob();
+    const file = new File([blob], fileName, { type: mimeType });
+    formData.append("file", file);
+  }
+
+  // ---------- CONTENT/PH URI (ANDROID / IOS PICKER) ----------
+  else if (
+    payload.file.uri?.startsWith("content://") ||
+    payload.file.uri?.startsWith("ph://")
+  ) {
+    const response = await fetch(payload.file.uri);
+    const blob = await response.blob();
+
+    const tempPath = `${FileSystem.cacheDirectory}${fileName}`;
+
+    const reader = new FileReader();
+    const base64: string = await new Promise((resolve, reject) => {
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+
+    const base64Data = base64.split(",")[1];
+
+    await FileSystem.writeAsStringAsync(tempPath, base64Data, {
+      encoding: FileSystem.EncodingType.Base64,
+    });
+
     formData.append("file", {
-      uri: payload.file.uri,
+      uri: tempPath,
       name: fileName,
       type: mimeType,
     } as any);
-  } else if (payload.file.uri?.startsWith("data:")) {
+  }
+
+  // ---------- FILE URI (MOBILE) ----------
+  else if (payload.file.uri?.startsWith("file://")) {
     if (Platform.OS === "web") {
-      const blob = await (await fetch(payload.file.uri)).blob();
+      const response = await fetch(payload.file.uri);
+      const blob = await response.blob();
       const file = new File([blob], fileName, { type: mimeType });
       formData.append("file", file);
     } else {
-      const base64 = payload.file.uri.split(",")[1];
-      const tempPath = `${FileSystem.cacheDirectory}${fileName}`;
-      await FileSystem.writeAsStringAsync(tempPath, base64, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
-
       formData.append("file", {
-        uri: tempPath,
+        uri: payload.file.uri,
         name: fileName,
         type: mimeType,
       } as any);
     }
-  } else if (payload.file.file instanceof File) {
-    formData.append("file", payload.file.file);
+  }
+
+  // ---------- FALLBACK ----------
+  else if (payload.file.uri) {
+    const response = await fetch(payload.file.uri);
+    const blob = await response.blob();
+    const file = new File([blob], fileName, { type: mimeType });
+    formData.append("file", file);
   } else {
     throw new Error("Unsupported file format");
   }
 
-  formData.append("RecipientName", payload.recipientName);
-  formData.append("CloningSpeed", payload.cloningSpeed);
+  formData.append("RecipientName", String(payload.recipientName));
+  formData.append("CloningSpeed", String(payload.cloningSpeed));
 
+  if ((payload as any).voiceCloneId) {
+    formData.append(
+      "VoiceCloneId",
+      String((payload as any).voiceCloneId)
+    );
+  }
+
+  // ---------- AXIOS CALL (MOBILE-SAFE) ----------
   const response = await axios.post(
     `/CustomizedAIVideo/createsamplevideo`,
     formData,
     {
       useApiPrefix: true,
+      timeout: 0,
+      maxBodyLength: Infinity,
+      maxContentLength: Infinity,
+
       headers: {
         Accept: "application/json",
-        "Content-Type": "multipart/form-data",
+        "Content-Type": 'multipart/form-data',
       },
     }
   );

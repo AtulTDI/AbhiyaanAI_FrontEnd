@@ -26,6 +26,7 @@ import * as FileSystem from "expo-file-system";
 import { Image as ImageType } from "../types/Image";
 import { FixedLabel } from "./FixedLabel";
 import DeleteConfirmationDialog from "./DeleteConfirmationDialog";
+import { usePlatformInfo } from "../hooks/usePlatformInfo";
 
 type ImageAsset = {
   uri: string;
@@ -60,9 +61,10 @@ export default function ImageUploadForm({
   setImageToEdit,
 }: Props) {
   const { t } = useTranslation();
+  const { isWeb, isMobileWeb } = usePlatformInfo();
   const theme = useTheme();
   const { colors } = theme as any;
-  const styles = createStyles(theme as any);
+  const styles = createStyles(theme, { isWeb, isMobileWeb });
   const screenWidth = Dimensions.get("window").width;
 
   const [campaign, setCampaign] = useState(
@@ -90,6 +92,7 @@ export default function ImageUploadForm({
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
   const [indexToDelete, setIndexToDelete] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const messageInputRef = useRef<any>(null);
 
   // responsive preview sizing
   const isSmall = screenWidth < 600;
@@ -97,7 +100,6 @@ export default function ImageUploadForm({
     ? Math.min(screenWidth - 48, 360)
     : Math.min(Math.floor((screenWidth - 64) / 2), 420);
 
-  const isWeb = Platform.OS === "web";
   const isWide = isWeb && screenWidth > 900;
 
   // normalize pasted text (preserve markdown, emojis, internal whitespace)
@@ -137,6 +139,14 @@ export default function ImageUploadForm({
     document.addEventListener("paste", handlePaste);
     return () => document.removeEventListener("paste", handlePaste);
   }, []);
+
+  useEffect(() => {
+    if (messageEditorVisible) {
+      setTimeout(() => {
+        messageInputRef.current?.focus();
+      }, 300);
+    }
+  }, [messageEditorVisible]);
 
   /* ---------- Web file picker ---------- */
   const pickImageWeb = () => {
@@ -365,7 +375,7 @@ export default function ImageUploadForm({
         extraScrollHeight={Platform.OS === "ios" ? 100 : 120}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={{ flexDirection: isWide ? "row" : "column", gap: 12 }}>
+        <View style={{ flexDirection: isWide ? "row" : "column", gap: isWeb ? 12 : 0 }}>
           <View style={{ flex: 1 }}>
             <FixedLabel label={t("campaign")} required />
             <TextInput
@@ -593,6 +603,8 @@ export default function ImageUploadForm({
 
             {/* Input */}
             <TextInput
+              ref={messageInputRef}
+              autoFocus
               value={message}
               onChangeText={setMessage}
               mode="outlined"
@@ -656,7 +668,10 @@ export default function ImageUploadForm({
   );
 }
 
-const createStyles = (theme: any) =>
+const createStyles = (
+  theme: any,
+  platform: { isWeb: boolean; isMobileWeb: boolean }
+) =>
   StyleSheet.create({
     input: {
       backgroundColor: theme.colors.white,
@@ -795,14 +810,20 @@ const createStyles = (theme: any) =>
       marginBottom: 14,
     },
     messageInput: {
-      height: 250,
+      minHeight: 180,
+      maxHeight: 260,
       backgroundColor: theme.colors.paperBackground,
       fontSize: 15,
+      paddingTop: platform.isWeb ? 0 : 8,
     },
     modalActions: {
       flexDirection: "row",
       gap: 12,
-      marginTop: 22,
+      marginTop: 16,
+      paddingTop: 8,
+      borderTopWidth: 1,
+      borderTopColor: theme.colors.lightGray,
+      backgroundColor: theme.colors.white,
     },
     secondaryButton: {
       flex: 1,

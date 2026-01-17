@@ -1,11 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import {
-  View,
-  StyleSheet,
-  Platform,
-  Dimensions,
-  TouchableOpacity,
-} from "react-native";
+import { View, StyleSheet, Platform, TouchableOpacity } from "react-native";
 import {
   Text,
   TextInput,
@@ -74,11 +68,12 @@ export default function VideoUploadForm({
   const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
   const { showToast } = useToast();
-  const styles = createStyles(theme);
+  const styles = createStyles(theme, { isWeb, isMobileWeb });
   const { colors } = theme;
 
   const scrollRef = useRef<KeyboardAwareScrollView>(null);
   const campaignInputRef = useRef<any>(null);
+  const messageInputRef = useRef<any>(null);
 
   const [formData, setFormData] = useState<FormData>({
     campaign: "",
@@ -108,6 +103,14 @@ export default function VideoUploadForm({
 
     loadAuth();
   }, []);
+
+  useEffect(() => {
+    if (messageEditorVisible) {
+      setTimeout(() => {
+        messageInputRef.current?.focus();
+      }, 300);
+    }
+  }, [messageEditorVisible]);
 
   const setupSignalR = async () => {
     const { accessToken, userId } = await getAuthData();
@@ -512,6 +515,8 @@ export default function VideoUploadForm({
 
             {/* Input */}
             <TextInput
+              ref={messageInputRef}
+              autoFocus
               value={formData.message}
               onChangeText={(text) =>
                 setFormData((prev) => ({
@@ -583,7 +588,10 @@ export default function VideoUploadForm({
   );
 }
 
-const createStyles = (theme: AppTheme) =>
+const createStyles = (
+  theme: AppTheme,
+  platform: { isWeb: boolean; isMobileWeb: boolean }
+) =>
   StyleSheet.create({
     input: {
       marginBottom: 0,
@@ -625,6 +633,7 @@ const createStyles = (theme: AppTheme) =>
       shadowRadius: 12,
       shadowOffset: { width: 0, height: 6 },
       elevation: 6,
+      overflow: "hidden",
     },
     messageHeader: {
       flexDirection: "row",
@@ -653,14 +662,20 @@ const createStyles = (theme: AppTheme) =>
       marginBottom: 14,
     },
     messageInput: {
-      height: 250,
+      minHeight: 180,
+      maxHeight: 260,
       backgroundColor: theme.colors.paperBackground,
       fontSize: 15,
+      paddingTop: platform.isWeb ? 0 : 8,
     },
     modalActions: {
       flexDirection: "row",
       gap: 12,
-      marginTop: 22,
+      marginTop: 16,
+      paddingTop: 8,
+      borderTopWidth: 1,
+      borderTopColor: theme.colors.lightGray,
+      backgroundColor: theme.colors.white,
     },
     secondaryButton: {
       flex: 1,
