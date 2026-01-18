@@ -465,6 +465,7 @@
     "scanQR": "WhatsApp खोलें → सेटिंग्स → लिंक किए गए डिवाइस → QR स्कैन करें"
   },
   "dashboard": {
+    "value": "मूल्य",
     "videosByUser": "यूजर के वीडियो",
     "videosByCampaign": "कैंपेन के अनुसार वीडियो",
     "fetchDataFail": "डैशबोर्ड डेटा लाने में असफल",

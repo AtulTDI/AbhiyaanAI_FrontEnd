@@ -1,17 +1,12 @@
-import React, { useState, useRef, memo } from "react";
-import {
-  ScrollView,
-  View,
-  Text,
-  TouchableOpacity,
-  Dimensions,
-} from "react-native";
+import React, { useRef, memo } from "react";
+import { ScrollView, View, Text, Dimensions } from "react-native";
 import Svg, { G, Text as SvgText, Rect, Line } from "react-native-svg";
 import { useTranslation } from "react-i18next";
 
 const Bar = memo(
-  ({ x, value, maxValue, chartHeight, width, color, titleColor }: any) => {
+  ({ x, value, maxValue, chartHeight, width, color, titleColor }) => {
     const scaledHeight = (value / maxValue) * chartHeight;
+
     return (
       <G>
         <Rect
@@ -40,54 +35,33 @@ const Bar = memo(
 );
 
 const BarChart = ({
-  data,
+  data = [],
   width,
   height,
-  colors,
-  titleColor,
-  centerSingleGroup = false,
-  noVideosGenerated,
+  barColor = "#3b82f6",
+  titleColor = "#1f2937",
+  noData = false,
   backgroundColor = "#fdfaf7",
-}: any) => {
+}) => {
   const { t } = useTranslation();
-  const keys = ["generated", "sent", "failed"];
-  const [visibleKeys, setVisibleKeys] = useState(keys);
   const screenWidth = Dimensions.get("window").width;
-  const scrollRef = useRef<ScrollView>(null);
-
-  const keyColors: Record<string, string> = {
-    generated: colors[0],
-    sent: colors[1],
-    failed: colors[2],
-  };
-
-  const toggleKey = (key: string) =>
-    setVisibleKeys((prev) =>
-      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
-    );
+  const scrollRef = useRef(null);
 
   const topPadding = 30;
-  const bottomPadding = 60;
+  const bottomPadding = 80;
   const leftPadding = 60;
   const rightPadding = 20;
   const dynamicChartHeight = height;
+
   const barWidth = 24;
-  const barSpacing = 12;
-  const groupSpacing = 30;
-  const fullGroupWidth =
-    keys.length * (barWidth + barSpacing) - barSpacing + groupSpacing;
+  const groupSpacing = 60;
 
-  const allZero =
-    visibleKeys.length === 0 ||
-    data.every((d) => visibleKeys.every((k) => (d[k] || 0) === 0));
+  const allZero = noData || data.every((d) => (d.value || 0) === 0);
 
-  const rawMaxValue = Math.max(
-    1,
-    ...data.flatMap((d) => visibleKeys.map((k) => d[k] || 0))
-  );
+  const rawMaxValue = Math.max(1, ...data.map((d) => d.value || 0));
   const visualMaxValue = rawMaxValue === 0 ? 1 : rawMaxValue * 1.1;
 
-  const chartWidth = data.length * fullGroupWidth;
+  const chartWidth = data.length * (barWidth + groupSpacing);
   const svgWidth = chartWidth + leftPadding + rightPadding;
   const scrollNeeded = svgWidth > screenWidth;
   const offsetX = leftPadding;
@@ -99,7 +73,23 @@ const BarChart = ({
     (_, i) => i * yStepValue
   );
 
-  const renderChartContent = (svgW: number) => (
+  // --------- HELPER: Wrap label into 2 lines ---------
+  const splitLabel = (label) => {
+    if (!label) return ["", ""];
+
+    const words = label.split(" ");
+    if (words.length <= 2) {
+      return [words.join(" "), ""];
+    }
+
+    const mid = Math.ceil(words.length / 2);
+    const firstLine = words.slice(0, mid).join(" ");
+    const secondLine = words.slice(mid).join(" ");
+
+    return [firstLine, secondLine];
+  };
+
+  const renderChartContent = (svgW) => (
     <Svg height={dynamicChartHeight + bottomPadding} width={svgW}>
       {/* Y-axis label */}
       <SvgText
@@ -111,7 +101,7 @@ const BarChart = ({
         transform={`rotate(-90, 15, ${dynamicChartHeight / 2 + topPadding})`}
         fontWeight="600"
       >
-        {t("videoCount")}
+        {t("value") || "Value"}
       </SvgText>
 
       {/* Grid lines */}
@@ -120,6 +110,7 @@ const BarChart = ({
           dynamicChartHeight -
           (y / visualMaxValue) * dynamicChartHeight +
           topPadding;
+
         return (
           <G key={`grid-${i}`}>
             <Line
@@ -154,43 +145,48 @@ const BarChart = ({
         strokeWidth="1.5"
       />
 
-      {/* Bars */}
+      {/* Bars + Wrapped Labels */}
       <G y={dynamicChartHeight + topPadding} x={offsetX}>
         {data.map((d, i) => {
-          const groupX = i * fullGroupWidth;
+          const x = i * (barWidth + groupSpacing);
+          const [line1, line2] = splitLabel(d.label);
+
           return (
             <G key={i}>
-              {visibleKeys.map((k) => {
-                const keyIndex = keys.indexOf(k);
-                const x = groupX + keyIndex * (barWidth + barSpacing);
-                const value = d[k] || 0;
-                return (
-                  <Bar
-                    key={k}
-                    x={x}
-                    value={value}
-                    maxValue={visualMaxValue}
-                    chartHeight={dynamicChartHeight}
-                    width={barWidth}
-                    color={keyColors[k]}
-                    titleColor={titleColor}
-                  />
-                );
-              })}
+              <Bar
+                x={x}
+                value={d.value || 0}
+                maxValue={visualMaxValue}
+                chartHeight={dynamicChartHeight}
+                width={barWidth}
+                color={barColor}
+                titleColor={titleColor}
+              />
+
+              {/* Wrapped label - TWO LINES */}
               <SvgText
-                x={
-                  groupX +
-                  (keys.length * (barWidth + barSpacing)) / 2 -
-                  barSpacing / 2
-                }
-                y={20}
-                fontSize="13"
+                x={x + barWidth / 2}
+                y={25}
+                fontSize="12"
                 fill={titleColor}
                 textAnchor="middle"
                 fontWeight="500"
               >
-                {d.label}
+                {line1}
               </SvgText>
+
+              {line2 ? (
+                <SvgText
+                  x={x + barWidth / 2}
+                  y={40}
+                  fontSize="12"
+                  fill={titleColor}
+                  textAnchor="middle"
+                  fontWeight="500"
+                >
+                  {line2}
+                </SvgText>
+              ) : null}
             </G>
           );
         })}
@@ -211,55 +207,8 @@ const BarChart = ({
         elevation: 2,
       }}
     >
-      {/* Legend */}
-      {!noVideosGenerated && (
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "center",
-            marginBottom: 12,
-            flexWrap: "wrap",
-          }}
-        >
-          {keys.map((k) => {
-            const active = visibleKeys.includes(k);
-            return (
-              <TouchableOpacity
-                key={k}
-                onPress={() => toggleKey(k)}
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  marginHorizontal: 10,
-                  marginVertical: 4,
-                  opacity: active ? 1 : 0.4,
-                }}
-              >
-                <View
-                  style={{
-                    width: 14,
-                    height: 14,
-                    backgroundColor: keyColors[k],
-                    borderRadius: 3,
-                    marginRight: 6,
-                  }}
-                />
-                <Text
-                  style={{
-                    fontWeight: active ? "bold" : "normal",
-                    color: titleColor,
-                  }}
-                >
-                  {t(`dashboard.status.${k}`)}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-      )}
-
       {/* No data */}
-      {allZero || noVideosGenerated ? (
+      {allZero ? (
         <View
           style={{ height, justifyContent: "center", alignItems: "center" }}
         >

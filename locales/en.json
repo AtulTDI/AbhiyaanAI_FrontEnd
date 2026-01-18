@@ -465,6 +465,7 @@
     "scanQR": "Open WhatsApp → Settings → Linked Devices → Scan QR"
   },
   "dashboard": {
+    "value": "Value",
     "videosByUser": "Videos by User",
     "videosByCampaign": "Videos by Campaign",
     "fetchDataFail": "Error fetching dashboard data",

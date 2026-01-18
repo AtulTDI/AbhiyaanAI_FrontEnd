@@ -11,3 +11,9 @@ export const getDashboard = (userId) =>
  */
 export const getCampaignStats = (userId) =>
   axios.get(`/Dashboard/getallcampaign-stats/${userId}`, { useApiPrefix: true });
+
+/**
+ * Get Voter Dashboard Summary
+ */
+export const getVoterDashboardSummary = () =>
+  axios.get(`/Dashboard/summary`, { useApiPrefix: true, useVoterBase: true });

@@ -6,18 +6,18 @@ import colors from "../constants/colors";
 import BarChart from "./BarChart";
 
 const DonutChart = ({
-  campaignsData,
+  data = [],
   radius = 110,
   holeRadius = 55,
   width = 320,
   height = 200,
-  noVideosGenerated = false,
+  noData = false,
 }) => {
   const { t } = useTranslation();
   const [drilledSlice, setDrilledSlice] = useState(null);
   const [showAllLegends, setShowAllLegends] = useState(false);
 
-  if (noVideosGenerated) {
+  if (noData) {
     return (
       <View style={{ height, justifyContent: "center", alignItems: "center" }}>
         <Text
@@ -33,20 +33,16 @@ const DonutChart = ({
     );
   }
 
-  const aggregatedData =
-    campaignsData?.map((c) => ({
-      label: c.label || "Unknown",
-      totalGeneratedVideos: c.generated ?? c.total ?? 0,
-      totalSentVideos: c.sent ?? 0,
-      totalFailedVideos: c.failed ?? 0,
-    })) || [];
+  const totalValue = data.reduce((sum, d) => sum + (d.value || 0), 0);
 
-  const totalValue = aggregatedData.reduce(
-    (sum, d) => sum + d.totalGeneratedVideos,
-    0
-  );
-
-  const sliceColors = [colors.primary, colors.primaryLight, colors.darkOrange];
+  const sliceColors = [
+    colors.primary,
+    colors.primaryLight,
+    colors.darkOrange,
+    colors.softOrange,
+    "#22c55e",
+    "#6366f1",
+  ];
 
   const createDonutPath = (startAngle, endAngle, radius) => {
     const startX = radius * Math.cos(startAngle);
@@ -54,12 +50,11 @@ const DonutChart = ({
     const endX = radius * Math.cos(endAngle);
     const endY = radius * Math.sin(endAngle);
     const largeArcFlag = endAngle - startAngle > Math.PI ? 1 : 0;
+
     return `M0,0 L${startX},${startY} A${radius},${radius} 0 ${largeArcFlag} 1 ${endX},${endY} Z`;
   };
 
-  const visibleLegends = showAllLegends
-    ? aggregatedData
-    : aggregatedData.slice(0, 4);
+  const visibleLegends = showAllLegends ? data : data.slice(0, 4);
 
   return (
     <View style={{ alignItems: !drilledSlice && "center", width: "100%" }}>
@@ -69,17 +64,15 @@ const DonutChart = ({
             data={[
               {
                 label: drilledSlice.label,
-                generated: drilledSlice.totalGeneratedVideos,
-                sent: drilledSlice.totalSentVideos,
-                failed: drilledSlice.totalFailedVideos,
+                value: drilledSlice.value,
               },
             ]}
             width={10}
             height={height}
-            colors={[colors.primary, colors.primaryLight, colors.darkOrange]}
+            barColor={colors.primary}
             titleColor={colors.primaryDark}
-            noVideosGenerated={noVideosGenerated}
           />
+
           <View style={{ width: "100%", alignItems: "center" }}>
             <Pressable
               onPress={() => setDrilledSlice(null)}
@@ -101,14 +94,14 @@ const DonutChart = ({
         </>
       ) : (
         <>
-          {/* Donut Chart */}
+          {/* Donut */}
           <Svg width={radius * 2.3} height={radius * 2.3}>
             <G transform={`translate(${radius * 1.15},${radius * 1.15})`}>
               {(() => {
                 let cumulative = 0;
-                return aggregatedData.map((d, i) => {
+                return data.map((d, i) => {
                   const startAngle = (cumulative / totalValue) * 2 * Math.PI;
-                  cumulative += d.totalGeneratedVideos;
+                  cumulative += d.value;
                   const endAngle = (cumulative / totalValue) * 2 * Math.PI;
                   const midAngle = (startAngle + endAngle) / 2;
                   const labelRadius = radius * 0.75;
@@ -121,7 +114,8 @@ const DonutChart = ({
                         d={createDonutPath(startAngle, endAngle, radius)}
                         fill={sliceColors[i % sliceColors.length]}
                       />
-                      {d.totalGeneratedVideos / totalValue > 0.03 && (
+
+                      {d.value / totalValue > 0.03 && (
                         <SvgText
                           x={labelX}
                           y={labelY}
@@ -130,9 +124,8 @@ const DonutChart = ({
                           fontWeight="600"
                           textAnchor="middle"
                           alignmentBaseline="middle"
-                          pointerEvents="none"
                         >
-                          {d.totalGeneratedVideos}
+                          {d.value}
                         </SvgText>
                       )}
                     </G>
@@ -140,7 +133,7 @@ const DonutChart = ({
                 });
               })()}
 
-              {/* Donut Hole */}
+              {/* Hole */}
               <Path
                 d={`M0,0 m-${holeRadius},0 a${holeRadius},${holeRadius} 0 1,0 ${
                   holeRadius * 2
@@ -151,7 +144,7 @@ const DonutChart = ({
           </Svg>
 
           {/* Legends */}
-          {aggregatedData.length > 0 && (
+          {data.length > 0 && (
             <View style={{ marginTop: 16, alignItems: "center" }}>
               <View
                 style={{
@@ -190,18 +183,18 @@ const DonutChart = ({
                         fontSize: 12,
                         color: colors.darkerGrayText,
                         fontWeight: "600",
-                        maxWidth: 120, // Prevent text overflow
+                        maxWidth: 120,
                       }}
                       numberOfLines={1}
                       ellipsizeMode="tail"
                     >
-                      {d.label} ({d.totalGeneratedVideos})
+                      {d.label} ({d.value})
                     </Text>
                   </Pressable>
                 ))}
               </View>
 
-              {aggregatedData.length > 4 && (
+              {data.length > 4 && (
                 <Pressable
                   onPress={() => setShowAllLegends(!showAllLegends)}
                   style={{ marginTop: 8 }}
