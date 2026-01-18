@@ -288,19 +288,23 @@ export default function SurveyTab({ voterId }: Props) {
         {/* BASIC */}
         <GridItem isWide={isWide}>
           <Card title={t("voter.surveyBasic")}>
-            <Row label={t("voter.colorCode")}>
+            <DropdownRow label={t("voter.colorCode")}>
               <FormDropdown
                 value={String(data.supportType ?? 0)}
                 options={supportTypes.map((s) => ({
                   label: t(`survey.supportType.${s.label}`, s.label),
                   value: String(s.value),
+                  itemStyle: {
+                    backgroundColor: s.colorCode + "20",
+                  },
                   colorCode: s.colorCode,
                 }))}
                 onSelect={(v) => update("supportType", Number(v))}
+                noMargin
               />
-            </Row>
+            </DropdownRow>
 
-            <Row label={t("voter.supportStrength")}>
+            <DropdownRow label={t("voter.supportStrength")}>
               <FormDropdown
                 value={String(data.supportStrength ?? 0)}
                 options={SUPPORT_STRENGTH_OPTIONS.map((s) => ({
@@ -308,8 +312,9 @@ export default function SurveyTab({ voterId }: Props) {
                   value: String(s.value),
                 }))}
                 onSelect={(v) => update("supportStrength", Number(v))}
+                noMargin
               />
-            </Row>
+            </DropdownRow>
 
             <InputRow
               label={t("voter.caste")}
@@ -582,6 +587,7 @@ export default function SurveyTab({ voterId }: Props) {
                               });
                               if (v) loadDemands(v);
                             }}
+                            noMargin
                           />
                         </View>
 
@@ -601,6 +607,7 @@ export default function SurveyTab({ voterId }: Props) {
                             }))}
                             disabled={!d.categoryId || d.isResolved}
                             onSelect={(v) => updateDemand(i, { demandId: v })}
+                            noMargin
                           />
                         </View>
                       </View>
@@ -616,7 +623,7 @@ export default function SurveyTab({ voterId }: Props) {
                         style={{
                           fontSize: 14,
                           backgroundColor: theme.colors.white,
-                          paddingVertical: isAndroid ? 8 : 0
+                          paddingVertical: isAndroid ? 8 : 0,
                         }}
                         onChangeText={(v) =>
                           updateDemand(i, { description: v })
@@ -714,6 +721,41 @@ function Row({ label, children, noDivider }: any) {
   );
 }
 
+function DropdownRow({
+  label,
+  children,
+  noDivider,
+}: {
+  label: string;
+  children: React.ReactNode;
+  noDivider?: boolean;
+}) {
+  const theme = useTheme<AppTheme>();
+  const { isWeb, isMobileWeb } = usePlatformInfo();
+
+  if (isWeb && !isMobileWeb) {
+    return (
+      <Row label={label} noDivider={noDivider}>
+        {children}
+      </Row>
+    );
+  }
+
+  return (
+    <View
+      style={{
+        paddingVertical: 12,
+        borderBottomWidth: noDivider ? 0 : 1,
+        borderBottomColor: theme.colors.divider,
+        gap: 6,
+      }}
+    >
+      <Text style={{ fontSize: 14, color: "#888" }}>{label}</Text>
+      {children}
+    </View>
+  );
+}
+
 function InputRow({
   label,
   onChange,
@@ -723,10 +765,52 @@ function InputRow({
   ...props
 }: any) {
   const theme = useTheme<AppTheme>();
+  const { isWeb, isMobileWeb } = usePlatformInfo();
   const [selection, setSelection] = useState<{ start: number; end: number }>();
 
+  if (isWeb && !isMobileWeb) {
+    return (
+      <Row label={label} noDivider={noDivider}>
+        <TextInput
+          {...props}
+          value={value}
+          dense
+          mode="outlined"
+          multiline={multiline}
+          numberOfLines={multiline ? 4 : 1}
+          onChangeText={onChange}
+          selection={selection}
+          onBlur={() => {
+            setSelection({ start: 0, end: 0 });
+          }}
+          onFocus={() => {
+            setSelection(undefined);
+          }}
+          outlineColor={theme.colors.subtleBorder}
+          activeOutlineColor={theme.colors.primary}
+          style={{
+            minHeight: multiline ? 80 : 44,
+            maxHeight: 160,
+            fontSize: 15,
+            backgroundColor: theme.colors.white,
+            textAlignVertical: "top",
+          }}
+        />
+      </Row>
+    );
+  }
+
   return (
-    <Row label={label} noDivider={noDivider}>
+    <View
+      style={{
+        paddingVertical: 12,
+        borderBottomWidth: noDivider ? 0 : 1,
+        borderBottomColor: theme.colors.divider,
+        gap: 6,
+      }}
+    >
+      <Text style={{ fontSize: 14, color: "#888" }}>{label}</Text>
+
       <TextInput
         {...props}
         value={value}
@@ -742,13 +826,19 @@ function InputRow({
         onFocus={() => {
           setSelection(undefined);
         }}
+        outlineColor={theme.colors.subtleBorder}
+        activeOutlineColor={theme.colors.primary}
         style={{
-          height: multiline ? 72 : 44,
+          minHeight: multiline ? 90 : 44,
+          maxHeight: 180,
           fontSize: 14,
           backgroundColor: theme.colors.white,
+          textAlignVertical: "top",
+          paddingTop: multiline ? 8 : 0,
+          borderColor: theme.colors.subtleBorder,
         }}
       />
-    </Row>
+    </View>
   );
 }
 

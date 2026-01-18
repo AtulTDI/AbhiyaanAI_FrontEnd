@@ -20,6 +20,7 @@ type Option = {
   label: string;
   value: string;
   colorCode?: string;
+  itemStyle?: any;
 };
 
 type Props = {
@@ -116,46 +117,57 @@ export default function FormDropdown({
       <View
         style={{ marginBottom: (isAndroid || isIOS) && !noMargin ? 25 : 0 }}
       >
-        <Pressable
-          ref={anchorRef}
-          onPress={openMenu}
-          onLayout={(e) => setAnchorLayout(e.nativeEvent.layout)}
+        {/* BACKGROUND TINT WRAPPER */}
+        <View
+          style={{
+            backgroundColor: selectedOption?.colorCode
+              ? selectedOption.colorCode + "10"
+              : theme.colors.white,
+            borderRadius: 10,
+          }}
         >
-          <TextInput
-            pointerEvents="none"
-            mode="outlined"
-            value={selectedOption?.label || ""}
-            placeholder={placeholder}
-            placeholderTextColor={theme.colors.placeholder}
-            editable={false}
-            disabled={disabled}
-            error={!!error}
-            style={[styles.input, { fontSize: isWeb ? 15 : 14 }]}
-            outlineStyle={styles.outline}
-            right={
-              value ? (
-                <TextInput.Icon icon="close" onPress={() => onSelect("")} />
-              ) : (
-                <TextInput.Icon icon={openUpwards ? "menu-up" : "menu-down"} />
-              )
-            }
-            contentStyle={{ marginLeft: selectedOption?.colorCode ? 45 : 0 }}
-            left={
-              selectedOption?.colorCode ? (
-                <TextInput.Icon
-                  icon={() => (
-                    <View
-                      style={[
-                        styles.colorDot,
-                        { backgroundColor: selectedOption.colorCode },
-                      ]}
-                    />
-                  )}
-                />
-              ) : undefined
-            }
-          />
-        </Pressable>
+          <Pressable
+            ref={anchorRef}
+            onPress={openMenu}
+            onLayout={(e) => setAnchorLayout(e.nativeEvent.layout)}
+          >
+            <TextInput
+              pointerEvents="none"
+              mode="outlined"
+              value={selectedOption?.label || ""}
+              placeholder={placeholder}
+              placeholderTextColor={theme.colors.placeholder}
+              editable={false}
+              disabled={disabled}
+              error={!!error}
+              style={[styles.input, { fontSize: isWeb ? 15 : 14 }]}
+              outlineStyle={styles.outline}
+              outlineColor={theme.colors.subtleBorder}
+              activeOutlineColor={theme.colors.primary}
+              right={
+                value ? (
+                  <TextInput.Icon icon="close" onPress={() => onSelect("")} />
+                ) : (
+                  <TextInput.Icon
+                    icon={openUpwards ? "menu-up" : "menu-down"}
+                  />
+                )
+              }
+              contentStyle={{
+                marginLeft: selectedOption?.colorCode ? 45 : 0,
+              }}
+              left={
+                selectedOption?.colorCode ? (
+                  <TextInput.Icon
+                    icon="square"
+                    color={selectedOption.colorCode}
+                    size={14}
+                  />
+                ) : undefined
+              }
+            />
+          </Pressable>
+        </View>
       </View>
 
       {/* ================= MENU ================= */}
@@ -197,12 +209,18 @@ export default function FormDropdown({
               ItemSeparatorComponent={() => <View style={styles.divider} />}
               renderItem={({ item }) => {
                 const selected = item.value === value;
+
                 return (
                   <Pressable
                     style={({ hovered }) => [
                       styles.option,
-                      selected && styles.optionSelected,
                       hovered && styles.optionHover,
+                      selected && {
+                        backgroundColor: item.colorCode
+                          ? item.colorCode + "15"
+                          : theme.colors.primary + "14",
+                      },
+                      item.itemStyle,
                     ]}
                     onPress={() => {
                       onSelect(item.value);
@@ -211,10 +229,13 @@ export default function FormDropdown({
                   >
                     {item.colorCode && (
                       <View
-                        style={[
-                          styles.colorDot,
-                          { backgroundColor: item.colorCode },
-                        ]}
+                        style={{
+                          width: 18,
+                          height: 8,
+                          borderRadius: 4,
+                          backgroundColor: item.colorCode,
+                          marginRight: 8,
+                        }}
                       />
                     )}
                     <Text style={styles.optionText}>{item.label}</Text>
@@ -238,7 +259,7 @@ const createStyles = (theme: AppTheme, height: number) =>
     /* INPUT */
     input: {
       height: 44,
-      backgroundColor: theme.colors.white,
+      backgroundColor: "transparent",
     },
 
     outline: {
@@ -291,10 +312,6 @@ const createStyles = (theme: AppTheme, height: number) =>
       borderRadius: 10,
     },
 
-    optionSelected: {
-      backgroundColor: theme.colors.primary + "14",
-    },
-
     optionText: {
       fontSize: 14,
       lineHeight: 20,
@@ -305,12 +322,6 @@ const createStyles = (theme: AppTheme, height: number) =>
       height: 1,
       backgroundColor: theme.colors.lightGray,
       marginLeft: 16,
-    },
-
-    colorDot: {
-      width: 10,
-      height: 10,
-      borderRadius: 5,
     },
 
     /* ERROR */
