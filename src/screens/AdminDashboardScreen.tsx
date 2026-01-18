@@ -65,24 +65,6 @@ const AdminDashboardScreen = () => {
       }}
     >
       <Tab.Screen
-        name="Videos"
-        component={VideoDashboardContent}
-        options={{
-          tabBarLabel: ({ color }) => (
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <Ionicons
-                name="videocam"
-                size={16}
-                color={color}
-                style={{ marginRight: 6 }}
-              />
-              <Text style={{ fontWeight: "700", color }}>Videos</Text>
-            </View>
-          ),
-        }}
-      />
-
-      <Tab.Screen
         name="Voters"
         component={VoterDashboardContent}
         options={{
@@ -95,6 +77,24 @@ const AdminDashboardScreen = () => {
                 style={{ marginRight: 6 }}
               />
               <Text style={{ fontWeight: "700", color }}>Voters</Text>
+            </View>
+          ),
+        }}
+      />
+
+      <Tab.Screen
+        name="Videos"
+        component={VideoDashboardContent}
+        options={{
+          tabBarLabel: ({ color }) => (
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Ionicons
+                name="videocam"
+                size={16}
+                color={color}
+                style={{ marginRight: 6 }}
+              />
+              <Text style={{ fontWeight: "700", color }}>Videos</Text>
             </View>
           ),
         }}
