@@ -31,6 +31,7 @@ type Props = {
   error?: string;
   height?: number;
   noMargin?: boolean;
+  customOutline?: boolean;
   onSelect: (val: string) => void;
 };
 
@@ -50,6 +51,7 @@ export default function FormDropdown({
   error,
   height = 48,
   onSelect,
+  customOutline,
   noMargin,
 }: Props) {
   const { t } = useTranslation();
@@ -123,7 +125,7 @@ export default function FormDropdown({
             backgroundColor: selectedOption?.colorCode
               ? selectedOption.colorCode + "10"
               : theme.colors.white,
-            borderRadius: 10,
+            borderRadius: 8,
           }}
         >
           <Pressable
@@ -142,7 +144,11 @@ export default function FormDropdown({
               error={!!error}
               style={[styles.input, { fontSize: isWeb ? 15 : 14 }]}
               outlineStyle={styles.outline}
-              outlineColor={theme.colors.subtleBorder}
+              outlineColor={
+                selectedOption?.colorCode
+                  ? selectedOption?.colorCode
+                  : customOutline && theme.colors.subtleBorder
+              }
               activeOutlineColor={theme.colors.primary}
               right={
                 value ? (
@@ -263,7 +269,7 @@ const createStyles = (theme: AppTheme, height: number) =>
     },
 
     outline: {
-      borderRadius: 10,
+      borderRadius: 8,
     },
 
     /* BACKDROP */
@@ -308,7 +314,7 @@ const createStyles = (theme: AppTheme, height: number) =>
     },
 
     optionHover: {
-      backgroundColor: theme.colors.lightGray,
+      backgroundColor: theme.colors.lightGray + "90",
       borderRadius: 10,
     },
 

@@ -301,6 +301,7 @@ export default function SurveyTab({ voterId }: Props) {
                 }))}
                 onSelect={(v) => update("supportType", Number(v))}
                 noMargin
+                customOutline
               />
             </DropdownRow>
 
@@ -313,6 +314,7 @@ export default function SurveyTab({ voterId }: Props) {
                 }))}
                 onSelect={(v) => update("supportStrength", Number(v))}
                 noMargin
+                customOutline
               />
             </DropdownRow>
 
@@ -588,6 +590,7 @@ export default function SurveyTab({ voterId }: Props) {
                               if (v) loadDemands(v);
                             }}
                             noMargin
+                            customOutline
                           />
                         </View>
 
@@ -608,6 +611,7 @@ export default function SurveyTab({ voterId }: Props) {
                             disabled={!d.categoryId || d.isResolved}
                             onSelect={(v) => updateDemand(i, { demandId: v })}
                             noMargin
+                            customOutline
                           />
                         </View>
                       </View>
