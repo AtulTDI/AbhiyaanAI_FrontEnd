@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   StyleSheet,
@@ -27,6 +27,7 @@ import {
 } from "../api/voterApi";
 import { useToast } from "./ToastProvider";
 import { AppTheme } from "../theme";
+import { usePlatformInfo } from "../hooks/usePlatformInfo";
 
 type Props = {
   voter: Voter;
@@ -281,18 +282,47 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
 
 function InfoRow({ label, value }: { label: string; value: string }) {
   const theme = useTheme<AppTheme>();
+  const { width } = useWindowDimensions();
+  const isMobile = width < 480;
+
+  const isLongText = (value?.length ?? 0) > 40;
+
+  const stack = isMobile && isLongText;
 
   return (
-    <View style={[rowStyles.row, { borderBottomColor: theme.colors.divider }]}>
+    <View
+      style={[
+        rowStyles.row,
+        {
+          borderBottomColor: theme.colors.divider,
+          flexDirection: stack ? "column" : "row",
+          alignItems: stack ? "flex-start" : "center",
+          gap: stack ? 4 : 8,
+        },
+      ]}
+    >
       <Text
-        style={[rowStyles.label, { color: theme.colors.textSecondary }]}
+        style={[
+          rowStyles.label,
+          { color: theme.colors.textSecondary },
+          stack && { width: "100%" },
+        ]}
         numberOfLines={1}
       >
         {label}
       </Text>
 
-      <Text style={[rowStyles.value, { color: theme.colors.textPrimary }]}>
-        {value}
+      <Text
+        style={[
+          rowStyles.value,
+          {
+            color: theme.colors.textPrimary,
+            textAlign: stack ? "left" : "right",
+            width: stack ? "100%" : "auto",
+          },
+        ]}
+      >
+        {value ?? "-"}
       </Text>
     </View>
   );
@@ -306,11 +336,14 @@ function EditableInfoRow({
   onSave,
 }: any) {
   const theme = useTheme<AppTheme>();
-  const { width } = useWindowDimensions();
-  const isMobile = width < 480;
+  const { isWeb, isMobileWeb } = usePlatformInfo();
 
   const [editing, setEditing] = useState(false);
   const [local, setLocal] = useState(value);
+
+  useEffect(() => {
+    setLocal(value);
+  }, [value]);
 
   return (
     <View
@@ -318,7 +351,10 @@ function EditableInfoRow({
         rowStyles.row,
         { borderBottomColor: theme.colors.divider },
         editing &&
-          isMobile && { flexDirection: "column", alignItems: "stretch" },
+          (!isWeb || isMobileWeb) && {
+            flexDirection: "column",
+            alignItems: "stretch",
+          },
       ]}
     >
       <Text style={[rowStyles.label, { color: theme.colors.textSecondary }]}>
@@ -339,10 +375,9 @@ function EditableInfoRow({
         </View>
       )}
 
-      {editing && !isMobile && (
+      {editing && isWeb && (
         <View style={rowStyles.editRow}>
           <TextInput
-            dense
             mode="outlined"
             value={local}
             keyboardType={keyboardType}
@@ -366,7 +401,7 @@ function EditableInfoRow({
         </View>
       )}
 
-      {editing && isMobile && (
+      {editing && (!isWeb || isMobileWeb) && (
         <View
           style={{
             marginTop: 6,
@@ -376,15 +411,14 @@ function EditableInfoRow({
           }}
         >
           <TextInput
-            dense
             mode="outlined"
             value={local}
             keyboardType={keyboardType}
             maxLength={maxLength}
             onChangeText={setLocal}
             style={{
-              width: "78%",
-              height: 40,
+              flex: 1,
+              height: 44,
               backgroundColor: theme.colors.white,
             }}
           />
@@ -400,7 +434,10 @@ function EditableInfoRow({
             <IconButton
               icon="close"
               size={18}
-              onPress={() => setEditing(false)}
+              onPress={() => {
+                setLocal(value);
+                setEditing(false);
+              }}
             />
           </View>
         </View>
@@ -472,12 +509,11 @@ const rowStyles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    width: "50%",
+    flex: 1,
   },
   value: {
     fontSize: 14,
     fontWeight: "500",
-    flex: 1,
     textAlign: "right",
   },
   valueRow: {
