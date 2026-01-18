@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { View, FlatList, StyleSheet, useWindowDimensions } from "react-native";
+import {
+  View,
+  FlatList,
+  StyleSheet,
+  useWindowDimensions,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
 import {
   Dialog,
   Searchbar,
@@ -10,6 +17,7 @@ import {
   Divider,
   useTheme,
   Portal,
+  ActivityIndicator,
 } from "react-native-paper";
 import { useTranslation } from "react-i18next";
 import { Voter } from "../types/Voter";
@@ -23,7 +31,7 @@ type Props = {
   voter: Voter;
   existingIds: string[];
   onClose: () => void;
-  onAdd: (members: any[]) => void;
+  onAdd: (members: string[]) => void;
 };
 
 export default function AddFamilyMembersDialog({
@@ -36,9 +44,9 @@ export default function AddFamilyMembersDialog({
   const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
   const styles = createStyles(theme);
-  const { width, height } = useWindowDimensions();
+  const { width } = useWindowDimensions();
 
-  const isTablet = width >= 768;
+  const isTablet = width >= 900;
 
   const [search, setSearch] = useState("");
   const debounced = useDebounce(search, 400);
@@ -59,9 +67,10 @@ export default function AddFamilyMembersDialog({
       const res = await getEligibleFamilyMembers(
         applicationId,
         1,
-        20,
+        50,
         debounced
       );
+
       const filtered = res.data.data.filter(
         (v: Voter) => v.id !== voter.id && !existingIds.includes(v.id)
       );
@@ -87,106 +96,120 @@ export default function AddFamilyMembersDialog({
 
   return (
     <Portal>
-      <Dialog
-        visible={visible}
-        onDismiss={onClose}
-        style={[
-          styles.dialog,
-          {
-            width: isTablet ? 520 : "92%",
-            maxHeight: height * 0.8,
-          },
-        ]}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 0}
+        style={{ flex: 1, justifyContent: "center" }}
       >
-        {/* ---------- HEADER ---------- */}
-        <View style={styles.header}>
-          <Text style={styles.title}>{t("voter.addFamilyMembers")}</Text>
-          <Text style={styles.subtitle}>{t("voter.addFamilySubtitle")}</Text>
-        </View>
-
-        <Divider style={styles.divider} />
-
-        {/* ---------- CONTENT ---------- */}
-        <Dialog.Content style={styles.content}>
-          <Searchbar
-            placeholder={t("voter.searchVoters")}
-            value={search}
-            onChangeText={setSearch}
-            style={styles.search}
-            inputStyle={{ fontSize: 14 }}
-          />
-
-          <View style={styles.selectionBar}>
-            <Text style={styles.selectionText}>
-              {t("voter.selectedCount", {
-                count: Object.keys(selected).length,
-              })}
-            </Text>
+        <Dialog
+          visible={visible}
+          onDismiss={onClose}
+          style={[
+            styles.dialog,
+            {
+              width: isTablet ? 520 : "92%",
+              height: isTablet ? 620 : 520,
+            },
+          ]}
+        >
+          {/* HEADER */}
+          <View style={styles.header}>
+            <Text style={styles.title}>{t("voter.addFamilyMembers")}</Text>
+            <Text style={styles.subtitle}>{t("voter.addFamilySubtitle")}</Text>
           </View>
 
-          <View style={styles.listContainer}>
-            <FlatList
-              data={list}
-              keyExtractor={(i) => i.id}
-              refreshing={loading}
-              renderItem={({ item }) => {
-                const checked = !!selected[item.id];
-                return (
-                  <List.Item
-                    title={item.fullName}
-                    description={t(`voter.gender${item.gender}`, {
-                      defaultValue: item.gender,
-                    })}
-                    titleStyle={styles.listTitle}
-                    descriptionStyle={styles.listDescription}
-                    onPress={() => toggle(item)}
-                    style={[
-                      styles.listItem,
-                      checked && styles.listItemSelected,
-                    ]}
-                    left={() => (
-                      <Checkbox
-                        status={checked ? "checked" : "unchecked"}
-                        color={theme.colors.primary}
-                      />
-                    )}
-                  />
-                );
+          <Divider style={styles.divider} />
+
+          {/* SEARCH + LABEL */}
+          <View style={styles.topSection}>
+            <Searchbar
+              placeholder={t("voter.searchVoters")}
+              value={search}
+              onChangeText={setSearch}
+              style={styles.search}
+              inputStyle={{
+                fontSize: 14,
+                minHeight: 44,
+                height: 44,
               }}
-              ListEmptyComponent={
-                !loading ? (
-                  <Text style={styles.emptyText}>
-                    {t("voter.noData")}
-                  </Text>
-                ) : null
-              }
             />
           </View>
-        </Dialog.Content>
 
-        <Divider style={styles.divider} />
+          <View style={{ flex: 1 }}>
+            {loading && (
+              <View style={styles.overlayLoader}>
+                <ActivityIndicator size="large" color={theme.colors.primary} />
+              </View>
+            )}
 
-        {/* ---------- FOOTER ---------- */}
-        <Dialog.Actions style={styles.actions}>
-          <Button
-            onPress={onClose}
-            style={{ borderRadius: 10 }}
-            textColor={theme.colors.textSecondary}
-          >
-            {t("cancel")}
-          </Button>
-          <Button
-            mode="contained"
-            disabled={Object.keys(selected).length === 0}
-            style={{ borderRadius: 10 }}
-            onPress={confirm}
-          >
-            {t("voter.addWithCount", {
-              count: Object.keys(selected).length,
-            })}
-          </Button>
-        </Dialog.Actions>
-      </Dialog>
+            <Dialog.Content style={{ flex: 1, paddingHorizontal: 0 }}>
+              <FlatList
+                data={list}
+                keyExtractor={(i) => i.id}
+                refreshing={loading}
+                keyboardShouldPersistTaps="handled"
+                keyboardDismissMode="none"
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{
+                  paddingHorizontal: 12,
+                  paddingBottom: 12,
+                }}
+                renderItem={({ item }) => {
+                  const checked = !!selected[item.id];
+                  return (
+                    <List.Item
+                      title={item.fullName}
+                      description={t(`voter.gender${item.gender}`, {
+                        defaultValue: item.gender,
+                      })}
+                      titleStyle={styles.listTitle}
+                      descriptionStyle={styles.listDescription}
+                      onPress={() => toggle(item)}
+                      style={[
+                        styles.listItem,
+                        checked && styles.listItemSelected,
+                      ]}
+                      left={() => (
+                        <Checkbox
+                          status={checked ? "checked" : "unchecked"}
+                          color={theme.colors.primary}
+                        />
+                      )}
+                    />
+                  );
+                }}
+                ListEmptyComponent={
+                  !loading ? (
+                    <Text style={styles.emptyText}>{t("voter.noData")}</Text>
+                  ) : null
+                }
+              />
+            </Dialog.Content>
+          </View>
+
+          <Divider style={styles.divider} />
+
+          <View style={styles.actions}>
+            <Button
+              onPress={onClose}
+              style={{ borderRadius: 10 }}
+              textColor={theme.colors.textSecondary}
+            >
+              {t("cancel")}
+            </Button>
+            <Button
+              mode="contained"
+              disabled={Object.keys(selected).length === 0}
+              style={{ borderRadius: 10 }}
+              onPress={confirm}
+            >
+              {t("voter.addWithCount", {
+                count: Object.keys(selected).length,
+              })}
+            </Button>
+          </View>
+        </Dialog>
+      </KeyboardAvoidingView>
     </Portal>
   );
 }
@@ -199,12 +222,16 @@ const createStyles = (theme: AppTheme) =>
       borderRadius: 16,
       backgroundColor: theme.colors.white,
       alignSelf: "center",
+      maxHeight: "85%",
+      display: "flex",
     },
     header: {
       paddingHorizontal: 20,
       paddingTop: 18,
       paddingBottom: 14,
       backgroundColor: theme.colors.paperBackground,
+      marginTop: 0,
+      borderRadius: 16,
     },
     title: {
       fontSize: 18,
@@ -219,16 +246,18 @@ const createStyles = (theme: AppTheme) =>
     divider: {
       backgroundColor: theme.colors.divider,
     },
-    content: {
-      paddingHorizontal: 16,
-      paddingTop: 12,
-      paddingBottom: 16,
+    topSection: {
+      paddingHorizontal: 12,
+      paddingTop: 8,
+      paddingBottom: 6,
     },
     search: {
       backgroundColor: theme.colors.white,
       borderWidth: 1,
       borderColor: theme.colors.subtleBorder,
       borderRadius: 12,
+      height: 44,
+      minHeight: 44,
     },
     selectionBar: {
       marginTop: 10,
@@ -238,14 +267,10 @@ const createStyles = (theme: AppTheme) =>
       fontSize: 13,
       color: theme.colors.textTertiary,
     },
-    listContainer: {
-      marginTop: 8,
-      borderWidth: 1,
-      borderColor: theme.colors.subtleBorder,
-      borderRadius: 12,
-      backgroundColor: theme.colors.white,
-      maxHeight: 300,
-      overflow: "hidden",
+    listLabel: {
+      fontSize: 13,
+      marginBottom: 6,
+      color: theme.colors.textSecondary,
     },
     listItem: {
       paddingVertical: 4,
@@ -254,6 +279,7 @@ const createStyles = (theme: AppTheme) =>
     },
     listItemSelected: {
       backgroundColor: theme.colors.softOrange,
+      borderRadius: 4,
     },
     listTitle: {
       fontSize: 14,
@@ -271,8 +297,21 @@ const createStyles = (theme: AppTheme) =>
       fontSize: 13,
     },
     actions: {
+      display: "flex",
+      flexDirection: "row",
       paddingHorizontal: 16,
-      paddingVertical: 10,
+      paddingVertical: 16,
       justifyContent: "space-between",
+    },
+    overlayLoader: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: "rgba(255,255,255,0.6)",
+      zIndex: 10,
     },
   });

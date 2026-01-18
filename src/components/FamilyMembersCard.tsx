@@ -296,16 +296,18 @@ export default function FamilyMembersCard({ voter, onSelectMember }: Props) {
       />
 
       {/* Add Dialog */}
-      <AddFamilyMembersDialog
-        visible={addOpen}
-        voter={voter}
-        existingIds={members.map((m) => m.id)}
-        onClose={() => setAddOpen(false)}
-        onAdd={(newMembers) => {
-          handleAddMembers(newMembers);
-          setAddOpen(false);
-        }}
-      />
+      {addOpen && (
+        <AddFamilyMembersDialog
+          visible={addOpen}
+          voter={voter}
+          existingIds={members.map((m) => m.id)}
+          onClose={() => setAddOpen(false)}
+          onAdd={(newMembers) => {
+            handleAddMembers(newMembers);
+            setAddOpen(false);
+          }}
+        />
+      )}
     </View>
   );
 }
