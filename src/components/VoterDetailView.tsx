@@ -282,12 +282,8 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
 
 function InfoRow({ label, value }: { label: string; value: string }) {
   const theme = useTheme<AppTheme>();
-  const { width } = useWindowDimensions();
-  const isMobile = width < 480;
-
-  const isLongText = (value?.length ?? 0) > 40;
-
-  const stack = isMobile && isLongText;
+  const { isWeb, isMobileWeb } = usePlatformInfo();
+  const isLongText = (value?.length ?? 0) > (isWeb && !isMobileWeb ? 70 : 40);
 
   return (
     <View
@@ -295,9 +291,9 @@ function InfoRow({ label, value }: { label: string; value: string }) {
         rowStyles.row,
         {
           borderBottomColor: theme.colors.divider,
-          flexDirection: stack ? "column" : "row",
-          alignItems: stack ? "flex-start" : "center",
-          gap: stack ? 4 : 8,
+          flexDirection: isLongText ? "column" : "row",
+          alignItems: isLongText ? "flex-start" : "center",
+          gap: isLongText ? 4 : 8,
         },
       ]}
     >
@@ -305,7 +301,7 @@ function InfoRow({ label, value }: { label: string; value: string }) {
         style={[
           rowStyles.label,
           { color: theme.colors.textSecondary },
-          stack && { width: "100%" },
+          isLongText && { width: "100%" },
         ]}
         numberOfLines={1}
       >
@@ -317,8 +313,8 @@ function InfoRow({ label, value }: { label: string; value: string }) {
           rowStyles.value,
           {
             color: theme.colors.textPrimary,
-            textAlign: stack ? "left" : "right",
-            width: stack ? "100%" : "auto",
+            textAlign: isLongText ? "left" : "right",
+            width: isLongText ? "100%" : "auto",
           },
         ]}
       >
