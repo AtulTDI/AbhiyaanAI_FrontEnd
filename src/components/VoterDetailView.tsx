@@ -331,9 +331,10 @@ function EditableInfoRow({
   maxLength,
   onSave,
 }: any) {
+  const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
   const { isWeb, isMobileWeb } = usePlatformInfo();
-
+  const { showToast } = useToast();
   const [editing, setEditing] = useState(false);
   const [local, setLocal] = useState(value);
 
@@ -378,13 +379,21 @@ function EditableInfoRow({
             value={local}
             keyboardType={keyboardType}
             maxLength={maxLength}
-            onChangeText={setLocal}
+            onChangeText={(text) => setLocal(text.replace(/[^0-9]/g, ""))}
+            outlineColor={
+              !/^\d{10}$/.test(local) ? theme.colors.error : theme.colors.white
+            }
             style={[rowStyles.input, { backgroundColor: theme.colors.white }]}
           />
           <IconButton
             icon="check"
             size={18}
             onPress={() => {
+              if (!/^\d{10}$/.test(local)) {
+                showToast(t("voter.mobileInvalid"), "error");
+                return;
+              }
+
               onSave?.(local);
               setEditing(false);
             }}
@@ -411,7 +420,10 @@ function EditableInfoRow({
             value={local}
             keyboardType={keyboardType}
             maxLength={maxLength}
-            onChangeText={setLocal}
+            onChangeText={(text) => setLocal(text.replace(/[^0-9]/g, ""))}
+            outlineColor={
+              !/^\d{10}$/.test(local) ? theme.colors.error : theme.colors.white
+            }
             style={{
               flex: 1,
               height: 44,
@@ -423,6 +435,11 @@ function EditableInfoRow({
               icon="check"
               size={18}
               onPress={() => {
+                if (!/^\d{10}$/.test(local)) {
+                  showToast(t("voter.mobileInvalid"), "error");
+                  return;
+                }
+
                 onSave?.(local);
                 setEditing(false);
               }}

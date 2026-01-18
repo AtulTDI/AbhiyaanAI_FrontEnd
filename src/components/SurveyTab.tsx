@@ -178,7 +178,33 @@ export default function SurveyTab({ voterId }: Props) {
 
   const updateMobile = (value: string) => {
     const digits = value.replace(/[^0-9]/g, "");
-    if (digits.length <= 10) update("secondaryMobileNumber", digits);
+    if (digits.length <= 10) {
+      update("secondaryMobileNumber", digits);
+    }
+  };
+
+  const isValidMobile = (num?: string) => {
+    if (!num) return true;
+    return /^\d{10}$/.test(num);
+  };
+
+  const isValidEmail = (email?: string) => {
+    if (!email) return true;
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+
+  const isAtLeast18 = (isoDate?: string | null) => {
+    if (!isoDate) return true;
+    const birthDate = new Date(isoDate);
+    const today = new Date();
+
+    const age = today.getFullYear() - birthDate.getFullYear();
+    const hasBirthdayPassed =
+      today.getMonth() > birthDate.getMonth() ||
+      (today.getMonth() === birthDate.getMonth() &&
+        today.getDate() >= birthDate.getDate());
+
+    return hasBirthdayPassed ? age >= 18 : age - 1 >= 18;
   };
 
   /* ================= DEMANDS ================= */
@@ -233,6 +259,21 @@ export default function SurveyTab({ voterId }: Props) {
 
   const handleSave = async () => {
     try {
+      if (!isValidMobile(data?.secondaryMobileNumber)) {
+        showToast(t("voter.mobileInvalid"), "error");
+        return;
+      }
+
+      if (!isValidEmail(data?.email)) {
+        showToast(t("voter.emailInvalid"), "error");
+        return;
+      }
+
+      if (!isAtLeast18(data?.dateOfBirth)) {
+        showToast(t("voter.dobUnder18"), "error");
+        return;
+      }
+
       setSaving(true);
       const { demands, ...surveyPayload } = data;
       data?.id
@@ -281,6 +322,9 @@ export default function SurveyTab({ voterId }: Props) {
       </View>
     );
   }
+
+  const maxDob = new Date();
+  maxDob.setFullYear(maxDob.getFullYear() - 18);
 
   return (
     <>
@@ -357,11 +401,22 @@ export default function SurveyTab({ voterId }: Props) {
               label={t("voter.mobile1")}
               value={data.secondaryMobileNumber}
               onChange={updateMobile}
+              outlineColor={
+                data.secondaryMobileNumber &&
+                !isValidMobile(data.secondaryMobileNumber)
+                  ? theme.colors.error
+                  : theme.colors.subtleBorder
+              }
             />
             <InputRow
               label={t("voter.email")}
               value={data.email}
               onChange={(v) => update("email", v)}
+              outlineColor={
+                data.email && !isValidEmail(data.email)
+                  ? theme.colors.error
+                  : theme.colors.subtleBorder
+              }
             />
 
             <Row label={t("voter.dob")} noDivider>
@@ -385,7 +440,10 @@ export default function SurveyTab({ voterId }: Props) {
               label={t("voter.selectDate")}
               saveLabel={t("save")}
               visible={dobOpen}
-              date={data.dateOfBirth ? new Date(data.dateOfBirth) : new Date()}
+              date={data.dateOfBirth ? new Date(data.dateOfBirth) : maxDob}
+              validRange={{
+                endDate: maxDob,
+              }}
               onDismiss={() => setDobOpen(false)}
               onConfirm={({ date }) => {
                 setDobOpen(false);
@@ -766,6 +824,7 @@ function InputRow({
   multiline,
   noDivider,
   value,
+  outlineColor,
   ...props
 }: any) {
   const theme = useTheme<AppTheme>();
@@ -790,7 +849,7 @@ function InputRow({
           onFocus={() => {
             setSelection(undefined);
           }}
-          outlineColor={theme.colors.subtleBorder}
+          outlineColor={outlineColor ? outlineColor : theme.colors.subtleBorder}
           activeOutlineColor={theme.colors.primary}
           style={{
             minHeight: multiline ? 80 : 44,
