@@ -3,6 +3,7 @@ import {
   VoterSurveyRequest,
   VoterSurveyResponse,
   SupportTypeColor,
+  Caste,
 } from "../types/Voter";
 
 /**
@@ -20,6 +21,16 @@ export const addSurvey = (payload: VoterSurveyRequest) => {
  */
 export const getSupportTypes = () => {
   return axios.get<SupportTypeColor[]>("/VotersSurvey/support-types", {
+    useApiPrefix: true,
+    useVoterBase: true,
+  });
+};
+
+/**
+ * Get Castes
+ */
+export const getCastes = () => {
+  return axios.get<Caste[]>("/VotersSurvey/get-castes", {
     useApiPrefix: true,
     useVoterBase: true,
   });

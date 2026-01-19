@@ -39,7 +39,8 @@ export interface VoterSurveyRequest {
   voterId?: string;
   supportType?: number;
   supportStrength?: number;
-  caste: string,
+  casteId?: string; 
+  otherCaste?: string,
   newAddress: string,
   society: string,
   flatNumber: string,
@@ -58,6 +59,8 @@ export interface VoterSurveyRequest {
 export interface VoterSurveyResponse {
   id: string;
   voterId: string;
+  casteId?: string; 
+  otherCaste?: string;
   supportType: number;
   supportStrength?: number;
   remarks?: string;
@@ -70,6 +73,12 @@ export interface SupportTypeColor {
   key: string;
   label: string;
   colorCode: string;
+}
+
+export interface Caste {
+  id: string;
+  nameEn: string;
+  nameMr: string;
 }
 
 export type DemandCategory = {

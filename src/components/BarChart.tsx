@@ -73,7 +73,6 @@ const BarChart = ({
     (_, i) => i * yStepValue
   );
 
-  // --------- HELPER: Wrap label into 2 lines ---------
   const splitLabel = (label) => {
     if (!label) return ["", ""];
 
@@ -91,7 +90,6 @@ const BarChart = ({
 
   const renderChartContent = (svgW) => (
     <Svg height={dynamicChartHeight + bottomPadding} width={svgW}>
-      {/* Y-axis label */}
       <SvgText
         x={15}
         y={dynamicChartHeight / 2 + topPadding}
@@ -104,7 +102,6 @@ const BarChart = ({
         {t("value") || "Value"}
       </SvgText>
 
-      {/* Grid lines */}
       {ySteps.map((y, i) => {
         const yPos =
           dynamicChartHeight -
@@ -135,7 +132,6 @@ const BarChart = ({
         );
       })}
 
-      {/* X-axis */}
       <Line
         x1={leftPadding - 5}
         y1={dynamicChartHeight + topPadding}
@@ -145,7 +141,6 @@ const BarChart = ({
         strokeWidth="1.5"
       />
 
-      {/* Bars + Wrapped Labels */}
       <G y={dynamicChartHeight + topPadding} x={offsetX}>
         {data.map((d, i) => {
           const x = i * (barWidth + groupSpacing);
@@ -159,11 +154,10 @@ const BarChart = ({
                 maxValue={visualMaxValue}
                 chartHeight={dynamicChartHeight}
                 width={barWidth}
-                color={barColor}
+                color={d.color || barColor}
                 titleColor={titleColor}
               />
 
-              {/* Wrapped label - TWO LINES */}
               <SvgText
                 x={x + barWidth / 2}
                 y={25}
@@ -207,7 +201,6 @@ const BarChart = ({
         elevation: 2,
       }}
     >
-      {/* No data */}
       {allZero ? (
         <View
           style={{ height, justifyContent: "center", alignItems: "center" }}

@@ -21,6 +21,7 @@ import {
   addSurvey,
   getSupportTypes,
   updateSurvey,
+  getCastes,
 } from "../api/voterSurveyApi";
 import {
   addVoterDemands,
@@ -46,7 +47,8 @@ type Props = {
 const DEFAULT_SURVEY_DATA: VoterSurveyRequest = {
   supportType: 0,
   supportStrength: 0,
-  caste: "",
+  casteId: null,
+  otherCaste: "",
   newAddress: "",
   society: "",
   flatNumber: "",
@@ -88,6 +90,7 @@ export default function SurveyTab({ voterId }: Props) {
   const [saving, setSaving] = useState(false);
 
   const [supportTypes, setSupportTypes] = useState<any[]>([]);
+  const [castes, setCastes] = useState<any[]>([]);
   const [demandCategories, setDemandCategories] = useState<any[]>([]);
   const [demandsByCategory, setDemandsByCategory] = useState<
     Record<string, any[]>
@@ -97,6 +100,7 @@ export default function SurveyTab({ voterId }: Props) {
   useEffect(() => {
     loadSurvey();
     loadSupportTypes();
+    loadCastes();
     loadDemandCategories();
   }, [voterId]);
 
@@ -113,7 +117,12 @@ export default function SurveyTab({ voterId }: Props) {
       const demandRes = await getVoterDemands(voterId);
       const demands = demandRes.data ?? [];
 
-      setData({ ...DEFAULT_SURVEY_DATA, demands, ...res.data });
+      setData({
+        ...DEFAULT_SURVEY_DATA,
+        demands,
+        ...res.data,
+        casteId: res.data.otherCaste.length ? "other" : res.data.casteId,
+      });
 
       const initialOpen: Record<number, boolean> = {};
       demands.forEach((_, index) => {
@@ -133,6 +142,22 @@ export default function SurveyTab({ voterId }: Props) {
     try {
       const res = await getSupportTypes();
       setSupportTypes(res.data ?? []);
+    } catch (e) {
+      showToast(extractErrorMessage(e), "error");
+    }
+  };
+
+  const loadCastes = async () => {
+    try {
+      const res = await getCastes();
+      const unique = Object.values(
+        (res.data ?? []).reduce((acc, item) => {
+          acc[item.nameEn] = item;
+          return acc;
+        }, {} as Record<string, any>)
+      );
+
+      setCastes([...unique, { id: "other", nameEn: "Other", nameMr: "इतर" }]);
     } catch (e) {
       showToast(extractErrorMessage(e), "error");
     }
@@ -277,8 +302,16 @@ export default function SurveyTab({ voterId }: Props) {
       setSaving(true);
       const { demands, ...surveyPayload } = data;
       data?.id
-        ? await updateSurvey(data.id, { voterId, ...surveyPayload })
-        : await addSurvey({ voterId, ...surveyPayload });
+        ? await updateSurvey(data.id, {
+            voterId,
+            ...surveyPayload,
+            casteId: data.casteId === "other" ? null : data.casteId,
+          })
+        : await addSurvey({
+            voterId,
+            ...surveyPayload,
+            casteId: data.casteId === "other" ? null : data.casteId,
+          });
 
       const existingDemandsPayload = demands
         .filter((d) => d.id)
@@ -362,12 +395,26 @@ export default function SurveyTab({ voterId }: Props) {
               />
             </DropdownRow>
 
-            <InputRow
-              label={t("voter.caste")}
-              value={data.caste}
-              onChange={(v) => update("caste", v)}
-              noDivider
-            />
+            <DropdownRow label={t("voter.caste")}>
+              <FormDropdown
+                value={String(data.casteId ?? null)}
+                options={castes.map((s) => ({
+                  label: t(`survey.castes.${s.nameEn}`, s.nameEn),
+                  value: String(s.id),
+                }))}
+                onSelect={(v) => update("casteId", v)}
+                noMargin
+                customOutline
+              />
+            </DropdownRow>
+
+            {data.casteId === "other" && (
+              <InputRow
+                value={data.otherCaste}
+                onChange={(v) => update("otherCaste", v)}
+                noDivider
+              />
+            )}
           </Card>
         </GridItem>
 

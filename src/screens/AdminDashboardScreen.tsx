@@ -26,35 +26,28 @@ const isSmallScreen = width < 600;
 
 const Tab = createMaterialTopTabNavigator();
 
-/**
- * -------------------------------
- * MAIN WRAPPER WITH TABS + IONICONS (OPTION 1)
- * -------------------------------
- */
 const AdminDashboardScreen = () => {
+  const { t } = useTranslation();
+
   return (
     <Tab.Navigator
       id="adminDashboardTabs"
       screenOptions={{
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.primaryLight,
-
         tabBarIndicatorStyle: {
           backgroundColor: colors.primary,
           height: 4,
           borderRadius: 2,
         },
-
         tabBarLabelStyle: {
           fontSize: 14,
           fontWeight: "700",
           textTransform: "none",
         },
-
         tabBarItemStyle: {
           paddingVertical: 8,
         },
-
         tabBarStyle: {
           backgroundColor: colors.white,
           elevation: 4,
@@ -76,7 +69,9 @@ const AdminDashboardScreen = () => {
                 color={color}
                 style={{ marginRight: 6 }}
               />
-              <Text style={{ fontWeight: "700", color }}>Voters</Text>
+              <Text style={{ fontWeight: "700", color }}>
+                {t("dashboard.voter.totalVoters")}
+              </Text>
             </View>
           ),
         }}
@@ -94,7 +89,9 @@ const AdminDashboardScreen = () => {
                 color={color}
                 style={{ marginRight: 6 }}
               />
-              <Text style={{ fontWeight: "700", color }}>Videos</Text>
+              <Text style={{ fontWeight: "700", color }}>
+                {t("dashboard.videosByUser")}
+              </Text>
             </View>
           ),
         }}
@@ -103,11 +100,8 @@ const AdminDashboardScreen = () => {
   );
 };
 
-/**
- * -------------------------------
- * VIDEO DASHBOARD (UNCHANGED LOGIC)
- * -------------------------------
- */
+/* ===================== VIDEO DASHBOARD ===================== */
+
 const VideoDashboardContent = () => {
   const { isWeb } = usePlatformInfo();
   const { t } = useTranslation();
@@ -242,14 +236,12 @@ const VideoDashboardContent = () => {
   );
 };
 
-/**
- * -------------------------------
- * VOTER DASHBOARD (UNCHANGED LOGIC)
- * -------------------------------
- */
+/* ===================== VOTER DASHBOARD ===================== */
+
 const VoterDashboardContent = () => {
   const { isWeb } = usePlatformInfo();
   const { showToast } = useToast();
+  const { t } = useTranslation();
   const [voterData, setVoterData] = useState(null);
 
   useFocusEffect(
@@ -274,7 +266,7 @@ const VoterDashboardContent = () => {
           { justifyContent: "center", alignItems: "center" },
         ]}
       >
-        <Text>Loading...</Text>
+        <Text>{t("dashboard.voter.loading")}</Text>
       </View>
     );
   }
@@ -282,44 +274,126 @@ const VoterDashboardContent = () => {
   const noData = voterData.totalVoters === 0;
 
   const kpis = [
-    { title: "Total Voters", value: voterData.totalVoters },
-    { title: "Verified", value: voterData.verification.verified },
-    { title: "Surveyed", value: voterData.survey.surveyed },
-    { title: "Star Voters", value: voterData.starVoters.count },
+    {
+      title: t("dashboard.voter.totalVoters"),
+      value: voterData.totalVoters,
+    },
+    {
+      title: t("dashboard.voter.verified"),
+      value: voterData.verification.verified,
+    },
+    {
+      title: t("dashboard.voter.surveyed"),
+      value: voterData.survey.surveyed,
+    },
+    {
+      title: t("dashboard.voter.starVoters"),
+      value: voterData.starVoters.count,
+    },
   ];
 
   const genderData = [
-    { label: "Male", value: voterData.genderStats.male },
-    { label: "Female", value: voterData.genderStats.female },
-    { label: "Other", value: voterData.genderStats.other },
+    {
+      label: t("dashboard.voter.male"),
+      value: voterData.genderStats.male,
+    },
+    {
+      label: t("dashboard.voter.female"),
+      value: voterData.genderStats.female,
+    },
+    {
+      label: t("dashboard.voter.other"),
+      value: voterData.genderStats.other,
+    },
   ];
 
   const verificationData = [
-    { label: "Verified", value: voterData.verification.verified },
-    { label: "Unverified", value: voterData.verification.unverified },
+    {
+      label: t("dashboard.voter.verified"),
+      value: voterData.verification.verified,
+    },
+    {
+      label: t("dashboard.voter.pending"),
+      value: voterData.verification.unverified,
+    },
   ];
 
   const surveyData = [
-    { label: "Surveyed", value: voterData.survey.surveyed },
-    { label: "Pending", value: voterData.survey.pending },
+    {
+      label: t("dashboard.voter.surveyed"),
+      value: voterData.survey.surveyed,
+    },
+    {
+      label: t("dashboard.voter.pending"),
+      value: voterData.survey.pending,
+    },
   ];
 
   const ageGroupData = [
-    { label: "18-25", value: voterData.ageGroups.age18To25 },
-    { label: "26-35", value: voterData.ageGroups.age26To35 },
-    { label: "36-45", value: voterData.ageGroups.age36To45 },
-    { label: "46-60", value: voterData.ageGroups.age46To60 },
-    { label: "60+", value: voterData.ageGroups.age60Plus },
+    {
+      label: t("dashboard.voter.ageGroups.18_25"),
+      value: voterData.ageGroups.age18To25,
+    },
+    {
+      label: t("dashboard.voter.ageGroups.26_35"),
+      value: voterData.ageGroups.age26To35,
+    },
+    {
+      label: t("dashboard.voter.ageGroups.36_45"),
+      value: voterData.ageGroups.age36To45,
+    },
+    {
+      label: t("dashboard.voter.ageGroups.46_60"),
+      value: voterData.ageGroups.age46To60,
+    },
+    {
+      label: t("dashboard.voter.ageGroups.60_plus"),
+      value: voterData.ageGroups.age60Plus,
+    },
   ];
 
   const supportData = [
-    { label: "Ours", value: voterData.supportStats.ours },
-    { label: "Neutral", value: voterData.supportStats.neutral },
-    { label: "Opponent", value: voterData.supportStats.opponent },
-    { label: "Undecided", value: voterData.supportStats.undecided },
-    { label: "Out of Station", value: voterData.supportStats.outOfstation },
-    { label: "Beneficiary", value: voterData.supportStats.beneficiary },
+    {
+      label: t("dashboard.voter.support.ours"),
+      value: voterData.supportStats.ours.count,
+      color: voterData.supportStats.ours.color,
+    },
+    {
+      label: t("dashboard.voter.support.neutral"),
+      value: voterData.supportStats.neutral.count,
+      color: voterData.supportStats.neutral.color,
+    },
+    {
+      label: t("dashboard.voter.support.opponent"),
+      value: voterData.supportStats.opponent.count,
+      color: voterData.supportStats.opponent.color,
+    },
+    {
+      label: t("dashboard.voter.support.unknown"),
+      value: voterData.supportStats.unknow.count,
+      color: voterData.supportStats.unknow.color,
+    },
+    {
+      label: t("dashboard.voter.support.outOfStation"),
+      value: voterData.supportStats.outOfstation.count,
+      color: voterData.supportStats.outOfstation.color,
+    },
+    {
+      label: t("dashboard.voter.support.needSpecialVisit"),
+      value: voterData.supportStats.needSpecialVisit.count,
+      color: voterData.supportStats.needSpecialVisit.color,
+    },
+    {
+      label: t("dashboard.voter.support.beneficiary"),
+      value: voterData.supportStats.beneficiary.count,
+      color: voterData.supportStats.beneficiary.color,
+    },
   ];
+
+  const casteData = voterData.casteStats.map((c) => ({
+    label: t(`survey.castes.${c.casteNameEn}`),
+    value: c.count,
+  }));
 
   return (
     <ScrollView style={styles.container}>
@@ -355,7 +429,9 @@ const VoterDashboardContent = () => {
         }}
       >
         <Card style={[styles.chartCard, { flex: 1 }]}>
-          <Text style={styles.chartTitle}>Voters by Gender</Text>
+          <Text style={styles.chartTitle}>
+            {t("dashboard.voter.votersByGender")}
+          </Text>
           <DonutChart
             data={genderData}
             radius={110}
@@ -365,7 +441,9 @@ const VoterDashboardContent = () => {
         </Card>
 
         <Card style={[styles.chartCard, { flex: 1 }]}>
-          <Text style={styles.chartTitle}>Verification Status</Text>
+          <Text style={styles.chartTitle}>
+            {t("dashboard.voter.verificationStatus")}
+          </Text>
           <DonutChart
             data={verificationData}
             radius={110}
@@ -375,7 +453,9 @@ const VoterDashboardContent = () => {
         </Card>
 
         <Card style={[styles.chartCard, { flex: 1 }]}>
-          <Text style={styles.chartTitle}>Survey Status</Text>
+          <Text style={styles.chartTitle}>
+            {t("dashboard.voter.surveyStatus")}
+          </Text>
           <DonutChart
             data={surveyData}
             radius={110}
@@ -386,7 +466,9 @@ const VoterDashboardContent = () => {
       </View>
 
       <Card style={styles.chartCard}>
-        <Text style={styles.chartTitle}>Voters by Age Group</Text>
+        <Text style={styles.chartTitle}>
+          {t("dashboard.voter.votersByAgeGroup")}
+        </Text>
         <BarChart
           data={ageGroupData}
           width={chartWidth}
@@ -398,9 +480,25 @@ const VoterDashboardContent = () => {
       </Card>
 
       <Card style={styles.chartCard}>
-        <Text style={styles.chartTitle}>Voters by Support Type</Text>
+        <Text style={styles.chartTitle}>
+          {t("dashboard.voter.votersBySupportType")}
+        </Text>
         <BarChart
           data={supportData}
+          width={chartWidth}
+          height={220}
+          barColor={colors.primary}
+          titleColor={colors.primaryDark}
+          noData={noData}
+        />
+      </Card>
+
+      <Card style={styles.chartCard}>
+        <Text style={styles.chartTitle}>
+          {t("dashboard.voter.votersByCaste")}
+        </Text>
+        <BarChart
+          data={casteData}
           width={chartWidth}
           height={220}
           barColor={colors.primary}

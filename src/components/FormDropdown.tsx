@@ -37,7 +37,6 @@ type Props = {
 
 /* ================= CONSTANTS ================= */
 
-const SCREEN_HEIGHT = Dimensions.get("window").height;
 const MENU_MAX_HEIGHT = 280;
 const MENU_OFFSET = 6;
 
@@ -58,6 +57,7 @@ export default function FormDropdown({
   const theme = useTheme<AppTheme>();
   const styles = useMemo(() => createStyles(theme, height), [theme, height]);
   const { isWeb, isAndroid, isIOS } = usePlatformInfo();
+
   const anchorRef = useRef<View>(null);
 
   const [open, setOpen] = useState(false);
@@ -66,6 +66,8 @@ export default function FormDropdown({
     null
   );
   const [openUpwards, setOpenUpwards] = useState(false);
+
+  const windowHeight = Dimensions.get("window").height;
 
   /* ================= DERIVED ================= */
 
@@ -86,9 +88,9 @@ export default function FormDropdown({
   const openMenu = () => {
     if (disabled || !anchorRef.current) return;
 
-    anchorRef.current.measure((x, y, width, h, pageX, pageY) => {
-      const spaceBelow = SCREEN_HEIGHT - (pageY + h);
-      const spaceAbove = pageY;
+    anchorRef.current.measureInWindow((x, y, width, h) => {
+      const spaceBelow = windowHeight - (y + h);
+      const spaceAbove = y;
 
       const shouldOpenUpwards =
         spaceBelow < MENU_MAX_HEIGHT && spaceAbove > spaceBelow;
@@ -96,8 +98,8 @@ export default function FormDropdown({
       setOpenUpwards(shouldOpenUpwards);
 
       setAnchorLayout({
-        x: pageX,
-        y: pageY,
+        x,
+        y,
         width,
         height: h,
       });
@@ -119,7 +121,6 @@ export default function FormDropdown({
       <View
         style={{ marginBottom: (isAndroid || isIOS) && !noMargin ? 25 : 0 }}
       >
-        {/* BACKGROUND TINT WRAPPER */}
         <View
           style={{
             backgroundColor: selectedOption?.colorCode
@@ -128,11 +129,7 @@ export default function FormDropdown({
             borderRadius: 8,
           }}
         >
-          <Pressable
-            ref={anchorRef}
-            onPress={openMenu}
-            onLayout={(e) => setAnchorLayout(e.nativeEvent.layout)}
-          >
+          <Pressable ref={anchorRef} onPress={openMenu}>
             <TextInput
               pointerEvents="none"
               mode="outlined"
@@ -191,7 +188,7 @@ export default function FormDropdown({
                   ? undefined
                   : anchorLayout.y + anchorLayout.height + MENU_OFFSET,
                 bottom: openUpwards
-                  ? SCREEN_HEIGHT - anchorLayout.y + MENU_OFFSET
+                  ? windowHeight - anchorLayout.y + MENU_OFFSET
                   : undefined,
               },
             ]}
@@ -262,7 +259,6 @@ export default function FormDropdown({
 
 const createStyles = (theme: AppTheme, height: number) =>
   StyleSheet.create({
-    /* INPUT */
     input: {
       height: 44,
       backgroundColor: "transparent",
@@ -272,12 +268,10 @@ const createStyles = (theme: AppTheme, height: number) =>
       borderRadius: 8,
     },
 
-    /* BACKDROP */
     backdrop: {
       ...StyleSheet.absoluteFillObject,
     },
 
-    /* MENU */
     menu: {
       position: "absolute",
       zIndex: 1000,
@@ -293,7 +287,6 @@ const createStyles = (theme: AppTheme, height: number) =>
       shadowOffset: { width: 0, height: 8 },
     },
 
-    /* SEARCH */
     search: {
       margin: 10,
       height: 40,
@@ -304,7 +297,6 @@ const createStyles = (theme: AppTheme, height: number) =>
       borderRadius: 8,
     },
 
-    /* LIST */
     option: {
       flexDirection: "row",
       alignItems: "center",
@@ -330,7 +322,6 @@ const createStyles = (theme: AppTheme, height: number) =>
       marginLeft: 16,
     },
 
-    /* ERROR */
     error: {
       fontSize: 12,
       color: theme.colors.error,
