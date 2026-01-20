@@ -447,6 +447,8 @@ export default function SurveyTab({ voterId }: Props) {
             <InputRow
               label={t("voter.mobile1")}
               value={data.secondaryMobileNumber}
+              keyboardType="phone-pad"
+              maxLength={10}
               onChange={updateMobile}
               outlineColor={
                 data.secondaryMobileNumber &&
@@ -871,6 +873,8 @@ function InputRow({
   multiline,
   noDivider,
   value,
+  keyboardType,
+  maxLength,
   outlineColor,
   ...props
 }: any) {
@@ -888,6 +892,7 @@ function InputRow({
           mode="outlined"
           multiline={multiline}
           numberOfLines={multiline ? 4 : 1}
+          maxLength={maxLength}
           onChangeText={onChange}
           selection={selection}
           onBlur={() => {
@@ -930,13 +935,14 @@ function InputRow({
         numberOfLines={multiline ? 4 : 1}
         onChangeText={onChange}
         selection={selection}
+        keyboardType={keyboardType}
         onBlur={() => {
           setSelection({ start: 0, end: 0 });
         }}
         onFocus={() => {
           setSelection(undefined);
         }}
-        outlineColor={theme.colors.subtleBorder}
+        outlineColor={outlineColor ? outlineColor : theme.colors.subtleBorder}
         activeOutlineColor={theme.colors.primary}
         style={{
           minHeight: multiline ? 90 : 44,
