@@ -391,7 +391,7 @@ const VoterDashboardContent = () => {
   ];
 
   const casteData = voterData.casteStats.map((c) => ({
-    label: t(`survey.castes.${c.casteNameEn}`),
+    label: c.casteId ? t(`survey.castes.${c.casteNameEn}`) : c.casteNameEn,
     value: c.count,
   }));
 
