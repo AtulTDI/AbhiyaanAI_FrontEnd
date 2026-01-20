@@ -34,6 +34,8 @@ type Props = {
   onAdd: (members: string[]) => void;
 };
 
+const PAGE_SIZE = 50;
+
 export default function AddFamilyMembersDialog({
   visible,
   voter,
@@ -53,28 +55,68 @@ export default function AddFamilyMembersDialog({
 
   const [list, setList] = useState<Voter[]>([]);
   const [selected, setSelected] = useState<Record<string, Voter>>({});
+
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [totalCount, setTotalCount] = useState(0);
+  const [loadedCount, setLoadedCount] = useState(0);
 
   useEffect(() => {
     if (!visible) return;
-    fetchVoters();
+
+    setPage(1);
+    setHasMore(true);
+    setList([]);
+    setTotalCount(0);
+    setLoadedCount(0);
+    fetchVoters(true);
   }, [debounced, visible]);
 
-  const fetchVoters = async () => {
+  const fetchVoters = async (reset = false) => {
+    if (loading) return;
+    if (!reset && !hasMore) return;
+
     setLoading(true);
+
     try {
       const { applicationId } = await getAuthData();
+      const requestPage = reset ? 1 : page;
+
       const res = await getEligibleFamilyMembers(
         applicationId,
-        1,
-        50,
+        requestPage,
+        PAGE_SIZE,
         debounced
       );
 
       const filtered = res.data.data.filter(
         (v: Voter) => v.id !== voter.id && !existingIds.includes(v.id)
       );
-      setList(filtered);
+
+      const total = res.data.totalRecords ?? 0;
+
+      if (reset) {
+        setTotalCount(total);
+        setLoadedCount(0);
+      }
+
+      const newlyLoaded = res.data.data.length;
+
+      setLoadedCount((prev) => (reset ? newlyLoaded : prev + newlyLoaded));
+
+      setList((prev) => (reset ? filtered : [...prev, ...filtered]));
+
+      const newFilteredLength = reset
+        ? filtered.length
+        : list.length + filtered.length;
+
+      const noMoreFromServer = res.data.data.length === 0;
+      const reachedTotal = loadedCount + newlyLoaded >= total;
+
+      setHasMore(!noMoreFromServer && !reachedTotal);
+
+      setPage(reset ? 2 : requestPage + 1);
     } finally {
       setLoading(false);
     }
@@ -112,7 +154,6 @@ export default function AddFamilyMembersDialog({
             },
           ]}
         >
-          {/* HEADER */}
           <View style={styles.header}>
             <Text style={styles.title}>{t("voter.addFamilyMembers")}</Text>
             <Text style={styles.subtitle}>{t("voter.addFamilySubtitle")}</Text>
@@ -120,7 +161,6 @@ export default function AddFamilyMembersDialog({
 
           <Divider style={styles.divider} />
 
-          {/* SEARCH + LABEL */}
           <View style={styles.topSection}>
             <Searchbar
               placeholder={t("voter.searchVoters")}
@@ -135,57 +175,89 @@ export default function AddFamilyMembersDialog({
             />
           </View>
 
-          <View style={{ flex: 1 }}>
-            {loading && (
+          <View style={styles.counterBar}>
+            <Text style={styles.counterText}>
+              {t("survey.showing", { defaultValue: "Showing" })}{" "}
+              <Text style={styles.counterHighlight}>{loadedCount}</Text>{" "}
+              {t("survey.of", { defaultValue: "of" })}{" "}
+              <Text style={styles.counterHighlight}>{totalCount}</Text>
+            </Text>
+          </View>
+
+          <Dialog.Content style={{ flex: 1, paddingHorizontal: 0 }}>
+            {loading && list.length === 0 && (
               <View style={styles.overlayLoader}>
                 <ActivityIndicator size="large" color={theme.colors.primary} />
               </View>
             )}
 
-            <Dialog.Content style={{ flex: 1, paddingHorizontal: 0 }}>
-              <FlatList
-                data={list}
-                keyExtractor={(i) => i.id}
-                refreshing={loading}
-                keyboardShouldPersistTaps="handled"
-                keyboardDismissMode="none"
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={{
-                  paddingHorizontal: 12,
-                  paddingBottom: 12,
-                }}
-                renderItem={({ item }) => {
-                  const checked = !!selected[item.id];
-                  return (
-                    <List.Item
-                      title={item.fullName}
-                      description={t(`voter.gender${item.gender}`, {
-                        defaultValue: item.gender,
-                      })}
-                      titleStyle={styles.listTitle}
-                      descriptionStyle={styles.listDescription}
-                      onPress={() => toggle(item)}
-                      style={[
-                        styles.listItem,
-                        checked && styles.listItemSelected,
-                      ]}
-                      left={() => (
-                        <Checkbox
-                          status={checked ? "checked" : "unchecked"}
-                          color={theme.colors.primary}
-                        />
-                      )}
-                    />
-                  );
-                }}
-                ListEmptyComponent={
-                  !loading ? (
-                    <Text style={styles.emptyText}>{t("voter.noData")}</Text>
-                  ) : null
-                }
-              />
-            </Dialog.Content>
-          </View>
+            <FlatList
+              data={list}
+              keyExtractor={(i) => i.id}
+              keyboardShouldPersistTaps="handled"
+              keyboardDismissMode="none"
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{
+                paddingHorizontal: 12,
+              }}
+              ListFooterComponent={
+                hasMore ? (
+                  <View style={{ padding: 8, alignItems: "center" }}>
+                    {loading ? (
+                      <ActivityIndicator size="small" />
+                    ) : (
+                      <Button
+                        mode="outlined"
+                        onPress={() => fetchVoters(false)}
+                        compact
+                        style={{
+                          borderRadius: 8,
+                          minWidth: 100,
+                          height: 32,
+                          justifyContent: "center",
+                        }}
+                        labelStyle={{
+                          fontSize: 12,
+                          lineHeight: 14,
+                        }}
+                      >
+                        {t("survey.loadMore", { defaultValue: "Load More" })}
+                      </Button>
+                    )}
+                  </View>
+                ) : null
+              }
+              ListEmptyComponent={
+                !loading ? (
+                  <Text style={styles.emptyText}>{t("voter.noData")}</Text>
+                ) : null
+              }
+              renderItem={({ item }) => {
+                const checked = !!selected[item.id];
+                return (
+                  <List.Item
+                    title={item.fullName}
+                    description={t(`voter.gender${item.gender}`, {
+                      defaultValue: item.gender,
+                    })}
+                    titleStyle={styles.listTitle}
+                    descriptionStyle={styles.listDescription}
+                    onPress={() => toggle(item)}
+                    style={[
+                      styles.listItem,
+                      checked && styles.listItemSelected,
+                    ]}
+                    left={() => (
+                      <Checkbox
+                        status={checked ? "checked" : "unchecked"}
+                        color={theme.colors.primary}
+                      />
+                    )}
+                  />
+                );
+              }}
+            />
+          </Dialog.Content>
 
           <Divider style={styles.divider} />
 
@@ -259,18 +331,20 @@ const createStyles = (theme: AppTheme) =>
       height: 44,
       minHeight: 44,
     },
-    selectionBar: {
-      marginTop: 10,
-      marginBottom: 6,
+    counterBar: {
+      paddingHorizontal: 16,
+      paddingVertical: 6,
+      backgroundColor: theme.colors.paperBackground,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.colors.divider,
     },
-    selectionText: {
+    counterText: {
       fontSize: 13,
-      color: theme.colors.textTertiary,
-    },
-    listLabel: {
-      fontSize: 13,
-      marginBottom: 6,
       color: theme.colors.textSecondary,
+    },
+    counterHighlight: {
+      fontWeight: "700",
+      color: theme.colors.primary,
     },
     listItem: {
       paddingVertical: 4,

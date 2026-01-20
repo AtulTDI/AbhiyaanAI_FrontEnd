@@ -28,10 +28,12 @@ export type GetPaginatedVoters = {
 }
 
 export type GetFamilyMembers = {
+  data: Voter[];
   count: number;
   familyId: string;
   headVoterId: string;
   members: Voter[];
+  totalRecords: number;
 }
 
 export interface VoterSurveyRequest {

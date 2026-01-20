@@ -362,6 +362,9 @@
     "updateFailed": "Failed to update survey",
     "loadFailed": "Failed to load survey",
     "noData": "No survey data found",
+    "loadMore": "Load More",
+    "showing": "Showing",
+    "of": "of",
     "supportType": {
       "Unknown": "Unknown",
       "WithUs": "With Us",
