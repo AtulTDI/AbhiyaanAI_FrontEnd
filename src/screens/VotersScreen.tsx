@@ -17,6 +17,7 @@ import { Voter } from "../types/Voter";
 import { useDebounce } from "../hooks/useDebounce";
 import { usePlatformInfo } from "../hooks/usePlatformInfo";
 import { getVoterById, getVoters } from "../api/voterApi";
+import FormDropdown from "../components/FormDropdown";
 import { AppTheme } from "../theme";
 
 type AgeMode = "none" | "lt" | "gt" | "between";
@@ -55,6 +56,15 @@ export default function VotersScreen() {
   const [voterStack, setVoterStack] = useState<Voter[]>([]);
   const [transitionLoading, setTransitionLoading] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [searchBy, setSearchBy] = useState<"fullname" | "epicid" | "address">(
+    "fullname"
+  );
+
+  const SEARCH_OPTIONS = [
+    { label: t("name"), value: "fullname" },
+    { label: t("voter.labelEpicId"), value: "epicid" },
+    { label: t("voter.labelAddress"), value: "address" },
+  ];
 
   /* ---------------- DEBOUNCED VALUES ---------------- */
   const debouncedSearch = useDebounce(search, 500);
@@ -90,7 +100,8 @@ export default function VotersScreen() {
         PAGE_SIZE,
         debouncedSearch ?? "",
         ageParam,
-        gender === "All" ? undefined : gender
+        gender === "All" ? undefined : gender,
+        searchBy
       );
 
       setVoterCount(res?.data?.totalRecords ?? 0);
@@ -106,6 +117,7 @@ export default function VotersScreen() {
     debouncedMinAge,
     debouncedMaxAge,
     gender,
+    searchBy
   ]);
 
   useEffect(() => {
@@ -245,15 +257,31 @@ export default function VotersScreen() {
               </Text>
 
               <View style={styles.searchContainer}>
-                <Searchbar
-                  placeholder={t("voter.searchPlaceholder")}
-                  value={search}
-                  onChangeText={(text) => {
-                    setSearch(text);
-                    setPage(1);
-                  }}
-                  style={styles.search}
-                />
+                <View style={styles.mergedSearchWrapper}>
+                  <TextInput
+                    mode="outlined"
+                    placeholder={t("voter.searchPlaceholder")}
+                    value={search}
+                    onChangeText={(text) => {
+                      setSearch(text);
+                      setPage(1);
+                    }}
+                    style={styles.mergedSearchInput}
+                    contentStyle={{ paddingRight: 140 }}
+                  />
+
+                  <View style={styles.dropdownInsideInput}>
+                    <FormDropdown
+                      value={searchBy}
+                      options={SEARCH_OPTIONS}
+                      onSelect={(val) => setSearchBy(val as any)}
+                      noMargin
+                      customOutline
+                      showSearch={false}
+                      showClearIcon={false}
+                    />
+                  </View>
+                </View>
               </View>
 
               {/* COLLAPSIBLE FILTER PANEL */}
@@ -784,5 +812,20 @@ const createStyles = (theme: AppTheme, platform: { isWeb: boolean }) =>
       justifyContent: "center",
       alignItems: "center",
       zIndex: 999,
+    },
+    mergedSearchWrapper: {
+      width: "100%",
+      position: "relative",
+    },
+    mergedSearchInput: {
+      backgroundColor: theme.colors.white,
+      borderRadius: 12,
+    },
+    dropdownInsideInput: {
+      position: "absolute",
+      right: 8,
+      top: 6,
+      width: 130,
+      height: 36,
     },
   });

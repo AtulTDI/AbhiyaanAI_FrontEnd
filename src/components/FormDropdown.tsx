@@ -32,6 +32,8 @@ type Props = {
   height?: number;
   noMargin?: boolean;
   customOutline?: boolean;
+  showSearch?: boolean;
+  showClearIcon?: boolean;
   onSelect: (val: string) => void;
 };
 
@@ -52,6 +54,8 @@ export default function FormDropdown({
   onSelect,
   customOutline,
   noMargin,
+  showSearch = true,
+  showClearIcon = true,
 }: Props) {
   const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
@@ -148,7 +152,7 @@ export default function FormDropdown({
               }
               activeOutlineColor={theme.colors.primary}
               right={
-                value ? (
+                value && showClearIcon ? (
                   <TextInput.Icon icon="close" onPress={() => onSelect("")} />
                 ) : (
                   <TextInput.Icon
@@ -194,16 +198,18 @@ export default function FormDropdown({
             ]}
           >
             {/* Search */}
-            <TextInput
-              mode="outlined"
-              placeholder={t("search")}
-              placeholderTextColor={theme.colors.placeholder}
-              value={search}
-              onChangeText={setSearch}
-              style={styles.search}
-              outlineStyle={styles.searchOutline}
-              autoFocus={Platform.OS === "web"}
-            />
+            {showSearch && (
+              <TextInput
+                mode="outlined"
+                placeholder={t("search")}
+                placeholderTextColor={theme.colors.placeholder}
+                value={search}
+                onChangeText={setSearch}
+                style={styles.search}
+                outlineStyle={styles.searchOutline}
+                autoFocus={Platform.OS === "web"}
+              />
+            )}
 
             <FlatList
               data={filteredOptions}

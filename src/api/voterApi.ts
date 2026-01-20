@@ -12,7 +12,8 @@ export const getVoters = (
   pageSize: number,
   searchText?: string,
   age?: string,
-  gender?: string
+  gender?: string,
+  searchType?: string
 ) =>
   axios.get<GetPaginatedVoters>(
     "/Voters/getvoters",
@@ -25,6 +26,7 @@ export const getVoters = (
         ...(searchText ? { searchText } : {}),
         ...(age !== undefined ? { age } : {}),
         ...(gender ? { gender } : {}),
+        ...(searchType ? { searchType } : {}),
       },
     }
   );
