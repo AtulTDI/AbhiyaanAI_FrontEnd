@@ -395,7 +395,7 @@ export default function SurveyTab({ voterId }: Props) {
               />
             </DropdownRow>
 
-            <DropdownRow label={t("voter.caste")}>
+            <DropdownRow label={t("voter.caste")} noDivider>
               <FormDropdown
                 value={String(data.casteId ?? null)}
                 options={castes.map((s) => ({
