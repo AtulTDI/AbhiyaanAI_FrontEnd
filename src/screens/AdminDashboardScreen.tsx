@@ -33,6 +33,7 @@ const AdminDashboardScreen = () => {
     <Tab.Navigator
       id="adminDashboardTabs"
       screenOptions={{
+        swipeEnabled: false,
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.primaryLight,
         tabBarIndicatorStyle: {
