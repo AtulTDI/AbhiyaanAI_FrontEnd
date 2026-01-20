@@ -135,7 +135,7 @@ export default function FormDropdown({
         >
           <Pressable ref={anchorRef} onPress={openMenu}>
             <TextInput
-              pointerEvents="none"
+              pointerEvents="box-only"
               mode="outlined"
               value={selectedOption?.label || ""}
               placeholder={placeholder}
@@ -157,6 +157,7 @@ export default function FormDropdown({
                 ) : (
                   <TextInput.Icon
                     icon={openUpwards ? "menu-up" : "menu-down"}
+                    onPress={openMenu}
                   />
                 )
               }
