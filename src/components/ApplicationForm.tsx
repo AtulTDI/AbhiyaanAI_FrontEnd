@@ -9,6 +9,7 @@ import CommonUpload from "./CommonUpload";
 
 type Props = {
   mode: "create" | "edit";
+  loading: boolean;
   onCreate: (data: { appName: string; videoCount: number }) => void;
   onVoterFileUpload: (data: any) => void;
   applicationToEdit: Application;
@@ -18,6 +19,7 @@ type Props = {
 
 export default function ApplicationForm({
   mode,
+  loading,
   onCreate,
   onVoterFileUpload,
   applicationToEdit,
@@ -145,6 +147,7 @@ export default function ApplicationForm({
     >
       <DynamicForm
         fields={applicationFields}
+        formSubmitLoading={loading}
         initialValues={{
           appName: applicationToEdit?.name || "",
           videoCount: applicationToEdit ? "0" : "100",

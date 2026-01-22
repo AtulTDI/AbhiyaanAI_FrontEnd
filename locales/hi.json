@@ -132,7 +132,9 @@
     "cloningSpeedPlaceholder": "उदाहरण: सामान्य गति के लिए 1.0",
     "enterName": "नाम दर्ज करें",
     "selectCategory": "श्रेणी चुनें",
-    "selectDemand": "मांग चुनें"
+    "selectDemand": "मांग चुनें",
+    "enterCandidateName": "उम्मीदवार का नाम दर्ज करें",
+    "enterPartyName": "दल का नाम दर्ज करें"
   },
 
   "application": {
@@ -353,6 +355,28 @@
     "importVoters": "मतदाता इम्पोर्ट करें",
     "loadVoterFailMessage": "मतदाता डेटा लाने में असफल",
     "noData": "कोई मतदाता नहीं मिला"
+  },
+  "candidate": {
+    "singular": "उम्मीदवार",
+    "plural": "उम्मीदवार",
+    "party": "दल",
+    "photo": "उम्मीदवार की फोटो",
+    "symbol": "दल का चिन्ह",
+    "uploadImage": "छवि अपलोड करें",
+    "add": "उम्मीदवार जोड़ें",
+    "edit": "उम्मीदवार संपादित करें",
+    "addSuccess": "उम्मीदवार सफलतापूर्वक जोड़ा गया",
+    "addFailed": "उम्मीदवार जोड़ने में विफल",
+    "editSuccess": "उम्मीदवार सफलतापूर्वक अपडेट किया गया",
+    "editFailed": "उम्मीदवार अपडेट करने में विफल",
+    "delete": "उम्मीदवार हटाएँ",
+    "confirmDelete": "क्या आप वाकई इस उम्मीदवार को हटाना चाहते हैं?",
+    "deleteSuccess": "उम्मीदवार सफलतापूर्वक हटा दिया गया!",
+    "deleteFail": "उम्मीदवार हटाने में विफल",
+    "loadFailed": "उम्मीदवार लोड करने में विफल",
+    "photoRequired": "उम्मीदवार की फोटो आवश्यक है",
+    "symbolRequired": "दल का चिन्ह आवश्यक है",
+    "noData": "कोई उम्मीदवार नहीं मिला"
   },
   "survey": {
     "supportTypeRequired": "सहायता प्रकार आवश्यक है",

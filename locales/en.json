@@ -132,7 +132,9 @@
     "cloningSpeedPlaceholder": "E.g. 1.0 for normal speed",
     "enterName": "Enter name",
     "selectCategory": "Select category",
-    "selectDemand": "Select demand"
+    "selectDemand": "Select demand",
+    "enterCandidateName": "Enter candidate name",
+    "enterPartyName": "Enter party name"
   },
 
   "application": {
@@ -353,6 +355,28 @@
     "importVoters": "Import Voters",
     "loadVoterFailMessage": "Failed to fetch voters",
     "noData": "No voters found"
+  },
+  "candidate": {
+    "singular": "Candidate",
+    "plural": "Candidates",
+    "party": "Party",
+    "photo": "Candidate Photo",
+    "symbol": "Party Symbol",
+    "uploadImage": "Upload Image",
+    "add": "Add Candidate",
+    "edit": "Edit Candidate",
+    "addSuccess": "Candidate added successfully",
+    "addFailed": "Failed to add candidate",
+    "editSuccess": "Candidate updated successfully",
+    "editFailed": "Failed to update candidate",
+    "delete": "Delete Candidate",
+    "confirmDelete": "Are you sure you want to delete this candidate?",
+    "deleteSuccess": "Candidate deleted successfully!",
+    "deleteFail": "Failed to delete candidate",
+    "loadFailed": "Failed to load candidates",
+    "photoRequired": "Candidate photo is required",
+    "symbolRequired": "Party symbol is required",
+    "noData": "No candidates found"
   },
   "survey": {
     "supportTypeRequired": "Support Type is required",

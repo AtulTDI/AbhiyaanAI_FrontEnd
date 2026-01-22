@@ -34,6 +34,7 @@ export default function AddApplicationScreen() {
   const [applicationToEdit, setApplicationToEdit] =
     useState<Application | null>(null);
   const [voterFile, setVoterFile] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
 
   const fetchApplications = useCallback(
     async (page: number, pageSize: number) => {
@@ -82,8 +83,8 @@ export default function AddApplicationScreen() {
 
   const addApplication = async (data: CreateApplicationPayload) => {
     try {
+      setLoading(true);
       const response = await createApplication(data);
-      console.log(response);
       if (voterFile) {
         await handleVoterFileUpload(response.data.id);
       }
@@ -96,12 +97,15 @@ export default function AddApplicationScreen() {
         extractErrorMessage(error, t("application.addFailed")),
         "error"
       );
+    } finally {
+      setLoading(false);
     }
   };
 
   const editApplication = async (data) => {
     setShowAddApplicationView(true);
     try {
+      setLoading(true);
       await editApplicationById(applicationToEdit.id, {
         ...data,
         name: data?.appName,
@@ -116,6 +120,8 @@ export default function AddApplicationScreen() {
         extractErrorMessage(error, t("application.editFailed")),
         "error"
       );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -169,6 +175,7 @@ export default function AddApplicationScreen() {
       {showAddApplicationView ? (
         <ApplicationForm
           mode={applicationToEdit ? "edit" : "create"}
+          loading={loading}
           onCreate={applicationToEdit ? editApplication : addApplication}
           onVoterFileUpload={(file) => setVoterFile(file)}
           applicationToEdit={applicationToEdit}

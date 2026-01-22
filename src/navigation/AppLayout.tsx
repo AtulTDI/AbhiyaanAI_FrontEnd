@@ -22,6 +22,7 @@ import ActivateSenderScreen from "../screens/ActivateSenderScreen";
 import ProcessingVideosScreen from "../screens/ProcessingVideosScreen";
 import GeneratedImagesScreen from "../screens/GeneratedImagesScreen";
 import PremiumVoicesScreen from "../screens/PremiumVoicesScreen";
+import AddCandidateScreen from "../screens/AddCandidateScreen";
 import CustomDrawer from "../components/CustomDrawer";
 import CustomLabel from "../components/CustomLabel";
 import UserAvatarMenu from "../components/UserAvatarMenu";
@@ -288,6 +289,31 @@ export default function AppLayout() {
                     icon={
                       <Ionicons
                         name="grid-outline"
+                        size={20}
+                        color={props.color || colors.onPrimary}
+                      />
+                    }
+                  />
+                ),
+              }}
+            />
+          )}
+
+          {role === "Admin" && (
+            <Drawer.Screen
+              name="Candidates"
+              component={AddCandidateScreen}
+              options={{
+                headerShown: true,
+                headerTitle: "",
+                headerRight: headerRightComponent,
+                drawerLabel: (props) => (
+                  <CustomLabel
+                    {...props}
+                    label={t("candidate.plural")}
+                    icon={
+                      <Ionicons
+                        name="people-circle-outline"
                         size={20}
                         color={props.color || colors.onPrimary}
                       />

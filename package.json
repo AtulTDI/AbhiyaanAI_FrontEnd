@@ -67,7 +67,9 @@
     "docker:build:tar:demo:abhiyan": "node ./scripts/createTarDir.js && cross-env BRAND=abhiyan docker compose -f docker-compose.yml --profile demo build --no-cache && docker save -o tar/abhiyan_ai_frontend_demo_abhiyan.tar abhiyan_ai_frontend:latest",
     "docker:build:tar:demo:rajyog": "node ./scripts/createTarDir.js && cross-env BRAND=rajyog docker compose -f docker-compose.yml --profile demo build --no-cache && docker save -o tar/abhiyan_ai_frontend_demo_rajyog.tar abhiyan_ai_frontend:latest",
     "docker:build:tar:prod:abhiyan": "node ./scripts/createTarDir.js && cross-env BRAND=abhiyan docker compose -f docker-compose.yml --profile prod build --no-cache && docker save -o tar/abhiyan_ai_frontend_prod_abhiyan.tar abhiyan_ai_frontend:latest",
-    "docker:build:tar:prod:rajyog": "node ./scripts/createTarDir.js && cross-env BRAND=rajyog docker compose -f docker-compose.yml --profile prod build --no-cache && docker save -o tar/abhiyan_ai_frontend_prod_rajyog.tar abhiyan_ai_frontend:latest"
+    "docker:build:tar:prod:rajyog": "node ./scripts/createTarDir.js && cross-env BRAND=rajyog docker compose -f docker-compose.yml --profile prod build --no-cache && docker save -o tar/abhiyan_ai_frontend_prod_rajyog.tar abhiyan_ai_frontend:latest",
+    "android": "expo run:android",
+    "ios": "expo run:ios"
   },
   "dependencies": {
     "@expo/metro-runtime": "~5.0.4",
@@ -117,6 +119,7 @@
     "react-native-svg": "^15.13.0",
     "react-native-tab-view": "^4.2.2",
     "react-native-table-component": "^1.2.2",
+    "react-native-thermal-printer": "^2.3.6",
     "react-native-walkthrough-tooltip": "^1.6.0",
     "react-native-web": "^0.20.0",
     "sharp": "^0.34.4"

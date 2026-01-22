@@ -1,10 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  View,
-  StyleSheet,
-  ScrollView,
-  useWindowDimensions,
-} from "react-native";
+import { View, StyleSheet, ScrollView } from "react-native";
 import {
   Text,
   IconButton,
@@ -26,8 +21,10 @@ import {
   verifyVoter,
 } from "../api/voterApi";
 import { useToast } from "./ToastProvider";
-import { AppTheme } from "../theme";
 import { usePlatformInfo } from "../hooks/usePlatformInfo";
+import PrinterService from "../services/printerService";
+import { requestBluetoothPermissions } from "../utils/bluetoothPermissions";
+import { AppTheme } from "../theme";
 
 type Props = {
   voter: Voter;
@@ -39,11 +36,10 @@ type TabKey = "details" | "family" | "survey";
 
 export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
   const { t } = useTranslation();
+  const { isWeb, isMobileWeb } = usePlatformInfo();
   const theme = useTheme<AppTheme>();
   const { showToast } = useToast();
-  const { width } = useWindowDimensions();
   const styles = createStyles(theme);
-  const isTablet = width >= 768;
 
   const [tab, setTab] = useState<TabKey>("details");
   const [mobile, setMobile] = useState(voter.mobileNumber ?? "");
@@ -55,6 +51,8 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
     { key: "family", label: t("voter.tabFamily") },
     { key: "survey", label: t("voter.tabSurvey") },
   ];
+
+  /* ================= EXISTING HANDLERS ================= */
 
   const handleMobileNumberUpdate = async (number: string) => {
     try {
@@ -97,23 +95,53 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
     }
   };
 
+  const handlePrintVoterSlip = async () => {
+    try {
+      const hasPermission = await requestBluetoothPermissions();
+      if (!hasPermission) {
+        showToast("Bluetooth permission denied", "error");
+        return;
+      }
+
+      const result = await PrinterService.printVoterSlip({
+        name: voter.fullName,
+        boothNo: voter.votingBoothNumber ?? "-",
+        partNo: voter.prabagNumber ?? "-",
+        serialNo: voter.rank ?? "-",
+        address: voter.votingBoothAddress ?? voter.address ?? "-",
+      });
+
+      if (result.success) {
+        showToast("Voter slip printed successfully", "success");
+      } else {
+        showToast("Printing failed. Check printer.", "error");
+      }
+    } catch (error) {
+      showToast("Failed to print voter slip", "error");
+    }
+  };
+
+  /* ================= UI ================= */
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       {/* ================= TOP BAR ================= */}
       <View style={styles.topBar}>
-        <IconButton
-          icon="arrow-left"
-          iconColor={theme.colors.primary}
-          onPress={onBack}
-        />
-
-        <View style={styles.identityStrip}>
-          <Avatar.Text
-            size={40}
-            label={voter.fullName?.[0] ?? "V"}
-            style={{ backgroundColor: theme.colors.primaryLight }}
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+          <IconButton
+            icon="arrow-left"
+            iconColor={theme.colors.primary}
+            onPress={onBack}
           />
-          <Text style={styles.topName}>{voter.fullName}</Text>
+
+          <View style={styles.identityStrip}>
+            <Avatar.Text
+              size={40}
+              label={voter.fullName?.[0] ?? "V"}
+              style={{ backgroundColor: theme.colors.primaryLight }}
+            />
+            <Text style={styles.topName}>{voter.fullName}</Text>
+          </View>
         </View>
       </View>
 
@@ -123,7 +151,9 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
       {/* ================= DETAILS TAB ================= */}
       {tab === "details" && (
         <View style={styles.contentWrapper}>
-          <View style={[styles.row, !isTablet && styles.rowStacked]}>
+          <View
+            style={[styles.row, (!isWeb || isMobileWeb) && styles.rowStacked]}
+          >
             <View style={styles.col}>
               <View style={styles.card}>
                 <Text style={styles.sectionTitle}>
@@ -186,7 +216,9 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
             </View>
           </View>
 
-          <View style={[styles.row, !isTablet && styles.rowStacked]}>
+          <View
+            style={[styles.row, (!isWeb || isMobileWeb) && styles.rowStacked]}
+          >
             <View style={styles.col}>
               <View style={styles.card}>
                 <Text style={styles.sectionTitle}>
@@ -274,11 +306,22 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
         <FamilyMembersCard voter={voter} onSelectMember={onOpenVoter} />
       )}
       {tab === "survey" && <SurveyTab voterId={voter.id} />}
+
+      {/* ================= MOBILE FLOATING PRINT BUTTON ================= */}
+      {(!isWeb || isMobileWeb) && (
+        <IconButton
+          icon="printer"
+          size={24}
+          iconColor={theme.colors.white}
+          style={styles.fabPrint}
+          onPress={handlePrintVoterSlip}
+        />
+      )}
     </ScrollView>
   );
 }
 
-/* ================= ROW COMPONENTS ================= */
+/* ================= ROW COMPONENTS (UNCHANGED) ================= */
 
 function InfoRow({ label, value }: { label: string; value: string }) {
   const theme = useTheme<AppTheme>();
@@ -372,41 +415,7 @@ function EditableInfoRow({
         </View>
       )}
 
-      {editing && isWeb && (
-        <View style={rowStyles.editRow}>
-          <TextInput
-            mode="outlined"
-            value={local}
-            keyboardType={keyboardType}
-            maxLength={maxLength}
-            onChangeText={(text) => setLocal(text.replace(/[^0-9]/g, ""))}
-            outlineColor={
-              !/^\d{10}$/.test(local) ? theme.colors.error : theme.colors.white
-            }
-            style={[rowStyles.input, { backgroundColor: theme.colors.white }]}
-          />
-          <IconButton
-            icon="check"
-            size={18}
-            onPress={() => {
-              if (!/^\d{10}$/.test(local)) {
-                showToast(t("voter.mobileInvalid"), "error");
-                return;
-              }
-
-              onSave?.(local);
-              setEditing(false);
-            }}
-          />
-          <IconButton
-            icon="close"
-            size={18}
-            onPress={() => setEditing(false)}
-          />
-        </View>
-      )}
-
-      {editing && (!isWeb || isMobileWeb) && (
+      {editing && (
         <View
           style={{
             marginTop: 6,
@@ -471,6 +480,7 @@ const createStyles = (theme: AppTheme) =>
     topBar: {
       flexDirection: "row",
       alignItems: "center",
+      justifyContent: "space-between",
       gap: 12,
       marginBottom: 12,
     },
@@ -511,6 +521,14 @@ const createStyles = (theme: AppTheme) =>
     },
     statusText: { fontSize: 15, fontWeight: "600" },
     button: { borderRadius: 10 },
+    fabPrint: {
+      position: "absolute",
+      right: 16,
+      bottom: 16,
+      backgroundColor: theme.colors.primary,
+      elevation: 6,
+      borderRadius: 28,
+    },
   });
 
 const rowStyles = StyleSheet.create({

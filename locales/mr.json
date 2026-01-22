@@ -132,7 +132,9 @@
     "cloningSpeedPlaceholder": "उदा. सामान्य वेगासाठी 1.0",
     "enterName": "नाव प्रविष्ट करा",
     "selectCategory": "श्रेणी निवडा",
-    "selectDemand": "मागणी निवडा"
+    "selectDemand": "मागणी निवडा",
+    "enterCandidateName": "उमेदवाराचे नाव टाका",
+    "enterPartyName": "पक्षाचे नाव टाका"
   },
 
   "application": {
@@ -353,6 +355,28 @@
     "importVoters": "मतदार आयात करा",
     "loadVoterFailMessage": "मतदार डेटा मिळवण्यात अयशस्वी",
     "noData": "कोणतेही मतदार सापडले नाहीत"
+  },
+  "candidate": {
+    "singular": "उमेदवार",
+    "plural": "उमेदवार",
+    "party": "पक्ष",
+    "photo": "उमेदवाराचे फोटो",
+    "symbol": "पक्ष चिन्ह",
+    "uploadImage": "प्रतिका चढवा",
+    "add": "उमेदवार जोडा",
+    "edit": "उमेदवार संपादित करा",
+    "addSuccess": "उमेदवार यशस्वीरित्या जोडला गेला",
+    "addFailed": "उमेदवार जोडण्यात अयशस्वी",
+    "editSuccess": "उमेदवार यशस्वीरित्या अद्ययावत केला गेला",
+    "editFailed": "उमेदवार अद्ययावत करण्यात अयशस्वी",
+    "deleteSuccess": "उमेदवार यशस्वीरित्या वगळला गेला!",
+    "deleteFail": "उमेदवार वगळण्यात अयशस्वी",
+    "delete": "उमेदवार वगळा",
+    "confirmDelete": "तुम्हाला खरंच हा उमेदवार वगळायचा आहे का?",
+    "loadFailed": "उमेदवार लोड करण्यात अयशस्वी",
+    "photoRequired": "उमेदवाराचे फोटो आवश्यक आहे",
+    "symbolRequired": "पक्ष चिन्ह आवश्यक आहे",
+    "noData": "कोणताही उमेदवार सापडला नाही"
   },
   "survey": {
     "supportTypeRequired": "समर्थन प्रकार आवश्यक आहे",
