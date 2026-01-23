@@ -74,14 +74,20 @@ export const updateCandidate = async (data: CandidateCreateUpdate) => {
 
   formData.append("id", data.id);
   formData.append("name", data.name);
-  data.partyName && formData.append("partyName", data.partyName);
+  formData.append("nameMr", data.nameMr);
+  formData.append("partyName", data.partyName);
+  formData.append("partyNameMr", data.partyNameMr);
 
   if (data.candidatePhoto) {
     await appendFile(formData, data.candidatePhoto, "candidatePhoto");
+  } else {
+    formData.append("candidatePhoto", null);
   }
 
   if (data.symbolImage) {
     await appendFile(formData, data.symbolImage, "symbolImage");
+  } else {
+    formData.append("symbolImage", null);
   }
 
   return axios.put(

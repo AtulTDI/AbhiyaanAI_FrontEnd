@@ -9,6 +9,7 @@ import {
 } from "react-native-paper";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { useTranslation } from "react-i18next";
+
 import { Candidate } from "../types/Candidate";
 import SingleImageUpload, { ImageAsset } from "./SingleImageUpload";
 import { usePlatformInfo } from "../hooks/usePlatformInfo";
@@ -21,11 +22,11 @@ type Props = {
   loading?: boolean;
   onSubmit: (data: {
     name: string;
-    mrName: string;
+    nameMr: string;
     partyName: string;
-    mrPartyName: string;
-    candidatePhoto?: ImageAsset;
-    symbolImage?: ImageAsset;
+    partyNameMr: string;
+    candidatePhoto?: ImageAsset | null;
+    symbolImage?: ImageAsset | null;
   }) => void;
   onCancel: () => void;
 };
@@ -47,21 +48,21 @@ export default function CandidateForm({
   /* ---------------- State ---------------- */
 
   const [name, setName] = useState("");
-  const [mrName, setMrName] = useState("");
+  const [nameMr, setNameMr] = useState("");
   const [partyName, setPartyName] = useState("");
-  const [mrPartyName, setMrPartyName] = useState("");
-  const [candidatePhoto, setCandidatePhoto] = useState<
-    ImageAsset | null | undefined
-  >(undefined);
-  const [symbolImage, setSymbolImage] = useState<ImageAsset | null | undefined>(
-    undefined
-  );
+  const [partyNameMr, setPartyNameMr] = useState("");
+
+  // undefined = untouched, null = removed, object = uploaded
+  const [candidatePhoto, setCandidatePhoto] =
+    useState<ImageAsset | null | undefined>(undefined);
+  const [symbolImage, setSymbolImage] =
+    useState<ImageAsset | null | undefined>(undefined);
 
   const [errors, setErrors] = useState<{
     name?: string;
-    mrName?: string;
+    nameMr?: string;
     party?: string;
-    mrParty?: string;
+    partyMr?: string;
     photo?: string;
     symbol?: string;
   }>({});
@@ -70,9 +71,9 @@ export default function CandidateForm({
 
   useEffect(() => {
     setName(candidate?.name || "");
-    setMrName(candidate?.nameMr || "");
+    setNameMr(candidate?.nameMr || "");
     setPartyName(candidate?.partyName || "");
-    setMrPartyName(candidate?.partyNameMr || "");
+    setPartyNameMr(candidate?.partyNameMr || "");
     setCandidatePhoto(undefined);
     setSymbolImage(undefined);
     setErrors({});
@@ -84,17 +85,28 @@ export default function CandidateForm({
     const e: typeof errors = {};
 
     if (!name.trim()) e.name = t("fieldRequired", { field: t("name") });
-    if (!mrName.trim())
-      e.mrName = t("fieldRequired", { field: t("candidate.mrName") });
+    if (!nameMr.trim())
+      e.nameMr = t("fieldRequired", { field: t("candidate.mrName") });
 
     if (!partyName.trim())
       e.party = t("fieldRequired", { field: t("candidate.party") });
-    if (!mrPartyName.trim())
-      e.mrParty = t("fieldRequired", { field: t("candidate.mrPartyName") });
+    if (!partyNameMr.trim())
+      e.partyMr = t("fieldRequired", {
+        field: t("candidate.mrPartyName"),
+      });
 
+    // 🔥 Image rules
     if (!isEdit) {
+      // create → always required
       if (!candidatePhoto) e.photo = t("candidate.photoRequired");
       if (!symbolImage) e.symbol = t("candidate.symbolRequired");
+    } else {
+      // edit → existing OR new upload is enough
+      if (!candidatePhoto && !candidate?.candidatePhotoUrl)
+        e.photo = t("candidate.photoRequired");
+
+      if (!symbolImage && !candidate?.symbolImageUrl)
+        e.symbol = t("candidate.symbolRequired");
     }
 
     setErrors(e);
@@ -108,11 +120,12 @@ export default function CandidateForm({
 
     const payload: any = {
       name: name.trim(),
-      nameMr: mrName.trim(),
+      nameMr: nameMr.trim(),
       partyName: partyName.trim(),
-      partyNameMr: mrPartyName.trim(),
+      partyNameMr: partyNameMr.trim(),
     };
 
+    // only send image fields if user changed them
     if (candidatePhoto !== undefined) payload.candidatePhoto = candidatePhoto;
     if (symbolImage !== undefined) payload.symbolImage = symbolImage;
 
@@ -136,17 +149,12 @@ export default function CandidateForm({
       enableOnAndroid
       keyboardShouldPersistTaps="handled"
     >
-      <Surface
-        style={[styles.form, { backgroundColor: theme.colors.white }]}
-        elevation={1}
-      >
-        {/* Row 1: Name + Mr Name */}
+      <Surface style={styles.form} elevation={1}>
+        {/* Row 1: Name + MR Name */}
         <View style={isTwoColumn ? styles.row : styles.column}>
           <View style={styles.col}>
             <FixedLabel label={t("name")} required />
             <TextInput
-              placeholder={t("placeholder.enterCandidateName")}
-              placeholderTextColor={theme.colors.placeholder}
               value={name}
               onChangeText={(v) => {
                 setName(v);
@@ -155,11 +163,7 @@ export default function CandidateForm({
               mode="outlined"
               style={styles.input}
             />
-            <HelperText
-              type="error"
-              visible={!!errors.name}
-              style={styles.error}
-            >
+            <HelperText type="error" visible={!!errors.name}>
               {errors.name}
             </HelperText>
           </View>
@@ -167,33 +171,25 @@ export default function CandidateForm({
           <View style={styles.col}>
             <FixedLabel label={t("candidate.mrName")} required />
             <TextInput
-              placeholder={t("placeholder.enterMrCandidateName")}
-              placeholderTextColor={theme.colors.placeholder}
-              value={mrName}
+              value={nameMr}
               onChangeText={(v) => {
-                setMrName(v);
-                setErrors((e) => ({ ...e, mrName: undefined }));
+                setNameMr(v);
+                setErrors((e) => ({ ...e, nameMr: undefined }));
               }}
               mode="outlined"
               style={styles.input}
             />
-            <HelperText
-              type="error"
-              visible={!!errors.mrName}
-              style={styles.error}
-            >
-              {errors.mrName}
+            <HelperText type="error" visible={!!errors.nameMr}>
+              {errors.nameMr}
             </HelperText>
           </View>
         </View>
 
-        {/* Row 2: Party name + Mr Party Name */}
+        {/* Row 2: Party + MR Party */}
         <View style={isTwoColumn ? styles.row : styles.column}>
           <View style={styles.col}>
             <FixedLabel label={t("candidate.party")} required />
             <TextInput
-              placeholder={t("placeholder.enterPartyName")}
-              placeholderTextColor={theme.colors.placeholder}
               value={partyName}
               onChangeText={(v) => {
                 setPartyName(v);
@@ -202,11 +198,7 @@ export default function CandidateForm({
               mode="outlined"
               style={styles.input}
             />
-            <HelperText
-              type="error"
-              visible={!!errors.party}
-              style={styles.error}
-            >
+            <HelperText type="error" visible={!!errors.party}>
               {errors.party}
             </HelperText>
           </View>
@@ -214,22 +206,16 @@ export default function CandidateForm({
           <View style={styles.col}>
             <FixedLabel label={t("candidate.mrPartyName")} required />
             <TextInput
-              placeholder={t("placeholder.enterMrPartyName")}
-              placeholderTextColor={theme.colors.placeholder}
-              value={mrPartyName}
+              value={partyNameMr}
               onChangeText={(v) => {
-                setMrPartyName(v);
-                setErrors((e) => ({ ...e, mrParty: undefined }));
+                setPartyNameMr(v);
+                setErrors((e) => ({ ...e, partyMr: undefined }));
               }}
               mode="outlined"
               style={styles.input}
             />
-            <HelperText
-              type="error"
-              visible={!!errors.mrParty}
-              style={styles.error}
-            >
-              {errors.mrParty}
+            <HelperText type="error" visible={!!errors.partyMr}>
+              {errors.partyMr}
             </HelperText>
           </View>
         </View>
@@ -237,7 +223,7 @@ export default function CandidateForm({
         {/* Row 3: Images */}
         <View style={isTwoColumn ? styles.row : styles.column}>
           <View style={styles.col}>
-            <FixedLabel label={t("candidate.photo")} required />
+            <FixedLabel label={t("candidate.photo")} required={!isEdit} />
             <SingleImageUpload
               value={candidatePhoto}
               previewUrl={candidate?.candidatePhotoUrl}
@@ -246,17 +232,13 @@ export default function CandidateForm({
                 setErrors((e) => ({ ...e, photo: undefined }));
               }}
             />
-            <HelperText
-              type="error"
-              visible={!!errors.photo}
-              style={styles.error}
-            >
+            <HelperText type="error" visible={!!errors.photo}>
               {errors.photo}
             </HelperText>
           </View>
 
           <View style={styles.col}>
-            <FixedLabel label={t("candidate.symbol")} required />
+            <FixedLabel label={t("candidate.symbol")} required={!isEdit} />
             <SingleImageUpload
               value={symbolImage}
               previewUrl={candidate?.symbolImageUrl}
@@ -265,11 +247,7 @@ export default function CandidateForm({
                 setErrors((e) => ({ ...e, symbol: undefined }));
               }}
             />
-            <HelperText
-              type="error"
-              visible={!!errors.symbol}
-              style={styles.error}
-            >
+            <HelperText type="error" visible={!!errors.symbol}>
               {errors.symbol}
             </HelperText>
           </View>
@@ -304,7 +282,7 @@ const styles = StyleSheet.create({
   form: {
     padding: 16,
     borderRadius: 8,
-    marginBottom: 20,
+    backgroundColor: "#fff",
   },
   row: {
     flexDirection: "row",
@@ -319,11 +297,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   input: {
-    backgroundColor: "#fff",
     height: 44,
-  },
-  error: {
-    paddingLeft: 0,
+    backgroundColor: "#fff",
   },
   actions: {
     flexDirection: "row",
