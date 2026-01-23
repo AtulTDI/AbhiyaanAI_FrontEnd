@@ -14,8 +14,8 @@ export type Voter = {
   prabagNumber: number;
   familyMembers: any[];
   votingBoothAddress: string;
-  votingBoothNumber: number;
   votingRoomNumber: number;
+  votingDateAndTime: string;
   isStarVoter?: boolean;
   isVerified: boolean;
 };

@@ -201,16 +201,16 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
                 </Text>
 
                 <InfoRow
-                  label={t("voter.labelBoothNo")}
-                  value={`${voter.votingBoothNumber ?? "-"}`}
-                />
-                <InfoRow
-                  label={t("voter.labelVotingRoom")}
+                  label={t("voter.labelVotingCenter")}
                   value={`${voter.votingRoomNumber ?? "-"}`}
                 />
                 <InfoRow
                   label={t("voter.labelBoothAddress")}
                   value={voter.votingBoothAddress ?? "-"}
+                />
+                <InfoRow
+                  label={t("voter.labelVotingDateTime")}
+                  value={`${voter.votingDateAndTime ?? "-"}`}
                 />
               </View>
             </View>
@@ -326,7 +326,7 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
 function InfoRow({ label, value }: { label: string; value: string }) {
   const theme = useTheme<AppTheme>();
   const { isWeb, isMobileWeb } = usePlatformInfo();
-  const isLongText = (value?.length ?? 0) > (isWeb && !isMobileWeb ? 70 : 40);
+  const isLongText = (value?.length ?? 0) > (isWeb && !isMobileWeb ? 150 : 40);
 
   return (
     <View
