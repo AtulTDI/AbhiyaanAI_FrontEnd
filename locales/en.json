@@ -380,6 +380,8 @@
     "loadFailed": "Failed to load candidates",
     "photoRequired": "Candidate photo is required",
     "symbolRequired": "Party symbol is required",
+    "voterPrintSuccess": "Voter slip printed successfully",
+    "voterPrintFail": "Voter slip printing failed",
     "noData": "No candidates found"
   },
   "survey": {

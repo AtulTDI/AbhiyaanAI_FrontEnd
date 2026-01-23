@@ -1,5 +1,11 @@
-import React, { useEffect, useState } from "react";
-import { View, StyleSheet, ScrollView } from "react-native";
+import React, { useEffect, useRef, useState } from "react";
+import {
+  View,
+  StyleSheet,
+  ScrollView,
+  Platform,
+  NativeModules,
+} from "react-native";
 import {
   Text,
   IconButton,
@@ -7,8 +13,9 @@ import {
   Button,
   TextInput,
   useTheme,
+  ActivityIndicator,
 } from "react-native-paper";
-import { Ionicons } from "@expo/vector-icons";
+import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import { Voter } from "../types/Voter";
 import { extractErrorMessage } from "../utils/common";
@@ -20,11 +27,14 @@ import {
   updateStarVoter,
   verifyVoter,
 } from "../api/voterApi";
+import { generateVoterSlip } from "../api/candidateApi";
 import { useToast } from "./ToastProvider";
 import { usePlatformInfo } from "../hooks/usePlatformInfo";
-import PrinterService from "../services/printerService";
 import { requestBluetoothPermissions } from "../utils/bluetoothPermissions";
+import SlipPreview from "./SlipPreview";
 import { AppTheme } from "../theme";
+import { sendVoterSlip } from "../api/whatsappApi";
+import { getAuthData } from "../utils/storage";
 
 type Props = {
   voter: Voter;
@@ -33,6 +43,12 @@ type Props = {
 };
 
 type TabKey = "details" | "family" | "survey";
+const { ThermalPrinter } = NativeModules;
+let RNFS: any = null;
+
+if (Platform.OS !== "web") {
+  RNFS = require("react-native-fs");
+}
 
 export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
   const { t } = useTranslation();
@@ -45,6 +61,10 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
   const [mobile, setMobile] = useState(voter.mobileNumber ?? "");
   const [isVerified, setIsVerified] = useState(voter.isVerified);
   const [isStarVoter, setIsStarVoter] = useState(voter.isStarVoter);
+  const [printing, setPrinting] = useState(false);
+  const [slipText, setSlipText] = useState("");
+  const [imageBase64, setImageBase64] = useState("");
+  const viewShotRef = useRef<any>(null);
 
   const tabs = [
     { key: "details", label: t("voter.tabDetails") },
@@ -53,6 +73,26 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
   ];
 
   /* ================= EXISTING HANDLERS ================= */
+  const convertSlipTextToImage = async (text: string) => {
+    console.log("STEP 1: setting slip text");
+    setSlipText(text);
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    if (!viewShotRef.current) {
+      throw new Error("SlipPreview not mounted");
+    }
+
+    console.log("STEP 2: capturing image");
+    const base64 = await viewShotRef.current.capture();
+
+    if (!base64 || base64.length < 1000) {
+      throw new Error("Invalid image capture");
+    }
+
+    console.log("STEP 3: image captured", base64.length);
+    return base64;
+  };
 
   const handleMobileNumberUpdate = async (number: string) => {
     try {
@@ -95,229 +135,308 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
     }
   };
 
+  const saveBase64ToFile = async (base64: string) => {
+    const fileName = `voter-slip-${Date.now()}.png`;
+    const path = `${RNFS.CachesDirectoryPath}/${fileName}`;
+
+    await RNFS.writeFile(path, base64, "base64");
+
+    return `file://${path}`;
+  };
+
   const handlePrintVoterSlip = async () => {
+    const hasPermission = await requestBluetoothPermissions();
+    if (!hasPermission) {
+      showToast("Bluetooth permission denied", "error");
+      return;
+    }
+
+    setPrinting(true);
+
     try {
-      const hasPermission = await requestBluetoothPermissions();
-      if (!hasPermission) {
-        showToast("Bluetooth permission denied", "error");
-        return;
-      }
+      const response = await generateVoterSlip(voter.id);
+      const slipText = response.data.slipText;
+      console.log(slipText);
 
-      const result = await PrinterService.printVoterSlip({
-        name: voter.fullName,
-        boothNo: voter.votingBoothNumber ?? "-",
-        partNo: voter.prabagNumber ?? "-",
-        serialNo: voter.rank ?? "-",
-        address: voter.votingBoothAddress ?? voter.address ?? "-",
-      });
+      const imageBase64 = await convertSlipTextToImage(slipText);
+      const imagePath = await saveBase64ToFile(imageBase64);
+      console.log(imagePath);
 
-      if (result.success) {
-        showToast("Voter slip printed successfully", "success");
+      if (Platform.OS === "android") {
+        await ThermalPrinter.printImage(imagePath);
+        await new Promise((res) => setTimeout(res, 1200));
+        showToast(t("candidate.voterPrintSuccess"), "success");
       } else {
-        showToast("Printing failed. Check printer.", "error");
+        showToast("Printing supported only on Android", "info");
       }
     } catch (error) {
-      showToast("Failed to print voter slip", "error");
+      showToast(extractErrorMessage(error), "error");
+    } finally {
+      setPrinting(false);
+    }
+  };
+
+  const handleSendVoter = async () => {
+    const { userId } = await getAuthData();
+
+    try {
+      await sendVoterSlip(
+        {
+          voterId: voter.id,
+          phoneNumber: mobile,
+        },
+        userId
+      );
+      showToast("Voter slip sent successfully", "success");
+    } catch (error) {
+      showToast(extractErrorMessage(error), "error");
     }
   };
 
   /* ================= UI ================= */
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      {/* ================= TOP BAR ================= */}
-      <View style={styles.topBar}>
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+    <>
+      <ScrollView contentContainerStyle={styles.container}>
+        {/* ================= TOP BAR ================= */}
+        <View style={styles.topBar}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+            <IconButton
+              icon="arrow-left"
+              iconColor={theme.colors.primary}
+              onPress={onBack}
+            />
+
+            <View style={styles.identityStrip}>
+              <Avatar.Text
+                size={40}
+                label={voter.fullName?.[0] ?? "V"}
+                style={{ backgroundColor: theme.colors.primaryLight }}
+              />
+              <Text style={styles.topName}>{voter.fullName}</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* ================= TABS ================= */}
+        <View style={styles.tabsHeader}>
+          <View style={{ flex: 1 }}>
+            <Tabs
+              value={tab}
+              onChange={(v) => setTab(v as TabKey)}
+              tabs={tabs}
+            />
+          </View>
+
           <IconButton
-            icon="arrow-left"
-            iconColor={theme.colors.primary}
-            onPress={onBack}
+            icon={() => (
+              <FontAwesome
+                name="whatsapp"
+                size={22}
+                color={theme.colors.whatsappGreen}
+              />
+            )}
+            onPress={handleSendVoter}
+            style={{ marginTop: -20, marginRight: isWeb ? 5 : 40 }}
           />
 
-          <View style={styles.identityStrip}>
-            <Avatar.Text
-              size={40}
-              label={voter.fullName?.[0] ?? "V"}
-              style={{ backgroundColor: theme.colors.primaryLight }}
-            />
-            <Text style={styles.topName}>{voter.fullName}</Text>
-          </View>
+          {(!isWeb || isMobileWeb) &&
+            (printing ? (
+              <View style={[styles.fabPrint, styles.fabLoader]}>
+                <ActivityIndicator size={30} color={theme.colors.white} />
+              </View>
+            ) : (
+              <IconButton
+                icon="printer"
+                size={20}
+                iconColor={theme.colors.white}
+                style={styles.fabPrint}
+                // onPress={handlePrintVoterSlip}
+              />
+            ))}
         </View>
-      </View>
 
-      {/* ================= TABS ================= */}
-      <Tabs value={tab} onChange={(v) => setTab(v as TabKey)} tabs={tabs} />
-
-      {/* ================= DETAILS TAB ================= */}
-      {tab === "details" && (
-        <View style={styles.contentWrapper}>
-          <View
-            style={[styles.row, (!isWeb || isMobileWeb) && styles.rowStacked]}
-          >
-            <View style={styles.col}>
-              <View style={styles.card}>
-                <Text style={styles.sectionTitle}>
-                  {t("voter.personalDetails")}
-                </Text>
-
-                <InfoRow label={t("voter.labelName")} value={voter.fullName} />
-                <InfoRow
-                  label={t("voter.labelFatherHusband")}
-                  value={voter.fatherHusbandName}
-                />
-                <InfoRow
-                  label={t("voter.labelGender")}
-                  value={t(`voter.gender${voter.gender}`, {
-                    defaultValue: voter.gender,
-                  })}
-                />
-                <InfoRow label={t("voter.labelAge")} value={`${voter.age}`} />
-
-                <EditableInfoRow
-                  label={t("voter.labelMobile")}
-                  value={mobile || ""}
-                  keyboardType="phone-pad"
-                  maxLength={10}
-                  onSave={handleMobileNumberUpdate}
-                />
-              </View>
-            </View>
-
-            <View style={styles.col}>
-              <View style={styles.card}>
-                <Text style={styles.sectionTitle}>{t("voter.identity")}</Text>
-
-                <InfoRow label={t("voter.labelEpicId")} value={voter.epicId} />
-                <InfoRow
-                  label={t("voter.labelPrabagNo")}
-                  value={`${voter.prabagNumber}`}
-                />
-                <InfoRow label={t("voter.labelRank")} value={`${voter.rank}`} />
-
-                <View style={{ height: 12 }} />
-
-                <Text style={styles.sectionTitle}>
-                  {t("voter.votingDetails")}
-                </Text>
-
-                <InfoRow
-                  label={t("voter.labelVotingCenter")}
-                  value={`${voter.votingRoomNumber ?? "-"}`}
-                />
-                <InfoRow
-                  label={t("voter.labelBoothAddress")}
-                  value={voter.votingBoothAddress ?? "-"}
-                />
-                <InfoRow
-                  label={t("voter.labelVotingDateTime")}
-                  value={`${voter.votingDateAndTime ?? "-"}`}
-                />
-              </View>
-            </View>
-          </View>
-
-          <View
-            style={[styles.row, (!isWeb || isMobileWeb) && styles.rowStacked]}
-          >
-            <View style={styles.col}>
-              <View style={styles.card}>
-                <Text style={styles.sectionTitle}>
-                  {t("voter.addressSection")}
-                </Text>
-
-                <InfoRow
-                  label={t("voter.labelHouseNo")}
-                  value={voter.houseNumber}
-                />
-                <InfoRow
-                  label={t("voter.labelAddress")}
-                  value={voter.address}
-                />
-                <InfoRow
-                  label={t("voter.labelListArea")}
-                  value={`${voter.listArea}`}
-                />
-              </View>
-            </View>
-
-            <View style={styles.col}>
-              <View style={styles.card}>
-                <Text style={styles.sectionTitle}>
-                  {t("voter.statusSection")}
-                </Text>
-
-                <View
-                  style={[
-                    rowStyles.row,
-                    { borderBottomColor: theme.colors.divider },
-                  ]}
-                >
-                  <Text
-                    style={[
-                      rowStyles.label,
-                      { color: theme.colors.textSecondary },
-                    ]}
-                  >
-                    {t("voter.starVoter")}
+        {/* ================= DETAILS TAB ================= */}
+        {tab === "details" && (
+          <View style={styles.contentWrapper}>
+            <View
+              style={[styles.row, (!isWeb || isMobileWeb) && styles.rowStacked]}
+            >
+              <View style={styles.col}>
+                <View style={styles.card}>
+                  <Text style={styles.sectionTitle}>
+                    {t("voter.personalDetails")}
                   </Text>
 
-                  <Ionicons
-                    name={isStarVoter ? "star" : "star-outline"}
-                    size={22}
-                    color={
-                      isStarVoter
-                        ? theme.colors.primary
-                        : theme.colors.textSecondary
-                    }
-                    onPress={handleStarVoter}
+                  <InfoRow
+                    label={t("voter.labelName")}
+                    value={voter.fullName}
+                  />
+                  <InfoRow
+                    label={t("voter.labelFatherHusband")}
+                    value={voter.fatherHusbandName}
+                  />
+                  <InfoRow
+                    label={t("voter.labelGender")}
+                    value={t(`voter.gender${voter.gender}`, {
+                      defaultValue: voter.gender,
+                    })}
+                  />
+                  <InfoRow label={t("voter.labelAge")} value={`${voter.age}`} />
+
+                  <EditableInfoRow
+                    label={t("voter.labelMobile")}
+                    value={mobile || ""}
+                    keyboardType="phone-pad"
+                    maxLength={10}
+                    onSave={handleMobileNumberUpdate}
                   />
                 </View>
+              </View>
 
-                <View style={styles.verifyRow}>
-                  <Text
-                    style={[
-                      styles.statusText,
-                      {
-                        color: isVerified
-                          ? theme.colors.successText
-                          : theme.colors.errorText,
-                      },
-                    ]}
-                  >
-                    {isVerified ? t("voter.verified") : t("voter.notVerified")}
+              <View style={styles.col}>
+                <View style={styles.card}>
+                  <Text style={styles.sectionTitle}>{t("voter.identity")}</Text>
+
+                  <InfoRow
+                    label={t("voter.labelEpicId")}
+                    value={voter.epicId}
+                  />
+                  <InfoRow
+                    label={t("voter.labelPrabagNo")}
+                    value={`${voter.prabagNumber}`}
+                  />
+                  <InfoRow
+                    label={t("voter.labelRank")}
+                    value={`${voter.rank}`}
+                  />
+
+                  <View style={{ height: 12 }} />
+
+                  <Text style={styles.sectionTitle}>
+                    {t("voter.votingDetails")}
                   </Text>
 
-                  <Button
-                    mode={isVerified ? "outlined" : "contained"}
-                    compact
-                    onPress={handleVerifyVoter}
-                    style={styles.button}
+                  <InfoRow
+                    label={t("voter.labelVotingCenter")}
+                    value={`${voter.votingRoomNumber ?? "-"}`}
+                  />
+                  <InfoRow
+                    label={t("voter.labelBoothAddress")}
+                    value={voter.votingBoothAddress ?? "-"}
+                  />
+                  <InfoRow
+                    label={t("voter.labelVotingDateTime")}
+                    value={`${voter.votingDateAndTime ?? "-"}`}
+                  />
+                </View>
+              </View>
+            </View>
+
+            <View
+              style={[styles.row, (!isWeb || isMobileWeb) && styles.rowStacked]}
+            >
+              <View style={styles.col}>
+                <View style={styles.card}>
+                  <Text style={styles.sectionTitle}>
+                    {t("voter.addressSection")}
+                  </Text>
+
+                  <InfoRow
+                    label={t("voter.labelHouseNo")}
+                    value={voter.houseNumber}
+                  />
+                  <InfoRow
+                    label={t("voter.labelAddress")}
+                    value={voter.address}
+                  />
+                  <InfoRow
+                    label={t("voter.labelListArea")}
+                    value={`${voter.listArea}`}
+                  />
+                </View>
+              </View>
+
+              <View style={styles.col}>
+                <View style={styles.card}>
+                  <Text style={styles.sectionTitle}>
+                    {t("voter.statusSection")}
+                  </Text>
+
+                  <View
+                    style={[
+                      rowStyles.row,
+                      { borderBottomColor: theme.colors.divider },
+                    ]}
                   >
-                    {isVerified ? t("voter.unverify") : t("voter.verify")}
-                  </Button>
+                    <Text
+                      style={[
+                        rowStyles.label,
+                        { color: theme.colors.textSecondary },
+                      ]}
+                    >
+                      {t("voter.starVoter")}
+                    </Text>
+
+                    <Ionicons
+                      name={isStarVoter ? "star" : "star-outline"}
+                      size={22}
+                      color={
+                        isStarVoter
+                          ? theme.colors.primary
+                          : theme.colors.textSecondary
+                      }
+                      onPress={handleStarVoter}
+                    />
+                  </View>
+
+                  <View style={styles.verifyRow}>
+                    <Text
+                      style={[
+                        styles.statusText,
+                        {
+                          color: isVerified
+                            ? theme.colors.successText
+                            : theme.colors.errorText,
+                        },
+                      ]}
+                    >
+                      {isVerified
+                        ? t("voter.verified")
+                        : t("voter.notVerified")}
+                    </Text>
+
+                    <Button
+                      mode={isVerified ? "outlined" : "contained"}
+                      compact
+                      onPress={handleVerifyVoter}
+                      style={styles.button}
+                    >
+                      {isVerified ? t("voter.unverify") : t("voter.verify")}
+                    </Button>
+                  </View>
                 </View>
               </View>
             </View>
           </View>
-        </View>
-      )}
+        )}
 
-      {tab === "family" && (
-        <FamilyMembersCard voter={voter} onSelectMember={onOpenVoter} />
-      )}
-      {tab === "survey" && <SurveyTab voterId={voter.id} />}
-
-      {/* ================= MOBILE FLOATING PRINT BUTTON ================= */}
-      {(!isWeb || isMobileWeb) && (
-        <IconButton
-          icon="printer"
-          size={24}
-          iconColor={theme.colors.white}
-          style={styles.fabPrint}
-          onPress={handlePrintVoterSlip}
-        />
-      )}
-    </ScrollView>
+        {tab === "family" && (
+          <FamilyMembersCard voter={voter} onSelectMember={onOpenVoter} />
+        )}
+        {tab === "survey" && <SurveyTab voterId={voter.id} />}
+      </ScrollView>
+      <View
+        style={{
+          position: "absolute",
+          left: -1000,
+          top: -1000,
+          opacity: 0,
+        }}
+      >
+        <SlipPreview ref={viewShotRef} slipText={slipText} />
+      </View>
+    </>
   );
 }
 
@@ -326,7 +445,7 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
 function InfoRow({ label, value }: { label: string; value: string }) {
   const theme = useTheme<AppTheme>();
   const { isWeb, isMobileWeb } = usePlatformInfo();
-  const isLongText = (value?.length ?? 0) > (isWeb && !isMobileWeb ? 70 : 40);
+  const isLongText = (value?.length ?? 0) > (isWeb && !isMobileWeb ? 70 : 35);
 
   return (
     <View
@@ -484,6 +603,10 @@ const createStyles = (theme: AppTheme) =>
       gap: 12,
       marginBottom: 12,
     },
+    tabsHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+    },
     identityStrip: {
       flexDirection: "row",
       alignItems: "center",
@@ -523,11 +646,16 @@ const createStyles = (theme: AppTheme) =>
     button: { borderRadius: 10 },
     fabPrint: {
       position: "absolute",
-      right: 16,
-      bottom: 16,
+      top: -5,
+      right: 0,
       backgroundColor: theme.colors.primary,
       elevation: 6,
       borderRadius: 28,
+    },
+    fabLoader: {
+      position: "absolute",
+      top: 2,
+      right: 10,
     },
   });
 
