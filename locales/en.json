@@ -134,7 +134,9 @@
     "selectCategory": "Select category",
     "selectDemand": "Select demand",
     "enterCandidateName": "Enter candidate name",
-    "enterPartyName": "Enter party name"
+    "enterMrCandidateName": "Enter candidate name in Marathi",
+    "enterPartyName": "Enter party name",
+    "enterMrPartyName": "Enter Party Name in Marathi"
   },
 
   "application": {
@@ -360,6 +362,8 @@
     "singular": "Candidate",
     "plural": "Candidates",
     "party": "Party",
+    "mrName": "Name (Marathi)",
+    "mrPartyName": "Party Name (Marathi)",
     "photo": "Candidate Photo",
     "symbol": "Party Symbol",
     "uploadImage": "Upload Image",

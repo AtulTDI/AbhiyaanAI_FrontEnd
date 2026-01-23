@@ -134,7 +134,8 @@
     "selectCategory": "श्रेणी चुनें",
     "selectDemand": "मांग चुनें",
     "enterCandidateName": "उम्मीदवार का नाम दर्ज करें",
-    "enterPartyName": "दल का नाम दर्ज करें"
+    "enterPartyName": "दल का नाम दर्ज करें",
+    "enterMrPartyName": "मराठी में दल का नाम दर्ज करें"
   },
 
   "application": {
@@ -360,6 +361,8 @@
     "singular": "उम्मीदवार",
     "plural": "उम्मीदवार",
     "party": "दल",
+    "mrName": "नाम (मराठी)",
+    "mrPartyName": "दल का नाम (मराठी)",
     "photo": "उम्मीदवार की फोटो",
     "symbol": "दल का चिन्ह",
     "uploadImage": "छवि अपलोड करें",

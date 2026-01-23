@@ -41,7 +41,9 @@ export const addCandidate = async (data: CandidateCreateUpdate) => {
   const formData = new FormData();
 
   formData.append("name", data.name);
+  formData.append("nameMr", data.nameMr);
   formData.append("partyName", data.partyName);
+  formData.append("partyNameMr", data.partyNameMr);
 
   if (data.candidatePhoto) {
     await appendFile(formData, data.candidatePhoto, "candidatePhoto");

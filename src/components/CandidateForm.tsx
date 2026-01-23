@@ -21,7 +21,9 @@ type Props = {
   loading?: boolean;
   onSubmit: (data: {
     name: string;
+    mrName: string;
     partyName: string;
+    mrPartyName: string;
     candidatePhoto?: ImageAsset;
     symbolImage?: ImageAsset;
   }) => void;
@@ -45,7 +47,9 @@ export default function CandidateForm({
   /* ---------------- State ---------------- */
 
   const [name, setName] = useState("");
+  const [mrName, setMrName] = useState("");
   const [partyName, setPartyName] = useState("");
+  const [mrPartyName, setMrPartyName] = useState("");
   const [candidatePhoto, setCandidatePhoto] = useState<
     ImageAsset | null | undefined
   >(undefined);
@@ -55,7 +59,9 @@ export default function CandidateForm({
 
   const [errors, setErrors] = useState<{
     name?: string;
+    mrName?: string;
     party?: string;
+    mrParty?: string;
     photo?: string;
     symbol?: string;
   }>({});
@@ -64,7 +70,9 @@ export default function CandidateForm({
 
   useEffect(() => {
     setName(candidate?.name || "");
+    setMrName(candidate?.nameMr || "");
     setPartyName(candidate?.partyName || "");
+    setMrPartyName(candidate?.partyNameMr || "");
     setCandidatePhoto(undefined);
     setSymbolImage(undefined);
     setErrors({});
@@ -76,8 +84,13 @@ export default function CandidateForm({
     const e: typeof errors = {};
 
     if (!name.trim()) e.name = t("fieldRequired", { field: t("name") });
+    if (!mrName.trim())
+      e.mrName = t("fieldRequired", { field: t("candidate.mrName") });
+
     if (!partyName.trim())
       e.party = t("fieldRequired", { field: t("candidate.party") });
+    if (!mrPartyName.trim())
+      e.mrParty = t("fieldRequired", { field: t("candidate.mrPartyName") });
 
     if (!isEdit) {
       if (!candidatePhoto) e.photo = t("candidate.photoRequired");
@@ -95,7 +108,9 @@ export default function CandidateForm({
 
     const payload: any = {
       name: name.trim(),
+      nameMr: mrName.trim(),
       partyName: partyName.trim(),
+      partyNameMr: mrPartyName.trim(),
     };
 
     if (candidatePhoto !== undefined) payload.candidatePhoto = candidatePhoto;
@@ -125,7 +140,7 @@ export default function CandidateForm({
         style={[styles.form, { backgroundColor: theme.colors.white }]}
         elevation={1}
       >
-        {/* Row 1: Name + Party */}
+        {/* Row 1: Name + Mr Name */}
         <View style={isTwoColumn ? styles.row : styles.column}>
           <View style={styles.col}>
             <FixedLabel label={t("name")} required />
@@ -150,6 +165,31 @@ export default function CandidateForm({
           </View>
 
           <View style={styles.col}>
+            <FixedLabel label={t("candidate.mrName")} required />
+            <TextInput
+              placeholder={t("placeholder.enterMrCandidateName")}
+              placeholderTextColor={theme.colors.placeholder}
+              value={mrName}
+              onChangeText={(v) => {
+                setMrName(v);
+                setErrors((e) => ({ ...e, mrName: undefined }));
+              }}
+              mode="outlined"
+              style={styles.input}
+            />
+            <HelperText
+              type="error"
+              visible={!!errors.mrName}
+              style={styles.error}
+            >
+              {errors.mrName}
+            </HelperText>
+          </View>
+        </View>
+
+        {/* Row 2: Party name + Mr Party Name */}
+        <View style={isTwoColumn ? styles.row : styles.column}>
+          <View style={styles.col}>
             <FixedLabel label={t("candidate.party")} required />
             <TextInput
               placeholder={t("placeholder.enterPartyName")}
@@ -170,9 +210,31 @@ export default function CandidateForm({
               {errors.party}
             </HelperText>
           </View>
+
+          <View style={styles.col}>
+            <FixedLabel label={t("candidate.mrPartyName")} required />
+            <TextInput
+              placeholder={t("placeholder.enterMrPartyName")}
+              placeholderTextColor={theme.colors.placeholder}
+              value={mrPartyName}
+              onChangeText={(v) => {
+                setMrPartyName(v);
+                setErrors((e) => ({ ...e, mrParty: undefined }));
+              }}
+              mode="outlined"
+              style={styles.input}
+            />
+            <HelperText
+              type="error"
+              visible={!!errors.mrParty}
+              style={styles.error}
+            >
+              {errors.mrParty}
+            </HelperText>
+          </View>
         </View>
 
-        {/* Row 2: Images */}
+        {/* Row 3: Images */}
         <View style={isTwoColumn ? styles.row : styles.column}>
           <View style={styles.col}>
             <FixedLabel label={t("candidate.photo")} required />

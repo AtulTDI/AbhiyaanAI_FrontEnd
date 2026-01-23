@@ -134,7 +134,8 @@
     "selectCategory": "श्रेणी निवडा",
     "selectDemand": "मागणी निवडा",
     "enterCandidateName": "उमेदवाराचे नाव टाका",
-    "enterPartyName": "पक्षाचे नाव टाका"
+    "enterPartyName": "पक्षाचे नाव टाका",
+    "enterMrPartyName": "मराठीत पक्षाचे नाव टाका"
   },
 
   "application": {
@@ -362,6 +363,8 @@
     "party": "पक्ष",
     "photo": "उमेदवाराचे फोटो",
     "symbol": "पक्ष चिन्ह",
+    "mrName": "नाव (मराठी)",
+    "mrPartyName": "पक्षाचे नाव (मराठी)",
     "uploadImage": "प्रतिका चढवा",
     "add": "उमेदवार जोडा",
     "edit": "उमेदवार संपादित करा",
