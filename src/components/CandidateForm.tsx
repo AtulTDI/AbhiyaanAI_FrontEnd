@@ -1,12 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { View, StyleSheet } from "react-native";
-import {
-  TextInput,
-  Button,
-  HelperText,
-  useTheme,
-  Surface,
-} from "react-native-paper";
+import { TextInput, Button, HelperText, Surface } from "react-native-paper";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { useTranslation } from "react-i18next";
 
@@ -14,7 +8,6 @@ import { Candidate } from "../types/Candidate";
 import SingleImageUpload, { ImageAsset } from "./SingleImageUpload";
 import { usePlatformInfo } from "../hooks/usePlatformInfo";
 import { FixedLabel } from "./FixedLabel";
-import { AppTheme } from "../theme";
 
 type Props = {
   mode: "create" | "edit";
@@ -40,7 +33,6 @@ export default function CandidateForm({
 }: Props) {
   const { t } = useTranslation();
   const { isWeb, isMobileWeb } = usePlatformInfo();
-  const theme = useTheme<AppTheme>();
 
   const isEdit = mode === "edit";
   const isTwoColumn = isWeb && !isMobileWeb;
@@ -52,11 +44,12 @@ export default function CandidateForm({
   const [partyName, setPartyName] = useState("");
   const [partyNameMr, setPartyNameMr] = useState("");
 
-  // undefined = untouched, null = removed, object = uploaded
-  const [candidatePhoto, setCandidatePhoto] =
-    useState<ImageAsset | null | undefined>(undefined);
-  const [symbolImage, setSymbolImage] =
-    useState<ImageAsset | null | undefined>(undefined);
+  const [candidatePhoto, setCandidatePhoto] = useState<
+    ImageAsset | null | undefined
+  >(undefined);
+  const [symbolImage, setSymbolImage] = useState<ImageAsset | null | undefined>(
+    undefined
+  );
 
   const [errors, setErrors] = useState<{
     name?: string;
@@ -95,13 +88,10 @@ export default function CandidateForm({
         field: t("candidate.mrPartyName"),
       });
 
-    // 🔥 Image rules
     if (!isEdit) {
-      // create → always required
       if (!candidatePhoto) e.photo = t("candidate.photoRequired");
       if (!symbolImage) e.symbol = t("candidate.symbolRequired");
     } else {
-      // edit → existing OR new upload is enough
       if (!candidatePhoto && !candidate?.candidatePhotoUrl)
         e.photo = t("candidate.photoRequired");
 
@@ -125,7 +115,6 @@ export default function CandidateForm({
       partyNameMr: partyNameMr.trim(),
     };
 
-    // only send image fields if user changed them
     if (candidatePhoto !== undefined) payload.candidatePhoto = candidatePhoto;
     if (symbolImage !== undefined) payload.symbolImage = symbolImage;
 
@@ -163,7 +152,11 @@ export default function CandidateForm({
               mode="outlined"
               style={styles.input}
             />
-            <HelperText type="error" visible={!!errors.name}>
+            <HelperText
+              type="error"
+              visible={!!errors.name}
+              style={{ paddingLeft: 0 }}
+            >
               {errors.name}
             </HelperText>
           </View>
@@ -179,7 +172,11 @@ export default function CandidateForm({
               mode="outlined"
               style={styles.input}
             />
-            <HelperText type="error" visible={!!errors.nameMr}>
+            <HelperText
+              type="error"
+              visible={!!errors.nameMr}
+              style={{ paddingLeft: 0 }}
+            >
               {errors.nameMr}
             </HelperText>
           </View>
@@ -198,7 +195,11 @@ export default function CandidateForm({
               mode="outlined"
               style={styles.input}
             />
-            <HelperText type="error" visible={!!errors.party}>
+            <HelperText
+              type="error"
+              visible={!!errors.party}
+              style={{ paddingLeft: 0 }}
+            >
               {errors.party}
             </HelperText>
           </View>
@@ -214,7 +215,11 @@ export default function CandidateForm({
               mode="outlined"
               style={styles.input}
             />
-            <HelperText type="error" visible={!!errors.partyMr}>
+            <HelperText
+              type="error"
+              visible={!!errors.partyMr}
+              style={{ paddingLeft: 0 }}
+            >
               {errors.partyMr}
             </HelperText>
           </View>
@@ -232,7 +237,11 @@ export default function CandidateForm({
                 setErrors((e) => ({ ...e, photo: undefined }));
               }}
             />
-            <HelperText type="error" visible={!!errors.photo}>
+            <HelperText
+              type="error"
+              visible={!!errors.photo}
+              style={{ paddingLeft: 0 }}
+            >
               {errors.photo}
             </HelperText>
           </View>
@@ -247,7 +256,11 @@ export default function CandidateForm({
                 setErrors((e) => ({ ...e, symbol: undefined }));
               }}
             />
-            <HelperText type="error" visible={!!errors.symbol}>
+            <HelperText
+              type="error"
+              visible={!!errors.symbol}
+              style={{ paddingLeft: 0 }}
+            >
               {errors.symbol}
             </HelperText>
           </View>
