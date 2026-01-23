@@ -326,7 +326,7 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
 function InfoRow({ label, value }: { label: string; value: string }) {
   const theme = useTheme<AppTheme>();
   const { isWeb, isMobileWeb } = usePlatformInfo();
-  const isLongText = (value?.length ?? 0) > (isWeb && !isMobileWeb ? 150 : 40);
+  const isLongText = (value?.length ?? 0) > (isWeb && !isMobileWeb ? 70 : 40);
 
   return (
     <View
