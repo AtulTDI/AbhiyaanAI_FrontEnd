@@ -44,6 +44,7 @@ export const addCandidate = async (data: CandidateCreateUpdate) => {
   formData.append("nameMr", data.nameMr);
   formData.append("partyName", data.partyName);
   formData.append("partyNameMr", data.partyNameMr);
+  formData.append("symbolName", data.symbolName);
 
   if (data.candidatePhoto) {
     await appendFile(formData, data.candidatePhoto, "candidatePhoto");
@@ -77,6 +78,7 @@ export const updateCandidate = async (data: CandidateCreateUpdate) => {
   formData.append("nameMr", data.nameMr);
   formData.append("partyName", data.partyName);
   formData.append("partyNameMr", data.partyNameMr);
+  formData.append("symbolName", data.symbolName);
 
   if (data.candidatePhoto) {
     await appendFile(formData, data.candidatePhoto, "candidatePhoto");

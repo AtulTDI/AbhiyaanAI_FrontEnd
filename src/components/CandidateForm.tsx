@@ -43,12 +43,13 @@ export default function CandidateForm({
   const [nameMr, setNameMr] = useState("");
   const [partyName, setPartyName] = useState("");
   const [partyNameMr, setPartyNameMr] = useState("");
+  const [symbolNameMr, setSymbolNameMr] = useState("");
 
   const [candidatePhoto, setCandidatePhoto] = useState<
     ImageAsset | null | undefined
   >(undefined);
   const [symbolImage, setSymbolImage] = useState<ImageAsset | null | undefined>(
-    undefined
+    undefined,
   );
 
   const [errors, setErrors] = useState<{
@@ -56,6 +57,7 @@ export default function CandidateForm({
     nameMr?: string;
     party?: string;
     partyMr?: string;
+    symbolMr?: string;
     photo?: string;
     symbol?: string;
   }>({});
@@ -67,6 +69,7 @@ export default function CandidateForm({
     setNameMr(candidate?.nameMr || "");
     setPartyName(candidate?.partyName || "");
     setPartyNameMr(candidate?.partyNameMr || "");
+    setSymbolNameMr(candidate?.symbolName || "");
     setCandidatePhoto(undefined);
     setSymbolImage(undefined);
     setErrors({});
@@ -86,6 +89,10 @@ export default function CandidateForm({
     if (!partyNameMr.trim())
       e.partyMr = t("fieldRequired", {
         field: t("candidate.mrPartyName"),
+      });
+    if (!symbolNameMr.trim())
+      e.symbolMr = t("fieldRequired", {
+        field: t("candidate.mrSymbolName"),
       });
 
     if (!isEdit) {
@@ -113,6 +120,7 @@ export default function CandidateForm({
       nameMr: nameMr.trim(),
       partyName: partyName.trim(),
       partyNameMr: partyNameMr.trim(),
+      symbolName: symbolNameMr.trim(),
     };
 
     if (candidatePhoto !== undefined) payload.candidatePhoto = candidatePhoto;
@@ -225,7 +233,30 @@ export default function CandidateForm({
           </View>
         </View>
 
-        {/* Row 3: Images */}
+        {/* Row 3: Symbol Name */}
+        <View style={isTwoColumn ? styles.row : styles.column}>
+          <View style={styles.col}>
+            <FixedLabel label={t("candidate.mrSymbolName")} required />
+            <TextInput
+              value={symbolNameMr}
+              onChangeText={(v) => {
+                setSymbolNameMr(v);
+                setErrors((e) => ({ ...e, symbolMr: undefined }));
+              }}
+              mode="outlined"
+              style={styles.input}
+            />
+            <HelperText
+              type="error"
+              visible={!!errors.symbolMr}
+              style={{ paddingLeft: 0 }}
+            >
+              {errors.symbolMr}
+            </HelperText>
+          </View>
+        </View>
+
+        {/* Row 4: Images */}
         <View style={isTwoColumn ? styles.row : styles.column}>
           <View style={styles.col}>
             <FixedLabel label={t("candidate.photo")} required={!isEdit} />

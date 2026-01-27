@@ -13,10 +13,10 @@ import { Candidate } from "../types/Candidate";
 import { useToast } from "../components/ToastProvider";
 import CandidatesTable from "../components/CandidateTable";
 import CandidateForm from "../components/CandidateForm";
+import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 import { extractErrorMessage } from "../utils/common";
 import { useServerTable } from "../hooks/useServerTable";
 import { AppTheme } from "../theme";
-import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 
 export default function AddCandidateScreen() {
   const { t } = useTranslation();
@@ -26,11 +26,11 @@ export default function AddCandidateScreen() {
 
   const [showForm, setShowForm] = useState(false);
   const [candidateToEdit, setCandidateToEdit] = useState<Candidate | null>(
-    null
+    null,
   );
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
   const [selectedCandidateId, setSelectedCandidateId] = useState<string | null>(
-    null
+    null,
   );
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -57,7 +57,7 @@ export default function AddCandidateScreen() {
       setShowForm(false);
       setCandidateToEdit(null);
       table.fetchData(0, table.rowsPerPage);
-    }, [])
+    }, []),
   );
 
   const handleAdd = async (data: any) => {
@@ -103,7 +103,7 @@ export default function AddCandidateScreen() {
       } catch (error: any) {
         showToast(
           extractErrorMessage(error, t("candidate.deleteFail")),
-          "error"
+          "error",
         );
       }
       setSelectedCandidateId(null);

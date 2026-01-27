@@ -1,7 +1,7 @@
 import { Platform } from "react-native";
 import * as FileSystem from "expo-file-system";
 import axios from "./axiosInstance";
-import { GetFamilyMembers, GetPaginatedVoters, Voter } from "../types/Voter";
+import { AgeGroupStats, ColorCodeStats, GetFamilyMembers, GetPaginatedVoters, PaginatedSurnameStats, Voter } from "../types/Voter";
 import { base64ToBlob } from "../utils/common";
 
 /**
@@ -13,16 +13,22 @@ export const getVoters = (
   searchText?: string,
   age?: string,
   gender?: string,
-  searchType?: string
+  searchType?: string,
+  type?: number,
+  supportColor?: string,
+  surname?: string,
 ) =>
   axios.get<GetPaginatedVoters>(
-    "/Voters/getvoters",
+    "/Voters/get-voters-by-category",
     {
       useApiPrefix: true,
       useVoterBase: true,
       params: {
         page: pageNumber,
         pageSize,
+        ...(type !== undefined ? { type } : {}),
+        ...(supportColor ? { supportColor } : {}),
+        ...(surname ? { surname } : {}),
         ...(searchText ? { searchText } : {}),
         ...(age !== undefined ? { age } : {}),
         ...(gender ? { gender } : {}),
@@ -136,3 +142,21 @@ export const addFamilyMember = (data) =>
  */
 export const removeFamilyMember = (id) =>
   axios.post<Voter>(`/Voters/remove-from-family?voterId=${id}`, {}, { useApiPrefix: true, useVoterBase: true });
+
+/**
+ * Get color codes
+ */
+export const getColorCodes = () =>
+  axios.get<ColorCodeStats>('/Voters/get-support-stats', { useApiPrefix: true, useVoterBase: true });
+
+/**
+ * Get surnames
+ */
+export const getSurnames = (pageNumber, pageSize) =>
+  axios.get<PaginatedSurnameStats>(`/Voters/get-surname-stats?page=${pageNumber}&pageSize=${pageSize}`, { useApiPrefix: true, useVoterBase: true });
+
+/**
+ * Get age stats
+ */
+export const getAgeStats = () =>
+  axios.get<AgeGroupStats>('/Voters/get-age-stats', { useApiPrefix: true, useVoterBase: true });

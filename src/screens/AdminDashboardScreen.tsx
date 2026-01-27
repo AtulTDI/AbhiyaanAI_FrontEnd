@@ -135,7 +135,7 @@ const VideoDashboardContent = () => {
             dashboardData.perUserStats.map((user) => ({
               label: `${user.firstName} ${user.lastName}`,
               value: user.totalGeneratedVideos,
-            }))
+            })),
           );
 
           setAggregateTotals(dashboardData.aggregateTotals || {});
@@ -144,18 +144,18 @@ const VideoDashboardContent = () => {
             campaignData.perCampaignStats.map((campaign) => ({
               label: campaign.campaignName,
               value: campaign.totalGeneratedVideos,
-            }))
+            })),
           );
         } catch (error) {
           showToast(
             extractErrorMessage(error, t("dashboard.fetchDataFail")),
-            "error"
+            "error",
           );
         }
       }
 
       fetchDashboardData();
-    }, [])
+    }, []),
   );
 
   const kpis = [
@@ -256,7 +256,7 @@ const VoterDashboardContent = () => {
         }
       }
       fetchVoterDashboard();
-    }, [])
+    }, []),
   );
 
   if (!voterData) {
@@ -360,24 +360,24 @@ const VoterDashboardContent = () => {
       color: voterData.supportStats.ours.color,
     },
     {
-      label: t("dashboard.voter.support.neutral"),
-      value: voterData.supportStats.neutral.count,
-      color: voterData.supportStats.neutral.color,
-    },
-    {
       label: t("dashboard.voter.support.opponent"),
       value: voterData.supportStats.opponent.count,
       color: voterData.supportStats.opponent.color,
     },
     {
+      label: t("dashboard.voter.support.neutral"),
+      value: voterData.supportStats.neutral.count,
+      color: voterData.supportStats.neutral.color,
+    },
+    {
       label: t("dashboard.voter.support.unknown"),
-      value: voterData.supportStats.unknow.count,
-      color: voterData.supportStats.unknow.color,
+      value: voterData.supportStats.unknown.count,
+      color: voterData.supportStats.unknown.color,
     },
     {
       label: t("dashboard.voter.support.outOfStation"),
-      value: voterData.supportStats.outOfstation.count,
-      color: voterData.supportStats.outOfstation.color,
+      value: voterData.supportStats.outOfStation.count,
+      color: voterData.supportStats.outOfStation.color,
     },
     {
       label: t("dashboard.voter.support.needSpecialVisit"),

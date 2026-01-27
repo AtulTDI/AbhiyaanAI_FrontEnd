@@ -5,6 +5,9 @@ import {
   ScrollView,
   Platform,
   NativeModules,
+  Image,
+  PermissionsAndroid,
+  Linking,
 } from "react-native";
 import {
   Text,
@@ -45,6 +48,18 @@ type Props = {
 type TabKey = "details" | "family" | "survey";
 const { ThermalPrinter } = NativeModules;
 let RNFS: any = null;
+let Share: any = null;
+let Contacts: any = null;
+
+if (Platform.OS !== "web") {
+  RNFS = require("react-native-fs");
+  Share = require("react-native-share").default;
+  if (Platform.OS === "android") {
+    Contacts =
+      require("react-native-contacts").default ||
+      require("react-native-contacts");
+  }
+}
 
 if (Platform.OS !== "web") {
   RNFS = require("react-native-fs");
@@ -63,6 +78,7 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
   const [isStarVoter, setIsStarVoter] = useState(voter.isStarVoter);
   const [printing, setPrinting] = useState(false);
   const [slipText, setSlipText] = useState("");
+  const [tempContact, setTempContact] = useState(null);
   const [imageBase64, setImageBase64] = useState("");
   const viewShotRef = useRef<any>(null);
 
@@ -71,6 +87,11 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
     { key: "family", label: t("voter.tabFamily") },
     { key: "survey", label: t("voter.tabSurvey") },
   ];
+
+  useEffect(() => {
+    clearCacheFiles();
+    clearAllTempContacts();
+  });
 
   /* ================= EXISTING HANDLERS ================= */
   const convertSlipTextToImage = async (text: string) => {
@@ -113,7 +134,7 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
         !isVerified
           ? t("voter.voterVerifiedSuccess")
           : t("voter.voterUnverifiedSuccess"),
-        "success"
+        "success",
       );
     } catch (error) {
       showToast(extractErrorMessage(error), "error");
@@ -128,7 +149,7 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
         !isStarVoter
           ? t("voter.voterStarredSuccess")
           : t("voter.voterUnstarredSuccess"),
-        "success"
+        "success",
       );
     } catch (error) {
       showToast(extractErrorMessage(error), "error");
@@ -145,6 +166,7 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
   };
 
   const handlePrintVoterSlip = async () => {
+    if (printing) return;
     const hasPermission = await requestBluetoothPermissions();
     if (!hasPermission) {
       showToast("Bluetooth permission denied", "error");
@@ -159,6 +181,7 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
       console.log(slipText);
 
       const imageBase64 = await convertSlipTextToImage(slipText);
+      setImageBase64(imageBase64);
       const imagePath = await saveBase64ToFile(imageBase64);
       console.log(imagePath);
 
@@ -176,20 +199,241 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
     }
   };
 
-  const handleSendVoter = async () => {
-    const { userId } = await getAuthData();
+  const clearAllTempContacts = async () => {
+    if (Platform.OS !== "android") return;
 
     try {
-      await sendVoterSlip(
-        {
-          voterId: voter.id,
-          phoneNumber: mobile,
-        },
-        userId
+      const contacts = await Contacts.getAll();
+      const tempContacts = contacts.filter((c) => {
+        const fieldsToCheck = [
+          c.displayName,
+          c.givenName,
+          c.familyName,
+          c.middleName,
+        ];
+
+        return fieldsToCheck.some((field) => field?.includes("_AbhiyanAI_"));
+      });
+
+      for (const contact of tempContacts) {
+        try {
+          await Contacts.deleteContact(contact);
+          console.log("Deleted all temp contact:", contact.givenName);
+        } catch (err) {
+          console.warn(
+            "Failed to delete all temp contact",
+            contact.givenName,
+            err,
+          );
+        }
+      }
+    } catch (err) {
+      console.error("Error clearing all temp contacts", err);
+    }
+  };
+
+  const requestAndroidPermissions = async () => {
+    if (Platform.OS !== "android") return true;
+
+    try {
+      if (Platform.Version >= 33) {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.READ_MEDIA_VIDEO,
+        );
+        return granted === PermissionsAndroid.RESULTS.GRANTED;
+      } else {
+        const granted = await PermissionsAndroid.requestMultiple([
+          PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+          PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+          PermissionsAndroid.PERMISSIONS.WRITE_CONTACTS,
+        ]);
+        return (
+          granted["android.permission.READ_EXTERNAL_STORAGE"] ===
+            PermissionsAndroid.RESULTS.GRANTED &&
+          granted["android.permission.WRITE_EXTERNAL_STORAGE"] ===
+            PermissionsAndroid.RESULTS.GRANTED &&
+          granted["android.permission.WRITE_CONTACTS"] ===
+            PermissionsAndroid.RESULTS.GRANTED
+        );
+      }
+    } catch (err) {
+      console.warn("Permissions request error", err);
+      return false;
+    }
+  };
+
+  const getFileExtensionFromUrl = (url: string): string => {
+    if (!url) return "jpg";
+
+    const cleanUrl = url.split("?")[0].split("#")[0];
+
+    const lastDotIndex = cleanUrl.lastIndexOf(".");
+    if (lastDotIndex === -1) return "jpg";
+
+    return cleanUrl.substring(lastDotIndex + 1).toLowerCase();
+  };
+
+  const getImageMimeType = (extension: string): string => {
+    switch (extension.toLowerCase()) {
+      case "png":
+        return "image/png";
+      case "webp":
+        return "image/webp";
+      case "gif":
+        return "image/gif";
+      case "bmp":
+        return "image/bmp";
+      case "svg":
+        return "image/svg+xml";
+      case "jpg":
+      case "jpeg":
+      default:
+        return "image/jpeg";
+    }
+  };
+
+  const downloadImage = async (url: string, extension: string = "jpg") => {
+    const localPath = `${
+      RNFS.CachesDirectoryPath
+    }/image_${Date.now()}.${extension}`;
+
+    const download = RNFS.downloadFile({
+      fromUrl: url,
+      toFile: localPath,
+      progressDivider: 1,
+    });
+
+    const result = await download.promise;
+
+    if (result.statusCode === 200) {
+      return `file://${localPath}`;
+    } else {
+      throw new Error("Image download failed");
+    }
+  };
+
+  const handleSendVoter = async () => {
+    if (!mobile || mobile.length < 10) {
+      showToast(t("voter.mobileInvalid"), "error");
+      return;
+    }
+    let isWhatsAppAvailable = false;
+    const response = await generateVoterSlip(voter.id);
+    console.log("Response", response.data);
+
+    if (Platform.OS === "android") {
+      try {
+        const granted = await requestAndroidPermissions();
+        if (!granted) {
+          showToast("Storage & Contacts permissions are required", "error");
+          return;
+        }
+
+        const personal = await Share.isPackageInstalled("com.whatsapp");
+        const business = await Share.isPackageInstalled("com.whatsapp.w4b");
+        isWhatsAppAvailable = personal?.isInstalled || business?.isInstalled;
+      } catch {
+        isWhatsAppAvailable = false;
+      }
+    } else {
+      try {
+        isWhatsAppAvailable = await Linking.canOpenURL("whatsapp://send");
+      } catch {
+        isWhatsAppAvailable = false;
+      }
+    }
+
+    if (!isWhatsAppAvailable) {
+      showToast(t("whatsapp.notInstalled"), "error");
+      return;
+    }
+
+    // --- Share image flow ---
+    try {
+      let contactExists = false;
+
+      if (Platform.OS === "android") {
+        const phoneNumber = mobile.replace(/\D/g, "");
+
+        // Check if contact already exists
+        const allContacts = await Contacts.getAll();
+        const existing = allContacts.find((c) =>
+          c.phoneNumbers?.some(
+            (p) =>
+              p.number.replace(/\D/g, "").endsWith(phoneNumber) ||
+              phoneNumber.endsWith(p.number.replace(/\D/g, "")),
+          ),
+        );
+
+        if (existing) {
+          console.log("Contact already exists:", existing.displayName);
+          contactExists = true;
+        } else {
+          const tempContact = {
+            givenName: `${voter.fullName}_AbhiyanAI_${mobile}`,
+            phoneNumbers: [{ label: "mobile", number: `+91 ${mobile}` }],
+            accountType: null,
+            accountName: null,
+          };
+          const savedContact = await Contacts.addContact(tempContact);
+          setTempContact(savedContact);
+          console.log("Saved new temp contact:", savedContact);
+          contactExists = true;
+        }
+      }
+
+      // Download image before sharing
+      const localPath = await downloadImage(
+        response?.data?.candidatePhotoPath,
+        getFileExtensionFromUrl(response?.data?.candidatePhotoPath),
       );
-      showToast("Voter slip sent successfully", "success");
+
+      // Only proceed if contact exists
+      if (contactExists) {
+        await new Promise((r) => setTimeout(r, 1500));
+
+        if (Platform.OS === "android") {
+          await Share.shareSingle({
+            title: "Image",
+            url: localPath,
+            type: getImageMimeType(
+              getFileExtensionFromUrl(response?.data?.candidatePhotoPath),
+            ),
+            social: Share.Social.WHATSAPP,
+            whatsAppNumber: `91${mobile}`,
+            message: response.data.slipText,
+          });
+        } else {
+          await Share.shareSingle({
+            title: "Image",
+            url: Platform.OS === "ios" ? localPath : "file://" + localPath,
+            type: getImageMimeType(
+              getFileExtensionFromUrl(response?.data?.imageUrl),
+            ),
+            social: Share.Social.WHATSAPP,
+            whatsAppNumber: `91${mobile}`,
+            message: response.data.slipText,
+          });
+        }
+      } else {
+        console.log("Contact not found. Please check the number.", "error");
+      }
+    } catch (err) {
+      console.error("Error sending image:", err);
+      showToast(t("image.sendFail"), "error");
+    }
+  };
+
+  const clearCacheFiles = async () => {
+    if ((isWeb && !isMobileWeb) || !RNFS) return;
+
+    try {
+      const files = await RNFS.readDir(RNFS.CachesDirectoryPath);
+      for (const file of files) {
+        await RNFS.unlink(file.path);
+      }
     } catch (error) {
-      showToast(extractErrorMessage(error), "error");
+      console.error("Error clearing cache:", error);
     }
   };
 
@@ -228,17 +472,19 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
             />
           </View>
 
-          <IconButton
-            icon={() => (
-              <FontAwesome
-                name="whatsapp"
-                size={22}
-                color={theme.colors.whatsappGreen}
-              />
-            )}
-            onPress={handleSendVoter}
-            style={{ marginTop: -20, marginRight: isWeb ? 5 : 40 }}
-          />
+          {(!isWeb || isMobileWeb) && (
+            <IconButton
+              icon={() => (
+                <FontAwesome
+                  name="whatsapp"
+                  size={22}
+                  color={theme.colors.whatsappGreen}
+                />
+              )}
+              onPress={handleSendVoter}
+              style={{ marginTop: -20, marginRight: isWeb ? 5 : 40 }}
+            />
+          )}
 
           {(!isWeb || isMobileWeb) &&
             (printing ? (
@@ -251,7 +497,7 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
                 size={20}
                 iconColor={theme.colors.white}
                 style={styles.fabPrint}
-                // onPress={handlePrintVoterSlip}
+                onPress={handlePrintVoterSlip}
               />
             ))}
         </View>
@@ -426,6 +672,22 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
         )}
         {tab === "survey" && <SurveyTab voterId={voter.id} />}
       </ScrollView>
+      {imageBase64 ? (
+        <View
+          style={{
+            position: "absolute",
+            bottom: 200,
+            left: 100,
+            backgroundColor: "#fff",
+          }}
+        >
+          <Image
+            source={{ uri: `data:image/png;base64,${imageBase64}` }}
+            style={{ width: 192, height: 300, borderWidth: 1 }}
+            resizeMode="contain"
+          />
+        </View>
+      ) : null}
       <View
         style={{
           position: "absolute",

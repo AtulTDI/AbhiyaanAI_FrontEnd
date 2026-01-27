@@ -20,6 +20,42 @@ export type Voter = {
   isVerified: boolean;
 };
 
+export type ColorCodeStatItem = {
+  count: number;
+  color: string;
+};
+
+export type ColorCodeStats = {
+  ours: ColorCodeStatItem;
+  neutral: ColorCodeStatItem;
+  opponent: ColorCodeStatItem;
+  unknow: ColorCodeStatItem;
+  outOfstation: ColorCodeStatItem;
+  needSpecialVisit: ColorCodeStatItem;
+  beneficiary: ColorCodeStatItem;
+};
+
+export type SurnameStat = {
+  surname: string;
+  count: number;
+};
+
+export type PaginatedSurnameStats = {
+  page: number;
+  pageSize: number;
+  totalRecords: number;
+  totalPages: number;
+  data: SurnameStat[];
+};
+
+export type AgeGroupStats = {
+  age18To25: number;
+  age26To35: number;
+  age36To45: number;
+  age46To60: number;
+  age60Plus: number;
+};
+
 export type GetPaginatedVoters = {
   data: Voter[];
   page: number;
@@ -41,7 +77,7 @@ export interface VoterSurveyRequest {
   voterId?: string;
   supportType?: number;
   supportStrength?: number;
-  casteId?: string; 
+  casteId?: string;
   otherCaste?: string,
   newAddress: string,
   society: string,
@@ -61,7 +97,7 @@ export interface VoterSurveyRequest {
 export interface VoterSurveyResponse {
   id: string;
   voterId: string;
-  casteId?: string; 
+  casteId?: string;
   otherCaste?: string;
   supportType: number;
   supportStrength?: number;

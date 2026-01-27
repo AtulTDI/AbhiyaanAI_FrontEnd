@@ -13,15 +13,25 @@ import {
 import { useTranslation } from "react-i18next";
 import { useFocusEffect } from "@react-navigation/native";
 import VoterDetailView from "../components/VoterDetailView";
-import { Voter } from "../types/Voter";
+import VoterCategoryScreen from "./VoterCategoryScreen";
+import { AgeGroupStats, ColorCodeStats, Voter } from "../types/Voter";
 import { useDebounce } from "../hooks/useDebounce";
 import { usePlatformInfo } from "../hooks/usePlatformInfo";
-import { getVoterById, getVoters } from "../api/voterApi";
+import {
+  getAgeStats,
+  getColorCodes,
+  getSurnames,
+  getVoterById,
+  getVoters,
+} from "../api/voterApi";
 import FormDropdown from "../components/FormDropdown";
+import Subcategory from "../components/SubCategory";
+import { VOTER_CATEGORIES } from "../constants/voterCategories";
 import { AppTheme } from "../theme";
 
 type AgeMode = "none" | "lt" | "gt" | "between";
-type ScreenView = "list" | "detail";
+type ScreenView = "categories" | "subcategories" | "list" | "detail";
+type SubFilterType = "color" | "age" | "surname";
 
 const PAGE_SIZE = 50;
 
@@ -34,8 +44,9 @@ export default function VotersScreen() {
 
   const numColumns = isWeb ? 2 : 1;
 
-  const [view, setView] = useState<ScreenView>("detail");
+  const [view, setView] = useState<ScreenView>("categories");
   const [selectedVoter, setSelectedVoter] = useState<Voter | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
 
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -57,14 +68,32 @@ export default function VotersScreen() {
   const [transitionLoading, setTransitionLoading] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [searchBy, setSearchBy] = useState<"fullname" | "epicid" | "address">(
-    "fullname"
+    "fullname",
   );
+  const [selectedSubFilter, setSelectedSubFilter] = useState<{
+    type: SubFilterType | null;
+    value: string | null;
+  }>({ type: null, value: null });
+
+  const [subFilterItems, setSubFilterItems] = useState<any[]>([]);
+  const [subFilterLoading, setSubFilterLoading] = useState(false);
+  const [subPage, setSubPage] = useState(1);
+  const [subTotalPages, setSubTotalPages] = useState(1);
+  const [subTotalRecords, setSubTotalRecords] = useState(0);
+  const SUB_PAGE_SIZE = 20;
+  const subStartRecord =
+    subTotalRecords === 0 ? 0 : (subPage - 1) * SUB_PAGE_SIZE + 1;
+  const subEndRecord = Math.min(subPage * SUB_PAGE_SIZE, subTotalRecords);
 
   const SEARCH_OPTIONS = [
     { label: t("name"), value: "fullname" },
     { label: t("voter.labelEpicId"), value: "epicid" },
     { label: t("voter.labelAddress"), value: "address" },
   ];
+
+  const selectedCategoryObj = VOTER_CATEGORIES.find(
+    (c) => c.id === selectedCategory,
+  );
 
   /* ---------------- DEBOUNCED VALUES ---------------- */
   const debouncedSearch = useDebounce(search, 500);
@@ -85,30 +114,46 @@ export default function VotersScreen() {
 
   /* ---------------- FETCH VOTERS ---------------- */
   const fetchVoters = useCallback(async () => {
-    try {
-      setPageLoading(true);
-      let ageParam: string | undefined;
+    if (view === "list") {
+      try {
+        setPageLoading(true);
+        let ageParam: string | undefined;
 
-      if (ageMode === "between" && debouncedMinAge && debouncedMaxAge) {
-        ageParam = `${debouncedMinAge}-${debouncedMaxAge}`;
-      } else if ((ageMode === "lt" || ageMode === "gt") && debouncedAgeValue) {
-        ageParam = `${ageMode === "lt" ? "<" : ">"}${debouncedAgeValue}`;
+        if (ageMode === "between" && debouncedMinAge && debouncedMaxAge) {
+          ageParam = `${debouncedMinAge}-${debouncedMaxAge}`;
+        } else if (
+          (ageMode === "lt" || ageMode === "gt") &&
+          debouncedAgeValue
+        ) {
+          ageParam = `${ageMode === "lt" ? "<" : ">"}${debouncedAgeValue}`;
+        }
+
+        const res = await getVoters(
+          page,
+          PAGE_SIZE,
+          debouncedSearch ?? "",
+          ageParam
+            ? ageParam
+            : selectedSubFilter.type === "age"
+              ? (selectedSubFilter.value ?? undefined)
+              : undefined,
+          gender === "All" ? undefined : gender,
+          searchBy,
+          selectedCategory,
+          selectedSubFilter.type === "color"
+            ? (selectedSubFilter.value ?? undefined)
+            : undefined,
+          selectedSubFilter.type === "surname"
+            ? (selectedSubFilter.value ?? undefined)
+            : undefined,
+        );
+
+        setVoterCount(res?.data?.totalRecords ?? 0);
+        setVoters(res?.data?.data ?? []);
+      } catch {
+      } finally {
+        setPageLoading(false);
       }
-
-      const res = await getVoters(
-        page,
-        PAGE_SIZE,
-        debouncedSearch ?? "",
-        ageParam,
-        gender === "All" ? undefined : gender,
-        searchBy
-      );
-
-      setVoterCount(res?.data?.totalRecords ?? 0);
-      setVoters(res?.data?.data ?? []);
-    } catch {
-    } finally {
-      setPageLoading(false);
     }
   }, [
     page,
@@ -117,8 +162,99 @@ export default function VotersScreen() {
     debouncedMinAge,
     debouncedMaxAge,
     gender,
-    searchBy
+    searchBy,
+    selectedCategory,
+    selectedSubFilter.value,
   ]);
+
+  const fetchSubFilters = async (type: SubFilterType) => {
+    setSubFilterLoading(true);
+    try {
+      let data: any[] = [];
+
+      if (type === "color") {
+        const res = await getColorCodes();
+        const stats: ColorCodeStats = res.data;
+
+        data = Object.entries(stats).map(([key, value]) => ({
+          label: t(`dashboard.voter.support.${key}`),
+          value: value.color,
+          color: value.color,
+          count: value.count,
+          metaKey: key,
+        }));
+      }
+
+      if (type === "age") {
+        const res = await getAgeStats();
+        const stats: AgeGroupStats = res.data;
+
+        data = [
+          {
+            label: "18 – 25",
+            value: "18-25",
+            count: stats.age18To25,
+            icon: "calendar-range",
+          },
+          {
+            label: "26 – 35",
+            value: "26-35",
+            count: stats.age26To35,
+            icon: "calendar-range",
+          },
+          {
+            label: "36 – 45",
+            value: "36-45",
+            count: stats.age36To45,
+            icon: "calendar-range",
+          },
+          {
+            label: "46 – 60",
+            value: "46-60",
+            count: stats.age46To60,
+            icon: "calendar-range",
+          },
+          {
+            label: "60+",
+            value: ">60",
+            count: stats.age60Plus,
+            icon: "calendar-range",
+          },
+        ];
+      }
+
+      if (type === "surname") {
+        const res = await getSurnames(subPage, SUB_PAGE_SIZE);
+        const result = res.data;
+
+        setSubTotalPages(result.totalPages);
+        setSubTotalRecords(result.totalRecords);
+
+        data = result.data.map((s) => ({
+          label: s.surname,
+          value: s.surname,
+          count: s.count,
+          icon: "account",
+        }));
+      }
+
+      setSubFilterItems(data);
+    } finally {
+      setSubFilterLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (view === "subcategories" && selectedSubFilter.type) {
+      fetchSubFilters(selectedSubFilter.type);
+    }
+  }, [view, selectedSubFilter.type, subPage]);
+
+  useEffect(() => {
+    if (view === "list") {
+      fetchVoters();
+    }
+  }, [view, fetchVoters]);
 
   useEffect(() => {
     flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
@@ -129,9 +265,10 @@ export default function VotersScreen() {
     useCallback(() => {
       setVoterStack([]);
       setSelectedVoter(null);
-      setView("list");
-      fetchVoters();
-    }, [fetchVoters])
+      if (selectedCategory === null) {
+        setView("categories");
+      }
+    }, [fetchVoters]),
   );
 
   const totalPages = Math.ceil(voterCount / PAGE_SIZE);
@@ -160,7 +297,7 @@ export default function VotersScreen() {
       ]);
 
       setVoterStack((prev) =>
-        selectedVoter ? [...prev, selectedVoter] : prev
+        selectedVoter ? [...prev, selectedVoter] : prev,
       );
 
       setSelectedVoter(voter);
@@ -168,6 +305,32 @@ export default function VotersScreen() {
     } finally {
       setTransitionLoading(false);
     }
+  };
+
+  const handleCategorySelect = (categoryId: number) => {
+    setSelectedCategory(categoryId);
+    setPage(1);
+
+    if (categoryId === 9) {
+      setSelectedSubFilter({ type: "color", value: null });
+      setView("subcategories");
+      return;
+    }
+
+    if (categoryId === 10) {
+      setSelectedSubFilter({ type: "age", value: null });
+      setView("subcategories");
+      return;
+    }
+
+    if (categoryId === 8) {
+      setSelectedSubFilter({ type: "surname", value: null });
+      setSubPage(1);
+      setView("subcategories");
+      return;
+    }
+
+    setView("list");
   };
 
   const goBackFromDetail = async () => {
@@ -220,6 +383,41 @@ export default function VotersScreen() {
     );
   }
 
+  if (view === "categories") {
+    return <VoterCategoryScreen onSelectCategory={handleCategorySelect} />;
+  }
+
+  if (view === "subcategories" && selectedSubFilter.type) {
+    const titleMap = {
+      color: "Select Color Code",
+      age: "Select Age Group",
+      surname: "Select Surname",
+    };
+
+    return (
+      <Subcategory
+        title={titleMap[selectedSubFilter.type]}
+        items={subFilterItems}
+        loading={subFilterLoading}
+        type={selectedSubFilter.type}
+        page={subPage}
+        totalPages={subTotalPages}
+        totalRecords={subTotalRecords}
+        onPageChange={setSubPage}
+        startRecord={subStartRecord}
+        endRecord={subEndRecord}
+        onBack={() => {
+          setSelectedSubFilter({ type: null, value: null });
+          setView("categories");
+        }}
+        onSelect={(value) => {
+          setSelectedSubFilter((prev) => ({ ...prev, value }));
+          setView("list");
+        }}
+      />
+    );
+  }
+
   return (
     <View style={styles.screenContainer}>
       <View style={{ position: "relative", flex: 1 }}>
@@ -252,9 +450,31 @@ export default function VotersScreen() {
           style={{ flex: 1 }}
           ListHeaderComponent={
             <>
-              <Text variant="titleLarge" style={styles.heading}>
-                {t("voter.plural")}
-              </Text>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <IconButton
+                  icon="arrow-left"
+                  iconColor={theme.colors.primary}
+                  onPress={() => {
+                    if (selectedSubFilter.type && selectedSubFilter.value) {
+                      setSelectedSubFilter((prev) => ({
+                        ...prev,
+                        value: null,
+                      }));
+                      setSubPage(1);
+                      setView("subcategories");
+                      return;
+                    }
+
+                    setSelectedCategory(null);
+                    setView("categories");
+                  }}
+                />
+                <Text variant="titleLarge" style={styles.heading}>
+                  {selectedCategoryObj
+                    ? t(selectedCategoryObj.title)
+                    : t("voter.plural")}
+                </Text>
+              </View>
 
               <View style={styles.searchContainer}>
                 <View style={styles.mergedSearchWrapper}>
@@ -285,7 +505,7 @@ export default function VotersScreen() {
               </View>
 
               {/* COLLAPSIBLE FILTER PANEL */}
-              <View style={styles.filterPanel}>
+              {/* <View style={styles.filterPanel}>
                 <Pressable
                   style={styles.filterHeader}
                   onPress={() => setShowFilters((prev) => !prev)}
@@ -506,7 +726,7 @@ export default function VotersScreen() {
                     )}
                   </View>
                 )}
-              </View>
+              </View> */}
             </>
           }
           renderItem={({ item }) => (
