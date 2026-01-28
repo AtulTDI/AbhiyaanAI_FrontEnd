@@ -41,7 +41,7 @@ const PAGE_SIZE = 50;
 /* ---------------- SCREEN ---------------- */
 export default function VotersScreen() {
   const { isWeb } = usePlatformInfo();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const theme = useTheme<AppTheme>();
   const styles = createStyles(theme, { isWeb });
 
@@ -306,7 +306,7 @@ export default function VotersScreen() {
     if (view === "subcategories" && selectedSubFilter.type) {
       fetchSubFilters(selectedSubFilter.type);
     }
-  }, [view, selectedSubFilter.type, subPage]);
+  }, [view, selectedSubFilter.type, subPage, i18n.language]);
 
   useEffect(() => {
     if (view === "list") {
