@@ -8,6 +8,7 @@ import {
   Image,
   PermissionsAndroid,
   Linking,
+  AppState,
 } from "react-native";
 import {
   Text,
@@ -36,8 +37,6 @@ import { usePlatformInfo } from "../hooks/usePlatformInfo";
 import { requestBluetoothPermissions } from "../utils/bluetoothPermissions";
 import SlipPreview from "./SlipPreview";
 import { AppTheme } from "../theme";
-import { sendVoterSlip } from "../api/whatsappApi";
-import { getAuthData } from "../utils/storage";
 
 type Props = {
   voter: Voter;
@@ -80,6 +79,7 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
   const [slipText, setSlipText] = useState("");
   const [tempContact, setTempContact] = useState(null);
   const [imageBase64, setImageBase64] = useState("");
+  const [slipSending, setSlipSending] = useState(false);
   const viewShotRef = useRef<any>(null);
 
   const tabs = [
@@ -92,6 +92,18 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
     clearCacheFiles();
     clearAllTempContacts();
   });
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", (nextState) => {
+      if (nextState === "active") {
+        setSlipSending(false);
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
 
   /* ================= EXISTING HANDLERS ================= */
   const convertSlipTextToImage = async (text: string) => {
@@ -317,6 +329,7 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
       showToast(t("voter.mobileInvalid"), "error");
       return;
     }
+    setSlipSending(true);
     let isWhatsAppAvailable = false;
     const response = await generateVoterSlip(voter.id);
     console.log("Response", response.data);
@@ -472,19 +485,24 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
             />
           </View>
 
-          {(!isWeb || isMobileWeb) && (
-            <IconButton
-              icon={() => (
-                <FontAwesome
-                  name="whatsapp"
-                  size={22}
-                  color={theme.colors.whatsappGreen}
-                />
-              )}
-              onPress={handleSendVoter}
-              style={{ marginTop: -20, marginRight: isWeb ? 5 : 40 }}
-            />
-          )}
+          {(!isWeb || isMobileWeb) &&
+            (slipSending ? (
+              <View style={{ marginTop: -20, marginRight: isWeb ? 5 : 50 }}>
+                <ActivityIndicator size={25} color={theme.colors.primary} />
+              </View>
+            ) : (
+              <IconButton
+                icon={() => (
+                  <FontAwesome
+                    name="whatsapp"
+                    size={28}
+                    color={theme.colors.whatsappGreen}
+                  />
+                )}
+                onPress={handleSendVoter}
+                style={{ marginTop: -20, marginRight: isWeb ? 5 : 40 }}
+              />
+            ))}
 
           {(!isWeb || isMobileWeb) &&
             (printing ? (
