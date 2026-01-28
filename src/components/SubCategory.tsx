@@ -6,6 +6,7 @@ import {
   useTheme,
   IconButton,
 } from "react-native-paper";
+import { useTranslation } from "react-i18next";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { usePlatformInfo } from "../hooks/usePlatformInfo";
 import { AppTheme } from "../theme";
@@ -24,6 +25,7 @@ export default function Subcategory({
   onSelect,
   onBack,
 }: any) {
+  const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
   const { isWeb } = usePlatformInfo();
   const styles = createStyles(theme);
@@ -133,7 +135,11 @@ export default function Subcategory({
       {type === "surname" && totalRecords > 0 && (
         <View style={styles.floatingBar}>
           <Text style={styles.stickyCountText}>
-            Showing {startRecord}–{endRecord} of {totalRecords} surnames
+            {t("voter.showingSurnames", {
+              start: startRecord,
+              end: endRecord,
+              total: totalRecords,
+            })}
           </Text>
 
           <View style={styles.stickyPager}>
@@ -146,7 +152,7 @@ export default function Subcategory({
             />
 
             <Text style={styles.pageText}>
-              Page {page} of {totalPages}
+              {t("voter.pageInfo", { current: page, total: totalPages })}
             </Text>
 
             <IconButton

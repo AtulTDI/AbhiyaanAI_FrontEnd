@@ -135,7 +135,8 @@
     "selectDemand": "मागणी निवडा",
     "enterCandidateName": "उमेदवाराचे नाव टाका",
     "enterPartyName": "पक्षाचे नाव टाका",
-    "enterMrPartyName": "मराठीत पक्षाचे नाव टाका"
+    "enterMrPartyName": "मराठीत पक्षाचे नाव टाका",
+    "enterMrSymbolName": "मराठीत चिन्हाचे नाव टाका"
   },
 
   "application": {
@@ -357,6 +358,11 @@
     "loadVoterFailMessage": "मतदार डेटा मिळवण्यात अयशस्वी",
     "noData": "कोणतेही मतदार सापडले नाहीत",
     "selectCategory": "श्रेणी निवडा",
+    "showingRecords": "{{total}} मतदारांपैकी {{start}}–{{end}} दाखवत आहे",
+    "showingSurnames": "{{total}} आडनावांपैकी {{start}}–{{end}} दाखवत आहे",
+    "selectColorCode": "रंग कोड निवडा",
+    "selectAgeGroup": "वयोगट निवडा",
+    "selectSurname": "आडनाव निवडा",
     "filterCategories": {
       "all": "सर्व मतदार",
       "allDesc": "संपूर्ण मतदार यादी पहा",
@@ -379,7 +385,9 @@
       "surname": "आडनावानुसार",
       "surnameDesc": "आडनावानुसार गटबद्ध किंवा फिल्टर केलेले",
       "color": "रंग कोडनुसार",
-      "colorDesc": "रंग लेबलचा वापर करून वर्गीकृत"
+      "colorDesc": "रंग लेबलचा वापर करून वर्गीकृत",
+      "advancedSearch": "प्रगत शोध",
+      "advancedSearchDesc": "अधिक तपशीलवार शोध पर्यायांसह फिल्टर करा"
     }
   },
   "candidate": {

@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { View, StyleSheet, FlatList, Pressable, Platform } from "react-native";
+import { useIsFocused } from "@react-navigation/native";
 import {
   Text,
   useTheme,
@@ -11,7 +12,6 @@ import {
   Divider,
 } from "react-native-paper";
 import { useTranslation } from "react-i18next";
-import { useFocusEffect } from "@react-navigation/native";
 import VoterDetailView from "../components/VoterDetailView";
 import VoterCategoryScreen from "./VoterCategoryScreen";
 import { AgeGroupStats, ColorCodeStats, Voter } from "../types/Voter";
@@ -23,11 +23,13 @@ import {
   getSurnames,
   getVoterById,
   getVoters,
+  getVotersByCategory,
 } from "../api/voterApi";
 import FormDropdown from "../components/FormDropdown";
 import Subcategory from "../components/SubCategory";
 import { VOTER_CATEGORIES } from "../constants/voterCategories";
 import { AppTheme } from "../theme";
+import { MaterialIcons } from "@expo/vector-icons";
 
 type AgeMode = "none" | "lt" | "gt" | "between";
 type ScreenView = "categories" | "subcategories" | "list" | "detail";
@@ -84,6 +86,8 @@ export default function VotersScreen() {
   const subStartRecord =
     subTotalRecords === 0 ? 0 : (subPage - 1) * SUB_PAGE_SIZE + 1;
   const subEndRecord = Math.min(subPage * SUB_PAGE_SIZE, subTotalRecords);
+  const isFocused = useIsFocused();
+  const wasFocused = React.useRef(true);
 
   const SEARCH_OPTIONS = [
     { label: t("name"), value: "fullname" },
@@ -112,8 +116,33 @@ export default function VotersScreen() {
     return () => clearTimeout(timer);
   }, []);
 
+  useEffect(() => {
+    if (isFocused && !wasFocused.current) {
+      setView("categories");
+      setSelectedCategory(null);
+      setSelectedSubFilter({ type: null, value: null });
+      setSelectedVoter(null);
+      setVoterStack([]);
+
+      setSearch("");
+      setGender("All");
+      setAgeMode("none");
+      setAgeValue("");
+      setMinAge("");
+      setMaxAge("");
+      setShowFilters(false);
+
+      setPage(1);
+      setSubPage(1);
+    }
+
+    wasFocused.current = isFocused;
+  }, [isFocused]);
+
   /* ---------------- FETCH VOTERS ---------------- */
   const fetchVoters = useCallback(async () => {
+    let res;
+
     if (view === "list") {
       try {
         setPageLoading(true);
@@ -128,25 +157,36 @@ export default function VotersScreen() {
           ageParam = `${ageMode === "lt" ? "<" : ">"}${debouncedAgeValue}`;
         }
 
-        const res = await getVoters(
-          page,
-          PAGE_SIZE,
-          debouncedSearch ?? "",
-          ageParam
-            ? ageParam
-            : selectedSubFilter.type === "age"
+        if (selectedCategory === 11) {
+          res = await getVoters(
+            page,
+            PAGE_SIZE,
+            debouncedSearch ?? "",
+            ageParam,
+            gender === "All" ? undefined : gender,
+            searchBy,
+          );
+        } else {
+          res = await getVotersByCategory(
+            page,
+            PAGE_SIZE,
+            debouncedSearch ?? "",
+            ageParam
+              ? ageParam
+              : selectedSubFilter.type === "age"
+                ? (selectedSubFilter.value ?? undefined)
+                : undefined,
+            gender === "All" ? undefined : gender,
+            searchBy,
+            selectedCategory,
+            selectedSubFilter.type === "color"
               ? (selectedSubFilter.value ?? undefined)
               : undefined,
-          gender === "All" ? undefined : gender,
-          searchBy,
-          selectedCategory,
-          selectedSubFilter.type === "color"
-            ? (selectedSubFilter.value ?? undefined)
-            : undefined,
-          selectedSubFilter.type === "surname"
-            ? (selectedSubFilter.value ?? undefined)
-            : undefined,
-        );
+            selectedSubFilter.type === "surname"
+              ? (selectedSubFilter.value ?? undefined)
+              : undefined,
+          );
+        }
 
         setVoterCount(res?.data?.totalRecords ?? 0);
         setVoters(res?.data?.data ?? []);
@@ -191,31 +231,31 @@ export default function VotersScreen() {
 
         data = [
           {
-            label: "18 – 25",
+            label: t("dashboard.voter.ageGroups.18_25"),
             value: "18-25",
             count: stats.age18To25,
             icon: "calendar-range",
           },
           {
-            label: "26 – 35",
+            label: t("dashboard.voter.ageGroups.26_35"),
             value: "26-35",
             count: stats.age26To35,
             icon: "calendar-range",
           },
           {
-            label: "36 – 45",
+            label: t("dashboard.voter.ageGroups.36_45"),
             value: "36-45",
             count: stats.age36To45,
             icon: "calendar-range",
           },
           {
-            label: "46 – 60",
+            label: t("dashboard.voter.ageGroups.46_60"),
             value: "46-60",
             count: stats.age46To60,
             icon: "calendar-range",
           },
           {
-            label: "60+",
+            label: t("dashboard.voter.ageGroups.60_plus"),
             value: ">60",
             count: stats.age60Plus,
             icon: "calendar-range",
@@ -259,17 +299,6 @@ export default function VotersScreen() {
   useEffect(() => {
     flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
   }, [page]);
-
-  /* ---------------- FOCUS EFFECT ---------------- */
-  useFocusEffect(
-    useCallback(() => {
-      setVoterStack([]);
-      setSelectedVoter(null);
-      if (selectedCategory === null) {
-        setView("categories");
-      }
-    }, [fetchVoters]),
-  );
 
   const totalPages = Math.ceil(voterCount / PAGE_SIZE);
   const startRecord = voterCount === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
@@ -389,9 +418,9 @@ export default function VotersScreen() {
 
   if (view === "subcategories" && selectedSubFilter.type) {
     const titleMap = {
-      color: "Select Color Code",
-      age: "Select Age Group",
-      surname: "Select Surname",
+      color: t("voter.selectColorCode"),
+      age: t("voter.selectAgeGroup"),
+      surname: t("voter.selectSurname"),
     };
 
     return (
@@ -466,6 +495,7 @@ export default function VotersScreen() {
                     }
 
                     setSelectedCategory(null);
+                    clearFilters();
                     setView("categories");
                   }}
                 />
@@ -481,6 +511,7 @@ export default function VotersScreen() {
                   <TextInput
                     mode="outlined"
                     placeholder={t("voter.searchPlaceholder")}
+                    placeholderTextColor={theme.colors.placeholder}
                     value={search}
                     onChangeText={(text) => {
                       setSearch(text);
@@ -505,122 +536,24 @@ export default function VotersScreen() {
               </View>
 
               {/* COLLAPSIBLE FILTER PANEL */}
-              {/* <View style={styles.filterPanel}>
-                <Pressable
-                  style={styles.filterHeader}
-                  onPress={() => setShowFilters((prev) => !prev)}
-                >
-                  <Text style={styles.filterTitle}>{t("voter.filters")}</Text>
-                  <IconButton
-                    icon={showFilters ? "chevron-up" : "chevron-down"}
+              {selectedCategory === 11 && (
+                <View style={styles.filterPanel}>
+                  <Pressable
+                    style={styles.filterHeader}
                     onPress={() => setShowFilters((prev) => !prev)}
-                  />
-                </Pressable>
+                  >
+                    <Text style={styles.filterTitle}>{t("voter.filters")}</Text>
+                    <IconButton
+                      icon={showFilters ? "chevron-up" : "chevron-down"}
+                      onPress={() => setShowFilters((prev) => !prev)}
+                    />
+                  </Pressable>
 
-                {showFilters && <Divider style={styles.filterDivider} />}
+                  {showFilters && <Divider style={styles.filterDivider} />}
 
-                {showFilters && (
-                  <View style={styles.filtersContainer}>
-                    {isWeb ? (
-                      <View style={styles.filterRow}>
-                        <Text style={styles.filterSectionLabel}>
-                          {t("voter.gender")}
-                        </Text>
-
-                        {["All", "Male", "Female"].map((g) => (
-                          <Chip
-                            key={g}
-                            selected={gender === g}
-                            showSelectedCheck={false}
-                            onPress={() => {
-                              setGender(g as any);
-                              setPage(1);
-                            }}
-                            style={[
-                              styles.filterChip,
-                              gender === g && styles.filterChipSelected,
-                            ]}
-                          >
-                            {t(`voter.gender${g}`)}
-                          </Chip>
-                        ))}
-
-                        <View style={styles.verticalDivider} />
-
-                        <Text style={styles.filterSectionLabel}>
-                          {t("voter.age")}
-                        </Text>
-
-                        {[
-                          { key: "lt", label: t("voter.ageLt") },
-                          { key: "gt", label: t("voter.ageGt") },
-                          { key: "between", label: t("voter.ageBetween") },
-                        ].map((m) => (
-                          <Chip
-                            key={m.key}
-                            selected={ageMode === m.key}
-                            showSelectedCheck={false}
-                            onPress={() => {
-                              setAgeMode(m.key as AgeMode);
-                              setAgeValue("");
-                              setMinAge("");
-                              setMaxAge("");
-                              setPage(1);
-                            }}
-                            style={[
-                              styles.filterChip,
-                              ageMode === m.key && styles.filterChipSelected,
-                            ]}
-                          >
-                            {m.label}
-                          </Chip>
-                        ))}
-
-                        {(ageMode === "lt" || ageMode === "gt") && (
-                          <TextInput
-                            mode="outlined"
-                            placeholder={t("voter.age")}
-                            placeholderTextColor={theme.colors.placeholder}
-                            value={ageValue}
-                            onChangeText={setAgeValue}
-                            keyboardType="numeric"
-                            style={styles.compactAgeInput}
-                          />
-                        )}
-
-                        {ageMode === "between" && (
-                          <>
-                            <TextInput
-                              mode="outlined"
-                              placeholder={t("voter.minAge")}
-                              placeholderTextColor={theme.colors.placeholder}
-                              value={minAge}
-                              onChangeText={setMinAge}
-                              keyboardType="numeric"
-                              style={styles.compactAgeInput}
-                            />
-                            <TextInput
-                              mode="outlined"
-                              placeholder={t("voter.maxAge")}
-                              placeholderTextColor={theme.colors.placeholder}
-                              value={maxAge}
-                              onChangeText={setMaxAge}
-                              keyboardType="numeric"
-                              style={styles.compactAgeInput}
-                            />
-                          </>
-                        )}
-
-                        <Chip
-                          icon="close"
-                          onPress={clearFilters}
-                          style={styles.clearChip}
-                        >
-                          {t("voter.clear")}
-                        </Chip>
-                      </View>
-                    ) : (
-                      <>
+                  {showFilters && (
+                    <View style={styles.filtersContainer}>
+                      {isWeb ? (
                         <View style={styles.filterRow}>
                           <Text style={styles.filterSectionLabel}>
                             {t("voter.gender")}
@@ -643,9 +576,9 @@ export default function VotersScreen() {
                               {t(`voter.gender${g}`)}
                             </Chip>
                           ))}
-                        </View>
 
-                        <View style={[styles.filterRow, { marginTop: 8 }]}>
+                          <View style={styles.verticalDivider} />
+
                           <Text style={styles.filterSectionLabel}>
                             {t("voter.age")}
                           </Text>
@@ -674,46 +607,42 @@ export default function VotersScreen() {
                               {m.label}
                             </Chip>
                           ))}
-                        </View>
 
-                        {(ageMode === "lt" || ageMode === "gt") && (
-                          <View style={styles.ageInputRow}>
+                          {(ageMode === "lt" || ageMode === "gt") && (
                             <TextInput
                               mode="outlined"
-                              label={t("voter.ageLabel")}
+                              placeholder={t("voter.age")}
+                              placeholderTextColor={theme.colors.placeholder}
                               value={ageValue}
                               onChangeText={setAgeValue}
                               keyboardType="numeric"
                               style={styles.compactAgeInput}
-                              dense
                             />
-                          </View>
-                        )}
+                          )}
 
-                        {ageMode === "between" && (
-                          <View style={styles.ageInputRow}>
-                            <TextInput
-                              mode="outlined"
-                              label={t("voter.minAge")}
-                              value={minAge}
-                              onChangeText={setMinAge}
-                              keyboardType="numeric"
-                              style={[styles.compactAgeInput, { flex: 1 }]}
-                              dense
-                            />
-                            <TextInput
-                              mode="outlined"
-                              label={t("voter.maxAge")}
-                              value={maxAge}
-                              onChangeText={setMaxAge}
-                              keyboardType="numeric"
-                              style={[styles.compactAgeInput, { flex: 1 }]}
-                              dense
-                            />
-                          </View>
-                        )}
+                          {ageMode === "between" && (
+                            <>
+                              <TextInput
+                                mode="outlined"
+                                placeholder={t("voter.minAge")}
+                                placeholderTextColor={theme.colors.placeholder}
+                                value={minAge}
+                                onChangeText={setMinAge}
+                                keyboardType="numeric"
+                                style={styles.compactAgeInput}
+                              />
+                              <TextInput
+                                mode="outlined"
+                                placeholder={t("voter.maxAge")}
+                                placeholderTextColor={theme.colors.placeholder}
+                                value={maxAge}
+                                onChangeText={setMaxAge}
+                                keyboardType="numeric"
+                                style={styles.compactAgeInput}
+                              />
+                            </>
+                          )}
 
-                        <View style={styles.clearRow}>
                           <Chip
                             icon="close"
                             onPress={clearFilters}
@@ -722,12 +651,130 @@ export default function VotersScreen() {
                             {t("voter.clear")}
                           </Chip>
                         </View>
-                      </>
-                    )}
-                  </View>
-                )}
-              </View> */}
+                      ) : (
+                        <>
+                          <View style={styles.filterRow}>
+                            <Text style={styles.filterSectionLabel}>
+                              {t("voter.gender")}
+                            </Text>
+
+                            {["All", "Male", "Female"].map((g) => (
+                              <Chip
+                                key={g}
+                                selected={gender === g}
+                                showSelectedCheck={false}
+                                onPress={() => {
+                                  setGender(g as any);
+                                  setPage(1);
+                                }}
+                                style={[
+                                  styles.filterChip,
+                                  gender === g && styles.filterChipSelected,
+                                ]}
+                              >
+                                {t(`voter.gender${g}`)}
+                              </Chip>
+                            ))}
+                          </View>
+
+                          <View style={[styles.filterRow, { marginTop: 8 }]}>
+                            <Text style={styles.filterSectionLabel}>
+                              {t("voter.age")}
+                            </Text>
+
+                            {[
+                              { key: "lt", label: t("voter.ageLt") },
+                              { key: "gt", label: t("voter.ageGt") },
+                              { key: "between", label: t("voter.ageBetween") },
+                            ].map((m) => (
+                              <Chip
+                                key={m.key}
+                                selected={ageMode === m.key}
+                                showSelectedCheck={false}
+                                onPress={() => {
+                                  setAgeMode(m.key as AgeMode);
+                                  setAgeValue("");
+                                  setMinAge("");
+                                  setMaxAge("");
+                                  setPage(1);
+                                }}
+                                style={[
+                                  styles.filterChip,
+                                  ageMode === m.key &&
+                                    styles.filterChipSelected,
+                                ]}
+                              >
+                                {m.label}
+                              </Chip>
+                            ))}
+                          </View>
+
+                          {(ageMode === "lt" || ageMode === "gt") && (
+                            <View style={styles.ageInputRow}>
+                              <TextInput
+                                mode="outlined"
+                                label={t("voter.ageLabel")}
+                                value={ageValue}
+                                onChangeText={setAgeValue}
+                                keyboardType="numeric"
+                                style={styles.compactAgeInput}
+                                dense
+                              />
+                            </View>
+                          )}
+
+                          {ageMode === "between" && (
+                            <View style={styles.ageInputRow}>
+                              <TextInput
+                                mode="outlined"
+                                label={t("voter.minAge")}
+                                value={minAge}
+                                onChangeText={setMinAge}
+                                keyboardType="numeric"
+                                style={[styles.compactAgeInput, { flex: 1 }]}
+                                dense
+                              />
+                              <TextInput
+                                mode="outlined"
+                                label={t("voter.maxAge")}
+                                value={maxAge}
+                                onChangeText={setMaxAge}
+                                keyboardType="numeric"
+                                style={[styles.compactAgeInput, { flex: 1 }]}
+                                dense
+                              />
+                            </View>
+                          )}
+
+                          <View style={styles.clearRow}>
+                            <Chip
+                              icon="close"
+                              onPress={clearFilters}
+                              style={styles.clearChip}
+                            >
+                              {t("voter.clear")}
+                            </Chip>
+                          </View>
+                        </>
+                      )}
+                    </View>
+                  )}
+                </View>
+              )}
             </>
+          }
+          ListEmptyComponent={
+            !pageLoading ? (
+              <View style={styles.emptyContainer}>
+                <MaterialIcons
+                  name="info-outline"
+                  size={36}
+                  color={theme.colors.borderGray}
+                  style={{ marginBottom: 8 }}
+                />
+                <Text style={styles.emptyText}>{t("voter.noData")}</Text>
+              </View>
+            ) : null
           }
           renderItem={({ item }) => (
             <Pressable
@@ -773,8 +820,12 @@ export default function VotersScreen() {
         <View style={styles.floatingBar}>
           <Text style={styles.stickyCountText}>
             {voterCount > 0
-              ? `Showing ${startRecord}–${endRecord} of ${voterCount} voters`
-              : "No voters found"}
+              ? t("voter.showingRecords", {
+                  start: startRecord,
+                  end: endRecord,
+                  total: voterCount,
+                })
+              : t("voter.noData")}
           </Text>
 
           <View style={styles.stickyPager}>
@@ -787,7 +838,7 @@ export default function VotersScreen() {
             />
 
             <Text style={styles.pageText}>
-              Page {page} of {totalPages}
+              {t("voter.pageInfo", { current: page, total: totalPages })}
             </Text>
 
             <IconButton
@@ -1047,5 +1098,16 @@ const createStyles = (theme: AppTheme, platform: { isWeb: boolean }) =>
       top: 6,
       width: 130,
       height: 36,
+    },
+    emptyContainer: {
+      alignItems: "center",
+      justifyContent: "center",
+      paddingVertical: 30,
+    },
+    emptyText: {
+      marginTop: 6,
+      fontSize: 14,
+      color: theme.colors.textSecondary,
+      textAlign: "center",
     },
   });

@@ -136,7 +136,8 @@
     "enterCandidateName": "Enter candidate name",
     "enterMrCandidateName": "Enter candidate name in Marathi",
     "enterPartyName": "Enter party name",
-    "enterMrPartyName": "Enter Party Name in Marathi"
+    "enterMrPartyName": "Enter Party Name in Marathi",
+    "enterMrSymbolName": "Enter symbol name in Marathi"
   },
 
   "application": {
@@ -358,6 +359,11 @@
     "loadVoterFailMessage": "Failed to fetch voters",
     "noData": "No voters found",
     "selectCategory": "Select Category",
+    "showingRecords": "Showing {{start}}–{{end}} of {{total}} voters",
+    "showingSurnames": "Showing {{start}}–{{end}} of {{total}} surnames",
+    "selectColorCode": "Select Color Code",
+    "selectAgeGroup": "Select Age Group",
+    "selectSurname": "Select Surname",
     "filterCategories": {
       "all": "All Voters",
       "allDesc": "View the complete voter list",
@@ -380,7 +386,9 @@
       "surname": "By Surname",
       "surnameDesc": "Grouped or filtered by surname",
       "color": "By Color Code",
-      "colorDesc": "Categorized using color labels"
+      "colorDesc": "Categorized using color labels",
+      "advancedSearch": "Advanced Search",
+      "advancedSearchDesc": "Use multiple filters to find voters with specific combinations of details"
     }
   },
   "candidate": {

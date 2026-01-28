@@ -14,6 +14,33 @@ export const getVoters = (
   age?: string,
   gender?: string,
   searchType?: string,
+) =>
+  axios.get<GetPaginatedVoters>(
+    "/Voters/getvoters",
+    {
+      useApiPrefix: true,
+      useVoterBase: true,
+      params: {
+        page: pageNumber,
+        pageSize,
+        ...(searchText ? { searchText } : {}),
+        ...(age !== undefined ? { age } : {}),
+        ...(gender ? { gender } : {}),
+        ...(searchType ? { searchType } : {}),
+      },
+    }
+  );
+
+/**
+ * Get paginated voters with optional search
+ */
+export const getVotersByCategory = (
+  pageNumber: number,
+  pageSize: number,
+  searchText?: string,
+  age?: string,
+  gender?: string,
+  searchType?: string,
   type?: number,
   supportColor?: string,
   surname?: string,

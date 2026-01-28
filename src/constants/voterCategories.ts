@@ -19,4 +19,5 @@ export const VOTER_CATEGORIES: VoterCategory[] = [
   { id: 5, title: "voter.filterCategories.voted", description: "voter.filterCategories.votedDesc", icon: "thumb-up" },
   { id: 6, title: "voter.filterCategories.notVoted", description: "voter.filterCategories.notVotedDesc", icon: "thumb-down" },
   { id: 4, title: "voter.filterCategories.dead", description: "voter.filterCategories.deadDesc", icon: "cross" },
+  { id: 11, title: "voter.filterCategories.advancedSearch", description: "voter.filterCategories.advancedSearchDesc", icon: "tune-vertical" },
 ];

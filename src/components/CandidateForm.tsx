@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { View, StyleSheet } from "react-native";
-import { TextInput, Button, HelperText, Surface } from "react-native-paper";
+import {
+  TextInput,
+  Button,
+  HelperText,
+  Surface,
+  useTheme,
+} from "react-native-paper";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { useTranslation } from "react-i18next";
 
@@ -8,6 +14,7 @@ import { Candidate } from "../types/Candidate";
 import SingleImageUpload, { ImageAsset } from "./SingleImageUpload";
 import { usePlatformInfo } from "../hooks/usePlatformInfo";
 import { FixedLabel } from "./FixedLabel";
+import { AppTheme } from "../theme";
 
 type Props = {
   mode: "create" | "edit";
@@ -33,6 +40,7 @@ export default function CandidateForm({
 }: Props) {
   const { t } = useTranslation();
   const { isWeb, isMobileWeb } = usePlatformInfo();
+  const theme = useTheme<AppTheme>();
 
   const isEdit = mode === "edit";
   const isTwoColumn = isWeb && !isMobileWeb;
@@ -152,6 +160,8 @@ export default function CandidateForm({
           <View style={styles.col}>
             <FixedLabel label={t("name")} required />
             <TextInput
+              placeholder={t("placeholder.enterCandidateName")}
+              placeholderTextColor={theme.colors.placeholder}
               value={name}
               onChangeText={(v) => {
                 setName(v);
@@ -172,6 +182,8 @@ export default function CandidateForm({
           <View style={styles.col}>
             <FixedLabel label={t("candidate.mrName")} required />
             <TextInput
+              placeholder={t("placeholder.enterMrCandidateName")}
+              placeholderTextColor={theme.colors.placeholder}
               value={nameMr}
               onChangeText={(v) => {
                 setNameMr(v);
@@ -195,6 +207,8 @@ export default function CandidateForm({
           <View style={styles.col}>
             <FixedLabel label={t("candidate.party")} required />
             <TextInput
+              placeholder={t("placeholder.enterPartyName")}
+              placeholderTextColor={theme.colors.placeholder}
               value={partyName}
               onChangeText={(v) => {
                 setPartyName(v);
@@ -215,6 +229,8 @@ export default function CandidateForm({
           <View style={styles.col}>
             <FixedLabel label={t("candidate.mrPartyName")} required />
             <TextInput
+              placeholder={t("placeholder.enterMrPartyName")}
+              placeholderTextColor={theme.colors.placeholder}
               value={partyNameMr}
               onChangeText={(v) => {
                 setPartyNameMr(v);
@@ -238,6 +254,8 @@ export default function CandidateForm({
           <View style={styles.col}>
             <FixedLabel label={t("candidate.mrSymbolName")} required />
             <TextInput
+              placeholder={t("placeholder.enterMrSymbolName")}
+              placeholderTextColor={theme.colors.placeholder}
               value={symbolNameMr}
               onChangeText={(v) => {
                 setSymbolNameMr(v);
