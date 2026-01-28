@@ -134,7 +134,7 @@ const appendFile = async (
     uri?.split("/").pop() ||
     `photo_${Date.now()}.jpg`;
 
-  let type = uploadedFile.type || guessMimeType(name);
+  let type = guessMimeType(name);
 
   // Handle content:// URIs safely
   if (uri?.startsWith("content://")) {
