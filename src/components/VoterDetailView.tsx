@@ -474,10 +474,9 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
             </View>
           </View>
         </View>
-
         {/* ================= TABS ================= */}
         <View style={styles.tabsHeader}>
-          <View style={{ flex: 1 }}>
+          <View style={styles.tabsLeft}>
             <Tabs
               value={tab}
               onChange={(v) => setTab(v as TabKey)}
@@ -485,39 +484,37 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
             />
           </View>
 
-          {(!isWeb || isMobileWeb) &&
-            (slipSending ? (
-              <View style={{ marginTop: -20, marginRight: isWeb ? 5 : 50 }}>
-                <ActivityIndicator size={25} color={theme.colors.primary} />
-              </View>
-            ) : (
-              <IconButton
-                icon={() => (
-                  <FontAwesome
-                    name="whatsapp"
-                    size={28}
-                    color={theme.colors.whatsappGreen}
-                  />
-                )}
-                onPress={handleSendVoter}
-                style={{ marginTop: -20, marginRight: isWeb ? 5 : 40 }}
-              />
-            ))}
+          {(!isWeb || isMobileWeb) && (
+            <View style={styles.actionIcons}>
+              {slipSending ? (
+                <ActivityIndicator size={20} color={theme.colors.primary} />
+              ) : (
+                <IconButton
+                  icon={() => (
+                    <FontAwesome
+                      name="whatsapp"
+                      size={23}
+                      color={theme.colors.whatsappGreen}
+                    />
+                  )}
+                  onPress={handleSendVoter}
+                  style={styles.iconBtn}
+                />
+              )}
 
-          {(!isWeb || isMobileWeb) &&
-            (printing ? (
-              <View style={[styles.fabPrint, styles.fabLoader]}>
-                <ActivityIndicator size={30} color={theme.colors.white} />
-              </View>
-            ) : (
-              <IconButton
-                icon="printer"
-                size={20}
-                iconColor={theme.colors.white}
-                style={styles.fabPrint}
-                onPress={handlePrintVoterSlip}
-              />
-            ))}
+              {printing ? (
+                <ActivityIndicator size={20} color={theme.colors.primary} />
+              ) : (
+                <IconButton
+                  icon="printer"
+                  size={23}
+                  iconColor={theme.colors.primary}
+                  onPress={handlePrintVoterSlip}
+                  style={styles.iconBtn}
+                />
+              )}
+            </View>
+          )}
         </View>
 
         {/* ================= DETAILS TAB ================= */}
@@ -684,7 +681,6 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
             </View>
           </View>
         )}
-
         {tab === "family" && (
           <FamilyMembersCard voter={voter} onSelectMember={onOpenVoter} />
         )}
@@ -885,7 +881,20 @@ const createStyles = (theme: AppTheme) =>
     },
     tabsHeader: {
       flexDirection: "row",
+      alignItems: "flex-start",
+      marginBottom: 8,
+    },
+    tabsLeft: {
+      flex: 1,
+      paddingRight: 6,
+    },
+    actionIcons: {
+      flexDirection: "row",
       alignItems: "center",
+    },
+    iconBtn: {
+      margin: 0,
+      padding: 0,
     },
     identityStrip: {
       flexDirection: "row",
