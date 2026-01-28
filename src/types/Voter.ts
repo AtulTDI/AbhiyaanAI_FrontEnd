@@ -56,6 +56,12 @@ export type AgeGroupStats = {
   age60Plus: number;
 };
 
+export type GenderGroupStats = {
+  male: number;
+  female: number;
+  other: number;
+}
+
 export type GetPaginatedVoters = {
   data: Voter[];
   page: number;

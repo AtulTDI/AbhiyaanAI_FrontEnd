@@ -1,7 +1,7 @@
 import { Platform } from "react-native";
 import * as FileSystem from "expo-file-system";
 import axios from "./axiosInstance";
-import { AgeGroupStats, ColorCodeStats, GetFamilyMembers, GetPaginatedVoters, PaginatedSurnameStats, Voter } from "../types/Voter";
+import { AgeGroupStats, ColorCodeStats, GenderGroupStats, GetFamilyMembers, GetPaginatedVoters, PaginatedSurnameStats, Voter } from "../types/Voter";
 import { base64ToBlob } from "../utils/common";
 
 /**
@@ -187,3 +187,9 @@ export const getSurnames = (pageNumber, pageSize) =>
  */
 export const getAgeStats = () =>
   axios.get<AgeGroupStats>('/Voters/get-age-stats', { useApiPrefix: true, useVoterBase: true });
+
+/**
+ * Get gender stats
+ */
+export const getGenderStats = () =>
+  axios.get<GenderGroupStats>('/Voters/get-gender-stats', { useApiPrefix: true, useVoterBase: true });

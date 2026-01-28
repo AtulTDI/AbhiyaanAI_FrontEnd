@@ -201,8 +201,6 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
         await ThermalPrinter.printImage(imagePath);
         await new Promise((res) => setTimeout(res, 1200));
         showToast(t("candidate.voterPrintSuccess"), "success");
-      } else {
-        showToast("Printing supported only on Android", "info");
       }
     } catch (error) {
       showToast(extractErrorMessage(error), "error");
@@ -509,7 +507,7 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
                   icon="printer"
                   size={23}
                   iconColor={theme.colors.primary}
-                  onPress={handlePrintVoterSlip}
+                  // onPress={handlePrintVoterSlip}
                   style={styles.iconBtn}
                 />
               )}

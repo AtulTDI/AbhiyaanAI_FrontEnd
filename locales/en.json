@@ -364,6 +364,7 @@
     "selectColorCode": "Select Color Code",
     "selectAgeGroup": "Select Age Group",
     "selectSurname": "Select Surname",
+    "selectGender": "Select Gender",
     "filterCategories": {
       "all": "All Voters",
       "allDesc": "View the complete voter list",
@@ -371,6 +372,8 @@
       "starDesc": "Important or priority voters",
       "age": "Age Groups",
       "ageDesc": "Filter by specific age ranges",
+      "gender": "Gender",
+      "genderDesc": "Filter by gender",
       "verified": "Verified",
       "verifiedDesc": "Details have been verified",
       "unverified": "Unverified",

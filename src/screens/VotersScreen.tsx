@@ -20,6 +20,7 @@ import { usePlatformInfo } from "../hooks/usePlatformInfo";
 import {
   getAgeStats,
   getColorCodes,
+  getGenderStats,
   getSurnames,
   getVoterById,
   getVoters,
@@ -33,7 +34,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 
 type AgeMode = "none" | "lt" | "gt" | "between";
 type ScreenView = "categories" | "subcategories" | "list" | "detail";
-type SubFilterType = "color" | "age" | "surname";
+type SubFilterType = "color" | "age" | "gender" | "surname";
 
 const PAGE_SIZE = 50;
 
@@ -157,7 +158,7 @@ export default function VotersScreen() {
           ageParam = `${ageMode === "lt" ? "<" : ">"}${debouncedAgeValue}`;
         }
 
-        if (selectedCategory === 11) {
+        if (selectedCategory === 12) {
           res = await getVoters(
             page,
             PAGE_SIZE,
@@ -171,12 +172,12 @@ export default function VotersScreen() {
             page,
             PAGE_SIZE,
             debouncedSearch ?? "",
-            ageParam
-              ? ageParam
-              : selectedSubFilter.type === "age"
-                ? (selectedSubFilter.value ?? undefined)
-                : undefined,
-            gender === "All" ? undefined : gender,
+            selectedSubFilter.type === "age"
+              ? (selectedSubFilter.value ?? undefined)
+              : undefined,
+            selectedSubFilter.type === "gender"
+              ? (selectedSubFilter.value ?? undefined)
+              : undefined,
             searchBy,
             selectedCategory,
             selectedSubFilter.type === "color"
@@ -222,6 +223,23 @@ export default function VotersScreen() {
           color: value.color,
           count: value.count,
           metaKey: key,
+        }));
+      }
+
+      if (type === "gender") {
+        const res = await getGenderStats();
+        const result = res.data;
+
+        data = Object.entries(result).map(([key, count]) => ({
+          label: t(`dashboard.voter.${key}`),
+          value: key,
+          count: count as number,
+          icon:
+            key === "male"
+              ? "gender-male"
+              : key === "female"
+                ? "gender-female"
+                : "gender-transgender",
         }));
       }
 
@@ -359,6 +377,12 @@ export default function VotersScreen() {
       return;
     }
 
+    if (categoryId === 11) {
+      setSelectedSubFilter({ type: "gender", value: null });
+      setView("subcategories");
+      return;
+    }
+
     setView("list");
   };
 
@@ -421,6 +445,7 @@ export default function VotersScreen() {
       color: t("voter.selectColorCode"),
       age: t("voter.selectAgeGroup"),
       surname: t("voter.selectSurname"),
+      gender: t("voter.selectGender"),
     };
 
     return (
@@ -536,7 +561,7 @@ export default function VotersScreen() {
               </View>
 
               {/* COLLAPSIBLE FILTER PANEL */}
-              {selectedCategory === 11 && (
+              {selectedCategory === 12 && (
                 <View style={styles.filterPanel}>
                   <Pressable
                     style={styles.filterHeader}
