@@ -172,9 +172,15 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
     const fileName = `voter-slip-${Date.now()}.png`;
     const path = `${RNFS.CachesDirectoryPath}/${fileName}`;
 
-    await RNFS.writeFile(path, base64, "base64");
+    const cleanBase64 = base64.replace(/^data:image\/png;base64,/, "");
+    await RNFS.writeFile(path, cleanBase64, "base64");
 
-    return `file://${path}`;
+    const exists = await RNFS.exists(path);
+    console.log("FILE EXISTS:", exists, path);
+
+    if (!exists) throw new Error("File write failed");
+
+    return path;
   };
 
   const handlePrintVoterSlip = async () => {
@@ -198,8 +204,11 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
       console.log(imagePath);
 
       if (Platform.OS === "android") {
-        await ThermalPrinter.printImage(imagePath);
-        await new Promise((res) => setTimeout(res, 1200));
+        try {
+          await ThermalPrinter.printImage(imagePath);
+        } catch (e) {
+        }
+        await new Promise(res => setTimeout(res, 5000));
         showToast(t("candidate.voterPrintSuccess"), "success");
       }
     } catch (error) {
@@ -441,13 +450,19 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
     try {
       const files = await RNFS.readDir(RNFS.CachesDirectoryPath);
       for (const file of files) {
-        await RNFS.unlink(file.path);
+        try {
+          const exists = await RNFS.exists(file.path);
+          if (exists) {
+            await RNFS.unlink(file.path);
+          }
+        } catch (err) {
+          console.log("Skip delete:", file.path);
+        }
       }
     } catch (error) {
-      console.error("Error clearing cache:", error);
+      console.log("Cache cleanup skipped");
     }
   };
-
   /* ================= UI ================= */
 
   return (
@@ -507,7 +522,7 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
                   icon="printer"
                   size={23}
                   iconColor={theme.colors.primary}
-                  // onPress={handlePrintVoterSlip}
+                  onPress={handlePrintVoterSlip}
                   style={styles.iconBtn}
                 />
               )}
