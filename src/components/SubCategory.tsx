@@ -55,9 +55,7 @@ export default function Subcategory({
       {/* LIST */}
       <FlatList
         data={items}
-        key={numColumns}
         numColumns={numColumns}
-        keyExtractor={(item) => item.value}
         columnWrapperStyle={isWeb ? styles.row : undefined}
         contentContainerStyle={{
           paddingBottom: type === "surname" ? 100 : 16,
@@ -89,31 +87,33 @@ export default function Subcategory({
                     />
                   )}
 
-                  <Text
-                    style={[
-                      styles.label,
-                      {
-                        color: isColor
-                          ? theme.colors.white
-                          : theme.colors.primary,
-                      },
-                    ]}
-                  >
-                    {item.label}
-                  </Text>
-                  {item.description ? (
+                  <View>
                     <Text
                       style={[
-                        styles.description,
+                        styles.label,
                         {
-                          color: theme.colors.textSecondary,
+                          color: isColor
+                            ? theme.colors.white
+                            : theme.colors.primary,
                         },
                       ]}
-                      numberOfLines={2}
                     >
-                      {item.description}
+                      {item.label}
                     </Text>
-                  ) : null}
+                    {item.description ? (
+                      <Text
+                        style={[
+                          styles.description,
+                          {
+                            color: theme.colors.textSecondary,
+                          },
+                        ]}
+                        numberOfLines={2}
+                      >
+                        {item.description}
+                      </Text>
+                    ) : null}
+                  </View>
                 </View>
 
                 {/* RIGHT COUNT */}
@@ -296,5 +296,6 @@ const createStyles = (theme: AppTheme) =>
       fontSize: 13,
       marginTop: 2,
       lineHeight: 16,
+      width: '90%',
     },
   });
