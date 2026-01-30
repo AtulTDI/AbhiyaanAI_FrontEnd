@@ -1,7 +1,7 @@
 import { Platform } from "react-native";
 import * as FileSystem from "expo-file-system";
 import axios from "./axiosInstance";
-import { AgeGroupStats, ColorCodeStats, GenderGroupStats, GetFamilyMembers, GetPaginatedVoters, PaginatedSurnameStats, Voter } from "../types/Voter";
+import { AgeGroupStats, BoothStats, CasteStats, ColorCodeStats, GenderGroupStats, GetFamilyMembers, GetPaginatedVoters, PaginatedSurnameStats, Voter } from "../types/Voter";
 import { base64ToBlob } from "../utils/common";
 
 /**
@@ -44,6 +44,8 @@ export const getVotersByCategory = (
   type?: number,
   supportColor?: string,
   surname?: string,
+  casteId?: string,
+  booth?: number
 ) =>
   axios.get<GetPaginatedVoters>(
     "/Voters/get-voters-by-category",
@@ -59,6 +61,8 @@ export const getVotersByCategory = (
         ...(searchText ? { searchText } : {}),
         ...(age !== undefined ? { age } : {}),
         ...(gender ? { gender } : {}),
+        ...(casteId ? { casteId } : {}),
+         ...(booth ? { booth } : {}),
         ...(searchType ? { searchType } : {}),
       },
     }
@@ -193,3 +197,15 @@ export const getAgeStats = () =>
  */
 export const getGenderStats = () =>
   axios.get<GenderGroupStats>('/Voters/get-gender-stats', { useApiPrefix: true, useVoterBase: true });
+
+/**
+ * Get caste stats
+ */
+export const getCasteStats = () =>
+  axios.get<CasteStats>('/Voters/get-caste-stats', { useApiPrefix: true, useVoterBase: true });
+
+/**
+ * Get booth
+ */
+export const getBoothStats = () =>
+  axios.get<BoothStats>('/Voters/get-list-area-stats', { useApiPrefix: true, useVoterBase: true });

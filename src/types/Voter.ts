@@ -62,6 +62,19 @@ export type GenderGroupStats = {
   other: number;
 }
 
+export type CasteStats = {
+  casteId: string,
+  casteNameEn: string,
+  casteNameMr: string,
+  count: number
+}
+
+export type BoothStats = {
+  listNumber: string,
+  address: string,
+  count: number
+}
+
 export type GetPaginatedVoters = {
   data: Voter[];
   page: number;

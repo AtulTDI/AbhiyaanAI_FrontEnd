@@ -365,6 +365,8 @@
     "selectAgeGroup": "Select Age Group",
     "selectSurname": "Select Surname",
     "selectGender": "Select Gender",
+    "selectCaste": "Select Caste",
+    "selectBooth": "Select Booth",
     "filterCategories": {
       "all": "All Voters",
       "allDesc": "View the complete voter list",
@@ -390,6 +392,10 @@
       "surnameDesc": "Grouped or filtered by surname",
       "color": "By Color Code",
       "colorDesc": "Categorized using color labels",
+      "caste": "By Caste",
+      "casteDesc": "Filter voters based on caste category",
+      "booth": "By Booth",
+      "boothDesc": "Filter voters based on their assigned polling booth",
       "advancedSearch": "Advanced Search",
       "advancedSearchDesc": "Use multiple filters to find voters with specific combinations of details"
     }

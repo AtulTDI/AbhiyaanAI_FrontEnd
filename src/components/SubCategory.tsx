@@ -101,6 +101,19 @@ export default function Subcategory({
                   >
                     {item.label}
                   </Text>
+                  {item.description ? (
+                    <Text
+                      style={[
+                        styles.description,
+                        {
+                          color: theme.colors.textSecondary,
+                        },
+                      ]}
+                      numberOfLines={2}
+                    >
+                      {item.description}
+                    </Text>
+                  ) : null}
                 </View>
 
                 {/* RIGHT COUNT */}
@@ -277,5 +290,11 @@ const createStyles = (theme: AppTheme) =>
       marginHorizontal: 4,
       fontWeight: "500",
       color: theme.colors.primary,
+    },
+
+    description: {
+      fontSize: 13,
+      marginTop: 2,
+      lineHeight: 16,
     },
   });

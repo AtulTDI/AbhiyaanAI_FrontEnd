@@ -76,9 +76,9 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
   const [isVerified, setIsVerified] = useState(voter.isVerified);
   const [isStarVoter, setIsStarVoter] = useState(voter.isStarVoter);
   const [printing, setPrinting] = useState(false);
-  const [slipText, setSlipText] = useState("");
   const [tempContact, setTempContact] = useState(null);
   const [imageBase64, setImageBase64] = useState("");
+  const [slipData, setSlipData] = useState<any>(null);
   const [slipSending, setSlipSending] = useState(false);
   const viewShotRef = useRef<any>(null);
 
@@ -106,24 +106,22 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
   }, []);
 
   /* ================= EXISTING HANDLERS ================= */
-  const convertSlipTextToImage = async (text: string) => {
-    console.log("STEP 1: setting slip text");
-    setSlipText(text);
-
-    await new Promise((resolve) => setTimeout(resolve, 100));
-
+  const convertSlipTextToImage = async () => {
     if (!viewShotRef.current) {
-      throw new Error("SlipPreview not mounted");
+      console.log("❌ ViewShot ref missing");
+      throw new Error("Slip preview not ready");
     }
 
-    console.log("STEP 2: capturing image");
-    const base64 = await viewShotRef.current.capture();
+    await new Promise((res) => setTimeout(res, 1000));
 
-    if (!base64 || base64.length < 1000) {
-      throw new Error("Invalid image capture");
+    const base64 = await viewShotRef.current.capture?.();
+
+    console.log("Captured length:", base64?.length);
+
+    if (!base64 || base64.length < 500) {
+      throw new Error("Slip image capture failed");
     }
 
-    console.log("STEP 3: image captured", base64.length);
     return base64;
   };
 
@@ -185,6 +183,7 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
 
   const handlePrintVoterSlip = async () => {
     if (printing) return;
+
     const hasPermission = await requestBluetoothPermissions();
     if (!hasPermission) {
       showToast("Bluetooth permission denied", "error");
@@ -195,20 +194,16 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
 
     try {
       const response = await generateVoterSlip(voter.id);
-      const slipText = response.data.slipText;
-      console.log(slipText);
+      setSlipData(response.data);
+      await new Promise((res) => setTimeout(res, 1000));
 
-      const imageBase64 = await convertSlipTextToImage(slipText);
+      const imageBase64 = await convertSlipTextToImage();
       setImageBase64(imageBase64);
+
       const imagePath = await saveBase64ToFile(imageBase64);
-      console.log(imagePath);
 
       if (Platform.OS === "android") {
-        try {
-          await ThermalPrinter.printImage(imagePath);
-        } catch (e) {
-        }
-        await new Promise(res => setTimeout(res, 5000));
+        await ThermalPrinter.printImage(imagePath);
         showToast(t("candidate.voterPrintSuccess"), "success");
       }
     } catch (error) {
@@ -699,7 +694,7 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
         )}
         {tab === "survey" && <SurveyTab voterId={voter.id} />}
       </ScrollView>
-      {imageBase64 ? (
+      {/* {imageBase64 ? (
         <View
           style={{
             position: "absolute",
@@ -714,7 +709,7 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
             resizeMode="contain"
           />
         </View>
-      ) : null}
+      ) : null} */}
       <View
         style={{
           position: "absolute",
@@ -723,7 +718,12 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
           opacity: 0,
         }}
       >
-        <SlipPreview ref={viewShotRef} slipText={slipText} />
+        {slipData && (
+          <SlipPreview
+            ref={viewShotRef}
+            {...slipData}
+          />
+        )}
       </View>
     </>
   );

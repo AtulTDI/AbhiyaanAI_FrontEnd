@@ -12,6 +12,7 @@ import {
   Divider,
 } from "react-native-paper";
 import { useTranslation } from "react-i18next";
+import { MaterialIcons } from "@expo/vector-icons";
 import VoterDetailView from "../components/VoterDetailView";
 import VoterCategoryScreen from "./VoterCategoryScreen";
 import { AgeGroupStats, ColorCodeStats, Voter } from "../types/Voter";
@@ -19,6 +20,8 @@ import { useDebounce } from "../hooks/useDebounce";
 import { usePlatformInfo } from "../hooks/usePlatformInfo";
 import {
   getAgeStats,
+  getBoothStats,
+  getCasteStats,
   getColorCodes,
   getGenderStats,
   getSurnames,
@@ -30,11 +33,10 @@ import FormDropdown from "../components/FormDropdown";
 import Subcategory from "../components/SubCategory";
 import { VOTER_CATEGORIES } from "../constants/voterCategories";
 import { AppTheme } from "../theme";
-import { MaterialIcons } from "@expo/vector-icons";
 
 type AgeMode = "none" | "lt" | "gt" | "between";
 type ScreenView = "categories" | "subcategories" | "list" | "detail";
-type SubFilterType = "color" | "age" | "gender" | "surname";
+type SubFilterType = "color" | "age" | "gender" | "caste" | "surname" | "booth";
 
 const PAGE_SIZE = 50;
 
@@ -158,7 +160,7 @@ export default function VotersScreen() {
           ageParam = `${ageMode === "lt" ? "<" : ">"}${debouncedAgeValue}`;
         }
 
-        if (selectedCategory === 12) {
+        if (selectedCategory === 15) {
           res = await getVoters(
             page,
             PAGE_SIZE,
@@ -184,6 +186,12 @@ export default function VotersScreen() {
               ? (selectedSubFilter.value ?? undefined)
               : undefined,
             selectedSubFilter.type === "surname"
+              ? (selectedSubFilter.value ?? undefined)
+              : undefined,
+            selectedSubFilter.type === "caste"
+              ? (selectedSubFilter.value ?? undefined)
+              : undefined,
+            selectedSubFilter.type === "booth"
               ? (selectedSubFilter.value ?? undefined)
               : undefined,
           );
@@ -240,6 +248,31 @@ export default function VotersScreen() {
               : key === "female"
                 ? "gender-female"
                 : "gender-transgender",
+        }));
+      }
+
+      if (type === "caste") {
+        const res = await getCasteStats();
+        const result = res.data;
+
+        data = result.map((item: any) => ({
+          label: t(`survey.castes.${item.casteNameEn}`),
+          value: item.casteId,
+          count: item.count,
+          icon: "account-group",
+        }));
+      }
+
+      if (type === "booth") {
+        const res = await getBoothStats();
+        const result = res.data;
+
+        data = result.map((item: any) => ({
+          label: item.listArea,
+          value: item.listArea,
+          description: item.address,
+          count: item.count,
+          icon: "map-marker",
         }));
       }
 
@@ -383,6 +416,18 @@ export default function VotersScreen() {
       return;
     }
 
+    if (categoryId === 12) {
+      setSelectedSubFilter({ type: "caste", value: null });
+      setView("subcategories");
+      return;
+    }
+
+    if (categoryId === 13) {
+      setSelectedSubFilter({ type: "booth", value: null });
+      setView("subcategories");
+      return;
+    }
+
     setView("list");
   };
 
@@ -446,6 +491,8 @@ export default function VotersScreen() {
       age: t("voter.selectAgeGroup"),
       surname: t("voter.selectSurname"),
       gender: t("voter.selectGender"),
+      caste: t("voter.selectCaste"),
+      booth: t("voter.selectBooth"),
     };
 
     return (
@@ -561,7 +608,7 @@ export default function VotersScreen() {
               </View>
 
               {/* COLLAPSIBLE FILTER PANEL */}
-              {selectedCategory === 12 && (
+              {selectedCategory === 15 && (
                 <View style={styles.filterPanel}>
                   <Pressable
                     style={styles.filterHeader}
