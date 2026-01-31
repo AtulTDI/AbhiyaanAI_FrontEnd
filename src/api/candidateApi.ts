@@ -116,6 +116,12 @@ export const generateVoterSlip = (voterId: string) =>
     { useApiPrefix: true, useVoterBase: true }
   );
 
+export const getVoterSlip = (voterId: string) =>
+  axios.get(
+    `/Candidates/get-voter-slip-text/${voterId}`,
+    { useApiPrefix: true, useVoterBase: true }
+  );
+
 const appendFile = async (
   formData: FormData,
   uploadedFile: any,

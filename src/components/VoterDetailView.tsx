@@ -31,7 +31,7 @@ import {
   updateStarVoter,
   verifyVoter,
 } from "../api/voterApi";
-import { generateVoterSlip } from "../api/candidateApi";
+import { generateVoterSlip, getVoterSlip } from "../api/candidateApi";
 import { useToast } from "./ToastProvider";
 import { usePlatformInfo } from "../hooks/usePlatformInfo";
 import { requestBluetoothPermissions } from "../utils/bluetoothPermissions";
@@ -333,7 +333,7 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
     }
     setSlipSending(true);
     let isWhatsAppAvailable = false;
-    const response = await generateVoterSlip(voter.id);
+    const response = await getVoterSlip(voter.id);
     console.log("Response", response.data);
 
     if (Platform.OS === "android") {
