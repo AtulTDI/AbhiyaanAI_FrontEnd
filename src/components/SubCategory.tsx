@@ -7,7 +7,7 @@ import {
   IconButton,
 } from "react-native-paper";
 import { useTranslation } from "react-i18next";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { usePlatformInfo } from "../hooks/usePlatformInfo";
 import { AppTheme } from "../theme";
 
@@ -34,8 +34,20 @@ export default function Subcategory({
 
   if (loading) {
     return (
-      <View style={styles.loader}>
-        <ActivityIndicator color={theme.colors.primary} />
+      <View
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: "rgba(255,255,255,0.6)",
+          justifyContent: "center",
+          alignItems: "center",
+          zIndex: 10,
+        }}
+      >
+        <ActivityIndicator size="large" color={theme.colors.primary} />
       </View>
     );
   }
@@ -142,6 +154,19 @@ export default function Subcategory({
             </Pressable>
           );
         }}
+        ListEmptyComponent={
+          !loading ? (
+            <View style={styles.emptyContainer}>
+              <MaterialIcons
+                name="info-outline"
+                size={36}
+                color={theme.colors.borderGray}
+                style={{ marginBottom: 8 }}
+              />
+              <Text style={styles.emptyText}>{t("dashboard.noData")}</Text>
+            </View>
+          ) : null
+        }
       />
 
       {/* PAGINATION (SURNAME ONLY) */}
@@ -296,6 +321,17 @@ const createStyles = (theme: AppTheme) =>
       fontSize: 13,
       marginTop: 2,
       lineHeight: 16,
-      width: '90%',
+      width: "90%",
+    },
+    emptyContainer: {
+      alignItems: "center",
+      justifyContent: "center",
+      paddingVertical: 30,
+    },
+    emptyText: {
+      marginTop: 6,
+      fontSize: 14,
+      color: theme.colors.textSecondary,
+      textAlign: "center",
     },
   });

@@ -509,6 +509,7 @@ export default function VotersScreen() {
         endRecord={subEndRecord}
         onBack={() => {
           setSelectedSubFilter({ type: null, value: null });
+          setSubFilterItems([]);
           setView("categories");
         }}
         onSelect={(value) => {
