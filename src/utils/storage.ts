@@ -115,8 +115,18 @@ export const clearAuthData = async () => {
     Object.keys(DEFAULT_AUTH).forEach((key) => localStorage.removeItem(key));
   } else {
     await SecureStore.deleteItemAsync("accessToken");
+    await AsyncStorage.removeItem("SELECTED_PRINTER_MAC");
     await AsyncStorage.multiRemove(
       Object.keys(DEFAULT_AUTH).filter((k) => k !== "accessToken")
     );
   }
 };
+
+export const savePrinterMac = (mac: string) =>
+  AsyncStorage.setItem("SELECTED_PRINTER_MAC", mac);
+
+export const removePrinterMac = () =>
+  AsyncStorage.removeItem("SELECTED_PRINTER_MAC");
+
+export const getSavedPrinterMac = () =>
+  AsyncStorage.getItem("SELECTED_PRINTER_MAC");

@@ -33,86 +33,129 @@ const SlipPreview = forwardRef<ViewShot, Props>(({ candidate, voter }, ref) => {
         format: "png",
         quality: 1,
         result: "base64",
-        width: 384 * 2,
+        width: 384,
       }}
     >
-      <View style={styles.slip}>
-        {/* {candidate.candidatePhotoPath ? (
-          <Image
-            source={{ uri: candidate.candidatePhotoPath }}
-            style={styles.headerImage}
-          />
-        ) : null} */}
-
+      <View style={styles.slip} collapsable={false}>
         {/* Candidate Section */}
-        <Text style={styles.row}>
-          <Text style={styles.label}>उमेदवार:</Text> {candidate.candidateName}
+        <Text allowFontScaling={false} style={styles.row}>
+          <Text allowFontScaling={false} style={styles.label}>
+            उमेदवार:{" "}
+          </Text>
+          <Text allowFontScaling={false} style={styles.value}>
+            {candidate.candidateName}
+          </Text>
         </Text>
 
-        <Text style={styles.row}>
-          <Text style={styles.label}>पार्टी:</Text> {candidate.partyName}
+        <Text allowFontScaling={false} style={styles.row}>
+          <Text allowFontScaling={false} style={styles.label}>
+            पार्टी:{" "}
+          </Text>
+          <Text allowFontScaling={false} style={styles.value}>
+            {candidate.partyName}
+          </Text>
         </Text>
 
-        <View style={styles.symbolRow}>
-          <Text style={styles.label}>निशाणी:</Text>
-          {candidate.symbolImagePath ? (
+        {candidate.symbolImagePath && (
+          <View style={styles.symbolRow}>
             <Image
               source={{ uri: candidate.symbolImagePath }}
               style={styles.symbol}
             />
-          ) : (
-            <Text style={styles.row}> {candidate.symbolName ?? "-"} </Text>
-          )}
-        </View>
+          </View>
+        )}
 
         <View style={styles.divider} />
 
         {/* Voter Section */}
-        <Text style={styles.row}>
-          <Text style={styles.label}>नाव:</Text> {voter.voterName}
+        <Text allowFontScaling={false} style={styles.row}>
+          <Text allowFontScaling={false} style={styles.label}>
+            नाव:{" "}
+          </Text>
+          <Text allowFontScaling={false} style={styles.value}>
+            {voter.voterName}
+          </Text>
         </Text>
 
-        <Text style={styles.inline}>
-          <Text style={styles.label}>प्रभाग:</Text> {voter.prabagNumber}
-          {"  "}
-          <Text style={styles.label}>अ.क्र:</Text> {voter.rank}
+        <View style={styles.inlineRow}>
+          <Text allowFontScaling={false} style={styles.label}>
+            प्रभाग:{" "}
+          </Text>
+          <Text allowFontScaling={false} style={styles.value}>
+            {voter.prabagNumber}
+          </Text>
+          <Text allowFontScaling={false} style={styles.label}>
+            {" "}
+            अ.क्र:{" "}
+          </Text>
+          <Text allowFontScaling={false} style={styles.value}>
+            {voter.rank}
+          </Text>
+        </View>
+
+        <Text allowFontScaling={false} style={styles.row}>
+          <Text allowFontScaling={false} style={styles.label}>
+            मतदान कार्ड:{" "}
+          </Text>
+          <Text allowFontScaling={false} style={styles.value}>
+            {voter.epicId}
+          </Text>
         </Text>
 
-        <Text style={styles.row}>
-          <Text style={styles.label}>मतदान कार्ड:</Text> {voter.epicId}
-        </Text>
-
-        <Text style={styles.row}>
-          <Text style={styles.label}>विधानसभा क्र:</Text> {voter.assemblyNumber}
+        <Text allowFontScaling={false} style={styles.row}>
+          <Text allowFontScaling={false} style={styles.label}>
+            विधानसभा क्र:{" "}
+          </Text>
+          <Text allowFontScaling={false} style={styles.value}>
+            {voter.assemblyNumber}
+          </Text>
         </Text>
 
         <View style={styles.divider} />
 
         {/* Booth Info */}
-        <Text style={styles.row}>
-          <Text style={styles.label}>मतदान केंद्र:</Text>
+        <Text allowFontScaling={false} style={styles.row}>
+          <Text allowFontScaling={false} style={styles.label}>
+            मतदान केंद्र:
+          </Text>
         </Text>
-        <Text style={styles.wrap}>{voter.pollingBooth}</Text>
+        <Text allowFontScaling={false} style={styles.wrap}>
+          {voter.pollingBooth}
+        </Text>
 
-        <Text style={styles.row}>
-          <Text style={styles.label}>पत्ता:</Text>
+        <Text allowFontScaling={false} style={styles.row}>
+          <Text allowFontScaling={false} style={styles.label}>
+            पत्ता:
+          </Text>
         </Text>
-        <Text style={styles.wrap}>{voter.pollingBoothAddress}</Text>
+        <Text allowFontScaling={false} style={styles.wrap}>
+          {voter.pollingBoothAddress}
+        </Text>
 
         <View style={styles.divider} />
 
         {/* Date & Time */}
-        <Text style={styles.inline}>
-          <Text style={styles.label}>दिनांक:</Text> {date}
+        <Text allowFontScaling={false} style={styles.inlineRow}>
+          <Text allowFontScaling={false} style={styles.label}>
+            दिनांक:{" "}
+          </Text>
+          <Text allowFontScaling={false} style={styles.value}>
+            {date}
+          </Text>
         </Text>
 
-        {time ? (
-          <Text style={styles.inline}>
-            <Text style={styles.label}>वेळ:</Text> {time}
+        {time && (
+          <Text allowFontScaling={false} style={styles.inlineRow}>
+            <Text allowFontScaling={false} style={styles.label}>
+              वेळ:{" "}
+            </Text>
+            <Text allowFontScaling={false} style={styles.value}>
+              {time}
+            </Text>
           </Text>
-        ) : null}
+        )}
 
-        <View style={{ height: 12 }} />
+        <View style={{ height: 36 }} />
       </View>
     </ViewShot>
   );
@@ -123,47 +166,55 @@ export default SlipPreview;
 const styles = StyleSheet.create({
   slip: {
     width: 384,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    backgroundColor: "#fff",
+    paddingHorizontal: 12,
+    paddingTop: 0,
+    paddingBottom: 0,
+    backgroundColor: "#FFFFFF",
+    alignSelf: "flex-start",
   },
   row: {
-    fontSize: 26,
-    marginVertical: 1,
-  },
-  inline: {
-    fontSize: 26,
-    marginVertical: 1,
+    fontSize: 24,
+    lineHeight: 28,
+    color: "#000",
+    includeFontPadding: false,
+    backgroundColor: "#FFF",
+    textAlignVertical: "center",
   },
   wrap: {
-    fontSize: 26,
-    lineHeight: 34,
-    marginBottom: 1,
+    fontSize: 24,
+    lineHeight: 28,
+    color: "#000",
+    includeFontPadding: false,
+    textAlignVertical: "center",
+  },
+  inlineRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "center",
   },
   label: {
+    fontSize: 24,
     fontWeight: "700",
-    fontSize: 26,
+    lineHeight: 28,
+    includeFontPadding: false,
+  },
+  value: {
+    fontSize: 24,
+    lineHeight: 28,
+    includeFontPadding: false,
   },
   divider: {
-    height: 3,
+    height: 10,
     backgroundColor: "#000",
-    marginVertical: 8,
+    marginVertical: 10,
   },
   symbolRow: {
-    flexDirection: "row",
     alignItems: "center",
-    marginVertical: 1,
+    marginVertical: 6,
   },
   symbol: {
-    width: 70,
-    height: 70,
-    marginLeft: 12,
-    resizeMode: "contain",
-  },
-  headerImage: {
-    width: "100%",
+    width: 90,
     height: 90,
     resizeMode: "contain",
-    marginBottom: 6,
   },
 });

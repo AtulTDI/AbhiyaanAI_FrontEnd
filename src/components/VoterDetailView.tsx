@@ -23,7 +23,13 @@ import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import { Voter } from "../types/Voter";
 import { extractErrorMessage } from "../utils/common";
+import {
+  getSavedPrinterMac,
+  removePrinterMac,
+  savePrinterMac,
+} from "../utils/storage";
 import FamilyMembersCard from "../components/FamilyMembersCard";
+import PrinterPicker from "./PrinterPicker";
 import Tabs from "../components/Tabs";
 import SurveyTab from "./SurveyTab";
 import {
@@ -36,6 +42,7 @@ import { useToast } from "./ToastProvider";
 import { usePlatformInfo } from "../hooks/usePlatformInfo";
 import { requestBluetoothPermissions } from "../utils/bluetoothPermissions";
 import SlipPreview from "./SlipPreview";
+import EnableBluetoothDialog from "./EnableBluetoothDialog";
 import { AppTheme } from "../theme";
 
 type Props = {
@@ -78,6 +85,8 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
   const [printing, setPrinting] = useState(false);
   const [tempContact, setTempContact] = useState(null);
   const [imageBase64, setImageBase64] = useState("");
+  const [showPrinterPicker, setShowPrinterPicker] = useState(false);
+  const [bluetoothDialogVisible, setBluetoothDialogVisible] = useState(false);
   const [slipData, setSlipData] = useState<any>(null);
   const [slipSending, setSlipSending] = useState(false);
   const viewShotRef = useRef<any>(null);
@@ -166,6 +175,18 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
     }
   };
 
+  const ensurePrinterConnected = async () => {
+    let mac = await getSavedPrinterMac();
+
+    if (!mac) {
+      setShowPrinterPicker(true);
+      return false;
+    }
+
+    await ThermalPrinter.connect(mac);
+    return true;
+  };
+
   const saveBase64ToFile = async (base64: string) => {
     const fileName = `voter-slip-${Date.now()}.png`;
     const path = `${RNFS.CachesDirectoryPath}/${fileName}`;
@@ -190,22 +211,42 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
       return;
     }
 
-    setPrinting(true);
+    const isEnabled = await ThermalPrinter.isBluetoothEnabled();
+    if (!isEnabled) {
+      setBluetoothDialogVisible(true);
+      return;
+    }
 
+    startPrintingFlow();
+  };
+
+  const startPrintingFlow = async () => {
+    setPrinting(true);
     try {
+      const connected = await ensurePrinterConnected();
+      if (!connected) {
+        setPrinting(false);
+        return;
+      }
+
+      await new Promise((r) => setTimeout(r, 500));
+
       const response = await generateVoterSlip(voter.id);
       setSlipData(response.data);
-      await new Promise((res) => setTimeout(res, 1000));
 
-      const imageBase64 = await convertSlipTextToImage();
-      setImageBase64(imageBase64);
+      await new Promise((r) => setTimeout(r, 300));
 
-      const imagePath = await saveBase64ToFile(imageBase64);
+      await ThermalPrinter.printVoterSlip(response.data);
 
-      if (Platform.OS === "android") {
-        await ThermalPrinter.printImage(imagePath);
-        showToast(t("candidate.voterPrintSuccess"), "success");
-      }
+      // const imageBase64 = await convertSlipTextToImage();
+      // setImageBase64(imageBase64);
+
+      // await ThermalPrinter.printBase64(imageBase64);
+
+      // const imagePath = await saveBase64ToFile(imageBase64);
+      // await ThermalPrinter.printImage(imagePath);
+
+      showToast(t("candidate.voterPrintSuccess"), "success");
     } catch (error) {
       showToast(extractErrorMessage(error), "error");
     } finally {
@@ -458,6 +499,29 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
       console.log("Cache cleanup skipped");
     }
   };
+
+  const handleEnableBluetooth = async () => {
+    try {
+      await ThermalPrinter.enableBluetooth();
+    } catch (e) {
+      showToast("Unable to enable Bluetooth", "error");
+      return;
+    }
+
+    setBluetoothDialogVisible(false);
+
+    setTimeout(async () => {
+      const isEnabled = await ThermalPrinter.isBluetoothEnabled();
+
+      if (!isEnabled) {
+        showToast("Please enable Bluetooth manually", "error");
+        return;
+      }
+
+      startPrintingFlow();
+    }, 1200);
+  };
+
   /* ================= UI ================= */
 
   return (
@@ -718,13 +782,32 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
           opacity: 0,
         }}
       >
-        {slipData && (
-          <SlipPreview
-            ref={viewShotRef}
-            {...slipData}
-          />
-        )}
+        {slipData && <SlipPreview ref={viewShotRef} {...slipData} />}
       </View>
+
+      <PrinterPicker
+        visible={showPrinterPicker}
+        onClose={() => setShowPrinterPicker(false)}
+        onSelect={async (device) => {
+          try {
+            await ThermalPrinter.connect(device.mac);
+            await new Promise((r) => setTimeout(r, 2000));
+
+            await savePrinterMac(device.mac);
+            showToast("Printer connected", "success");
+            setShowPrinterPicker(false);
+          } catch (e) {
+            await removePrinterMac();
+            throw e;
+          }
+        }}
+      />
+
+      <EnableBluetoothDialog
+        visible={bluetoothDialogVisible}
+        onCancel={() => setBluetoothDialogVisible(false)}
+        onEnable={handleEnableBluetooth}
+      />
     </>
   );
 }
