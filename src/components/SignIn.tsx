@@ -108,6 +108,7 @@ export default function SignIn({
       const videoCount = response.data?.videoCount?.toString() ?? 0;
       const channelId = response.data?.channelId || "";
       const isProfessionalVoiceCloning = response.data?.isProfessionalVoiceCloning || false;
+      const candidatePhotoPath = response.data?.candidatePhotoPath || null;
 
       await saveAuthData({
         accessToken: token,
@@ -119,7 +120,8 @@ export default function SignIn({
         applicationName,
         videoCount,
         channelId,
-        isProfessionalVoiceCloning
+        isProfessionalVoiceCloning,
+        candidatePhotoPath
       });
 
       navigate("App");

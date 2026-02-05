@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { View, StyleSheet, FlatList, Pressable, Platform } from "react-native";
-import { useIsFocused } from "@react-navigation/native";
+import { useIsFocused, useNavigation } from "@react-navigation/native";
 import {
   Text,
   useTheme,
@@ -32,6 +32,7 @@ import {
 import FormDropdown from "../components/FormDropdown";
 import Subcategory from "../components/SubCategory";
 import { VOTER_CATEGORIES } from "../constants/voterCategories";
+import { setQrScanHandler } from "../utils/qrScannerListener";
 import { AppTheme } from "../theme";
 
 type AgeMode = "none" | "lt" | "gt" | "between";
@@ -42,7 +43,7 @@ const PAGE_SIZE = 50;
 
 /* ---------------- SCREEN ---------------- */
 export default function VotersScreen() {
-  const { isWeb } = usePlatformInfo();
+  const { isWeb, isMobileWeb } = usePlatformInfo();
   const { t, i18n } = useTranslation();
   const theme = useTheme<AppTheme>();
   const styles = createStyles(theme, { isWeb });
@@ -91,6 +92,7 @@ export default function VotersScreen() {
   const subEndRecord = Math.min(subPage * SUB_PAGE_SIZE, subTotalRecords);
   const isFocused = useIsFocused();
   const wasFocused = React.useRef(true);
+  const skipResetRef = React.useRef(false);
 
   const SEARCH_OPTIONS = [
     { label: t("name"), value: "fullname" },
@@ -107,6 +109,7 @@ export default function VotersScreen() {
   const debouncedAgeValue = useDebounce(ageValue, 500);
   const debouncedMinAge = useDebounce(minAge, 500);
   const debouncedMaxAge = useDebounce(maxAge, 500);
+  const navigation = useNavigation<any>();
 
   const delay = (ms: number): Promise<void> =>
     new Promise<void>((resolve) => {
@@ -120,23 +123,35 @@ export default function VotersScreen() {
   }, []);
 
   useEffect(() => {
-    if (isFocused && !wasFocused.current) {
-      setView("categories");
-      setSelectedCategory(null);
-      setSelectedSubFilter({ type: null, value: null });
-      setSelectedVoter(null);
-      setVoterStack([]);
-
-      setSearch("");
-      setGender("All");
-      setAgeMode("none");
-      setAgeValue("");
-      setMinAge("");
-      setMaxAge("");
-      setShowFilters(false);
-
+    setQrScanHandler((epicId: string) => {
+      setSearchBy("epicid");
+      setSearch(epicId);
       setPage(1);
-      setSubPage(1);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (isFocused && !wasFocused.current) {
+      if (skipResetRef.current) {
+        skipResetRef.current = false;
+      } else {
+        setView("categories");
+        setSelectedCategory(null);
+        setSelectedSubFilter({ type: null, value: null });
+        setSelectedVoter(null);
+        setVoterStack([]);
+
+        setSearch("");
+        setGender("All");
+        setAgeMode("none");
+        setAgeValue("");
+        setMinAge("");
+        setMaxAge("");
+        setShowFilters(false);
+
+        setPage(1);
+        setSubPage(1);
+      }
     }
 
     wasFocused.current = isFocused;
@@ -591,8 +606,22 @@ export default function VotersScreen() {
                       setPage(1);
                     }}
                     style={styles.mergedSearchInput}
-                    contentStyle={{ paddingRight: 140 }}
+                    contentStyle={{ paddingRight: 180 }}
                   />
+
+                  {/* 🔳 QR SCAN BUTTON */}
+                  {/* {(!isWeb || isMobileWeb) && (
+                    <IconButton
+                      icon="qrcode-scan"
+                      size={22}
+                      style={{ position: "absolute", right: 140, top: 6 }}
+                      iconColor={theme.colors.primary}
+                      onPress={() => {
+                        skipResetRef.current = true;
+                        navigation.navigate("QRScanner");
+                      }}
+                    />
+                  )} */}
 
                   <View style={styles.dropdownInsideInput}>
                     <FormDropdown

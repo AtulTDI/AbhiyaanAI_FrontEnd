@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { View, Image, StyleSheet, SafeAreaView, Platform } from "react-native";
 import {
   DrawerContentScrollView,
@@ -7,6 +7,7 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 import { useTheme } from "react-native-paper";
 import { getBrandAssets } from "../utils/brandAssets";
+import { getAuthData } from "../utils/storage";
 import { AppTheme } from "../theme";
 
 export default function CustomDrawer(props: any) {
@@ -14,6 +15,20 @@ export default function CustomDrawer(props: any) {
   const theme = useTheme<AppTheme>();
   const styles = createStyles(theme);
   const { colors } = theme;
+  const [candidatePhotoPath, setCandidatePhotoPath] = useState(null);
+
+  useEffect(() => {
+    const loadAuth = async () => {
+      try {
+        const data = await getAuthData();
+        setCandidatePhotoPath(data.candidatePhotoPath);
+      } catch (e) {
+        console.error("Failed to load auth data", e);
+      }
+    };
+
+    loadAuth();
+  }, []);
 
   return (
     <LinearGradient
@@ -28,7 +43,17 @@ export default function CustomDrawer(props: any) {
     >
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.logoContainer}>
-          <Image source={icon} style={styles.logo} resizeMode="contain" />
+          {candidatePhotoPath && candidatePhotoPath.length ? (
+            <View style={styles.photoWrapper}>
+              <Image
+                source={{ uri: candidatePhotoPath! }}
+                style={styles.candidatePhoto}
+                resizeMode="cover"
+              />
+            </View>
+          ) : (
+            <Image source={icon} style={styles.logo} resizeMode="contain" />
+          )}
         </View>
 
         <DrawerContentScrollView
@@ -61,13 +86,31 @@ const createStyles = (theme: AppTheme) =>
     logoContainer: {
       alignItems: "center",
       paddingTop: 24,
-      borderBottomWidth: 1,
-      borderColor: theme.colors.primaryLight,
       marginHorizontal: 16,
     },
     logo: {
       width: 220,
       height: 200,
+    },
+    photoWrapper: {
+      width: 130,
+      height: 130,
+      borderRadius: 65,
+      overflow: "hidden",
+      borderWidth: 3,
+      borderColor: "rgba(255,255,255,0.85)",
+      backgroundColor: "rgba(255,255,255,0.08)",
+      justifyContent: "center",
+      alignItems: "center",
+      shadowColor: "#000",
+      shadowOpacity: 0.25,
+      shadowRadius: 8,
+      shadowOffset: { width: 0, height: 4 },
+      elevation: 6,
+    },
+    candidatePhoto: {
+      width: "100%",
+      height: "100%",
     },
     scrollContainer: {
       paddingTop: 0,

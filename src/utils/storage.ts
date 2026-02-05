@@ -33,6 +33,7 @@ export type AuthData = {
   videoCount: string;
   channelId: string;
   isProfessionalVoiceCloning: boolean;
+  candidatePhotoPath: string;
 };
 
 /* ================= DEFAULT ================= */
@@ -48,6 +49,7 @@ const DEFAULT_AUTH: AuthData = {
   videoCount: "0",
   channelId: "",
   isProfessionalVoiceCloning: false,
+  candidatePhotoPath: "",
 };
 
 /* ================= SAVE ================= */
