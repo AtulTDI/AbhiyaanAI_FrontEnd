@@ -185,11 +185,11 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
 
     try {
       await ThermalPrinter.disconnect().catch(() => {});
-      await new Promise(r => setTimeout(r, 300));
+      await new Promise((r) => setTimeout(r, 300));
 
       await ThermalPrinter.connect(mac);
 
-      await new Promise(r => setTimeout(r, 500));
+      await new Promise((r) => setTimeout(r, 500));
 
       return true;
     } catch (e) {
@@ -257,7 +257,7 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
 
       const imagePath = await saveBase64ToFile(imageBase64);
       await ThermalPrinter.printImage(imagePath);
-      await new Promise(r => setTimeout(r, 300));
+      await new Promise((r) => setTimeout(r, 300));
 
       showToast(t("candidate.voterPrintSuccess"), "success");
     } catch (error) {
@@ -569,7 +569,7 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
             />
           </View>
 
-          {(!isWeb || isMobileWeb) && (
+          {/* {isWeb && (
             <View style={styles.actionIcons}>
               {slipSending ? (
                 <ActivityIndicator size={20} color={theme.colors.primary} />
@@ -599,8 +599,66 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
                 />
               )}
             </View>
-          )}
+          )} */}
         </View>
+
+        {(!isWeb || isMobileWeb) && (
+          <View style={styles.actionPanel}>
+            {/* STAR */}
+            <IconButton
+              icon={isStarVoter ? "star" : "star-outline"}
+              size={22}
+              iconColor={
+                isStarVoter ? theme.colors.primary : theme.colors.textSecondary
+              }
+              onPress={handleStarVoter}
+              style={styles.panelIcon}
+            />
+
+            {/* VERIFY */}
+            <IconButton
+              icon={isVerified ? "check-decagram" : "check-decagram-outline"}
+              size={22}
+              iconColor={
+                isVerified
+                  ? theme.colors.successText
+                  : theme.colors.textSecondary
+              }
+              onPress={handleVerifyVoter}
+              style={styles.panelIcon}
+            />
+
+            {/* WHATSAPP */}
+            {slipSending ? (
+              <ActivityIndicator size={22} color={theme.colors.primary} />
+            ) : (
+              <IconButton
+                icon={() => (
+                  <FontAwesome
+                    name="whatsapp"
+                    size={22}
+                    color={theme.colors.whatsappGreen}
+                  />
+                )}
+                onPress={handleSendVoter}
+                style={styles.panelIcon}
+              />
+            )}
+
+            {/* PRINT */}
+            {printing ? (
+              <ActivityIndicator size={22} color={theme.colors.primary} />
+            ) : (
+              <IconButton
+                icon="printer"
+                size={22}
+                iconColor={theme.colors.primary}
+                onPress={handlePrintVoterSlip}
+                style={styles.panelIcon}
+              />
+            )}
+          </View>
+        )}
 
         {/* ================= DETAILS TAB ================= */}
         {tab === "details" && (
@@ -703,66 +761,68 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
                 </View>
               </View>
 
-              <View style={styles.col}>
-                <View style={styles.card}>
-                  <Text style={styles.sectionTitle}>
-                    {t("voter.statusSection")}
-                  </Text>
-
-                  <View
-                    style={[
-                      rowStyles.row,
-                      { borderBottomColor: theme.colors.divider },
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        rowStyles.label,
-                        { color: theme.colors.textSecondary },
-                      ]}
-                    >
-                      {t("voter.starVoter")}
+              {isWeb && (
+                <View style={styles.col}>
+                  <View style={styles.card}>
+                    <Text style={styles.sectionTitle}>
+                      {t("voter.statusSection")}
                     </Text>
 
-                    <Ionicons
-                      name={isStarVoter ? "star" : "star-outline"}
-                      size={22}
-                      color={
-                        isStarVoter
-                          ? theme.colors.primary
-                          : theme.colors.textSecondary
-                      }
-                      onPress={handleStarVoter}
-                    />
-                  </View>
-
-                  <View style={styles.verifyRow}>
-                    <Text
+                    <View
                       style={[
-                        styles.statusText,
-                        {
-                          color: isVerified
-                            ? theme.colors.successText
-                            : theme.colors.errorText,
-                        },
+                        rowStyles.row,
+                        { borderBottomColor: theme.colors.divider },
                       ]}
                     >
-                      {isVerified
-                        ? t("voter.verified")
-                        : t("voter.notVerified")}
-                    </Text>
+                      <Text
+                        style={[
+                          rowStyles.label,
+                          { color: theme.colors.textSecondary },
+                        ]}
+                      >
+                        {t("voter.starVoter")}
+                      </Text>
 
-                    <Button
-                      mode={isVerified ? "outlined" : "contained"}
-                      compact
-                      onPress={handleVerifyVoter}
-                      style={styles.button}
-                    >
-                      {isVerified ? t("voter.unverify") : t("voter.verify")}
-                    </Button>
+                      <Ionicons
+                        name={isStarVoter ? "star" : "star-outline"}
+                        size={22}
+                        color={
+                          isStarVoter
+                            ? theme.colors.primary
+                            : theme.colors.textSecondary
+                        }
+                        onPress={handleStarVoter}
+                      />
+                    </View>
+
+                    <View style={styles.verifyRow}>
+                      <Text
+                        style={[
+                          styles.statusText,
+                          {
+                            color: isVerified
+                              ? theme.colors.successText
+                              : theme.colors.errorText,
+                          },
+                        ]}
+                      >
+                        {isVerified
+                          ? t("voter.verified")
+                          : t("voter.notVerified")}
+                      </Text>
+
+                      <Button
+                        mode={isVerified ? "outlined" : "contained"}
+                        compact
+                        onPress={handleVerifyVoter}
+                        style={styles.button}
+                      >
+                        {isVerified ? t("voter.unverify") : t("voter.verify")}
+                      </Button>
+                    </View>
                   </View>
                 </View>
-              </View>
+              )}
             </View>
           </View>
         )}
@@ -991,7 +1051,6 @@ const createStyles = (theme: AppTheme) =>
     tabsHeader: {
       flexDirection: "row",
       alignItems: "flex-start",
-      marginBottom: 8,
     },
     tabsLeft: {
       flex: 1,
@@ -1000,6 +1059,7 @@ const createStyles = (theme: AppTheme) =>
     actionIcons: {
       flexDirection: "row",
       alignItems: "center",
+      marginTop: -10,
     },
     iconBtn: {
       margin: 0,
@@ -1054,6 +1114,20 @@ const createStyles = (theme: AppTheme) =>
       position: "absolute",
       top: 2,
       right: 10,
+    },
+    actionPanel: {
+      flexDirection: "row",
+      justifyContent: "space-around",
+      alignItems: "center",
+      paddingVertical: 6,
+      marginBottom: 10,
+      borderRadius: 14,
+      backgroundColor: theme.colors.paperBackground,
+      borderWidth: 1,
+      borderColor: theme.colors.subtleBorder,
+    },
+    panelIcon: {
+      margin: 0,
     },
   });
 

@@ -77,14 +77,9 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     gap: 28,
-    paddingBottom: 8,
-    marginBottom: 16,
+    marginBottom: 14,
     borderBottomWidth: 1,
     borderBottomColor: "#eaeaea",
-  },
-
-  tab: {
-    paddingVertical: 6,
   },
 
   tabLabelRow: {
