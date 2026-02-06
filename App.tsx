@@ -10,7 +10,7 @@ import { RootStackParamList } from "./src/types";
 import { customTheme } from "./src/theme";
 import { ToastProvider } from "./src/components/ToastProvider";
 import { VideoPreviewProvider } from "./src/components/VideoPreviewContext";
-import QrScannerScreen from "./src/components/QRScannerScreen";
+import EpicScannerScreen from "./src/components/EpicScannerScreen";
 import prefixes from "./src/utils/deeplinks";
 import LoginScreen from "./src/screens/LoginScreen";
 import AppLayout from "./src/navigation/AppLayout";
@@ -66,8 +66,8 @@ export default function App() {
                       component={ResetPasswordScreen}
                     />
                     <Stack.Screen
-                      name="QRScanner"
-                      component={QrScannerScreen}
+                      name="EpicScanner"
+                      component={EpicScannerScreen}
                     />
                   </Stack.Navigator>
                 </SafeAreaView>

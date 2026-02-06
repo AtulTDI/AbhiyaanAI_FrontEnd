@@ -7,7 +7,7 @@ export type RootStackParamList = {
   Processing: undefined;
   Generated: undefined;
   ResetPasswordScreen: undefined;
-  QRScanner: { onScan: (data: string) => void };
+  EpicScanner: undefined
 };
 
 export type DrawerLabelProps = {

@@ -110,6 +110,7 @@
     "react-native-gesture-handler": "~2.24.0",
     "react-native-keyboard-aware-scroll-view": "^0.9.5",
     "react-native-localize": "^3.5.2",
+    "react-native-mlkit-ocr": "^0.3.0",
     "react-native-pager-view": "^6.7.1",
     "react-native-paper": "^5.14.5",
     "react-native-paper-dates": "^0.22.57",
@@ -122,6 +123,7 @@
     "react-native-tab-view": "^4.2.2",
     "react-native-table-component": "^1.2.2",
     "react-native-view-shot": "^4.0.3",
+    "react-native-vision-camera": "^4.7.3",
     "react-native-walkthrough-tooltip": "^1.6.0",
     "react-native-web": "^0.20.0",
     "sharp": "^0.34.4"

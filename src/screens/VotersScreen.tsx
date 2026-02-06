@@ -32,7 +32,7 @@ import {
 import FormDropdown from "../components/FormDropdown";
 import Subcategory from "../components/SubCategory";
 import { VOTER_CATEGORIES } from "../constants/voterCategories";
-import { setQrScanHandler } from "../utils/qrScannerListener";
+import { setEpicScanHandler } from "../utils/epicScannerListener";
 import { AppTheme } from "../theme";
 
 type AgeMode = "none" | "lt" | "gt" | "between";
@@ -124,10 +124,11 @@ export default function VotersScreen() {
   }, []);
 
   useEffect(() => {
-    setQrScanHandler((epicId: string) => {
+    setEpicScanHandler((epicId: string) => {
       setSearchBy("epicid");
       setSearch(epicId);
       setPage(1);
+      setView("list");
     });
   }, []);
 
@@ -611,7 +612,7 @@ export default function VotersScreen() {
                   />
 
                   {/* 🔳 QR SCAN BUTTON */}
-                  {/* {(!isWeb || isMobileWeb) && (
+                  {(!isWeb || isMobileWeb) && (
                     <IconButton
                       icon="qrcode-scan"
                       size={22}
@@ -619,10 +620,10 @@ export default function VotersScreen() {
                       iconColor={theme.colors.primary}
                       onPress={() => {
                         skipResetRef.current = true;
-                        navigation.navigate("QRScanner");
+                        navigation.navigate("EpicScanner");
                       }}
                     />
-                  )} */}
+                  )}
 
                   <View style={styles.dropdownInsideInput}>
                     <FormDropdown
