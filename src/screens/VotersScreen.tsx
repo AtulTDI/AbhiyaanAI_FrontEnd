@@ -959,7 +959,7 @@ export default function VotersScreen() {
             />
 
             <Text style={styles.pageText}>
-              {t("voter.pageInfo", { current: 599, total: totalPages })}
+              {t("voter.pageInfo", { current: page, total: totalPages })}
             </Text>
 
             <IconButton

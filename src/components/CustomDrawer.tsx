@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { View, Image, StyleSheet, SafeAreaView, Platform } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
 import {
   DrawerContentScrollView,
   DrawerItemList,
@@ -8,6 +9,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useTheme } from "react-native-paper";
 import { getBrandAssets } from "../utils/brandAssets";
 import { getAuthData } from "../utils/storage";
+import { eventBus } from "../utils/eventBus";
 import { AppTheme } from "../theme";
 
 export default function CustomDrawer(props: any) {
@@ -15,19 +17,43 @@ export default function CustomDrawer(props: any) {
   const theme = useTheme<AppTheme>();
   const styles = createStyles(theme);
   const { colors } = theme;
-  const [candidatePhotoPath, setCandidatePhotoPath] = useState(null);
+
+  const [candidatePhotoPath, setCandidatePhotoPath] = useState<string | null>(
+    null,
+  );
+
+  const loadAuthPhoto = async () => {
+    try {
+      const data = await getAuthData();
+      setCandidatePhotoPath(data?.candidatePhotoPath || null);
+    } catch (e) {
+      console.error("Failed to load auth data", e);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      loadAuthPhoto();
+    }, []),
+  );
 
   useEffect(() => {
-    const loadAuth = async () => {
-      try {
-        const data = await getAuthData();
-        setCandidatePhotoPath(data.candidatePhotoPath);
-      } catch (e) {
-        console.error("Failed to load auth data", e);
-      }
+    const updatePhoto = (newPath: string) => {
+      setCandidatePhotoPath((prev) => {
+        if (!prev) return newPath;
+
+        const cleanPrev = prev.split("?")[0];
+
+        if (cleanPrev === newPath) {
+          return `${newPath}?t=${Date.now()}`;
+        }
+
+        return newPath;
+      });
     };
 
-    loadAuth();
+    eventBus.on("CANDIDATE_PHOTO_UPDATED", updatePhoto);
+    return () => eventBus.off("CANDIDATE_PHOTO_UPDATED", updatePhoto);
   }, []);
 
   return (
@@ -43,10 +69,10 @@ export default function CustomDrawer(props: any) {
     >
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.logoContainer}>
-          {candidatePhotoPath && candidatePhotoPath.length ? (
+          {candidatePhotoPath ? (
             <View style={styles.photoWrapper}>
               <Image
-                source={{ uri: candidatePhotoPath! }}
+                source={{ uri: candidatePhotoPath }}
                 style={styles.candidatePhoto}
                 resizeMode="cover"
               />

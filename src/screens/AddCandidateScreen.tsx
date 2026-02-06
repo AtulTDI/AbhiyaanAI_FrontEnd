@@ -15,6 +15,8 @@ import CandidatesTable from "../components/CandidateTable";
 import CandidateForm from "../components/CandidateForm";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 import { extractErrorMessage } from "../utils/common";
+import { eventBus } from "../utils/eventBus";
+import { getAuthData, saveAuthData } from "../utils/storage";
 import { useServerTable } from "../hooks/useServerTable";
 import { AppTheme } from "../theme";
 
@@ -63,7 +65,14 @@ export default function AddCandidateScreen() {
   const handleAdd = async (data: any) => {
     try {
       setLoading(true);
-      await addCandidate(data);
+      const response = await addCandidate(data);
+      const newCandidatePhotoPath = response.data.candidatePhotoPath;
+      const existingAuth = await getAuthData();
+      await saveAuthData({
+        ...existingAuth,
+        candidatePhotoPath: newCandidatePhotoPath,
+      });
+      eventBus.emit("CANDIDATE_PHOTO_UPDATED", newCandidatePhotoPath);
       await table.fetchData(0, table.rowsPerPage);
       setShowForm(false);
       showToast(t("candidate.addSuccess"), "success");
@@ -77,7 +86,20 @@ export default function AddCandidateScreen() {
   const handleEditSave = async (data: any) => {
     try {
       setLoading(true);
-      await updateCandidate({ ...data, id: candidateToEdit?.id });
+
+      const response = await updateCandidate({
+        ...data,
+        id: candidateToEdit?.id,
+      });
+
+      const newCandidatePhotoPath = response.data.candidatePhotoPath;
+      const existingAuth = await getAuthData();
+      await saveAuthData({
+        ...existingAuth,
+        candidatePhotoPath: newCandidatePhotoPath,
+      });
+
+      eventBus.emit("CANDIDATE_PHOTO_UPDATED", newCandidatePhotoPath);
       await table.fetchData(table.page, table.rowsPerPage);
       setShowForm(false);
       setCandidateToEdit(null);

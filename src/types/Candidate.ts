@@ -19,4 +19,5 @@ export interface CandidateCreateUpdate {
   symbolName?: string;
   candidatePhoto?: any;
   symbolImage?: any;
+  candidatePhotoPath?: string;
 }
