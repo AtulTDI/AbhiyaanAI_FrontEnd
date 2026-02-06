@@ -86,6 +86,7 @@ export default function VotersScreen() {
   const [subPage, setSubPage] = useState(1);
   const [subTotalPages, setSubTotalPages] = useState(1);
   const [subTotalRecords, setSubTotalRecords] = useState(0);
+  const [footerVertical, setFooterVertical] = useState(false);
   const SUB_PAGE_SIZE = 20;
   const subStartRecord =
     subTotalRecords === 0 ? 0 : (subPage - 1) * SUB_PAGE_SIZE + 1;
@@ -919,36 +920,55 @@ export default function VotersScreen() {
       </View>
 
       {voterCount > 0 && (
-        <View style={styles.floatingBar}>
-          <Text style={styles.stickyCountText}>
-            {voterCount > 0
-              ? t("voter.showingRecords", {
-                  start: startRecord,
-                  end: endRecord,
-                  total: voterCount,
-                })
-              : t("voter.noData")}
+        <View
+          style={[
+            styles.floatingBar,
+            footerVertical && styles.floatingBarVertical,
+          ]}
+        >
+          <Text
+            style={styles.stickyCountText}
+            numberOfLines={1}
+            ellipsizeMode="clip"
+            onLayout={(e) => {
+              const textWidth = e.nativeEvent.layout.width;
+              if (textWidth > 180 && !footerVertical) setFooterVertical(true);
+              if (textWidth <= 180 && footerVertical) setFooterVertical(false);
+            }}
+          >
+            {t("voter.showingRecords", {
+              start: startRecord,
+              end: endRecord,
+              total: voterCount,
+            })}
           </Text>
 
-          <View style={styles.stickyPager}>
+          <View
+            style={[
+              styles.stickyPager,
+              footerVertical && styles.stickyPagerVertical,
+            ]}
+          >
             <IconButton
               size={18}
-              style={styles.pagerIcon}
               icon="chevron-left"
               disabled={page === 1}
               onPress={() => setPage((p) => Math.max(1, p - 1))}
+              style={{ margin: 0 }}
+              contentStyle={{ margin: 0 }}
             />
 
             <Text style={styles.pageText}>
-              {t("voter.pageInfo", { current: page, total: totalPages })}
+              {t("voter.pageInfo", { current: 599, total: totalPages })}
             </Text>
 
             <IconButton
               size={18}
-              style={styles.pagerIcon}
               icon="chevron-right"
               disabled={page === totalPages}
               onPress={() => setPage((p) => Math.min(totalPages, p + 1))}
+              style={{ margin: 0 }}
+              contentStyle={{ margin: 0 }}
             />
           </View>
         </View>
@@ -1109,10 +1129,20 @@ const createStyles = (theme: AppTheme, platform: { isWeb: boolean }) =>
       shadowOpacity: 0.15,
       shadowRadius: 6,
     },
+    floatingBarVertical: {
+      flexDirection: "column",
+      justifyContent: "center",
+      alignItems: "center",
+      gap: 6,
+      paddingVertical: 8,
+    },
+    stickyPagerVertical: {
+      justifyContent: "center",
+    },
     stickyPager: {
       flexDirection: "row",
       alignItems: "center",
-      gap: 2,
+      gap: 0,
     },
     pagerIcon: {
       margin: 0,
@@ -1121,6 +1151,7 @@ const createStyles = (theme: AppTheme, platform: { isWeb: boolean }) =>
     stickyCountText: {
       fontSize: 13,
       color: theme.colors.textSecondary,
+      marginRight: 6,
     },
     cardPressable: {
       flex: 1,
@@ -1175,9 +1206,10 @@ const createStyles = (theme: AppTheme, platform: { isWeb: boolean }) =>
       color: theme.colors.darkOrange,
     },
     pageText: {
-      marginHorizontal: 4,
+      marginHorizontal: 2,
       fontWeight: "500",
       color: theme.colors.primary,
+      fontSize: 13,
     },
     transitionOverlay: {
       ...StyleSheet.absoluteFillObject,
