@@ -183,8 +183,20 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
       return false;
     }
 
-    await ThermalPrinter.connect(mac);
-    return true;
+    try {
+      await ThermalPrinter.disconnect().catch(() => {});
+      await new Promise(r => setTimeout(r, 300));
+
+      await ThermalPrinter.connect(mac);
+
+      await new Promise(r => setTimeout(r, 500));
+
+      return true;
+    } catch (e) {
+      await removePrinterMac();
+      setShowPrinterPicker(true);
+      return false;
+    }
   };
 
   const saveBase64ToFile = async (base64: string) => {
@@ -236,21 +248,22 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
 
       await new Promise((r) => setTimeout(r, 300));
 
-      await ThermalPrinter.printVoterSlip(response.data);
+      // await ThermalPrinter.printVoterSlip(response.data);
 
-      // const imageBase64 = await convertSlipTextToImage();
+      const imageBase64 = await convertSlipTextToImage();
       // setImageBase64(imageBase64);
 
       // await ThermalPrinter.printBase64(imageBase64);
 
-      // const imagePath = await saveBase64ToFile(imageBase64);
-      // await ThermalPrinter.printImage(imagePath);
+      const imagePath = await saveBase64ToFile(imageBase64);
+      await ThermalPrinter.printImage(imagePath);
+      await new Promise(r => setTimeout(r, 300));
 
       showToast(t("candidate.voterPrintSuccess"), "success");
     } catch (error) {
       showToast(extractErrorMessage(error), "error");
     } finally {
-      setPrinting(false);
+      setTimeout(() => setPrinting(false), 800);
     }
   };
 
