@@ -292,6 +292,8 @@
     "voterUnverifiedSuccess": "मतदाराची पडताळणी यशस्वीरित्या रद्द केली",
     "voterStarredSuccess": "मतदार यशस्वीरित्या स्टार म्हणून चिन्हांकित केला गेला",
     "voterUnstarredSuccess": "मतदार यशस्वीरित्या स्टार म्हणून अनचिन्हांकित केला गेला",
+    "downloadSuccess": "मतदार तपशील यशस्वीरित्या डाउनलोड झाले",
+    "downloadFailed": "मतदार तपशील डाउनलोड करण्यात अयशस्वी",
     "placeholderDash": "—",
     "familyMembers": "कुटुंबातील सदस्य",
     "addFamilyMember": "जोडा",

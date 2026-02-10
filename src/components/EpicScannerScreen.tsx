@@ -1,14 +1,22 @@
 import React, { useEffect, useRef, useState } from "react";
-import { View, Text, StyleSheet } from "react-native";
-import { Camera, useCameraDevice } from "react-native-vision-camera";
+import { View, Text, StyleSheet, Platform } from "react-native";
 import MlkitOcr from "react-native-mlkit-ocr";
 import { useNavigation } from "@react-navigation/native";
 import { triggerEpicScan } from "../utils/epicScannerListener";
 
+let Camera: any = null;
+let useCameraDevice: any = null;
+
+if (Platform.OS !== "web") {
+  const VisionCamera = require("react-native-vision-camera");
+  Camera = VisionCamera.Camera;
+  useCameraDevice = VisionCamera.useCameraDevice;
+}
+
 export default function EpicScannerScreen() {
   const navigation = useNavigation<any>();
   const device = useCameraDevice("back");
-  const cameraRef = useRef<Camera>(null);
+  const cameraRef = useRef(null);
 
   const [hasPermission, setHasPermission] = useState(false);
   const [cameraReady, setCameraReady] = useState(false);
@@ -38,7 +46,7 @@ export default function EpicScannerScreen() {
 
       console.log("📸 Capturing...");
       const photo = await cameraRef.current.takeSnapshot({
-        quality: 80
+        quality: 80,
       });
 
       const uri = "file://" + photo.path;

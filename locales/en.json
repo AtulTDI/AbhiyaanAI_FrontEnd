@@ -293,6 +293,8 @@
     "voterUnverifiedSuccess": "Voter unverified successfully",
     "voterStarredSuccess": "Voter marked as star successfully",
     "voterUnstarredSuccess": "Voter unmarked as star successfully",
+    "downloadSuccess": "Voter details downloaded successfully",
+    "downloadFailed": "Failed to download voter details",
     "placeholderDash": "—",
     "familyMembers": "Family Members",
     "addFamilyMember": "Add",

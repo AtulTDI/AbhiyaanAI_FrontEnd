@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { View, StyleSheet, FlatList, Pressable, Platform } from "react-native";
+import { View, StyleSheet, FlatList, Pressable } from "react-native";
 import { useIsFocused, useNavigation } from "@react-navigation/native";
 import {
   Text,
@@ -12,7 +12,10 @@ import {
   Divider,
 } from "react-native-paper";
 import { useTranslation } from "react-i18next";
+import { Buffer } from "buffer";
 import { MaterialIcons } from "@expo/vector-icons";
+import * as FileSystem from "expo-file-system";
+import * as Sharing from "expo-sharing";
 import VoterDetailView from "../components/VoterDetailView";
 import VoterCategoryScreen from "./VoterCategoryScreen";
 import { AgeGroupStats, ColorCodeStats, Voter } from "../types/Voter";
@@ -31,8 +34,10 @@ import {
 } from "../api/voterApi";
 import FormDropdown from "../components/FormDropdown";
 import Subcategory from "../components/SubCategory";
+import { useToast } from "../components/ToastProvider";
 import { VOTER_CATEGORIES } from "../constants/voterCategories";
 import { setEpicScanHandler } from "../utils/epicScannerListener";
+import { exportVotersPdf } from "../api/exportVotersApi";
 import { AppTheme } from "../theme";
 
 type AgeMode = "none" | "lt" | "gt" | "between";
@@ -43,9 +48,10 @@ const PAGE_SIZE = 50;
 
 /* ---------------- SCREEN ---------------- */
 export default function VotersScreen() {
-  const { isWeb, isMobileWeb } = usePlatformInfo();
+  const { isWeb, isMobileWeb, isAndroid } = usePlatformInfo();
   const { t, i18n } = useTranslation();
   const theme = useTheme<AppTheme>();
+  const { showToast } = useToast();
   const styles = createStyles(theme, { isWeb });
 
   const numColumns = isWeb ? 2 : 1;
@@ -87,6 +93,7 @@ export default function VotersScreen() {
   const [subTotalPages, setSubTotalPages] = useState(1);
   const [subTotalRecords, setSubTotalRecords] = useState(0);
   const [footerVertical, setFooterVertical] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   const SUB_PAGE_SIZE = 20;
   const subStartRecord =
     subTotalRecords === 0 ? 0 : (subPage - 1) * SUB_PAGE_SIZE + 1;
@@ -537,6 +544,198 @@ export default function VotersScreen() {
     );
   }
 
+  const downloadPdf = async (fileData: any, fileName: string) => {
+    try {
+      if (isWeb && !isMobileWeb) {
+        const blob = new Blob([fileData], { type: "application/pdf" });
+        const url = window.URL.createObjectURL(blob);
+
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        return;
+      }
+
+      const fileUri = FileSystem.cacheDirectory + fileName;
+
+      let base64: string;
+      if (typeof fileData === "string") {
+        base64 = fileData;
+      } else {
+        base64 = Buffer.from(fileData).toString("base64");
+      }
+
+      await FileSystem.writeAsStringAsync(fileUri, base64, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+
+      await Sharing.shareAsync(fileUri, {
+        mimeType: "application/pdf",
+        dialogTitle: "Open voter list",
+      });
+    } catch (err) {
+      console.error("PDF download/open failed", err);
+      showToast(t("voter.downloadFailed"), "error");
+    }
+  };
+
+  const formatPart = (text?: string | number | null) => {
+    if (!text) return null;
+
+    const cleaned = text
+      .toString()
+      .trim()
+      .replace(/\s+/g, "_")
+      .replace(/[^\w]/g, "");
+
+    if (!cleaned) return null;
+
+    return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+  };
+
+  const resolveColorName = () => {
+    if (selectedSubFilter.type !== "color" || !selectedSubFilter.value)
+      return null;
+
+    const item = subFilterItems.find(
+      (i) => i.value === selectedSubFilter.value,
+    );
+
+    if (!item) return null;
+
+    if (item.label) return formatPart(item.label);
+
+    if (item.metaKey) return formatPart(item.metaKey);
+
+    return null;
+  };
+
+  const generateFileName = () => {
+    const isLikelyId = (val: string) => /^[0-9a-fA-F-]{8,}$/.test(val);
+
+    const categoryNameMap: Record<number, string> = {
+      0: "All_Voters",
+      1: "Star_Voters",
+      2: "Verified_Voters",
+      3: "Unverified_Voters",
+      4: "Deceased_Voters",
+      5: "Voted_Voters",
+      6: "Not_Voted_Voters",
+      7: "Needs_Followup_Voters",
+      8: "Voters_By_Support_Color",
+      9: "Voters_By_Caste",
+      10: "Voters_By_Age",
+      11: "Voters_By_Gender",
+      12: "Voters_By_Booth",
+      13: "Voters_By_Surname",
+    };
+
+    const val = selectedSubFilter.value?.toString();
+
+    if (selectedSubFilter.type === "surname" && val) {
+      const part = formatPart(val);
+      if (part) return `Voters_Surname_${part}.pdf`;
+    }
+
+    if (selectedSubFilter.type === "age" && val) {
+      const part = formatPart(val);
+      if (part) return `Voters_Age_${part}.pdf`;
+    }
+
+    if (selectedSubFilter.type === "gender" && val) {
+      const part = formatPart(val);
+      if (part) return `Voters_Gender_${part}.pdf`;
+    }
+
+    if (selectedSubFilter.type === "color") {
+      const colorName = resolveColorName();
+      if (colorName) return `Voters_Support_${colorName}.pdf`;
+    }
+
+    if (selectedSubFilter.type === "caste" && val && !isLikelyId(val)) {
+      const part = formatPart(val);
+      if (part) return `Voters_Caste_${part}.pdf`;
+    }
+
+    if (selectedSubFilter.type === "booth" && val) {
+      const part = formatPart(val);
+      if (part) return `Voters_Booth_${part}.pdf`;
+    }
+
+    if (selectedCategory === 15) {
+      if (ageMode === "between" && minAge && maxAge) {
+        return `Voters_Age_${minAge}_${maxAge}.pdf`;
+      }
+
+      if ((ageMode === "lt" || ageMode === "gt") && ageValue) {
+        return `Voters_Age_${ageMode === "lt" ? "Below" : "Above"}_${ageValue}.pdf`;
+      }
+
+      if (gender !== "All") {
+        const part = formatPart(gender);
+        if (part) return `Voters_Gender_${part}.pdf`;
+      }
+    }
+
+    if (selectedCategory && categoryNameMap[selectedCategory]) {
+      return `${categoryNameMap[selectedCategory]}.pdf`;
+    }
+
+    return "Voters_List.pdf";
+  };
+
+  const handleDownloadVoters = async () => {
+    try {
+      setDownloading(true);
+
+      let ageParam: string | undefined;
+
+      if (ageMode === "between" && debouncedMinAge && debouncedMaxAge) {
+        ageParam = `${debouncedMinAge}-${debouncedMaxAge}`;
+      } else if ((ageMode === "lt" || ageMode === "gt") && debouncedAgeValue) {
+        ageParam = `${ageMode === "lt" ? "<" : ">"}${debouncedAgeValue}`;
+      }
+
+      const response = await exportVotersPdf(
+        selectedCategory ?? 0,
+        selectedSubFilter.type === "surname"
+          ? (selectedSubFilter.value ?? undefined)
+          : undefined,
+        selectedSubFilter.type === "color"
+          ? (selectedSubFilter.value ?? undefined)
+          : undefined,
+        selectedSubFilter.type === "age"
+          ? (selectedSubFilter.value ?? undefined)
+          : ageParam,
+        selectedSubFilter.type === "gender"
+          ? (selectedSubFilter.value ?? undefined)
+          : gender !== "All"
+            ? gender
+            : undefined,
+        selectedSubFilter.type === "caste"
+          ? (selectedSubFilter.value ?? undefined)
+          : undefined,
+        selectedSubFilter.type === "booth"
+          ? (selectedSubFilter.value ?? undefined)
+          : undefined,
+      );
+
+      const fileName = generateFileName();
+
+      await downloadPdf(response.data, fileName);
+      showToast(t("voter.downloadSuccess"), "success");
+    } catch (err) {
+      console.error("PDF export failed", err);
+      showToast(t("voter.downloadFailed"), "error");
+    } finally {
+      setDownloading(false);
+    }
+  };
+
   return (
     <View style={styles.screenContainer}>
       <View style={{ position: "relative", flex: 1 }}>
@@ -569,31 +768,42 @@ export default function VotersScreen() {
           style={{ flex: 1 }}
           ListHeaderComponent={
             <>
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <IconButton
-                  icon="arrow-left"
-                  iconColor={theme.colors.primary}
-                  onPress={() => {
-                    if (selectedSubFilter.type && selectedSubFilter.value) {
-                      setSelectedSubFilter((prev) => ({
-                        ...prev,
-                        value: null,
-                      }));
-                      setSubPage(1);
-                      setView("subcategories");
-                      return;
-                    }
+              <View style={styles.headerRow}>
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <IconButton
+                    icon="arrow-left"
+                    iconColor={theme.colors.primary}
+                    onPress={() => {
+                      if (selectedSubFilter.type && selectedSubFilter.value) {
+                        setSelectedSubFilter((prev) => ({
+                          ...prev,
+                          value: null,
+                        }));
+                        setSubPage(1);
+                        setView("subcategories");
+                        return;
+                      }
+                      setSelectedCategory(null);
+                      clearFilters();
+                      setView("categories");
+                    }}
+                  />
+                  <Text variant="titleLarge" style={styles.heading}>
+                    {selectedCategoryObj
+                      ? t(selectedCategoryObj.title)
+                      : t("voter.plural")}
+                  </Text>
+                </View>
 
-                    setSelectedCategory(null);
-                    clearFilters();
-                    setView("categories");
-                  }}
-                />
-                <Text variant="titleLarge" style={styles.heading}>
-                  {selectedCategoryObj
-                    ? t(selectedCategoryObj.title)
-                    : t("voter.plural")}
-                </Text>
+                {/* ⬇️ DOWNLOAD BUTTON */}
+                {selectedCategory !== 15 && <IconButton
+                  icon={downloading ? "progress-clock" : "download"}
+                  iconColor={theme.colors.primary}
+                  size={22}
+                  style={styles.iconBackground}
+                  disabled={downloading}
+                  onPress={handleDownloadVoters}
+                />}
               </View>
 
               <View style={styles.searchContainer}>
@@ -885,8 +1095,8 @@ export default function VotersScreen() {
               onPress={async () => {
                 openVoterDetail(item.id);
               }}
-              onHoverIn={() => Platform.OS === "web" && setHoveredId(item.id)}
-              onHoverOut={() => Platform.OS === "web" && setHoveredId(null)}
+              onHoverIn={() => isWeb && !isMobileWeb && setHoveredId(item.id)}
+              onHoverOut={() => isWeb && !isMobileWeb && setHoveredId(null)}
               style={styles.cardPressable}
             >
               <View
@@ -984,6 +1194,17 @@ const createStyles = (theme: AppTheme, platform: { isWeb: boolean }) =>
     screenContainer: {
       flex: 1,
       backgroundColor: theme.colors.white,
+    },
+    headerRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+    },
+    iconBackground: {
+      backgroundColor: theme.colors.primary + "25",
+      borderRadius: 20,
+      borderWidth: 1,
+      borderColor: theme.colors.primary + "40",
     },
     loaderContainer: {
       flex: 1,
