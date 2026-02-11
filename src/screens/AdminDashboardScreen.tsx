@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { View, Text, ScrollView, StyleSheet, Dimensions } from "react-native";
 import { Card } from "react-native-paper";
 import { useTranslation } from "react-i18next";
@@ -28,6 +28,20 @@ const Tab = createMaterialTopTabNavigator();
 
 const AdminDashboardScreen = () => {
   const { t } = useTranslation();
+  const [showVideoCampaign, setShowVideoCampaignn] = useState<boolean | string>(
+    false,
+  );
+
+  useEffect(() => {
+    (async () => {
+      const {
+        showVideoCampaign: videoCampign,
+        showImageCampaign: imageCampaign,
+      } = await getAuthData();
+
+      setShowVideoCampaignn(videoCampign === true || videoCampign === "true");
+    })();
+  }, []);
 
   return (
     <Tab.Navigator
@@ -78,7 +92,7 @@ const AdminDashboardScreen = () => {
         }}
       />
 
-      <Tab.Screen
+      {showVideoCampaign && <Tab.Screen
         name="Videos"
         component={VideoDashboardContent}
         options={{
@@ -96,7 +110,7 @@ const AdminDashboardScreen = () => {
             </View>
           ),
         }}
-      />
+      />}
     </Tab.Navigator>
   );
 };

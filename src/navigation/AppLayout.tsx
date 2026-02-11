@@ -45,6 +45,8 @@ export default function AppLayout() {
   const [userEmail, setUserEmail] = useState("");
   const [applicationName, setApplicationName] = useState("");
   const [videoCount, setVideoCount] = useState<number | null>(null);
+  const [showVideoCampaign, setShowVideoCampaignn] = useState<boolean | string>(false);
+  const [showImageCampaign, setShowImageCampaignn] = useState<boolean | string>(false);
 
   useEffect(() => {
     (async () => {
@@ -54,6 +56,8 @@ export default function AppLayout() {
         role: storedRole,
         videoCount: count,
         applicationName: userApplication,
+        showVideoCampaign: videoCampign,
+        showImageCampaign: imageCampaign,
       } = await getAuthData();
 
       if (name) setUserName(name);
@@ -67,6 +71,9 @@ export default function AppLayout() {
       ) {
         setRole(storedRole);
       }
+
+      setShowVideoCampaignn(videoCampign === true || videoCampign === "true");
+      setShowImageCampaignn(imageCampaign === true || imageCampaign === "true");
 
       if (count !== undefined && !isNaN(Number(count))) {
         setVideoCount(Number(count));
@@ -401,51 +408,55 @@ export default function AppLayout() {
 
           {role === "Admin" && (
             <>
-              <Drawer.Screen
-                name="Upload"
-                component={UploadVideoScreen}
-                options={{
-                  headerShown: true,
-                  headerTitle: "",
-                  headerRight: headerRightComponent,
-                  drawerLabel: (props) => (
-                    <CustomLabel
-                      {...props}
-                      label={t("uploadBaseVideoTabLabel")}
-                      icon={
-                        <Ionicons
-                          name="cloud-upload"
-                          size={20}
-                          color={props.color || colors.onPrimary}
-                        />
-                      }
-                    />
-                  ),
-                }}
-              />
+              {showVideoCampaign && (
+                <Drawer.Screen
+                  name="Upload"
+                  component={UploadVideoScreen}
+                  options={{
+                    headerShown: true,
+                    headerTitle: "",
+                    headerRight: headerRightComponent,
+                    drawerLabel: (props) => (
+                      <CustomLabel
+                        {...props}
+                        label={t("uploadBaseVideoTabLabel")}
+                        icon={
+                          <Ionicons
+                            name="cloud-upload"
+                            size={20}
+                            color={props.color || colors.onPrimary}
+                          />
+                        }
+                      />
+                    ),
+                  }}
+                />
+              )}
 
-              <Drawer.Screen
-                name="UploadImage"
-                component={UploadImageScreen}
-                options={{
-                  headerShown: true,
-                  headerTitle: "",
-                  headerRight: headerRightComponent,
-                  drawerLabel: (props) => (
-                    <CustomLabel
-                      {...props}
-                      label={t("uploadImageTabLabel")}
-                      icon={
-                        <Ionicons
-                          name="images-outline"
-                          size={20}
-                          color={props.color || colors.onPrimary}
-                        />
-                      }
-                    />
-                  ),
-                }}
-              />
+              {showImageCampaign && (
+                <Drawer.Screen
+                  name="UploadImage"
+                  component={UploadImageScreen}
+                  options={{
+                    headerShown: true,
+                    headerTitle: "",
+                    headerRight: headerRightComponent,
+                    drawerLabel: (props) => (
+                      <CustomLabel
+                        {...props}
+                        label={t("uploadImageTabLabel")}
+                        icon={
+                          <Ionicons
+                            name="images-outline"
+                            size={20}
+                            color={props.color || colors.onPrimary}
+                          />
+                        }
+                      />
+                    ),
+                  }}
+                />
+              )}
             </>
           )}
         </>
@@ -499,97 +510,105 @@ export default function AppLayout() {
             }}
           />
 
-          <Drawer.Screen
-            name="Generate"
-            component={GenerateVideoScreen}
-            options={{
-              headerShown: true,
-              headerTitle: "",
-              headerRight: headerRightComponent,
-              drawerLabel: (props) => (
-                <CustomLabel
-                  {...props}
-                  label={t("generateVideoTabLabel")}
-                  icon={
-                    <Ionicons
-                      name="sparkles-outline"
-                      size={20}
-                      color={props.color || colors.onPrimary}
-                    />
-                  }
-                />
-              ),
-            }}
-          />
+          {showVideoCampaign && (
+            <Drawer.Screen
+              name="Generate"
+              component={GenerateVideoScreen}
+              options={{
+                headerShown: true,
+                headerTitle: "",
+                headerRight: headerRightComponent,
+                drawerLabel: (props) => (
+                  <CustomLabel
+                    {...props}
+                    label={t("generateVideoTabLabel")}
+                    icon={
+                      <Ionicons
+                        name="sparkles-outline"
+                        size={20}
+                        color={props.color || colors.onPrimary}
+                      />
+                    }
+                  />
+                ),
+              }}
+            />
+          )}
 
-          <Drawer.Screen
-            name="Processing"
-            component={ProcessingVideosScreen}
-            options={{
-              headerShown: true,
-              headerTitle: "",
-              headerRight: headerRightComponent,
-              drawerLabel: (props) => (
-                <CustomLabel
-                  {...props}
-                  label={t("processingVideoTabLabel")}
-                  icon={
-                    <Ionicons
-                      name="time-outline"
-                      size={20}
-                      color={props.color || colors.onPrimary}
-                    />
-                  }
-                />
-              ),
-            }}
-          />
+          {showVideoCampaign && (
+            <Drawer.Screen
+              name="Processing"
+              component={ProcessingVideosScreen}
+              options={{
+                headerShown: true,
+                headerTitle: "",
+                headerRight: headerRightComponent,
+                drawerLabel: (props) => (
+                  <CustomLabel
+                    {...props}
+                    label={t("processingVideoTabLabel")}
+                    icon={
+                      <Ionicons
+                        name="time-outline"
+                        size={20}
+                        color={props.color || colors.onPrimary}
+                      />
+                    }
+                  />
+                ),
+              }}
+            />
+          )}
 
-          <Drawer.Screen
-            name="Generated"
-            component={GeneratedVideoScreen}
-            options={{
-              headerShown: true,
-              headerTitle: "",
-              headerRight: headerRightComponent,
-              drawerLabel: (props) => (
-                <CustomLabel
-                  {...props}
-                  label={t("generatedVideoTabLabel")}
-                  icon={
-                    <Ionicons
-                      name="film-outline"
-                      size={20}
-                      color={props.color || colors.onPrimary}
-                    />
-                  }
-                />
-              ),
-            }}
-          />
+          {showVideoCampaign && (
+            <Drawer.Screen
+              name="Generated"
+              component={GeneratedVideoScreen}
+              options={{
+                headerShown: true,
+                headerTitle: "",
+                headerRight: headerRightComponent,
+                drawerLabel: (props) => (
+                  <CustomLabel
+                    {...props}
+                    label={t("generatedVideoTabLabel")}
+                    icon={
+                      <Ionicons
+                        name="film-outline"
+                        size={20}
+                        color={props.color || colors.onPrimary}
+                      />
+                    }
+                  />
+                ),
+              }}
+            />
+          )}
 
-          <Drawer.Screen
-            name="GeneratedImages"
-            component={GeneratedImagesScreen}
-            options={{
-              headerShown: true,
-              headerTitle: "",
-              headerRight: headerRightComponent,
-              drawerLabel: (props) => (
-                <CustomLabel
-                  {...props}
-                  label={t("generatedImageTabLabel")}
-                  icon={
-                    <Ionicons
-                      name="images-outline"
-                      size={20}
-                      color={props.color || colors.onPrimary}
-                    />
-                  }
-                />
-              ),
-            }}
-          />
+          {showImageCampaign && (
+            <Drawer.Screen
+              name="GeneratedImages"
+              component={GeneratedImagesScreen}
+              options={{
+                headerShown: true,
+                headerTitle: "",
+                headerRight: headerRightComponent,
+                drawerLabel: (props) => (
+                  <CustomLabel
+                    {...props}
+                    label={t("generatedImageTabLabel")}
+                    icon={
+                      <Ionicons
+                        name="images-outline"
+                        size={20}
+                        color={props.color || colors.onPrimary}
+                      />
+                    }
+                  />
+                ),
+              }}
+            />
+          )}
         </>
       )}
 

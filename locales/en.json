@@ -54,6 +54,8 @@
   "videoRate": "Video Rate",
   "premiumVoice": "Premium Voice Generation",
   "electionRelated": "Election Related",
+  "showVideoCampaign": "Show Video Campaign",
+  "showImageCampaign": "Show Image Campaign",
   "firstName": "First Name",
   "lastName": "Last Name",
   "password": "Password",

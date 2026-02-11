@@ -135,6 +135,18 @@ export default function ApplicationForm({
       type: "checkbox",
       required: false,
     },
+    {
+      name: "showVideoCampaign",
+      label: t("showVideoCampaign"),
+      type: "checkbox",
+      required: false,
+    },
+    {
+      name: "showImageCampaign",
+      label: t("showImageCampaign"),
+      type: "checkbox",
+      required: false,
+    },
   ];
 
   return (
@@ -158,6 +170,8 @@ export default function ApplicationForm({
           whapiBaseUrl: applicationToEdit?.whapiBaseUrl || "",
           premiumVoice: applicationToEdit?.premiumVoice || false,
           isElection: applicationToEdit?.isElection || false,
+          showVideoCampaign: applicationToEdit?.showVideoCampaign || false,
+          showImageCampaign: applicationToEdit?.showImageCampaign || false,
         }}
         mode={mode}
         onChange={(data, value) => {

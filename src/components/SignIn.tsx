@@ -107,7 +107,10 @@ export default function SignIn({
       const applicationName = response.data?.applicationName || "";
       const videoCount = response.data?.videoCount?.toString() ?? 0;
       const channelId = response.data?.channelId || "";
-      const isProfessionalVoiceCloning = response.data?.isProfessionalVoiceCloning || false;
+      const isProfessionalVoiceCloning =
+        response.data?.isProfessionalVoiceCloning || false;
+      const showVideoCampaign = response.data?.showVideoCampaign || false;
+      const showImageCampaign = response.data?.showImageCampaign || false;
       const candidatePhotoPath = response.data?.candidatePhotoPath || null;
 
       await saveAuthData({
@@ -121,6 +124,8 @@ export default function SignIn({
         videoCount,
         channelId,
         isProfessionalVoiceCloning,
+        showVideoCampaign,
+        showImageCampaign,
         candidatePhotoPath
       });
 

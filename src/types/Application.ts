@@ -12,6 +12,8 @@ export type Application = {
   whapiVendorUid?: string;
   whapiBearerToken?: string; 
   isElection?: boolean;
+  showVideoCampaign?: boolean;
+  showImageCampaign?: boolean;
   isActive: boolean;
 }
 
