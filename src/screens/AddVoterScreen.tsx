@@ -23,9 +23,14 @@ import VoterUpload from "../components/VoterUpload";
 import VoterTable from "../components/VoterTable";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 import { useToast } from "../components/ToastProvider";
-import { CreateRecipientPayload, EditRecipientPayload, Recipient } from "../types/Recipient";
+import {
+  CreateRecipientPayload,
+  EditRecipientPayload,
+  Recipient,
+} from "../types/Recipient";
 import { useServerTable } from "../hooks/useServerTable";
 import { usePlatformInfo } from "../hooks/usePlatformInfo";
+import { useInternalBackHandler } from "../hooks/useInternalBackHandler";
 import {
   createRecipient,
   deleteRecipientById,
@@ -63,32 +68,54 @@ export default function AddVoterScreen() {
       { key: "manual", title: t("voter.registerVoter") },
       { key: "excel", title: t("voter.bulkRegister") },
     ],
-    [t]
+    [t],
   );
+
+  const canHandleInternalBack = showAddVoterView;
+
+  const handleInternalBack = () => {
+    if (voterToEdit) {
+      setVoterToEdit(null);
+      setShowAddVoterView(false);
+      return;
+    }
+
+    if (showAddVoterView && index > 0) {
+      setIndex(0);
+      return;
+    }
+
+    if (showAddVoterView) {
+      setShowAddVoterView(false);
+      return;
+    }
+  };
+
+  useInternalBackHandler(canHandleInternalBack, handleInternalBack);
 
   const fetchVoters = useCallback(
     async (
       page: number,
       pageSize: number,
-      params?: { searchText?: string }
+      params?: { searchText?: string },
     ) => {
       const response = await getRecipients(
         page,
         pageSize,
-        params?.searchText ?? ""
+        params?.searchText ?? "",
       );
       return {
         items: Array.isArray(response?.data?.items) ? response.data.items : [],
         totalCount: response?.data?.totalRecords ?? 0,
       };
     },
-    []
+    [],
   );
 
   const table = useServerTable<Recipient, { searchText?: string }>(
     fetchVoters,
     { initialPage: 0, initialRowsPerPage: 10 },
-    tableParams
+    tableParams,
   );
 
   useFocusEffect(
@@ -98,7 +125,7 @@ export default function AddVoterScreen() {
       table.setPage(0);
       table.setRowsPerPage(10);
       table.fetchData(0, 10);
-    }, [])
+    }, []),
   );
 
   const handleVoterSearch = useCallback(
@@ -107,7 +134,7 @@ export default function AddVoterScreen() {
       setTableParams({ searchText: text });
       table.setPage(0);
     },
-    [table]
+    [table],
   );
 
   const addVoter = async (voterData: CreateRecipientPayload) => {
@@ -173,7 +200,7 @@ export default function AddVoterScreen() {
         document.body.removeChild(link);
       } else {
         const asset = Asset.fromModule(
-          require("../assets/sample-voter-upload.xlsx")
+          require("../assets/sample-voter-upload.xlsx"),
         );
         await asset.downloadAsync();
         const dest = `${FileSystem.cacheDirectory}sample-voter-upload.xlsx`;
@@ -231,7 +258,7 @@ export default function AddVoterScreen() {
   const renderTabBar = (
     props: SceneRendererProps & {
       navigationState: { index: number; routes: TabRoute[] };
-    }
+    },
   ) => (
     <TabBar
       {...props}

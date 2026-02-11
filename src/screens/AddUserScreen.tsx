@@ -14,6 +14,7 @@ import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 import { useToast } from "../components/ToastProvider";
 import { useServerTable } from "../hooks/useServerTable";
 import { usePlatformInfo } from "../hooks/usePlatformInfo";
+import { useInternalBackHandler } from "../hooks/useInternalBackHandler";
 import {
   createUser,
   deleteUserById,
@@ -44,6 +45,16 @@ export default function AddUserScreen({ role }) {
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [userToEdit, setUserToEdit] = useState<User | null>(null);
+  const canHandleInternalBack = showAddUserView;
+
+  const handleInternalBack = () => {
+    if (showAddUserView) {
+      setShowAddUserView(false);
+      setUserToEdit(null);
+    }
+  };
+
+  useInternalBackHandler(canHandleInternalBack, handleInternalBack);
 
   const fetchUsers = useCallback(async (page: number, pageSize: number) => {
     try {
@@ -179,30 +190,30 @@ export default function AddUserScreen({ role }) {
     role === "Distributor"
       ? t("distributorButtonLabel")
       : role === "Admin"
-      ? t("customerAdminButtonLabel")
-      : t("userButtonLabel");
+        ? t("customerAdminButtonLabel")
+        : t("userButtonLabel");
 
   const getAddRoleLabel = () =>
     role === "Distributor"
       ? t("addDistributorLabel")
       : role === "Admin"
-      ? t(isWeb && !isMobileWeb ? "addCustomerAdminLabel" : "addAdminLabel")
-      : t("addUserLabel");
+        ? t(isWeb && !isMobileWeb ? "addCustomerAdminLabel" : "addAdminLabel")
+        : t("addUserLabel");
 
   const getEditRoleLabel = () =>
     role === "Distributor"
       ? t("editDistributorLabel")
       : role === "Admin"
-      ? t("editCustomerAdminLabel")
-      : t("editUserLabel");
+        ? t("editCustomerAdminLabel")
+        : t("editUserLabel");
 
   const getHeaderTitle = () => {
     const roleLabel =
       role === "Distributor"
         ? t("distributorPageLabel")
         : role === "Admin"
-        ? t("customerAdminPageLabel")
-        : t("userPageLabel");
+          ? t("customerAdminPageLabel")
+          : t("userPageLabel");
 
     if (showAddUserView) {
       return userToEdit ? getEditRoleLabel() : getAddRoleLabel();

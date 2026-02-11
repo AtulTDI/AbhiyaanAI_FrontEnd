@@ -22,6 +22,7 @@ import ApplicationForm from "../components/ApplicationForm";
 import { extractErrorMessage, sortByDateDesc } from "../utils/common";
 import { uploadVoters } from "../api/voterApi";
 import { useServerTable } from "../hooks/useServerTable";
+import { useInternalBackHandler } from "../hooks/useInternalBackHandler";
 import { AppTheme } from "../theme";
 
 export default function AddApplicationScreen() {
@@ -35,6 +36,19 @@ export default function AddApplicationScreen() {
     useState<Application | null>(null);
   const [voterFile, setVoterFile] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const canHandleInternalBack = showAddApplicationView;
+
+  const handleInternalBack = () => {
+    if (loading) return;
+
+    if (showAddApplicationView) {
+      setShowAddApplicationView(false);
+      setApplicationToEdit(null);
+      setVoterFile(null);
+    }
+  };
+
+  useInternalBackHandler(canHandleInternalBack, handleInternalBack);
 
   const fetchApplications = useCallback(
     async (page: number, pageSize: number) => {
@@ -42,7 +56,7 @@ export default function AddApplicationScreen() {
         const response = await getApplications(page, pageSize);
         const sortedApps = sortByDateDesc(
           response?.data?.items || [],
-          "createdAt"
+          "createdAt",
         );
         return {
           items: sortedApps ?? [],
@@ -51,11 +65,11 @@ export default function AddApplicationScreen() {
       } catch (error: any) {
         showToast(
           extractErrorMessage(error, t("application.loadFailed")),
-          "error"
+          "error",
         );
       }
     },
-    []
+    [],
   );
 
   const table = useServerTable<GetPaginatedApplications>(fetchApplications, {
@@ -70,7 +84,7 @@ export default function AddApplicationScreen() {
       table.setPage(0);
       table.setRowsPerPage(10);
       table.fetchData(0, 10);
-    }, [])
+    }, []),
   );
 
   const handleVoterFileUpload = async (applicationId: string) => {
@@ -95,7 +109,7 @@ export default function AddApplicationScreen() {
     } catch (error: any) {
       showToast(
         extractErrorMessage(error, t("application.addFailed")),
-        "error"
+        "error",
       );
     } finally {
       setLoading(false);
@@ -118,7 +132,7 @@ export default function AddApplicationScreen() {
     } catch (error: any) {
       showToast(
         extractErrorMessage(error, t("application.editFailed")),
-        "error"
+        "error",
       );
     } finally {
       setLoading(false);
@@ -138,7 +152,7 @@ export default function AddApplicationScreen() {
     } catch (error: any) {
       showToast(
         extractErrorMessage(error, t("application.editFailed")),
-        "error"
+        "error",
       );
     }
   };

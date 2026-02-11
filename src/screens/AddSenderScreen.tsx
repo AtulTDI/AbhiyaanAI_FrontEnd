@@ -17,6 +17,7 @@ import {
 } from "../api/senderApi";
 import { extractErrorMessage } from "../utils/common";
 import { useServerTable } from "../hooks/useServerTable";
+import { useInternalBackHandler } from "../hooks/useInternalBackHandler";
 import { encryptWithBackendKey } from "../services/rsaEncryptor";
 import { AppTheme } from "../theme";
 
@@ -30,6 +31,16 @@ export default function AddSenderScreen() {
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
   const [selectedSenderId, setSelectedSenderId] = useState<string | null>(null);
   const [senderToEdit, setSenderToEdit] = useState<Sender | null>(null);
+  const canHandleInternalBack = showAddSenderView;
+
+  const handleInternalBack = () => {
+    if (showAddSenderView) {
+      setShowAddSenderView(false);
+      setSenderToEdit(null);
+    }
+  };
+
+  useInternalBackHandler(canHandleInternalBack, handleInternalBack);
 
   const fetchSenders = useCallback(async (page: number, pageSize: number) => {
     return getSenders(page, pageSize).then((response) => ({
@@ -50,7 +61,7 @@ export default function AddSenderScreen() {
       table.setPage(0);
       table.setRowsPerPage(10);
       table.fetchData(0, 10);
-    }, [])
+    }, []),
   );
 
   const addSender = async (senderData: {
@@ -62,7 +73,7 @@ export default function AddSenderScreen() {
   }) => {
     try {
       const encryptedPassword = await encryptWithBackendKey(
-        senderData?.password
+        senderData?.password,
       );
       await createSender({
         ...senderData,

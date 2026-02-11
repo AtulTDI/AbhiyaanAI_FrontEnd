@@ -15,6 +15,7 @@ import {
 } from "../api/videoApi";
 import { useServerTable } from "../hooks/useServerTable";
 import { usePlatformInfo } from "../hooks/usePlatformInfo";
+import { useInternalBackHandler } from "../hooks/useInternalBackHandler";
 import { GetPaginatedVideos } from "../types/Video";
 import { extractErrorMessage, sortByDateDesc } from "../utils/common";
 import { AppTheme } from "../theme";
@@ -31,6 +32,17 @@ export default function UploadVideoScreen() {
   const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(false);
+  const canHandleInternalBack = showAddView;
+
+  const handleInternalBack = () => {
+    if (uploading) return;
+
+    if (showAddView) {
+      setShowAddView(false);
+    }
+  };
+
+  useInternalBackHandler(canHandleInternalBack, handleInternalBack);
 
   const fetchVideos = useCallback(async (page: number, pageSize: number) => {
     setLoading(true);
@@ -40,7 +52,7 @@ export default function UploadVideoScreen() {
         response?.data && Array.isArray(response.data.items)
           ? response.data.items
           : [],
-        "createdAt"
+        "createdAt",
       );
 
       return {
@@ -50,7 +62,7 @@ export default function UploadVideoScreen() {
     } catch (error: any) {
       showToast(
         extractErrorMessage(error, t("video.loadVideoFailMessage")),
-        "error"
+        "error",
       );
     } finally {
       setLoading(false);
@@ -68,7 +80,7 @@ export default function UploadVideoScreen() {
       table.setPage(0);
       table.setRowsPerPage(10);
       table.fetchData(0, 10);
-    }, [])
+    }, []),
   );
 
   const handleAddVideo = async (videoData: any) => {
@@ -81,7 +93,7 @@ export default function UploadVideoScreen() {
     } catch (error) {
       showToast(
         extractErrorMessage(error, t("video.addVideoFailMessage")),
-        "error"
+        "error",
       );
     } finally {
       setUploading(false);
@@ -100,7 +112,7 @@ export default function UploadVideoScreen() {
     } catch (error) {
       showToast(
         extractErrorMessage(error, t("video.shareVideoFailMessage")),
-        "error"
+        "error",
       );
     }
   };
@@ -112,7 +124,7 @@ export default function UploadVideoScreen() {
     } catch (error) {
       showToast(
         extractErrorMessage(error, t("video.shareVideoFailMessage")),
-        "error"
+        "error",
       );
     }
   };
@@ -126,7 +138,7 @@ export default function UploadVideoScreen() {
       } catch (error: any) {
         showToast(
           extractErrorMessage(error, t("video.deleteFailMessage")),
-          "error"
+          "error",
         );
       }
       setSelectedVideoId(null);

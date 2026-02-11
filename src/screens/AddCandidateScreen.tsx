@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, View } from "react-native";
 import { useTranslation } from "react-i18next";
 import { Button, Text, useTheme } from "react-native-paper";
 import { useFocusEffect } from "@react-navigation/native";
+import { useInternalBackHandler } from "../hooks/useInternalBackHandler";
 import {
   getCandidates,
   addCandidate,
@@ -35,6 +36,16 @@ export default function AddCandidateScreen() {
     null,
   );
   const [loading, setLoading] = useState<boolean>(false);
+  const canHandleInternalBack = showForm;
+
+  const handleInternalBack = () => {
+    if (showForm) {
+      setShowForm(false);
+      setCandidateToEdit(null);
+    }
+  };
+
+  useInternalBackHandler(canHandleInternalBack, handleInternalBack);
 
   /** Fetch candidates */
   const fetchCandidates = useCallback(async () => {

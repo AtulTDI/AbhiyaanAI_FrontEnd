@@ -12,6 +12,7 @@ import {
   Divider,
 } from "react-native-paper";
 import { useTranslation } from "react-i18next";
+import { useInternalBackHandler } from "../hooks/useInternalBackHandler";
 import { Buffer } from "buffer";
 import { MaterialIcons } from "@expo/vector-icons";
 import * as FileSystem from "expo-file-system";
@@ -48,7 +49,7 @@ const PAGE_SIZE = 50;
 
 /* ---------------- SCREEN ---------------- */
 export default function VotersScreen() {
-  const { isWeb, isMobileWeb, isAndroid } = usePlatformInfo();
+  const { isWeb, isMobileWeb } = usePlatformInfo();
   const { t, i18n } = useTranslation();
   const theme = useTheme<AppTheme>();
   const { showToast } = useToast();
@@ -111,6 +112,40 @@ export default function VotersScreen() {
   const selectedCategoryObj = VOTER_CATEGORIES.find(
     (c) => c.id === selectedCategory,
   );
+  const canHandleInternalBack =
+    view === "detail" || view === "list" || view === "subcategories";
+
+  const handleInternalBack = () => {
+    if (transitionLoading || loading) return;
+
+    if (view === "detail") {
+      goBackFromDetail();
+      return;
+    }
+
+    if (view === "list") {
+      if (selectedSubFilter.type && selectedSubFilter.value) {
+        setSelectedSubFilter((prev) => ({ ...prev, value: null }));
+        setSubPage(1);
+        setView("subcategories");
+        return;
+      }
+
+      setSelectedCategory(null);
+      clearFilters();
+      setView("categories");
+      return;
+    }
+
+    if (view === "subcategories") {
+      setSelectedSubFilter({ type: null, value: null });
+      setSubFilterItems([]);
+      setView("categories");
+      return;
+    }
+  };
+
+  useInternalBackHandler(canHandleInternalBack, handleInternalBack);
 
   /* ---------------- DEBOUNCED VALUES ---------------- */
   const debouncedSearch = useDebounce(search, 500);
@@ -796,14 +831,16 @@ export default function VotersScreen() {
                 </View>
 
                 {/* ⬇️ DOWNLOAD BUTTON */}
-                {selectedCategory !== 15 && <IconButton
-                  icon={downloading ? "progress-clock" : "download"}
-                  iconColor={theme.colors.primary}
-                  size={22}
-                  style={styles.iconBackground}
-                  disabled={downloading}
-                  onPress={handleDownloadVoters}
-                />}
+                {selectedCategory !== 15 && (
+                  <IconButton
+                    icon={downloading ? "progress-clock" : "download"}
+                    iconColor={theme.colors.primary}
+                    size={22}
+                    style={styles.iconBackground}
+                    disabled={downloading}
+                    onPress={handleDownloadVoters}
+                  />
+                )}
               </View>
 
               <View style={styles.searchContainer}>

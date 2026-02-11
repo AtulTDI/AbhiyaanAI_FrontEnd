@@ -9,6 +9,7 @@ import { useToast } from "../components/ToastProvider";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 import { useServerTable } from "../hooks/useServerTable";
 import { usePlatformInfo } from "../hooks/usePlatformInfo";
+import { useInternalBackHandler } from "../hooks/useInternalBackHandler";
 import { GetPaginatedImages, Image } from "../types/Image";
 import {
   deleteImageById,
@@ -34,6 +35,17 @@ export default function UploadImageScreen() {
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [imageToEdit, setImageToEdit] = useState<Image | null>(null);
+  const canHandleInternalBack = showAddView;
+
+  const handleInternalBack = () => {
+    if (uploading) return;
+
+    if (showAddView) {
+      setShowAddView(false);
+    }
+  };
+
+  useInternalBackHandler(canHandleInternalBack, handleInternalBack);
 
   const fetchImages = useCallback(async (page: number, pageSize: number) => {
     setLoading(true);
@@ -43,7 +55,7 @@ export default function UploadImageScreen() {
         response?.data && Array.isArray(response.data.items)
           ? response.data.items
           : [],
-        "createdAt"
+        "createdAt",
       );
 
       return {
@@ -53,7 +65,7 @@ export default function UploadImageScreen() {
     } catch (error: any) {
       showToast(
         extractErrorMessage(error, t("image.loadImageFailMessage")),
-        "error"
+        "error",
       );
     } finally {
       setLoading(false);
@@ -71,7 +83,7 @@ export default function UploadImageScreen() {
       table.setPage(0);
       table.setRowsPerPage(10);
       table.fetchData(0, 10);
-    }, [])
+    }, []),
   );
 
   const guessMimeType = (filename?: string) => {
@@ -139,7 +151,7 @@ export default function UploadImageScreen() {
     } catch (error) {
       showToast(
         extractErrorMessage(error, t("image.addImageFailMessage")),
-        "error"
+        "error",
       );
     } finally {
       setUploading(false);
@@ -158,7 +170,7 @@ export default function UploadImageScreen() {
     } catch (error) {
       showToast(
         extractErrorMessage(error, t("image.shareImageFailMessage")),
-        "error"
+        "error",
       );
     }
   };
@@ -170,7 +182,7 @@ export default function UploadImageScreen() {
     } catch (error) {
       showToast(
         extractErrorMessage(error, t("image.shareImageFailMessage")),
-        "error"
+        "error",
       );
     }
   };
@@ -189,7 +201,7 @@ export default function UploadImageScreen() {
       } catch (error: any) {
         showToast(
           extractErrorMessage(error, t("image.deleteFailMessage")),
-          "error"
+          "error",
         );
       }
       setSelectedImageId(null);
