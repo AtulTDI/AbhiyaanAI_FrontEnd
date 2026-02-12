@@ -358,7 +358,7 @@
     "excelDownloadFail": "Error downloading Excel:",
     "registerVoter": "Register Voter",
     "bulkRegister": "Bulk Register",
-    "uploadVoterExcel": "Upload Voter Excel",
+    "uploadVoterExcel": "Upload Voter File",
     "importVoters": "Import Voters",
     "loadVoterFailMessage": "Failed to fetch voters",
     "noData": "No voters found",

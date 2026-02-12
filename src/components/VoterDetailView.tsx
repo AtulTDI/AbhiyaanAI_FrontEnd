@@ -925,7 +925,7 @@ function InfoRow({ label, value }: { label: string; value: string }) {
           },
         ]}
       >
-        {value ?? "-"}
+        {value?.trim() || "-"}
       </Text>
     </View>
   );

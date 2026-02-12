@@ -21,6 +21,25 @@ type Props = {
   directUpload?: boolean;
 };
 
+const EXCEL_MIME_TYPES = [
+  "application/vnd.ms-excel",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "text/csv",
+  "application/csv",
+  "application/x-csv",
+  "text/x-csv",
+];
+
+const VIDEO_MIME_TYPES = ["video/mp4", "video/quicktime", "video/mov"];
+
+const EXCEL_EXTENSIONS = [".xls", ".xlsx", ".csv"];
+const VIDEO_EXTENSIONS = [".mp4", ".mov"];
+
+const hasValidExtension = (name: string, extensions: string[]) => {
+  const lower = name.toLowerCase();
+  return extensions.some((ext) => lower.endsWith(ext));
+};
+
 export default function CommonUpload({
   fileType,
   onUpload,
@@ -37,28 +56,40 @@ export default function CommonUpload({
 
   const getAcceptedTypes = () => {
     if (fileType === "excel") {
-      return [
-        "application/vnd.ms-excel",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      ];
+      return [...EXCEL_MIME_TYPES];
     }
-    return ["video/mp4", "video/quicktime"];
+    return [...VIDEO_MIME_TYPES];
   };
 
   const getSupportedText = () => {
-    return fileType === "excel" ? ".xls, .xlsx" : ".mp4, .mov";
+    return fileType === "excel" ? ".xls, .xlsx, .csv" : ".mp4, .mov";
   };
 
-  const getValidation = (name: string) => {
-    if (fileType === "excel") {
-      return name.endsWith(".xls") || name.endsWith(".xlsx");
+  const validateFile = (file: DocumentPicker.DocumentPickerAsset) => {
+    const name = file.name?.toLowerCase() || "";
+    const mime = file.mimeType?.toLowerCase();
+
+    if (name.endsWith(".exe") || name.endsWith(".apk")) {
+      return false;
     }
-    return name.endsWith(".mp4") || name.endsWith(".mov");
+
+    if (fileType === "excel") {
+      if (mime && EXCEL_MIME_TYPES.includes(mime)) return true;
+
+      return hasValidExtension(name, EXCEL_EXTENSIONS);
+    }
+
+    if (fileType === "video") {
+      if (mime && VIDEO_MIME_TYPES.includes(mime)) return true;
+      return hasValidExtension(name, VIDEO_EXTENSIONS);
+    }
+
+    return false;
   };
 
   const defaultLabel =
     fileType === "excel"
-      ? "Click to upload Excel file"
+      ? "Click to upload Excel / CSV file"
       : "Click to upload Video file";
 
   const handlePickFile = async () => {
@@ -74,8 +105,7 @@ export default function CommonUpload({
       const selectedFile = result.assets?.[0];
       if (!selectedFile) return;
 
-      const name = selectedFile.name.toLowerCase();
-      if (!getValidation(name)) {
+      if (!validateFile(selectedFile)) {
         showToast(
           `Invalid file! Please upload a valid ${getSupportedText()} file`,
           "error"

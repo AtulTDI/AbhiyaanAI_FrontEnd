@@ -358,7 +358,7 @@
     "excelDownloadFail": "Excel डाउनलोड त्रुटि:",
     "registerVoter": "मतदाता पंजीकरण",
     "bulkRegister": "बल्क पंजीकरण",
-    "uploadVoterExcel": "मतदाता Excel अपलोड करें",
+    "uploadVoterExcel": "मतदाता file अपलोड करें",
     "importVoters": "मतदाता इम्पोर्ट करें",
     "loadVoterFailMessage": "मतदाता प्राप्त करने में असफल",
     "noData": "कोई मतदाता उपलब्ध नहीं",
