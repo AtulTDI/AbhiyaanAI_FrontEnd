@@ -107,11 +107,21 @@ export default function CandidateForm({
       if (!candidatePhoto) e.photo = t("candidate.photoRequired");
       if (!symbolImage) e.symbol = t("candidate.symbolRequired");
     } else {
-      if (!candidatePhoto && !candidate?.candidatePhotoUrl)
-        e.photo = t("candidate.photoRequired");
+      const finalCandidatePhoto =
+        candidatePhoto !== undefined
+          ? candidatePhoto
+          : candidate?.candidatePhotoUrl;
 
-      if (!symbolImage && !candidate?.symbolImageUrl)
+      const finalSymbolImage =
+        symbolImage !== undefined ? symbolImage : candidate?.symbolImageUrl;
+
+      if (!finalCandidatePhoto) {
+        e.photo = t("candidate.photoRequired");
+      }
+
+      if (!finalSymbolImage) {
         e.symbol = t("candidate.symbolRequired");
+      }
     }
 
     setErrors(e);
@@ -277,7 +287,7 @@ export default function CandidateForm({
         {/* Row 4: Images */}
         <View style={isTwoColumn ? styles.row : styles.column}>
           <View style={styles.col}>
-            <FixedLabel label={t("candidate.photo")} required={!isEdit} />
+            <FixedLabel label={t("candidate.photo")} required />
             <SingleImageUpload
               value={candidatePhoto}
               previewUrl={candidate?.candidatePhotoUrl}
@@ -296,7 +306,7 @@ export default function CandidateForm({
           </View>
 
           <View style={styles.col}>
-            <FixedLabel label={t("candidate.symbol")} required={!isEdit} />
+            <FixedLabel label={t("candidate.symbol")} required />
             <SingleImageUpload
               value={symbolImage}
               previewUrl={candidate?.symbolImageUrl}

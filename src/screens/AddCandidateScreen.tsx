@@ -77,7 +77,8 @@ export default function AddCandidateScreen() {
     try {
       setLoading(true);
       const response = await addCandidate(data);
-      const newCandidatePhotoPath = response.data.candidatePhotoPath;
+      const newCandidatePhotoPath =
+        response?.candidatePhotoPath ?? response.data.candidatePhotoPath;
       const existingAuth = await getAuthData();
       await saveAuthData({
         ...existingAuth,
