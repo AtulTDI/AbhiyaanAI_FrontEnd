@@ -112,6 +112,7 @@ export default function SignIn({
       const showVideoCampaign = response.data?.showVideoCampaign || false;
       const showImageCampaign = response.data?.showImageCampaign || false;
       const candidatePhotoPath = response.data?.candidatePhotoPath || null;
+      const iselectionRelatedapp = response.data?.iselectionRelatedapp || false;
 
       await saveAuthData({
         accessToken: token,
@@ -124,6 +125,7 @@ export default function SignIn({
         videoCount,
         channelId,
         isProfessionalVoiceCloning,
+        iselectionRelatedapp,
         showVideoCampaign,
         showImageCampaign,
         candidatePhotoPath

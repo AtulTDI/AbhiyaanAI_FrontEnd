@@ -45,8 +45,15 @@ export default function AppLayout() {
   const [userEmail, setUserEmail] = useState("");
   const [applicationName, setApplicationName] = useState("");
   const [videoCount, setVideoCount] = useState<number | null>(null);
-  const [showVideoCampaign, setShowVideoCampaignn] = useState<boolean | string>(false);
-  const [showImageCampaign, setShowImageCampaignn] = useState<boolean | string>(false);
+  const [showVideoCampaign, setShowVideoCampaignn] = useState<boolean | string>(
+    false,
+  );
+  const [showImageCampaign, setShowImageCampaignn] = useState<boolean | string>(
+    false,
+  );
+  const [isElectionRelated, setIsElectionRelated] = useState<boolean | string>(
+    false,
+  );
 
   useEffect(() => {
     (async () => {
@@ -56,6 +63,7 @@ export default function AppLayout() {
         role: storedRole,
         videoCount: count,
         applicationName: userApplication,
+        iselectionRelatedapp: isElectionRelatedApp,
         showVideoCampaign: videoCampign,
         showImageCampaign: imageCampaign,
       } = await getAuthData();
@@ -72,8 +80,9 @@ export default function AppLayout() {
         setRole(storedRole);
       }
 
-      setShowVideoCampaignn(videoCampign === true || videoCampign === "true");
-      setShowImageCampaignn(imageCampaign === true || imageCampaign === "true");
+      setIsElectionRelated(isElectionRelatedApp);
+      setShowVideoCampaignn(videoCampign);
+      setShowImageCampaignn(imageCampaign);
 
       if (count !== undefined && !isNaN(Number(count))) {
         setVideoCount(Number(count));
@@ -464,28 +473,53 @@ export default function AppLayout() {
 
       {role === "User" && (
         <>
-          <Drawer.Screen
-            name="AddVoter"
-            component={AddVoterScreen}
-            options={{
-              headerShown: true,
-              headerTitle: "",
-              headerRight: headerRightComponent,
-              drawerLabel: (props) => (
-                <CustomLabel
-                  {...props}
-                  label={t("voterTabLabel")}
-                  icon={
-                    <Ionicons
-                      name="people-outline"
-                      size={20}
-                      color={props.color || colors.onPrimary}
-                    />
-                  }
-                />
-              ),
-            }}
-          />
+          {isElectionRelated ? (
+            <Drawer.Screen
+              name="VotersList"
+              component={VotersScreen}
+              options={{
+                headerShown: true,
+                headerTitle: "",
+                headerRight: headerRightComponent,
+                drawerLabel: (props) => (
+                  <CustomLabel
+                    {...props}
+                    label={t("voter.plural")}
+                    icon={
+                      <Ionicons
+                        name="people-outline"
+                        size={20}
+                        color={props.color || colors.onPrimary}
+                      />
+                    }
+                  />
+                ),
+              }}
+            />
+          ) : (
+            <Drawer.Screen
+              name="AddVoter"
+              component={AddVoterScreen}
+              options={{
+                headerShown: true,
+                headerTitle: "",
+                headerRight: headerRightComponent,
+                drawerLabel: (props) => (
+                  <CustomLabel
+                    {...props}
+                    label={t("voterTabLabel")}
+                    icon={
+                      <Ionicons
+                        name="people-outline"
+                        size={20}
+                        color={props.color || colors.onPrimary}
+                      />
+                    }
+                  />
+                ),
+              }}
+            />
+          )}
 
           <Drawer.Screen
             name="AddSender"

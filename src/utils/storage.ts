@@ -33,8 +33,9 @@ export type AuthData = {
   videoCount: string;
   channelId: string;
   isProfessionalVoiceCloning: boolean;
-  showVideoCampaign: boolean | string;
-  showImageCampaign: boolean | string;
+  showVideoCampaign: boolean;
+  showImageCampaign: boolean;
+  iselectionRelatedapp: boolean;
   candidatePhotoPath: string;
 };
 
@@ -51,8 +52,9 @@ const DEFAULT_AUTH: AuthData = {
   videoCount: "0",
   channelId: "",
   isProfessionalVoiceCloning: false,
-  showVideoCampaign: false ,
+  showVideoCampaign: false,
   showImageCampaign: false,
+  iselectionRelatedapp: false,
   candidatePhotoPath: "",
 };
 
@@ -64,6 +66,9 @@ export const saveAuthData = async (data: Partial<AuthData>) => {
     ...data,
     videoCount: toStringSafe(data.videoCount),
     isProfessionalVoiceCloning: Boolean(data.isProfessionalVoiceCloning),
+    iselectionRelatedapp: Boolean(data.iselectionRelatedapp),
+    showVideoCampaign: Boolean(data.showVideoCampaign),
+    showImageCampaign: Boolean(data.showImageCampaign)
   };
 
   if (isWeb) {
@@ -93,6 +98,9 @@ export const getAuthData = async (): Promise<AuthData> => {
 
     raw.isProfessionalVoiceCloning = raw.isProfessionalVoiceCloning === "true";
     raw.videoCount = raw.videoCount || "0";
+    raw.iselectionRelatedapp = raw.iselectionRelatedapp === "true";
+    raw.showVideoCampaign = raw.showVideoCampaign === "true";
+    raw.showImageCampaign = raw.showImageCampaign === "true";
 
     return raw as AuthData;
   } else {
@@ -109,6 +117,9 @@ export const getAuthData = async (): Promise<AuthData> => {
 
     data.isProfessionalVoiceCloning = data.isProfessionalVoiceCloning === "true";
     data.videoCount = data.videoCount || "0";
+    data.iselectionRelatedapp = data.iselectionRelatedapp === "true";
+    data.showVideoCampaign = data.showVideoCampaign === "true";
+    data.showImageCampaign = data.showImageCampaign === "true";
 
     return data as AuthData;
   }
