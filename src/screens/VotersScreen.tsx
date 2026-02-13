@@ -1163,7 +1163,7 @@ export default function VotersScreen() {
                       <Text style={styles.meta}>
                         <Text style={styles.metaLabel}>{t("voter.age")}:</Text>{" "}
                         {ageText}
-                        {"  •  "}
+                        {"  |  "}
                         <Text style={styles.metaLabel}>
                           {t("voter.addressSection")}:
                         </Text>{" "}
