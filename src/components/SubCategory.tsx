@@ -34,19 +34,7 @@ export default function Subcategory({
 
   if (loading) {
     return (
-      <View
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: "rgba(255,255,255,0.6)",
-          justifyContent: "center",
-          alignItems: "center",
-          zIndex: 10,
-        }}
-      >
+      <View style={styles.loaderOverlay}>
         <ActivityIndicator size="large" color={theme.colors.primary} />
       </View>
     );
@@ -72,6 +60,7 @@ export default function Subcategory({
         contentContainerStyle={{
           paddingBottom: type === "surname" ? 100 : 16,
         }}
+        keyExtractor={(item, index) => index.toString()}
         renderItem={({ item }) => {
           const isColor = type === "color";
 
@@ -94,12 +83,14 @@ export default function Subcategory({
                     <MaterialCommunityIcons
                       name={item.icon}
                       size={22}
-                      color={theme.colors.primary}
+                      color={
+                        isColor ? theme.colors.white : theme.colors.primary
+                      }
                       style={{ marginRight: 10 }}
                     />
                   )}
 
-                  <View>
+                  <View style={styles.textContainer}>
                     <Text
                       style={[
                         styles.label,
@@ -109,18 +100,24 @@ export default function Subcategory({
                             : theme.colors.primary,
                         },
                       ]}
+                      numberOfLines={1}
+                      ellipsizeMode="tail"
                     >
                       {item.label}
                     </Text>
+
                     {item.description ? (
                       <Text
                         style={[
                           styles.description,
                           {
-                            color: theme.colors.textSecondary,
+                            color: isColor
+                              ? theme.colors.white
+                              : theme.colors.textSecondary,
                           },
                         ]}
                         numberOfLines={2}
+                        ellipsizeMode="tail"
                       >
                         {item.description}
                       </Text>
@@ -128,7 +125,7 @@ export default function Subcategory({
                   </View>
                 </View>
 
-                {/* RIGHT COUNT */}
+                {/* COUNT BADGE */}
                 <View
                   style={[
                     styles.countBadge,
@@ -169,7 +166,7 @@ export default function Subcategory({
         }
       />
 
-      {/* PAGINATION (SURNAME ONLY) */}
+      {/* PAGINATION */}
       {type === "surname" && totalRecords > 0 && (
         <View style={styles.floatingBar}>
           <Text style={styles.stickyCountText}>
@@ -190,7 +187,10 @@ export default function Subcategory({
             />
 
             <Text style={styles.pageText}>
-              {t("voter.pageInfo", { current: page, total: totalPages })}
+              {t("voter.pageInfo", {
+                current: page,
+                total: totalPages,
+              })}
             </Text>
 
             <IconButton
@@ -212,6 +212,18 @@ const createStyles = (theme: AppTheme) =>
     container: {
       flex: 1,
       padding: 16,
+    },
+
+    loaderOverlay: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: "rgba(255,255,255,0.6)",
+      justifyContent: "center",
+      alignItems: "center",
+      zIndex: 10,
     },
 
     header: {
@@ -238,14 +250,13 @@ const createStyles = (theme: AppTheme) =>
     },
 
     halfCard: {
-      width: "48%", // 2 per row on web
+      width: "48%",
     },
 
     cardContent: {
       paddingVertical: 16,
       paddingHorizontal: 16,
       flexDirection: "row",
-      justifyContent: "space-between",
       alignItems: "center",
     },
 
@@ -255,9 +266,22 @@ const createStyles = (theme: AppTheme) =>
       flex: 1,
     },
 
+    textContainer: {
+      flex: 1,
+      paddingRight: 8
+    },
+
     label: {
       fontSize: 16,
       fontWeight: "600",
+      flexShrink: 1,
+    },
+
+    description: {
+      fontSize: 13,
+      marginTop: 2,
+      lineHeight: 16,
+      flexShrink: 1,
     },
 
     countBadge: {
@@ -266,12 +290,8 @@ const createStyles = (theme: AppTheme) =>
       borderRadius: 20,
       minWidth: 50,
       alignItems: "center",
-    },
-
-    loader: {
-      flex: 1,
-      justifyContent: "center",
-      alignItems: "center",
+      flexShrink: 0,
+      marginLeft: 8,
     },
 
     floatingBar: {
@@ -289,10 +309,6 @@ const createStyles = (theme: AppTheme) =>
       paddingVertical: 12,
       paddingHorizontal: 12,
       elevation: 6,
-      shadowColor: "#000",
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.15,
-      shadowRadius: 6,
     },
 
     stickyPager: {
@@ -317,12 +333,6 @@ const createStyles = (theme: AppTheme) =>
       color: theme.colors.primary,
     },
 
-    description: {
-      fontSize: 13,
-      marginTop: 2,
-      lineHeight: 16,
-      width: "90%",
-    },
     emptyContainer: {
       alignItems: "center",
       justifyContent: "center",

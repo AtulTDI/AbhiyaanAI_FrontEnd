@@ -1468,7 +1468,7 @@ const createStyles = (theme: AppTheme, platform: { isWeb: boolean }) =>
       color: theme.colors.textSecondary,
     },
     metaLabel: {
-      fontWeight: "500",
+      fontWeight: platform.isWeb ? "500" : "600",
       color: theme.colors.textSecondary,
     },
     genderBadge: {
