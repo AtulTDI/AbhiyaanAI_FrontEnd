@@ -1127,43 +1127,58 @@ export default function VotersScreen() {
               </View>
             ) : null
           }
-          renderItem={({ item }) => (
-            <Pressable
-              onPress={async () => {
-                openVoterDetail(item.id);
-              }}
-              onHoverIn={() => isWeb && !isMobileWeb && setHoveredId(item.id)}
-              onHoverOut={() => isWeb && !isMobileWeb && setHoveredId(null)}
-              style={styles.cardPressable}
-            >
-              <View
-                style={[
-                  styles.cardShell,
-                  hoveredId === item.id && styles.cardHover,
-                ]}
-              >
-                <View style={styles.cardContent}>
-                  <View style={styles.cardText}>
-                    <Text variant="titleMedium" style={styles.name}>
-                      {item.fullName}
-                    </Text>
-                    <Text style={styles.meta}>
-                      {t("voter.ageAddress", {
-                        age: item.age,
-                        address: item.address,
-                      })}
-                    </Text>
-                  </View>
+          renderItem={({ item }) => {
+            const ageText =
+              item.age !== null && item.age !== undefined && item.age !== ""
+                ? item.age
+                : "-";
 
-                  <View style={styles.genderBadge}>
-                    <Text style={styles.genderText}>
-                      {t(`voter.gender${item.gender}`)}
-                    </Text>
+            const addressText =
+              item.address && item.address.trim() !== "" ? item.address : "-";
+
+            const genderValue =
+              item.gender && item.gender.trim() !== ""
+                ? t(`voter.gender${item.gender}`)
+                : "-";
+
+            return (
+              <Pressable
+                onPress={() => openVoterDetail(item.id)}
+                onHoverIn={() => isWeb && !isMobileWeb && setHoveredId(item.id)}
+                onHoverOut={() => isWeb && !isMobileWeb && setHoveredId(null)}
+                style={styles.cardPressable}
+              >
+                <View
+                  style={[
+                    styles.cardShell,
+                    hoveredId === item.id && styles.cardHover,
+                  ]}
+                >
+                  <View style={styles.cardContent}>
+                    <View style={styles.cardText}>
+                      <Text variant="titleMedium" style={styles.name}>
+                        {item.fullName}
+                      </Text>
+
+                      <Text style={styles.meta}>
+                        <Text style={styles.metaLabel}>{t("voter.age")}:</Text>{" "}
+                        {ageText}
+                        {"  •  "}
+                        <Text style={styles.metaLabel}>
+                          {t("voter.addressSection")}:
+                        </Text>{" "}
+                        {addressText}
+                      </Text>
+                    </View>
+
+                    <View style={styles.genderBadge}>
+                      <Text style={styles.genderText}>{genderValue}</Text>
+                    </View>
                   </View>
                 </View>
-              </View>
-            </Pressable>
-          )}
+              </Pressable>
+            );
+          }}
         />
       </View>
 
@@ -1450,6 +1465,10 @@ const createStyles = (theme: AppTheme, platform: { isWeb: boolean }) =>
     meta: {
       marginTop: 4,
       fontSize: 13,
+      color: theme.colors.textSecondary,
+    },
+    metaLabel: {
+      fontWeight: "500",
       color: theme.colors.textSecondary,
     },
     genderBadge: {

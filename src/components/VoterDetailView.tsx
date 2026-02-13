@@ -535,6 +535,15 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
     }, 1200);
   };
 
+  const getGenderDisplay = (gender?: string) => {
+    if (!gender || gender.trim() === "") return "-";
+
+    const key = `voter.gender${gender}`;
+    const translated = t(key);
+
+    return translated === key ? gender : translated;
+  };
+
   /* ================= UI ================= */
 
   return (
@@ -542,7 +551,7 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
       <ScrollView contentContainerStyle={styles.container}>
         {/* ================= TOP BAR ================= */}
         <View style={styles.topBar}>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
             <IconButton
               icon="arrow-left"
               iconColor={theme.colors.primary}
@@ -682,9 +691,7 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
                   />
                   <InfoRow
                     label={t("voter.labelGender")}
-                    value={t(`voter.gender${voter.gender}`, {
-                      defaultValue: voter.gender,
-                    })}
+                    value={getGenderDisplay(voter.gender)}
                   />
                   <InfoRow label={t("voter.labelAge")} value={`${voter.age}`} />
 
