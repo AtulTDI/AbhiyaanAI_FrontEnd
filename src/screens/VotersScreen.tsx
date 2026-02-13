@@ -420,6 +420,8 @@ export default function VotersScreen() {
     setAgeValue("");
     setMinAge("");
     setMaxAge("");
+    setSearch("");
+    setSearchBy("fullname");
     setPage(1);
     setShowFilters(false);
   };
@@ -831,7 +833,7 @@ export default function VotersScreen() {
                 </View>
 
                 {/* ⬇️ DOWNLOAD BUTTON */}
-                {selectedCategory !== 15 && (
+                {selectedCategory !== 15 && voterCount > 0 && (
                   <IconButton
                     icon={downloading ? "progress-clock" : "download"}
                     iconColor={theme.colors.primary}

@@ -157,7 +157,7 @@ export default function AddCandidateScreen() {
             : t("candidate.plural")}
         </Text>
 
-        {!showForm && (
+        {!showForm && table.total === 0 && (
           <Button
             mode="contained"
             onPress={() => setShowForm(true)}
