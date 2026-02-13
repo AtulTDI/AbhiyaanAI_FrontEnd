@@ -119,7 +119,7 @@ export default function AppLayout() {
       >
         <LanguageSelector />
 
-        {role === "Admin" && videoCount !== null && (
+        {role === "Admin" && videoCount !== null && showVideoCampaign && (
           <TouchableOpacity
             style={{
               flexDirection: "row",
