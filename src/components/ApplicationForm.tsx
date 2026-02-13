@@ -52,6 +52,14 @@ export default function ApplicationForm({
     fetchSalesAgents();
   }, []);
 
+  useEffect(() => {
+    if (applicationToEdit) {
+      setShowVoterUpload(applicationToEdit.isElection || false);
+    } else {
+      setShowVoterUpload(false);
+    }
+  }, [applicationToEdit]);
+
   const applicationFields: FieldConfig[] = [
     {
       name: "appName",

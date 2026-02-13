@@ -125,6 +125,9 @@ export default function AddApplicationScreen() {
         name: data?.appName,
         isActive: applicationToEdit?.isActive,
       });
+      if (voterFile) {
+        await handleVoterFileUpload(applicationToEdit.id);
+      }
       await table.fetchData(table.page, table.rowsPerPage);
       setShowAddApplicationView(false);
       setApplicationToEdit(null);
