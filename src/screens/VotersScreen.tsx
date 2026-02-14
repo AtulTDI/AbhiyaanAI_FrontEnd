@@ -86,8 +86,12 @@ export default function VotersScreen() {
   const [selectedSubFilter, setSelectedSubFilter] = useState<{
     type: SubFilterType | null;
     value: string | null;
-  }>({ type: null, value: null });
-
+    boothAddress?: string | null;
+  }>({
+    type: null,
+    value: null,
+    boothAddress: null,
+  });
   const [subFilterItems, setSubFilterItems] = useState<any[]>([]);
   const [subFilterLoading, setSubFilterLoading] = useState(false);
   const [subPage, setSubPage] = useState(1);
@@ -125,7 +129,11 @@ export default function VotersScreen() {
 
     if (view === "list") {
       if (selectedSubFilter.type && selectedSubFilter.value) {
-        setSelectedSubFilter((prev) => ({ ...prev, value: null }));
+        setSelectedSubFilter((prev) => ({
+          ...prev,
+          value: null,
+          boothAddress: null,
+        }));
         setSubPage(1);
         setView("subcategories");
         return;
@@ -138,7 +146,7 @@ export default function VotersScreen() {
     }
 
     if (view === "subcategories") {
-      setSelectedSubFilter({ type: null, value: null });
+      setSelectedSubFilter({ type: null, value: null, boothAddress: null });
       setSubFilterItems([]);
       setView("categories");
       return;
@@ -181,7 +189,7 @@ export default function VotersScreen() {
       } else {
         setView("categories");
         setSelectedCategory(null);
-        setSelectedSubFilter({ type: null, value: null });
+        setSelectedSubFilter({ type: null, value: null, boothAddress: null });
         setSelectedVoter(null);
         setVoterStack([]);
 
@@ -252,6 +260,9 @@ export default function VotersScreen() {
               : undefined,
             selectedSubFilter.type === "booth"
               ? (selectedSubFilter.value ?? undefined)
+              : undefined,
+            selectedSubFilter.type === "booth"
+              ? (selectedSubFilter.boothAddress ?? undefined)
               : undefined,
           );
         }
@@ -326,15 +337,16 @@ export default function VotersScreen() {
         const res = await getBoothStats();
         const result = res.data;
 
-        data = result.map((item: any) => ({
+        data = result.map((item: any, index: number) => ({
           label: item.listArea,
-          value: item.listArea,
+          value: `${item.listArea}||${item.address ?? ""}`,
+          boothNumber: item.listArea,
+          boothAddress: item.address ?? null,
           description: item.address,
           count: item.count,
           icon: "map-marker",
         }));
       }
-
       if (type === "age") {
         const res = await getAgeStats();
         const stats: AgeGroupStats = res.data;
@@ -453,38 +465,42 @@ export default function VotersScreen() {
     setPage(1);
 
     if (categoryId === 9) {
-      setSelectedSubFilter({ type: "color", value: null });
+      setSelectedSubFilter({ type: "color", value: null, boothAddress: null });
       setView("subcategories");
       return;
     }
 
     if (categoryId === 10) {
-      setSelectedSubFilter({ type: "age", value: null });
+      setSelectedSubFilter({ type: "age", value: null, boothAddress: null });
       setView("subcategories");
       return;
     }
 
     if (categoryId === 8) {
-      setSelectedSubFilter({ type: "surname", value: null });
+      setSelectedSubFilter({
+        type: "surname",
+        value: null,
+        boothAddress: null,
+      });
       setSubPage(1);
       setView("subcategories");
       return;
     }
 
     if (categoryId === 11) {
-      setSelectedSubFilter({ type: "gender", value: null });
+      setSelectedSubFilter({ type: "gender", value: null, boothAddress: null });
       setView("subcategories");
       return;
     }
 
     if (categoryId === 12) {
-      setSelectedSubFilter({ type: "caste", value: null });
+      setSelectedSubFilter({ type: "caste", value: null, boothAddress: null });
       setView("subcategories");
       return;
     }
 
     if (categoryId === 13) {
-      setSelectedSubFilter({ type: "booth", value: null });
+      setSelectedSubFilter({ type: "booth", value: null, boothAddress: null });
       setView("subcategories");
       return;
     }
@@ -569,12 +585,27 @@ export default function VotersScreen() {
         startRecord={subStartRecord}
         endRecord={subEndRecord}
         onBack={() => {
-          setSelectedSubFilter({ type: null, value: null });
+          setSelectedSubFilter({ type: null, value: null, boothAddress: null });
           setSubFilterItems([]);
           setView("categories");
         }}
         onSelect={(value) => {
-          setSelectedSubFilter((prev) => ({ ...prev, value }));
+          if (selectedSubFilter.type === "booth") {
+            const [boothNumber, boothAddress] = value.split("||");
+
+            setSelectedSubFilter({
+              type: "booth",
+              value: boothNumber,
+              boothAddress: boothAddress || null,
+            });
+          } else {
+            setSelectedSubFilter((prev) => ({
+              ...prev,
+              value,
+              boothAddress: null,
+            }));
+          }
+
           setView("list");
         }}
       />
@@ -759,6 +790,9 @@ export default function VotersScreen() {
         selectedSubFilter.type === "booth"
           ? (selectedSubFilter.value ?? undefined)
           : undefined,
+        selectedSubFilter.type === "booth"
+          ? (selectedSubFilter.boothAddress ?? undefined)
+          : undefined,
       );
 
       const fileName = generateFileName();
@@ -815,6 +849,7 @@ export default function VotersScreen() {
                         setSelectedSubFilter((prev) => ({
                           ...prev,
                           value: null,
+                          boothAddress: null,
                         }));
                         setSubPage(1);
                         setView("subcategories");

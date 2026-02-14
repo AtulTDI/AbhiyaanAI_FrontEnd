@@ -45,7 +45,8 @@ export const getVotersByCategory = (
   supportColor?: string,
   surname?: string,
   casteId?: string,
-  booth?: number
+  booth?: number,
+  boothAddress?: string
 ) =>
   axios.get<GetPaginatedVoters>(
     "/Voters/get-voters-by-category",
@@ -62,7 +63,8 @@ export const getVotersByCategory = (
         ...(age !== undefined ? { age } : {}),
         ...(gender ? { gender } : {}),
         ...(casteId ? { casteId } : {}),
-         ...(booth ? { booth } : {}),
+        ...(booth ? { booth } : {}),
+        ...(boothAddress ? { boothAddress } : {}),
         ...(searchType ? { searchType } : {}),
       },
     }

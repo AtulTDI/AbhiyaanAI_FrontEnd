@@ -11,7 +11,8 @@ export const exportVotersPdf = (
   age?: string,
   gender?: string,
   casteId?: string,
-  booth?: string
+  booth?: string,
+  boothAddress?: string
 ) =>
   axios.post("/ExportVoters/export-voters", {}, {
     useApiPrefix: true,
@@ -25,5 +26,6 @@ export const exportVotersPdf = (
       ...(gender ? { gender } : {}),
       ...(casteId ? { casteId } : {}),
       ...(booth ? { booth } : {}),
+      ...(boothAddress ? { boothAddress } : {}),
     },
   });
