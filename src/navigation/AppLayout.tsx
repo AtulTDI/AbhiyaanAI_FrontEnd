@@ -521,28 +521,30 @@ export default function AppLayout() {
             />
           )}
 
-          <Drawer.Screen
-            name="AddSender"
-            component={AddSenderScreen}
-            options={{
-              headerShown: true,
-              headerTitle: "",
-              headerRight: headerRightComponent,
-              drawerLabel: (props) => (
-                <CustomLabel
-                  {...props}
-                  label={t("senderTabLabel")}
-                  icon={
-                    <Ionicons
-                      name="paper-plane-outline"
-                      size={20}
-                      color={props.color || colors.onPrimary}
-                    />
-                  }
-                />
-              ),
-            }}
-          />
+          {(showVideoCampaign || showImageCampaign) && (
+            <Drawer.Screen
+              name="AddSender"
+              component={AddSenderScreen}
+              options={{
+                headerShown: true,
+                headerTitle: "",
+                headerRight: headerRightComponent,
+                drawerLabel: (props) => (
+                  <CustomLabel
+                    {...props}
+                    label={t("senderTabLabel")}
+                    icon={
+                      <Ionicons
+                        name="paper-plane-outline"
+                        size={20}
+                        color={props.color || colors.onPrimary}
+                      />
+                    }
+                  />
+                ),
+              }}
+            />
+          )}
 
           {showVideoCampaign && (
             <Drawer.Screen
