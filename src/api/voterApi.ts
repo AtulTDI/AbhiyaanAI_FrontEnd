@@ -160,8 +160,8 @@ export const getFamilyMembers = (id) =>
 /**
  * Get eligible family members
  */
-export const getEligibleFamilyMembers = (applicationId, pageNumber, pageSize, searchText) =>
-  axios.get<GetFamilyMembers>(`/Voters/getvoters-eligible-for-family/${applicationId}?page=${pageNumber}&pageSize=${pageSize}&searchText=${searchText}`, { useApiPrefix: true, useVoterBase: true });
+export const getEligibleFamilyMembers = (applicationId, pageNumber, pageSize, voterId, searchText) =>
+  axios.get<GetFamilyMembers>(`/Voters/getvoters-eligible-for-family/${applicationId}?voterId=${voterId}&page=${pageNumber}&pageSize=${pageSize}&searchText=${searchText}`, { useApiPrefix: true, useVoterBase: true });
 
 
 /**

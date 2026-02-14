@@ -87,11 +87,12 @@ export default function AddFamilyMembersDialog({
         applicationId,
         requestPage,
         PAGE_SIZE,
+        voter.id,
         debounced
       );
 
       const filtered = res.data.data.filter(
-        (v: Voter) => v.id !== voter.id && !existingIds.includes(v.id)
+        (v: Voter) => v.id !== voter.id && !existingIds.includes(v.id),
       );
 
       const total = res.data.totalRecords ?? 0;
