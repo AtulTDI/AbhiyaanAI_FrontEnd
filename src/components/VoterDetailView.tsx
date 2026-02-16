@@ -699,7 +699,6 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
                     label={t("voter.labelMobile")}
                     value={mobile || ""}
                     keyboardType="phone-pad"
-                    maxLength={10}
                     onSave={handleMobileNumberUpdate}
                   />
                 </View>
@@ -938,13 +937,7 @@ function InfoRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-function EditableInfoRow({
-  label,
-  value,
-  keyboardType,
-  maxLength,
-  onSave,
-}: any) {
+function EditableInfoRow({ label, value, keyboardType, onSave }: any) {
   const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
   const { isWeb, isMobileWeb } = usePlatformInfo();
@@ -999,10 +992,20 @@ function EditableInfoRow({
             mode="outlined"
             value={local}
             keyboardType={keyboardType}
-            maxLength={maxLength}
-            onChangeText={(text) => setLocal(text.replace(/[^0-9]/g, ""))}
+            onChangeText={(text) => {
+              const digitsOnly = text.replace(/\D/g, "");
+              const prevLength = local?.length ?? 0;
+
+              if (digitsOnly.length > prevLength + 1) {
+                setLocal(digitsOnly.slice(-10));
+              } else if (digitsOnly.length <= 10) {
+                setLocal(digitsOnly);
+              }
+            }}
             outlineColor={
-              !/^\d{10}$/.test(local) ? theme.colors.error : theme.colors.white
+              local !== "" && !/^\d{10}$/.test(local)
+                ? theme.colors.error
+                : theme.colors.white
             }
             style={{
               flex: 1,
@@ -1015,7 +1018,7 @@ function EditableInfoRow({
               icon="check"
               size={18}
               onPress={() => {
-                if (!/^\d{10}$/.test(local)) {
+                if (local !== "" && !/^\d{10}$/.test(local)) {
                   showToast(t("voter.mobileInvalid"), "error");
                   return;
                 }

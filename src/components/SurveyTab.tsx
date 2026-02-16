@@ -151,10 +151,13 @@ export default function SurveyTab({ voterId }: Props) {
     try {
       const res = await getCastes();
       const unique = Object.values(
-        (res.data ?? []).reduce((acc, item) => {
-          acc[item.nameEn] = item;
-          return acc;
-        }, {} as Record<string, any>)
+        (res.data ?? []).reduce(
+          (acc, item) => {
+            acc[item.nameEn] = item;
+            return acc;
+          },
+          {} as Record<string, any>,
+        ),
       );
 
       setCastes([...unique, { id: "other", nameEn: "Other", nameMr: "इतर" }]);
@@ -177,7 +180,7 @@ export default function SurveyTab({ voterId }: Props) {
             [categoryId]: res.data ?? [],
           }));
         }
-      })
+      }),
     );
   };
 
@@ -198,12 +201,15 @@ export default function SurveyTab({ voterId }: Props) {
 
   const update = <K extends keyof VoterSurveyRequest>(
     k: K,
-    v: VoterSurveyRequest[K]
+    v: VoterSurveyRequest[K],
   ) => setData((d) => ({ ...d, [k]: v }));
 
   const updateMobile = (value: string) => {
-    const digits = value.replace(/[^0-9]/g, "");
-    if (digits.length <= 10) {
+    const digits = value.replace(/\D/g, "");
+
+    if (digits.length > (data.secondaryMobileNumber?.length ?? 0) + 1) {
+      update("secondaryMobileNumber", digits.slice(-10));
+    } else if (digits.length <= 10) {
       update("secondaryMobileNumber", digits);
     }
   };
@@ -263,7 +269,7 @@ export default function SurveyTab({ voterId }: Props) {
     }
 
     const demand = demandsByCategory[d.categoryId]?.find(
-      (x) => x.id === d.demandId
+      (x) => x.id === d.demandId,
     );
 
     return demand?.demandEn || `${t("survey.demand")} ${index + 1}`;
@@ -334,7 +340,7 @@ export default function SurveyTab({ voterId }: Props) {
 
       showToast(
         t(data?.id ? "survey.updateSuccess" : "survey.addSuccess"),
-        "success"
+        "success",
       );
     } catch (e) {
       showToast(extractErrorMessage(e), "error");
@@ -448,7 +454,6 @@ export default function SurveyTab({ voterId }: Props) {
               label={t("voter.mobile1")}
               value={data.secondaryMobileNumber}
               keyboardType="phone-pad"
-              maxLength={10}
               onChange={updateMobile}
               outlineColor={
                 data.secondaryMobileNumber &&
