@@ -1,8 +1,8 @@
-import React from 'react';
-import CommonUpload from './CommonUpload';
-import { useToast } from './ToastProvider';
 import { uploadUsers } from '../api/userApi';
 import { extractErrorMessage } from '../utils/common';
+import CommonUpload from './CommonUpload';
+import { useToast } from './ToastProvider';
+import React from 'react';
 
 export default function UserUpload({ fetchUsers, setShowAddUserView }) {
   const { showToast } = useToast();

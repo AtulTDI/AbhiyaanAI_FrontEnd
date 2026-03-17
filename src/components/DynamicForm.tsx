@@ -1,20 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Platform } from 'react-native';
-import { useTranslation } from 'react-i18next';
-import {
-  TextInput,
-  HelperText,
-  Button,
-  Surface,
-  useTheme,
-  Text,
-  Checkbox
-} from 'react-native-paper';
 import { usePlatformInfo } from '../hooks/usePlatformInfo';
-import FormDropdown from './FormDropdown';
+import { AppTheme } from '../theme';
 import { FieldConfig } from '../types';
 import { FixedLabel } from './FixedLabel';
-import { AppTheme } from '../theme';
+import FormDropdown from './FormDropdown';
+import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Platform, StyleSheet, View } from 'react-native';
+import {
+  Button,
+  Checkbox,
+  HelperText,
+  Surface,
+  Text,
+  TextInput,
+  useTheme
+} from 'react-native-paper';
 
 type Props = {
   fields: FieldConfig[];

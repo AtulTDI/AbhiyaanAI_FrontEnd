@@ -1,14 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import { View, ActivityIndicator, Pressable, useWindowDimensions } from 'react-native';
-import { Text, IconButton, Button, useTheme } from 'react-native-paper';
-import { useTranslation } from 'react-i18next';
-import { useToast } from './ToastProvider';
+import { addFamilyMember, getFamilyMembers, removeFamilyMember } from '../api/voterApi';
+import { AppTheme } from '../theme';
 import { Voter } from '../types/Voter';
+import { extractErrorMessage } from '../utils/common';
 import AddFamilyMembersDialog from './AddFamilyMemberDialog';
 import DeleteConfirmationDialog from './DeleteConfirmationDialog';
-import { addFamilyMember, getFamilyMembers, removeFamilyMember } from '../api/voterApi';
-import { extractErrorMessage } from '../utils/common';
-import { AppTheme } from '../theme';
+import { useToast } from './ToastProvider';
+import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { ActivityIndicator, Pressable, useWindowDimensions, View } from 'react-native';
+import { Button, IconButton, Text, useTheme } from 'react-native-paper';
 
 type Props = {
   voter: Voter;

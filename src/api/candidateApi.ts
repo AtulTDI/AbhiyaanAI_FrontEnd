@@ -1,7 +1,7 @@
-import { Platform } from 'react-native';
-import * as FileSystem from 'expo-file-system';
-import axios from './axiosInstance';
 import { Candidate, CandidateCreateUpdate } from '../types/Candidate';
+import axios from './axiosInstance';
+import * as FileSystem from 'expo-file-system';
+import { Platform } from 'react-native';
 
 const isWeb = Platform.OS === 'web';
 
@@ -120,9 +120,9 @@ const appendFile = async (formData: FormData, uploadedFile: any, key: string) =>
   }
 
   let uri = uploadedFile.uri;
-  let name = uploadedFile.name || uri?.split('/').pop() || `photo_${Date.now()}.jpg`;
+  const name = uploadedFile.name || uri?.split('/').pop() || `photo_${Date.now()}.jpg`;
 
-  let type = guessMimeType(name);
+  const type = guessMimeType(name);
 
   // Handle content:// URIs safely
   if (uri?.startsWith('content://')) {

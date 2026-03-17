@@ -1,14 +1,14 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { View, StyleSheet, Pressable } from 'react-native';
-import { Checkbox, useTheme } from 'react-native-paper';
-import { useTranslation } from 'react-i18next';
-import { Ionicons } from '@expo/vector-icons';
-import CommonTable from '../components/CommonTable';
-import { GetPaginatedRecipients, Recipient } from '../types/Recipient';
 import { getRecipientsForProcessing } from '../api/recipientApi';
-import { useFocusEffect } from '@react-navigation/native';
+import CommonTable from '../components/CommonTable';
 import { useServerTable } from '../hooks/useServerTable';
 import { AppTheme } from '../theme';
+import { GetPaginatedRecipients, Recipient } from '../types/Recipient';
+import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { Checkbox, useTheme } from 'react-native-paper';
 
 export default function SelectVoters({
   stepData,

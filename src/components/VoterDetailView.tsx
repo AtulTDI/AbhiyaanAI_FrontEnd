@@ -1,41 +1,41 @@
-import React, { useEffect, useRef, useState } from 'react';
-import {
-  View,
-  StyleSheet,
-  ScrollView,
-  Platform,
-  NativeModules,
-  Image,
-  PermissionsAndroid,
-  Linking,
-  AppState
-} from 'react-native';
-import {
-  Text,
-  IconButton,
-  Avatar,
-  Button,
-  TextInput,
-  useTheme,
-  ActivityIndicator
-} from 'react-native-paper';
-import { FontAwesome, Ionicons } from '@expo/vector-icons';
-import { useTranslation } from 'react-i18next';
+import { generateVoterSlip, getVoterSlip } from '../api/candidateApi';
+import { updateMobileNumber, updateStarVoter, verifyVoter } from '../api/voterApi';
+import FamilyMembersCard from '../components/FamilyMembersCard';
+import Tabs from '../components/Tabs';
+import { usePlatformInfo } from '../hooks/usePlatformInfo';
+import { AppTheme } from '../theme';
 import { Voter } from '../types/Voter';
+import { requestBluetoothPermissions } from '../utils/bluetoothPermissions';
 import { extractErrorMessage } from '../utils/common';
 import { getSavedPrinterMac, removePrinterMac, savePrinterMac } from '../utils/storage';
-import FamilyMembersCard from '../components/FamilyMembersCard';
-import PrinterPicker from './PrinterPicker';
-import Tabs from '../components/Tabs';
-import SurveyTab from './SurveyTab';
-import { updateMobileNumber, updateStarVoter, verifyVoter } from '../api/voterApi';
-import { generateVoterSlip, getVoterSlip } from '../api/candidateApi';
-import { useToast } from './ToastProvider';
-import { usePlatformInfo } from '../hooks/usePlatformInfo';
-import { requestBluetoothPermissions } from '../utils/bluetoothPermissions';
-import SlipPreview from './SlipPreview';
 import EnableBluetoothDialog from './EnableBluetoothDialog';
-import { AppTheme } from '../theme';
+import PrinterPicker from './PrinterPicker';
+import SlipPreview from './SlipPreview';
+import SurveyTab from './SurveyTab';
+import { useToast } from './ToastProvider';
+import { FontAwesome, Ionicons } from '@expo/vector-icons';
+import React, { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import {
+  AppState,
+  Image,
+  Linking,
+  NativeModules,
+  PermissionsAndroid,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  View
+} from 'react-native';
+import {
+  ActivityIndicator,
+  Avatar,
+  Button,
+  IconButton,
+  Text,
+  TextInput,
+  useTheme
+} from 'react-native-paper';
 
 type Props = {
   voter: Voter;
@@ -163,7 +163,7 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
   };
 
   const ensurePrinterConnected = async () => {
-    let mac = await getSavedPrinterMac();
+    const mac = await getSavedPrinterMac();
 
     if (!mac) {
       setShowPrinterPicker(true);

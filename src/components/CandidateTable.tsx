@@ -1,11 +1,11 @@
-import React from 'react';
-import { View, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { Text, useTheme } from 'react-native-paper';
-import { useTranslation } from 'react-i18next';
-import CommonTable from './CommonTable';
-import { Candidate } from '../types/Candidate';
 import { AppTheme } from '../theme';
+import { Candidate } from '../types/Candidate';
+import CommonTable from './CommonTable';
+import { Ionicons } from '@expo/vector-icons';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { StyleSheet, View } from 'react-native';
+import { Text, useTheme } from 'react-native-paper';
 
 type Props = {
   data: Candidate[];

@@ -1,6 +1,6 @@
+import { AppTheme } from '../theme';
 import React from 'react';
 import { Text, useTheme } from 'react-native-paper';
-import { AppTheme } from '../theme';
 
 export function FixedLabel({
   label,

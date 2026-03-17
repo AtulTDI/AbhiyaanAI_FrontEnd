@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Image, ActivityIndicator, Text, StyleSheet } from 'react-native';
+import { ActivityIndicator, Image, StyleSheet, Text, View } from 'react-native';
 
 export default function RegisterWhatsapp() {
   const [qrCode, setQrCode] = useState(null);

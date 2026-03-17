@@ -1,29 +1,28 @@
-import React, { useState, useCallback } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
-import { useTranslation } from 'react-i18next';
-import { Button, Text } from 'react-native-paper';
-import { useTheme } from 'react-native-paper';
-import { useFocusEffect } from '@react-navigation/native';
 import {
   createApplication,
   editApplicationById,
   getApplications,
   toggleApplication
 } from '../api/applicationApi';
+import { uploadVoters } from '../api/voterApi';
+import ApplicationForm from '../components/ApplicationForm';
+import ApplicationsTable from '../components/ApplicationsTable';
+import { useToast } from '../components/ToastProvider';
+import { useInternalBackHandler } from '../hooks/useInternalBackHandler';
+import { useServerTable } from '../hooks/useServerTable';
+import { AppTheme } from '../theme';
 import {
   Application,
   CreateApplicationPayload,
   EditApplicationPayload,
   GetPaginatedApplications
 } from '../types/Application';
-import { useToast } from '../components/ToastProvider';
-import ApplicationsTable from '../components/ApplicationsTable';
-import ApplicationForm from '../components/ApplicationForm';
 import { extractErrorMessage, sortByDateDesc } from '../utils/common';
-import { uploadVoters } from '../api/voterApi';
-import { useServerTable } from '../hooks/useServerTable';
-import { useInternalBackHandler } from '../hooks/useInternalBackHandler';
-import { AppTheme } from '../theme';
+import { useFocusEffect } from '@react-navigation/native';
+import React, { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { Button, Text, useTheme } from 'react-native-paper';
 
 export default function AddApplicationScreen() {
   const { t } = useTranslation();

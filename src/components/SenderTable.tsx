@@ -1,12 +1,12 @@
-import React from 'react';
-import { useTranslation } from 'react-i18next';
-import dayjs from 'dayjs';
-import { Ionicons } from '@expo/vector-icons';
-import { View, StyleSheet } from 'react-native';
-import { useTheme } from 'react-native-paper';
+import { AppTheme } from '../theme';
 import { Sender } from '../types/Sender';
 import CommonTable from './CommonTable';
-import { AppTheme } from '../theme';
+import { Ionicons } from '@expo/vector-icons';
+import dayjs from 'dayjs';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { StyleSheet, View } from 'react-native';
+import { useTheme } from 'react-native-paper';
 
 type Props = {
   data: Sender[];

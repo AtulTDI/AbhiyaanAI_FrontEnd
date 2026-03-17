@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { View, Text, Pressable } from 'react-native';
-import Svg, { G, Path, Text as SvgText } from 'react-native-svg';
-import { useTranslation } from 'react-i18next';
 import colors from '../constants/colors';
 import BarChart from './BarChart';
+import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Pressable, Text, View } from 'react-native';
+import Svg, { G, Path, Text as SvgText } from 'react-native-svg';
 
 const DonutChart = ({
   data = [],

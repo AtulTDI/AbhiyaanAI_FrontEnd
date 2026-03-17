@@ -1,7 +1,7 @@
-import React from 'react';
-import { View, Pressable, StyleSheet } from 'react-native';
-import { Text, useTheme } from 'react-native-paper';
 import { AppTheme } from '../theme';
+import React from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { Text, useTheme } from 'react-native-paper';
 
 type Tab = {
   key: string;

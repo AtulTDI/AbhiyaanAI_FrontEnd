@@ -1,25 +1,25 @@
-import React, { useState, useCallback } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
-import { useTranslation } from 'react-i18next';
-import { Button, Text, useTheme } from 'react-native-paper';
-import { useFocusEffect } from '@react-navigation/native';
-import { useInternalBackHandler } from '../hooks/useInternalBackHandler';
 import {
-  getCandidates,
   addCandidate,
-  updateCandidate,
-  deleteCandidate
+  deleteCandidate,
+  getCandidates,
+  updateCandidate
 } from '../api/candidateApi';
-import { Candidate } from '../types/Candidate';
-import { useToast } from '../components/ToastProvider';
-import CandidatesTable from '../components/CandidateTable';
 import CandidateForm from '../components/CandidateForm';
+import CandidatesTable from '../components/CandidateTable';
 import DeleteConfirmationDialog from '../components/DeleteConfirmationDialog';
+import { useToast } from '../components/ToastProvider';
+import { useInternalBackHandler } from '../hooks/useInternalBackHandler';
+import { useServerTable } from '../hooks/useServerTable';
+import { AppTheme } from '../theme';
+import { Candidate } from '../types/Candidate';
 import { extractErrorMessage } from '../utils/common';
 import { eventBus } from '../utils/eventBus';
 import { getAuthData, saveAuthData } from '../utils/storage';
-import { useServerTable } from '../hooks/useServerTable';
-import { AppTheme } from '../theme';
+import { useFocusEffect } from '@react-navigation/native';
+import React, { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { Button, Text, useTheme } from 'react-native-paper';
 
 export default function AddCandidateScreen() {
   const { t } = useTranslation();

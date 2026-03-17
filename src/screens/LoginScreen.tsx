@@ -1,19 +1,19 @@
+import ForgotPassword from '../components/ForgotPassword';
+import SignIn from '../components/SignIn';
+import { usePlatformInfo } from '../hooks/usePlatformInfo';
+import { AppTheme } from '../theme';
+import { getBrandAssets } from '../utils/brandAssets';
+import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useState } from 'react';
 import {
   Image,
-  StyleSheet,
-  SafeAreaView,
   KeyboardAvoidingView,
+  SafeAreaView,
   ScrollView,
+  StyleSheet,
   View
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from 'react-native-paper';
-import SignIn from '../components/SignIn';
-import ForgotPassword from '../components/ForgotPassword';
-import { usePlatformInfo } from '../hooks/usePlatformInfo';
-import { getBrandAssets } from '../utils/brandAssets';
-import { AppTheme } from '../theme';
 
 export default function LoginScreen() {
   const { isIOS } = usePlatformInfo();

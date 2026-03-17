@@ -1,6 +1,3 @@
-import { Platform } from 'react-native';
-import * as FileSystem from 'expo-file-system';
-import axios from './axiosInstance';
 import {
   GenerateVideo,
   GetPaginatedVideos,
@@ -10,6 +7,9 @@ import {
 } from '../types/Video';
 import { getVideoThumbnail } from '../utils/getVideoThumbnail';
 import { getAuthData } from '../utils/storage';
+import axios from './axiosInstance';
+import * as FileSystem from 'expo-file-system';
+import { Platform } from 'react-native';
 
 /**
  * Get paginated videos with optional search
@@ -53,7 +53,7 @@ export const uploadVideo = async (payload: Video) => {
   const formData = new FormData();
   const fileName = payload.file.name || 'video.mp4';
   const mimeType = payload.file.mimeType || 'video/mp4';
-  let fileUri = payload.file.uri;
+  const fileUri = payload.file.uri;
 
   // --- Check file exists on Mobile ---
   if (Platform.OS !== 'web' && fileUri.startsWith('file://')) {

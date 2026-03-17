@@ -1,10 +1,10 @@
-import axios from './axiosInstance';
 import {
-  VoterSurveyRequest,
-  VoterSurveyResponse,
+  Caste,
   SupportTypeColor,
-  Caste
+  VoterSurveyRequest,
+  VoterSurveyResponse
 } from '../types/Voter';
+import axios from './axiosInstance';
 
 /**
  * Add Survey

@@ -1,5 +1,5 @@
 import React, { forwardRef } from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
+import { Image, StyleSheet, Text, View } from 'react-native';
 import ViewShot from 'react-native-view-shot';
 
 type Props = {

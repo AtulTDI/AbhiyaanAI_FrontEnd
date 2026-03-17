@@ -1,5 +1,5 @@
-import { useRef, useState, useCallback } from 'react';
 import { usePlatformInfo } from './usePlatformInfo';
+import { useCallback, useRef, useState } from 'react';
 
 export function useEllipsisTooltip(cellKey: string) {
   const { isWeb, isMobileWeb } = usePlatformInfo();

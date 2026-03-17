@@ -1,11 +1,11 @@
+import { getDistributors } from '../api/salesAgentApi';
+import { FieldConfig } from '../types';
+import { Application } from '../types/Application';
+import CommonUpload from './CommonUpload';
+import DynamicForm from './DynamicForm';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { FieldConfig } from '../types';
-import { Application } from '../types/Application';
-import { getDistributors } from '../api/salesAgentApi';
-import DynamicForm from './DynamicForm';
-import CommonUpload from './CommonUpload';
 
 type Props = {
   mode: 'create' | 'edit';
@@ -28,7 +28,7 @@ export default function ApplicationForm({
 }: Props) {
   const { t } = useTranslation();
   const [salesAgentOptions, setSalesAgentOptions] = useState<any[]>([]);
-  const [showVoterUpload, setShowVoterUpload] = useState<string | Boolean>(false);
+  const [showVoterUpload, setShowVoterUpload] = useState<string | boolean>(false);
 
   useEffect(() => {
     const fetchSalesAgents = async () => {

@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { FieldConfig, FieldType } from '../types';
 import { getActiveApplications } from '../api/applicationApi';
+import { FieldConfig, FieldType } from '../types';
 import DynamicForm from './DynamicForm';
+import React, { useEffect, useState } from 'react';
 
 type Props = {
   onCreate: (data: { channelName: string; applicationId: string }) => void;

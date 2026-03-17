@@ -1,11 +1,11 @@
+import { getActiveApplications } from '../api/applicationApi';
+import { FieldConfig, FieldType } from '../types';
+import { User } from '../types/User';
+import { getAuthData } from '../utils/storage';
+import DynamicForm from './DynamicForm';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { FieldConfig, FieldType } from '../types';
-import { User } from '../types/User';
-import { getActiveApplications } from '../api/applicationApi';
-import { getAuthData } from '../utils/storage';
-import DynamicForm from './DynamicForm';
 
 type Props = {
   role: string;

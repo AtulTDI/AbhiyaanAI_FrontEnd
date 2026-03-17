@@ -1,12 +1,12 @@
-import React from 'react';
-import { Text, useTheme } from 'react-native-paper';
-import { useTranslation } from 'react-i18next';
-import { Ionicons } from '@expo/vector-icons';
-import dayjs from 'dayjs';
+import { AppTheme } from '../theme';
 import { Voice } from '../types/Voice';
 import CommonTable from './CommonTable';
-import { AppTheme } from '../theme';
+import { Ionicons } from '@expo/vector-icons';
+import dayjs from 'dayjs';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
+import { Text, useTheme } from 'react-native-paper';
 
 type Props = {
   data: Voice[];

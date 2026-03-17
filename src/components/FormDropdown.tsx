@@ -1,18 +1,18 @@
+import { usePlatformInfo } from '../hooks/usePlatformInfo';
+import { AppTheme } from '../theme';
 import React, { useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
-  View,
-  Text,
-  StyleSheet,
-  Pressable,
+  Dimensions,
   FlatList,
-  Platform,
   LayoutRectangle,
-  Dimensions
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  View
 } from 'react-native';
 import { Portal, TextInput, useTheme } from 'react-native-paper';
-import { useTranslation } from 'react-i18next';
-import { AppTheme } from '../theme';
-import { usePlatformInfo } from '../hooks/usePlatformInfo';
 
 /* ================= TYPES ================= */
 

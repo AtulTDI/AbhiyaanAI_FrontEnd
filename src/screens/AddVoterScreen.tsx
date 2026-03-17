@@ -1,39 +1,39 @@
-import React, { useCallback, useMemo, useState } from 'react';
-import {
-  View,
-  StyleSheet,
-  useWindowDimensions,
-  KeyboardAvoidingView,
-  Platform
-} from 'react-native';
-import { Text, useTheme, Surface, Button } from 'react-native-paper';
-import { useTranslation } from 'react-i18next';
-import { useFocusEffect } from '@react-navigation/native';
-import { TabView, TabBar, TabBarItem, SceneRendererProps } from 'react-native-tab-view';
-import { Asset } from 'expo-asset';
-import * as FileSystem from 'expo-file-system';
-import * as Sharing from 'expo-sharing';
-import VoterForm from '../components/VoterForm';
-import VoterUpload from '../components/VoterUpload';
-import VoterTable from '../components/VoterTable';
-import DeleteConfirmationDialog from '../components/DeleteConfirmationDialog';
-import { useToast } from '../components/ToastProvider';
-import {
-  CreateRecipientPayload,
-  EditRecipientPayload,
-  Recipient
-} from '../types/Recipient';
-import { useServerTable } from '../hooks/useServerTable';
-import { usePlatformInfo } from '../hooks/usePlatformInfo';
-import { useInternalBackHandler } from '../hooks/useInternalBackHandler';
 import {
   createRecipient,
   deleteRecipientById,
   editRecipientById,
   getRecipients
 } from '../api/recipientApi';
-import { extractErrorMessage } from '../utils/common';
+import DeleteConfirmationDialog from '../components/DeleteConfirmationDialog';
+import { useToast } from '../components/ToastProvider';
+import VoterForm from '../components/VoterForm';
+import VoterTable from '../components/VoterTable';
+import VoterUpload from '../components/VoterUpload';
+import { useInternalBackHandler } from '../hooks/useInternalBackHandler';
+import { usePlatformInfo } from '../hooks/usePlatformInfo';
+import { useServerTable } from '../hooks/useServerTable';
 import { AppTheme } from '../theme';
+import {
+  CreateRecipientPayload,
+  EditRecipientPayload,
+  Recipient
+} from '../types/Recipient';
+import { extractErrorMessage } from '../utils/common';
+import { useFocusEffect } from '@react-navigation/native';
+import { Asset } from 'expo-asset';
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
+import React, { useCallback, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  useWindowDimensions,
+  View
+} from 'react-native';
+import { Button, Surface, Text, useTheme } from 'react-native-paper';
+import { SceneRendererProps, TabBar, TabBarItem, TabView } from 'react-native-tab-view';
 
 type TabRoute = {
   key: string;

@@ -1,9 +1,9 @@
-import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, ViewStyle, TextStyle } from 'react-native';
-import { useTheme } from 'react-native-paper';
-import { Ionicons } from '@expo/vector-icons';
 import { AppTheme } from '../theme';
+import { Ionicons } from '@expo/vector-icons';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { StyleSheet, Text, TextStyle, TouchableOpacity, ViewStyle } from 'react-native';
+import { useTheme } from 'react-native-paper';
 
 type Props = {
   isApproved: boolean;

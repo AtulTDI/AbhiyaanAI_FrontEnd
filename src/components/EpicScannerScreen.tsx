@@ -1,8 +1,8 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, Platform } from 'react-native';
-import MlkitOcr from 'react-native-mlkit-ocr';
-import { useNavigation } from '@react-navigation/native';
 import { triggerEpicScan } from '../utils/epicScannerListener';
+import { useNavigation } from '@react-navigation/native';
+import React, { useEffect, useRef, useState } from 'react';
+import { Platform, StyleSheet, Text, View } from 'react-native';
+import MlkitOcr from 'react-native-mlkit-ocr';
 
 let Camera: any = null;
 let useCameraDevice: any = null;

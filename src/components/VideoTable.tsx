@@ -1,18 +1,18 @@
-import React, { useRef } from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
-import { Text, useTheme } from 'react-native-paper';
-import { useTranslation } from 'react-i18next';
-import dayjs from 'dayjs';
+import { AppTheme } from '../theme';
+import ApprovalToggle from './ApprovalToggle';
+import CommonTable from './CommonTable';
 import { Ionicons } from '@expo/vector-icons';
+import dayjs from 'dayjs';
 import {
-  Video as ExpoVideo,
   ResizeMode,
+  Video as ExpoVideo,
   VideoFullscreenUpdate,
   VideoFullscreenUpdateEvent
 } from 'expo-av';
-import CommonTable from './CommonTable';
-import ApprovalToggle from './ApprovalToggle';
-import { AppTheme } from '../theme';
+import React, { useRef } from 'react';
+import { useTranslation } from 'react-i18next';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Text, useTheme } from 'react-native-paper';
 
 type Video = {
   id: string;

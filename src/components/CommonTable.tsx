@@ -1,22 +1,22 @@
+import { usePlatformInfo } from '../hooks/usePlatformInfo';
+import { AppTheme } from '../theme';
+import { EllipsisCell } from './EllipsisCell';
+import { MaterialIcons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  View,
-  Text,
-  StyleSheet,
+  Animated,
+  Keyboard,
+  Pressable,
   ScrollView,
+  StyleSheet,
+  Text,
   TouchableOpacity,
   useWindowDimensions,
-  Animated,
-  Pressable,
-  Keyboard
+  View
 } from 'react-native';
-import { Menu, useTheme, ActivityIndicator, TextInput } from 'react-native-paper';
+import { ActivityIndicator, Menu, TextInput, useTheme } from 'react-native-paper';
 import { Row } from 'react-native-table-component';
-import { MaterialIcons } from '@expo/vector-icons';
-import { usePlatformInfo } from '../hooks/usePlatformInfo';
-import { EllipsisCell } from './EllipsisCell';
-import { AppTheme } from '../theme';
 
 type Column<T> = {
   label: string | React.ReactNode;

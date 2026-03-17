@@ -1,7 +1,7 @@
-import React, { useEffect } from 'react';
-import { View, ActivityIndicator } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 import { getAuthData } from '../utils/storage';
+import { useNavigation } from '@react-navigation/native';
+import React, { useEffect } from 'react';
+import { ActivityIndicator, View } from 'react-native';
 
 export default function AuthLoadingScreen() {
   const navigation = useNavigation<any>();

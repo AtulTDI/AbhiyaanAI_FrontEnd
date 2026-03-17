@@ -1,10 +1,10 @@
-import React from 'react';
-import { Chip } from 'react-native-paper';
-import { View } from 'react-native';
-import { useTranslation } from 'react-i18next';
-import { Feather } from '@expo/vector-icons';
-import { usePlatformInfo } from '../hooks/usePlatformInfo';
 import colors from '../constants/colors';
+import { usePlatformInfo } from '../hooks/usePlatformInfo';
+import { Feather } from '@expo/vector-icons';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { View } from 'react-native';
+import { Chip } from 'react-native-paper';
 
 type ProgressChipProps = {
   completedCount: number;

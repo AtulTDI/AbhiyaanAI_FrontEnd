@@ -2,7 +2,7 @@ import * as signalR from '@microsoft/signalr';
 import Constants from 'expo-constants';
 
 let connection: signalR.HubConnection | null = null;
-let joinedGroups: Set<string> = new Set();
+const joinedGroups: Set<string> = new Set();
 const subscribers: Record<string, Set<(...args: any[]) => void>> = {};
 
 /**

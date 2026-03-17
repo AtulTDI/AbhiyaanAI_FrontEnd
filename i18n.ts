@@ -1,10 +1,9 @@
-import i18n from 'i18next';
-import { initReactI18next } from 'react-i18next';
-import * as RNLocalize from 'react-native-localize';
-
 import en from './locales/en.json';
 import hi from './locales/hi.json';
 import mr from './locales/mr.json';
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
+import * as RNLocalize from 'react-native-localize';
 
 const resources = {
   en: { translation: en },

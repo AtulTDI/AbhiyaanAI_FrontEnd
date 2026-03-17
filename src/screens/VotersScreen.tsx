@@ -1,27 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { View, StyleSheet, FlatList, Pressable } from 'react-native';
-import { useIsFocused, useNavigation } from '@react-navigation/native';
-import {
-  Text,
-  useTheme,
-  Searchbar,
-  Chip,
-  IconButton,
-  TextInput,
-  ActivityIndicator,
-  Divider
-} from 'react-native-paper';
-import { useTranslation } from 'react-i18next';
-import { useInternalBackHandler } from '../hooks/useInternalBackHandler';
-import { Buffer } from 'buffer';
-import { MaterialIcons } from '@expo/vector-icons';
-import * as FileSystem from 'expo-file-system';
-import * as Sharing from 'expo-sharing';
-import VoterDetailView from '../components/VoterDetailView';
-import VoterCategoryScreen from './VoterCategoryScreen';
-import { AgeGroupStats, ColorCodeStats, Voter } from '../types/Voter';
-import { useDebounce } from '../hooks/useDebounce';
-import { usePlatformInfo } from '../hooks/usePlatformInfo';
+import { exportVotersPdf } from '../api/exportVotersApi';
 import {
   getAgeStats,
   getBoothStats,
@@ -36,10 +13,33 @@ import {
 import FormDropdown from '../components/FormDropdown';
 import Subcategory from '../components/SubCategory';
 import { useToast } from '../components/ToastProvider';
+import VoterDetailView from '../components/VoterDetailView';
 import { VOTER_CATEGORIES } from '../constants/voterCategories';
-import { setEpicScanHandler } from '../utils/epicScannerListener';
-import { exportVotersPdf } from '../api/exportVotersApi';
+import { useDebounce } from '../hooks/useDebounce';
+import { useInternalBackHandler } from '../hooks/useInternalBackHandler';
+import { usePlatformInfo } from '../hooks/usePlatformInfo';
 import { AppTheme } from '../theme';
+import { AgeGroupStats, ColorCodeStats, Voter } from '../types/Voter';
+import { setEpicScanHandler } from '../utils/epicScannerListener';
+import VoterCategoryScreen from './VoterCategoryScreen';
+import { MaterialIcons } from '@expo/vector-icons';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
+import { Buffer } from 'buffer';
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { FlatList, Pressable, StyleSheet, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Chip,
+  Divider,
+  IconButton,
+  Searchbar,
+  Text,
+  TextInput,
+  useTheme
+} from 'react-native-paper';
 
 type AgeMode = 'none' | 'lt' | 'gt' | 'between';
 type ScreenView = 'categories' | 'subcategories' | 'list' | 'detail';

@@ -1,5 +1,5 @@
-import axios from './axiosInstance';
 import { Channel, CreateChannelPayload } from '../types/Channel';
+import axios from './axiosInstance';
 
 /**
  * Get all WhatsApp channels for the given application.

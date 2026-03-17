@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, Platform } from 'react-native';
-import { Text, TextInput, Button, Card, useTheme } from 'react-native-paper';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { useToast } from './ToastProvider';
 import { forgotPasswordLink } from '../api/authApi';
-import { extractErrorMessage } from '../utils/common';
 import { AppTheme } from '../theme';
+import { extractErrorMessage } from '../utils/common';
+import { useToast } from './ToastProvider';
+import React, { useEffect, useState } from 'react';
+import { Platform, StyleSheet } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { Button, Card, Text, TextInput, useTheme } from 'react-native-paper';
 
 type ForgotPasswordProps = {
   authError: string;

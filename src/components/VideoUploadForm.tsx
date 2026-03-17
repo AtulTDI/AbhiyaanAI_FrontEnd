@@ -1,30 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { View, StyleSheet, Platform, TouchableOpacity } from 'react-native';
-import {
-  Text,
-  TextInput,
-  Button,
-  useTheme,
-  HelperText,
-  Divider,
-  List,
-  Portal,
-  Modal,
-  Surface,
-  IconButton
-} from 'react-native-paper';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { useTranslation } from 'react-i18next';
-import { ResizeMode, Video as ExpoVideo, AVPlaybackStatusSuccess } from 'expo-av';
-import { Asset } from 'expo-asset';
-import * as Sharing from 'expo-sharing';
-import * as FileSystem from 'expo-file-system';
-import { useToast } from './ToastProvider';
-import * as DocumentPicker from 'expo-document-picker';
-import CommonUpload from './CommonUpload';
 import { generateSampleVideo } from '../api/videoApi';
-import { getAuthData } from '../utils/storage';
-import { extractErrorMessage } from '../utils/common';
 import { usePlatformInfo } from '../hooks/usePlatformInfo';
 import {
   joinGroups,
@@ -33,8 +7,34 @@ import {
   startConnection,
   stopConnection
 } from '../services/signalrService';
-import { FixedLabel } from './FixedLabel';
 import { AppTheme } from '../theme';
+import { extractErrorMessage } from '../utils/common';
+import { getAuthData } from '../utils/storage';
+import CommonUpload from './CommonUpload';
+import { FixedLabel } from './FixedLabel';
+import { useToast } from './ToastProvider';
+import { Asset } from 'expo-asset';
+import { AVPlaybackStatusSuccess, ResizeMode, Video as ExpoVideo } from 'expo-av';
+import * as DocumentPicker from 'expo-document-picker';
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
+import React, { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import {
+  Button,
+  Divider,
+  HelperText,
+  IconButton,
+  List,
+  Modal,
+  Portal,
+  Surface,
+  Text,
+  TextInput,
+  useTheme
+} from 'react-native-paper';
 
 interface FormData {
   campaign: string;

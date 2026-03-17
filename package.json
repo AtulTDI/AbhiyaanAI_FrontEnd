@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "main": "index.ts",
   "scripts": {
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier . --write",
     "start:dev": "cross-env APP_ENV=development expo start --web --clear",
     "start:uat": "cross-env APP_ENV=uat expo start --web --clear",
     "start:demo": "cross-env APP_ENV=demo expo start --web --clear",
@@ -67,9 +70,7 @@
     "docker:build:tar:demo:abhiyan": "node ./scripts/createTarDir.js && cross-env BRAND=abhiyan docker compose -f docker-compose.yml --profile demo build --no-cache && docker save -o tar/abhiyan_ai_frontend_demo_abhiyan.tar abhiyan_ai_frontend:latest",
     "docker:build:tar:demo:rajyog": "node ./scripts/createTarDir.js && cross-env BRAND=rajyog docker compose -f docker-compose.yml --profile demo build --no-cache && docker save -o tar/abhiyan_ai_frontend_demo_rajyog.tar abhiyan_ai_frontend:latest",
     "docker:build:tar:prod:abhiyan": "node ./scripts/createTarDir.js && cross-env BRAND=abhiyan docker compose -f docker-compose.yml --profile prod build --no-cache && docker save -o tar/abhiyan_ai_frontend_prod_abhiyan.tar abhiyan_ai_frontend:latest",
-    "docker:build:tar:prod:rajyog": "node ./scripts/createTarDir.js && cross-env BRAND=rajyog docker compose -f docker-compose.yml --profile prod build --no-cache && docker save -o tar/abhiyan_ai_frontend_prod_rajyog.tar abhiyan_ai_frontend:latest",
-    "android": "expo run:android",
-    "ios": "expo run:ios"
+    "docker:build:tar:prod:rajyog": "node ./scripts/createTarDir.js && cross-env BRAND=rajyog docker compose -f docker-compose.yml --profile prod build --no-cache && docker save -o tar/abhiyan_ai_frontend_prod_rajyog.tar abhiyan_ai_frontend:latest"
   },
   "dependencies": {
     "@expo/metro-runtime": "~5.0.4",
@@ -130,19 +131,27 @@
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
+    "@eslint/js": "^10.0.1",
     "@react-native-community/cli": "^20.1.1",
     "@types/react": "~19.0.10",
     "@types/react-navigation": "^3.0.8",
-    "@typescript-eslint/eslint-plugin": "^8.57.0",
-    "@typescript-eslint/parser": "^8.57.0",
+    "@typescript-eslint/eslint-plugin": "^8.57.1",
+    "@typescript-eslint/parser": "^8.57.1",
     "cross-env": "^10.0.0",
     "dotenv-cli": "^10.0.0",
     "eslint": "^9.39.4",
+    "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-prettier": "^5.5.5",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-native": "^5.0.0",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
     "patch-package": "^8.0.0",
     "postinstall-postinstall": "^2.1.0",
     "prettier": "^3.8.1",
-    "typescript": "~5.8.3"
+    "typescript": "~5.8.3",
+    "typescript-eslint": "^8.57.1"
   },
   "private": true
 }

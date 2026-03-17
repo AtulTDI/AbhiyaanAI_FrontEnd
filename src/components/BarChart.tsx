@@ -1,7 +1,7 @@
-import React, { useRef, memo } from 'react';
-import { ScrollView, View, Text, Dimensions } from 'react-native';
-import Svg, { G, Text as SvgText, Rect, Line } from 'react-native-svg';
+import React, { memo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Dimensions, ScrollView, Text, View } from 'react-native';
+import Svg, { G, Line, Rect, Text as SvgText } from 'react-native-svg';
 
 const Bar = memo(({ x, value, maxValue, chartHeight, width, color, titleColor }) => {
   const scaledHeight = (value / maxValue) * chartHeight;

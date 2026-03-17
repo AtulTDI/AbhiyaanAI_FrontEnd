@@ -1,5 +1,5 @@
-import { ImageSourcePropType } from 'react-native';
 import Constants from 'expo-constants';
+import { ImageSourcePropType } from 'react-native';
 
 const { BRAND } = Constants.expoConfig?.extra;
 

@@ -1,11 +1,11 @@
-import axios from './axiosInstance';
 import {
-  DemandCategory,
   Demand,
-  VoterDemandItem,
+  DemandCategory,
   ResolveVoterDemand,
+  VoterDemandItem,
   VoterDemandUpdatePayload
 } from '../types/Voter';
+import axios from './axiosInstance';
 
 /**
  * Get demand categories

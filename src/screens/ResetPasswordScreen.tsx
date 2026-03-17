@@ -1,23 +1,23 @@
+import { resetPassword } from '../api/authApi';
+import { useToast } from '../components/ToastProvider';
+import { usePlatformInfo } from '../hooks/usePlatformInfo';
+import { navigate } from '../navigation/NavigationService';
+import { encryptWithBackendKey } from '../services/rsaEncryptor';
+import { AppTheme } from '../theme';
+import { getBrandAssets } from '../utils/brandAssets';
+import { extractErrorMessage } from '../utils/common';
+import { useRoute } from '@react-navigation/native';
+import { LinearGradient } from 'expo-linear-gradient';
 import React, { useState } from 'react';
 import {
   Image,
-  StyleSheet,
-  SafeAreaView,
   KeyboardAvoidingView,
+  SafeAreaView,
   ScrollView,
+  StyleSheet,
   View
 } from 'react-native';
-import { Text, TextInput, Button, Card, useTheme } from 'react-native-paper';
-import { useRoute } from '@react-navigation/native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { useToast } from '../components/ToastProvider';
-import { resetPassword } from '../api/authApi';
-import { extractErrorMessage } from '../utils/common';
-import { getBrandAssets } from '../utils/brandAssets';
-import { encryptWithBackendKey } from '../services/rsaEncryptor';
-import { usePlatformInfo } from '../hooks/usePlatformInfo';
-import { navigate } from '../navigation/NavigationService';
-import { AppTheme } from '../theme';
+import { Button, Card, Text, TextInput, useTheme } from 'react-native-paper';
 
 type RouteParams = {
   token: string;

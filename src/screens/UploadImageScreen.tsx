@@ -1,16 +1,3 @@
-import React, { useCallback, useState } from 'react';
-import { StyleSheet, View, KeyboardAvoidingView } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
-import { Surface, Text, Button, useTheme } from 'react-native-paper';
-import { useTranslation } from 'react-i18next';
-import ImageTable from '../components/ImageTable';
-import ImageUploadForm from '../components/ImageUploadForm';
-import { useToast } from '../components/ToastProvider';
-import DeleteConfirmationDialog from '../components/DeleteConfirmationDialog';
-import { useServerTable } from '../hooks/useServerTable';
-import { usePlatformInfo } from '../hooks/usePlatformInfo';
-import { useInternalBackHandler } from '../hooks/useInternalBackHandler';
-import { GetPaginatedImages, Image } from '../types/Image';
 import {
   deleteImageById,
   getImages,
@@ -18,9 +5,22 @@ import {
   updateImageById,
   uploadImages
 } from '../api/imageApi';
-import { getAuthData } from '../utils/storage';
-import { extractErrorMessage, sortByDateDesc } from '../utils/common';
+import DeleteConfirmationDialog from '../components/DeleteConfirmationDialog';
+import ImageTable from '../components/ImageTable';
+import ImageUploadForm from '../components/ImageUploadForm';
+import { useToast } from '../components/ToastProvider';
+import { useInternalBackHandler } from '../hooks/useInternalBackHandler';
+import { usePlatformInfo } from '../hooks/usePlatformInfo';
+import { useServerTable } from '../hooks/useServerTable';
 import { AppTheme } from '../theme';
+import { GetPaginatedImages, Image } from '../types/Image';
+import { extractErrorMessage, sortByDateDesc } from '../utils/common';
+import { getAuthData } from '../utils/storage';
+import { useFocusEffect } from '@react-navigation/native';
+import React, { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { KeyboardAvoidingView, StyleSheet, View } from 'react-native';
+import { Button, Surface, Text, useTheme } from 'react-native-paper';
 
 export default function UploadImageScreen() {
   const { isWeb, isIOS } = usePlatformInfo();

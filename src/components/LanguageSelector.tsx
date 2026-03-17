@@ -1,18 +1,18 @@
-import React, { useState, useRef, useEffect } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  FlatList,
-  Animated,
-  Modal,
-  Platform,
-  Pressable
-} from 'react-native';
-import { useTheme } from 'react-native-paper';
 import i18n from '../../i18n';
 import { AppTheme } from '../theme';
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  Animated,
+  FlatList,
+  Modal,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from 'react-native';
+import { useTheme } from 'react-native-paper';
 
 const languages = [
   { code: 'en', label: 'English' },

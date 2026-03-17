@@ -1,8 +1,8 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { useTheme } from 'react-native-paper';
-import { CustomLabelProps } from '../types';
 import { AppTheme } from '../theme';
+import { CustomLabelProps } from '../types';
+import React from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+import { useTheme } from 'react-native-paper';
 
 const CustomLabel = ({ label, icon, focused }: CustomLabelProps) => {
   const theme = useTheme<AppTheme>();

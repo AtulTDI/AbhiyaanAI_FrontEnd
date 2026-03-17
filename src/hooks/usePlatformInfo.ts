@@ -1,4 +1,4 @@
-import { useWindowDimensions, Platform } from 'react-native';
+import { Platform, useWindowDimensions } from 'react-native';
 
 export const usePlatformInfo = () => {
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();

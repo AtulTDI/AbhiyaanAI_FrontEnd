@@ -1,9 +1,9 @@
-import axios, { AxiosInstance } from 'axios';
-import { Platform } from 'react-native';
-import Constants from 'expo-constants';
 import { navigate } from '../navigation/NavigationService';
-import { getAuthData, clearAuthData } from '../utils/storage';
 import { triggerToast } from '../services/toastService';
+import { clearAuthData, getAuthData } from '../utils/storage';
+import axios, { AxiosInstance } from 'axios';
+import Constants from 'expo-constants';
+import { Platform } from 'react-native';
 
 declare module 'axios' {
   export interface AxiosRequestConfig {

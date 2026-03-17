@@ -1,20 +1,20 @@
-import React, { useCallback, useState } from 'react';
-import { View, StyleSheet, Dimensions } from 'react-native';
-import { Surface, Text, Button, useTheme } from 'react-native-paper';
-import { useTranslation } from 'react-i18next';
-import { useFocusEffect } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
+import { generateCustomisedVideo, getInProgressVideoCount } from '../api/videoApi';
 import ResponsiveKeyboardView from '../components/ResponsiveKeyboardView';
 import SelectBaseVideo from '../components/SelectBaseVideo';
 import SelectVoters from '../components/SelectVoters';
 import { useToast } from '../components/ToastProvider';
-import { navigate } from '../navigation/NavigationService';
-import { getAuthData } from '../utils/storage';
-import { extractErrorMessage } from '../utils/common';
-import { joinGroups, startConnection } from '../services/signalrService';
 import { usePlatformInfo } from '../hooks/usePlatformInfo';
-import { generateCustomisedVideo, getInProgressVideoCount } from '../api/videoApi';
+import { navigate } from '../navigation/NavigationService';
+import { joinGroups, startConnection } from '../services/signalrService';
 import { AppTheme } from '../theme';
+import { extractErrorMessage } from '../utils/common';
+import { getAuthData } from '../utils/storage';
+import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
+import React, { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Dimensions, StyleSheet, View } from 'react-native';
+import { Button, Surface, Text, useTheme } from 'react-native-paper';
 
 export default function GenerateVideoScreen() {
   const { isWeb, isMobileWeb } = usePlatformInfo();

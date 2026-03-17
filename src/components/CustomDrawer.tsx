@@ -1,13 +1,13 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { View, Image, StyleSheet, SafeAreaView, Platform } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
-import { DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
-import { LinearGradient } from 'expo-linear-gradient';
-import { useTheme } from 'react-native-paper';
-import { getBrandAssets } from '../utils/brandAssets';
-import { getAuthData } from '../utils/storage';
-import { eventBus } from '../utils/eventBus';
 import { AppTheme } from '../theme';
+import { getBrandAssets } from '../utils/brandAssets';
+import { eventBus } from '../utils/eventBus';
+import { getAuthData } from '../utils/storage';
+import { DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
+import { useFocusEffect } from '@react-navigation/native';
+import { LinearGradient } from 'expo-linear-gradient';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Image, Platform, SafeAreaView, StyleSheet, View } from 'react-native';
+import { useTheme } from 'react-native-paper';
 
 export default function CustomDrawer(props: any) {
   const { icon } = getBrandAssets();

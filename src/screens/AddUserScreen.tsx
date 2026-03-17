@@ -1,15 +1,9 @@
-import React, { useCallback, useState } from 'react';
-import { View, StyleSheet, KeyboardAvoidingView, ScrollView } from 'react-native';
-import { Text, useTheme, Button } from 'react-native-paper';
-import { useFocusEffect } from '@react-navigation/native';
-import { User } from '../types/User';
-import UserForm from '../components/UserForm';
-import UserTable from '../components/UserTable';
-import DeleteConfirmationDialog from '../components/DeleteConfirmationDialog';
-import { useToast } from '../components/ToastProvider';
-import { useServerTable } from '../hooks/useServerTable';
-import { usePlatformInfo } from '../hooks/usePlatformInfo';
-import { useInternalBackHandler } from '../hooks/useInternalBackHandler';
+import {
+  createDistributor,
+  deleteDistributor,
+  editDistributorById,
+  getDistributors
+} from '../api/salesAgentApi';
 import {
   createUser,
   deleteUserById,
@@ -17,17 +11,23 @@ import {
   getCustomerAdmins,
   getUsers
 } from '../api/userApi';
-import {
-  createDistributor,
-  deleteDistributor,
-  editDistributorById,
-  getDistributors
-} from '../api/salesAgentApi';
-import { extractErrorMessage } from '../utils/common';
-import { getAuthData } from '../utils/storage';
-import { useTranslation } from 'react-i18next';
+import DeleteConfirmationDialog from '../components/DeleteConfirmationDialog';
+import { useToast } from '../components/ToastProvider';
+import UserForm from '../components/UserForm';
+import UserTable from '../components/UserTable';
+import { useInternalBackHandler } from '../hooks/useInternalBackHandler';
+import { usePlatformInfo } from '../hooks/usePlatformInfo';
+import { useServerTable } from '../hooks/useServerTable';
 import { encryptWithBackendKey } from '../services/rsaEncryptor';
 import { AppTheme } from '../theme';
+import { User } from '../types/User';
+import { extractErrorMessage } from '../utils/common';
+import { getAuthData } from '../utils/storage';
+import { useFocusEffect } from '@react-navigation/native';
+import React, { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { KeyboardAvoidingView, ScrollView, StyleSheet, View } from 'react-native';
+import { Button, Text, useTheme } from 'react-native-paper';
 
 export default function AddUserScreen({ role }) {
   const { t } = useTranslation();

@@ -1,4 +1,4 @@
-import { PermissionsAndroid, NativeModules, Platform } from 'react-native';
+import { NativeModules, PermissionsAndroid, Platform } from 'react-native';
 
 const { AccountsModule } = NativeModules;
 

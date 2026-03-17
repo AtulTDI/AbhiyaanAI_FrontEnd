@@ -1,18 +1,3 @@
-import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, useWindowDimensions, Pressable } from 'react-native';
-import { Text, TextInput, Chip, ActivityIndicator, useTheme } from 'react-native-paper';
-import { DatePickerModal } from 'react-native-paper-dates';
-import { Ionicons } from '@expo/vector-icons';
-import { useTranslation } from 'react-i18next';
-import { useToast } from './ToastProvider';
-import { extractErrorMessage, formatForDisplay, toUtcIsoDate } from '../utils/common';
-import {
-  getSurveyByVoterId,
-  addSurvey,
-  getSupportTypes,
-  updateSurvey,
-  getCastes
-} from '../api/voterSurveyApi';
 import {
   addVoterDemands,
   deleteVoterDemand,
@@ -22,11 +7,26 @@ import {
   resolveVoterDemand,
   updateVoterDemands
 } from '../api/voterDemandApi';
-import FormDropdown from './FormDropdown';
-import { VoterDemandItem, VoterSurveyRequest } from '../types/Voter';
-import { FixedLabel } from './FixedLabel';
+import {
+  addSurvey,
+  getCastes,
+  getSupportTypes,
+  getSurveyByVoterId,
+  updateSurvey
+} from '../api/voterSurveyApi';
 import { usePlatformInfo } from '../hooks/usePlatformInfo';
 import { AppTheme } from '../theme';
+import { VoterDemandItem, VoterSurveyRequest } from '../types/Voter';
+import { extractErrorMessage, formatForDisplay, toUtcIsoDate } from '../utils/common';
+import { FixedLabel } from './FixedLabel';
+import FormDropdown from './FormDropdown';
+import { useToast } from './ToastProvider';
+import { Ionicons } from '@expo/vector-icons';
+import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { ActivityIndicator, Chip, Text, TextInput, useTheme } from 'react-native-paper';
+import { DatePickerModal } from 'react-native-paper-dates';
 
 /* ================= TYPES ================= */
 

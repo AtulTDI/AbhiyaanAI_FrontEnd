@@ -1,10 +1,9 @@
-import axios from './axiosInstance';
 import {
-  Application,
   CreateApplicationPayload,
   EditApplicationPayload,
   GetPaginatedApplications
 } from '../types/Application';
+import axios from './axiosInstance';
 
 /**
  * Get paginated applications with optional search

@@ -1,12 +1,12 @@
-import React from 'react';
-import dayjs from 'dayjs';
-import { User } from '../types/User';
-import { Ionicons } from '@expo/vector-icons';
-import { View, StyleSheet } from 'react-native';
-import { Text, useTheme } from 'react-native-paper';
-import CommonTable from './CommonTable';
 import { AppTheme } from '../theme';
+import { User } from '../types/User';
+import CommonTable from './CommonTable';
+import { Ionicons } from '@expo/vector-icons';
+import dayjs from 'dayjs';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { StyleSheet, View } from 'react-native';
+import { Text, useTheme } from 'react-native-paper';
 
 type Props = {
   role: string;

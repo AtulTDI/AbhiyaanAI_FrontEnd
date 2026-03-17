@@ -1,24 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, FlatList, TouchableOpacity, Platform } from 'react-native';
-import {
-  Text,
-  TextInput,
-  Button,
-  Card,
-  HelperText,
-  useTheme,
-  Modal,
-  Portal,
-  List
-} from 'react-native-paper';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { navigate } from '../navigation/NavigationService';
 import { login } from '../api/authApi';
-import { saveAuthData } from '../utils/storage';
-import { extractErrorMessage } from '../utils/common';
+import { navigate } from '../navigation/NavigationService';
 import { fetchAccounts } from '../services/accountsService';
 import { encryptWithBackendKey } from '../services/rsaEncryptor';
 import { AppTheme } from '../theme';
+import { extractErrorMessage } from '../utils/common';
+import { saveAuthData } from '../utils/storage';
+import React, { useEffect, useState } from 'react';
+import { FlatList, Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import {
+  Button,
+  Card,
+  HelperText,
+  List,
+  Modal,
+  Portal,
+  Text,
+  TextInput,
+  useTheme
+} from 'react-native-paper';
 
 type SignInProps = {
   authError: string;

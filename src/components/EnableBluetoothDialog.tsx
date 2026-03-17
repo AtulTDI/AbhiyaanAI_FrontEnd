@@ -1,7 +1,7 @@
-import React from 'react';
-import { View, StyleSheet, Modal } from 'react-native';
-import { Text, Button, useTheme } from 'react-native-paper';
 import { AppTheme } from '../theme';
+import React from 'react';
+import { Modal, StyleSheet, View } from 'react-native';
+import { Button, Text, useTheme } from 'react-native-paper';
 
 export default function EnableBluetoothDialog({ visible, onCancel, onEnable }) {
   const theme = useTheme<AppTheme>();

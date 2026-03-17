@@ -1,32 +1,32 @@
-import React, { useRef, useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
-import {
-  View,
-  StyleSheet,
-  Platform,
-  Dimensions,
-  Image,
-  TouchableOpacity
-} from 'react-native';
-import {
-  Text,
-  TextInput,
-  Button,
-  useTheme,
-  HelperText,
-  Divider,
-  Portal,
-  Modal,
-  IconButton,
-  Surface
-} from 'react-native-paper';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { usePlatformInfo } from '../hooks/usePlatformInfo';
+import { Image as ImageType } from '../types/Image';
+import DeleteConfirmationDialog from './DeleteConfirmationDialog';
+import { FixedLabel } from './FixedLabel';
 import { Ionicons } from '@expo/vector-icons';
 import * as FileSystem from 'expo-file-system';
-import { Image as ImageType } from '../types/Image';
-import { FixedLabel } from './FixedLabel';
-import DeleteConfirmationDialog from './DeleteConfirmationDialog';
-import { usePlatformInfo } from '../hooks/usePlatformInfo';
+import React, { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import {
+  Dimensions,
+  Image,
+  Platform,
+  StyleSheet,
+  TouchableOpacity,
+  View
+} from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import {
+  Button,
+  Divider,
+  HelperText,
+  IconButton,
+  Modal,
+  Portal,
+  Surface,
+  Text,
+  TextInput,
+  useTheme
+} from 'react-native-paper';
 
 type ImageAsset = {
   uri: string;

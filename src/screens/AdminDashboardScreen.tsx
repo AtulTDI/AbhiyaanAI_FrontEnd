@@ -1,24 +1,23 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, Dimensions } from 'react-native';
-import { Card } from 'react-native-paper';
-import { useTranslation } from 'react-i18next';
-import { useFocusEffect } from '@react-navigation/native';
-import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-import { Ionicons } from '@expo/vector-icons';
-
 import {
   getCampaignStats,
   getDashboard,
   getVoterDashboardSummary
 } from '../api/dashboardApi';
-import { extractErrorMessage } from '../utils/common';
-import { useToast } from '../components/ToastProvider';
 import BarChart from '../components/BarChart';
 import DonutChart from '../components/DonutChart';
 import KPICard from '../components/KpiCard';
+import { useToast } from '../components/ToastProvider';
 import colors from '../constants/colors';
 import { usePlatformInfo } from '../hooks/usePlatformInfo';
+import { extractErrorMessage } from '../utils/common';
 import { getAuthData } from '../utils/storage';
+import { Ionicons } from '@expo/vector-icons';
+import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
+import { useFocusEffect } from '@react-navigation/native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Dimensions, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Card } from 'react-native-paper';
 
 const { width } = Dimensions.get('window');
 const chartWidth = width - 64;

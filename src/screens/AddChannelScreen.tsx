@@ -1,21 +1,20 @@
-import React, { useState, useCallback } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
-import { Button, Text } from 'react-native-paper';
-import { useTheme } from 'react-native-paper';
-import { useFocusEffect } from '@react-navigation/native';
 import {
   createChannel,
   deleteChannelById,
   getAllChannels,
   updateChannelSetting
 } from '../api/channelApi';
-import { Channel } from '../types/Channel';
-import { useToast } from '../components/ToastProvider';
-import ChannelsTable from '../components/ChannelsTable';
 import CreateChannelForm from '../components/ChannelForm';
+import ChannelsTable from '../components/ChannelsTable';
 import DeleteConfirmationDialog from '../components/DeleteConfirmationDialog';
-import { extractErrorMessage, sortByDateDesc } from '../utils/common';
+import { useToast } from '../components/ToastProvider';
 import { AppTheme } from '../theme';
+import { Channel } from '../types/Channel';
+import { extractErrorMessage, sortByDateDesc } from '../utils/common';
+import { useFocusEffect } from '@react-navigation/native';
+import React, { useCallback, useState } from 'react';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { Button, Text, useTheme } from 'react-native-paper';
 
 export default function AddChannelScreen() {
   const theme = useTheme<AppTheme>();

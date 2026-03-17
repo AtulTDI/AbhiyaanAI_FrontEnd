@@ -1,10 +1,10 @@
-import React from 'react';
-import { View, FlatList, Pressable, StyleSheet } from 'react-native';
-import { Text, ActivityIndicator, useTheme, IconButton } from 'react-native-paper';
-import { useTranslation } from 'react-i18next';
-import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import { usePlatformInfo } from '../hooks/usePlatformInfo';
 import { AppTheme } from '../theme';
+import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { FlatList, Pressable, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, IconButton, Text, useTheme } from 'react-native-paper';
 
 export default function Subcategory({
   title,

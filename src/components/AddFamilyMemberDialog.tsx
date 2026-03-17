@@ -1,30 +1,30 @@
-import React, { useEffect, useState } from 'react';
-import {
-  View,
-  FlatList,
-  StyleSheet,
-  useWindowDimensions,
-  KeyboardAvoidingView,
-  Platform
-} from 'react-native';
-import {
-  Dialog,
-  Searchbar,
-  List,
-  Checkbox,
-  Button,
-  Text,
-  Divider,
-  useTheme,
-  Portal,
-  ActivityIndicator
-} from 'react-native-paper';
-import { useTranslation } from 'react-i18next';
-import { Voter } from '../types/Voter';
 import { getEligibleFamilyMembers } from '../api/voterApi';
 import { useDebounce } from '../hooks/useDebounce';
-import { getAuthData } from '../utils/storage';
 import { AppTheme } from '../theme';
+import { Voter } from '../types/Voter';
+import { getAuthData } from '../utils/storage';
+import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import {
+  FlatList,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  useWindowDimensions,
+  View
+} from 'react-native';
+import {
+  ActivityIndicator,
+  Button,
+  Checkbox,
+  Dialog,
+  Divider,
+  List,
+  Portal,
+  Searchbar,
+  Text,
+  useTheme
+} from 'react-native-paper';
 
 type Props = {
   visible: boolean;

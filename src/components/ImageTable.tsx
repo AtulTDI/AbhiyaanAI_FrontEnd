@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
-import { View, Modal, StyleSheet, TouchableOpacity } from 'react-native';
-import { Button, Text, useTheme } from 'react-native-paper';
-import { useTranslation } from 'react-i18next';
-import dayjs from 'dayjs';
-import { Ionicons } from '@expo/vector-icons';
-import { ResizeMode, Video as ExpoVideo } from 'expo-av';
-import CommonTable from './CommonTable';
-import ApprovalToggle from './ApprovalToggle';
-import { Image } from '../types/Image';
 import { AppTheme } from '../theme';
+import { Image } from '../types/Image';
+import ApprovalToggle from './ApprovalToggle';
+import CommonTable from './CommonTable';
+import { Ionicons } from '@expo/vector-icons';
+import dayjs from 'dayjs';
+import { ResizeMode, Video as ExpoVideo } from 'expo-av';
+import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Modal, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Button, Text, useTheme } from 'react-native-paper';
 
 type Props = {
   data: Image[];

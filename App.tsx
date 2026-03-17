@@ -1,21 +1,21 @@
-import { Platform } from 'react-native';
-import { Provider as PaperProvider } from 'react-native-paper';
-import { I18nextProvider } from 'react-i18next';
 import i18n from './i18n';
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import { navigationRef } from './src/navigation/NavigationService';
-import { RootStackParamList } from './src/types';
-import { customTheme } from './src/theme';
+import EpicScannerScreen from './src/components/EpicScannerScreen';
 import { ToastProvider } from './src/components/ToastProvider';
 import { VideoPreviewProvider } from './src/components/VideoPreviewContext';
-import EpicScannerScreen from './src/components/EpicScannerScreen';
-import prefixes from './src/utils/deeplinks';
-import LoginScreen from './src/screens/LoginScreen';
 import AppLayout from './src/navigation/AppLayout';
+import { navigationRef } from './src/navigation/NavigationService';
 import AuthLoadingScreen from './src/screens/AuthLoadingScreen';
+import LoginScreen from './src/screens/LoginScreen';
 import ResetPasswordScreen from './src/screens/ResetPasswordScreen';
+import { customTheme } from './src/theme';
+import { RootStackParamList } from './src/types';
+import prefixes from './src/utils/deeplinks';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { I18nextProvider } from 'react-i18next';
+import { Platform } from 'react-native';
+import { Provider as PaperProvider } from 'react-native-paper';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 

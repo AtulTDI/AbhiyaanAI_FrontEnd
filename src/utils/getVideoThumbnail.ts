@@ -1,6 +1,6 @@
-import { Platform } from 'react-native';
 import { Thumbnail } from '../types';
 import { getFileNameWithoutExtension } from './common';
+import { Platform } from 'react-native';
 
 export const getVideoThumbnail = async (
   videoUri: string,

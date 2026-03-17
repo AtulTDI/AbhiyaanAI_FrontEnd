@@ -1,10 +1,10 @@
-import axios from './axiosInstance';
 import {
-  Sender,
   CreateSenderPayload,
   EditSenderPayload,
-  GetPaginatedSenders
+  GetPaginatedSenders,
+  Sender
 } from '../types/Sender';
+import axios from './axiosInstance';
 
 /**
  * Get paginated senders with optional search

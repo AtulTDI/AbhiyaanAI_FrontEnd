@@ -1,11 +1,11 @@
-import axios from './axiosInstance';
 import {
-  User,
   CreateUserPayload,
   EditUserPayload,
-  GetPaginatedUsers
+  GetPaginatedUsers,
+  User
 } from '../types/User';
 import { base64ToBlob } from '../utils/common';
+import axios from './axiosInstance';
 
 /**
  * Get paginated users with optional search

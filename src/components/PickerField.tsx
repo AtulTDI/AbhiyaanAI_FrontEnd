@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { View, Platform, Text, StyleSheet } from 'react-native';
-import { useTheme } from 'react-native-paper';
-import { Picker } from '@react-native-picker/picker';
 import colors from '../constants/colors';
 import { AppTheme } from '../theme';
+import { Picker } from '@react-native-picker/picker';
+import React, { useState } from 'react';
+import { Platform, StyleSheet, Text, View } from 'react-native';
+import { useTheme } from 'react-native-paper';
 
 type Props = {
   selectedValue: string;

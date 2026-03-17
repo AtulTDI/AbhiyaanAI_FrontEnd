@@ -1,14 +1,20 @@
+import { AppTheme } from '../theme';
 import React, { useEffect, useState } from 'react';
-import { View, FlatList, Modal, StyleSheet, Pressable } from 'react-native';
 import {
-  Text,
+  FlatList,
+  Modal,
+  NativeModules,
+  Pressable,
+  StyleSheet,
+  View
+} from 'react-native';
+import {
   ActivityIndicator,
   Divider,
+  Text,
   TouchableRipple,
   useTheme
 } from 'react-native-paper';
-import { NativeModules } from 'react-native';
-import { AppTheme } from '../theme';
 
 const { ThermalPrinter } = NativeModules;
 

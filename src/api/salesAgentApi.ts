@@ -1,10 +1,10 @@
-import axios from './axiosInstance';
 import {
   CreateDistributorPayload,
   Distributor,
   EditDistributorPayload,
   GetPaginatedDistributors
 } from '../types/SalesAgents';
+import axios from './axiosInstance';
 
 /**
  * Get paginated distributor with optional search

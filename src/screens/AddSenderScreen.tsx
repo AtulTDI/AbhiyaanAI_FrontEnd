@@ -1,25 +1,25 @@
-import React, { useCallback, useState } from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
-import { Text, useTheme, Button } from 'react-native-paper';
-import { useTranslation } from 'react-i18next';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { useFocusEffect } from '@react-navigation/native';
-import { Sender } from '../types/Sender';
-import SenderForm from '../components/SenderForm';
-import SenderTable from '../components/SenderTable';
-import DeleteConfirmationDialog from '../components/DeleteConfirmationDialog';
-import { useToast } from '../components/ToastProvider';
 import {
   createSender,
   deleteSenderById,
   editSenderById,
   getSenders
 } from '../api/senderApi';
-import { extractErrorMessage } from '../utils/common';
-import { useServerTable } from '../hooks/useServerTable';
+import DeleteConfirmationDialog from '../components/DeleteConfirmationDialog';
+import SenderForm from '../components/SenderForm';
+import SenderTable from '../components/SenderTable';
+import { useToast } from '../components/ToastProvider';
 import { useInternalBackHandler } from '../hooks/useInternalBackHandler';
+import { useServerTable } from '../hooks/useServerTable';
 import { encryptWithBackendKey } from '../services/rsaEncryptor';
 import { AppTheme } from '../theme';
+import { Sender } from '../types/Sender';
+import { extractErrorMessage } from '../utils/common';
+import { useFocusEffect } from '@react-navigation/native';
+import React, { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { Button, Text, useTheme } from 'react-native-paper';
 
 export default function AddSenderScreen() {
   const { t } = useTranslation();

@@ -1,12 +1,12 @@
-import React, { useCallback, useState } from 'react';
-import { View, StyleSheet, Image, ActivityIndicator } from 'react-native';
-import { Surface, Text, Button, useTheme } from 'react-native-paper';
-import { useFocusEffect } from '@react-navigation/native';
-import { useToast } from '../components/ToastProvider';
-import { extractErrorMessage } from '../utils/common';
-import { AppTheme } from '../theme';
-import { getAuthData } from '../utils/storage';
 import { generateQr, getRegistrationStatus, whatsAppLogout } from '../api/whatsappApi';
+import { useToast } from '../components/ToastProvider';
+import { AppTheme } from '../theme';
+import { extractErrorMessage } from '../utils/common';
+import { getAuthData } from '../utils/storage';
+import { useFocusEffect } from '@react-navigation/native';
+import React, { useCallback, useState } from 'react';
+import { ActivityIndicator, Image, StyleSheet, View } from 'react-native';
+import { Button, Surface, Text, useTheme } from 'react-native-paper';
 
 export default function WhatsAppRegisterScreen() {
   const theme = useTheme<AppTheme>();

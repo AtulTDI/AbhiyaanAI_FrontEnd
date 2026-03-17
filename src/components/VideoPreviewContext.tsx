@@ -1,8 +1,8 @@
-import React, { createContext, useState, useContext, ReactNode } from 'react';
+import { AppTheme } from '../theme';
+import { ResizeMode, Video as ExpoVideo } from 'expo-av';
+import React, { createContext, ReactNode, useContext, useState } from 'react';
 import { Modal, StyleSheet, View } from 'react-native';
 import { Button, useTheme } from 'react-native-paper';
-import { ResizeMode, Video as ExpoVideo } from 'expo-av';
-import { AppTheme } from '../theme';
 
 type ContextType = {
   open: (uri: string) => void;

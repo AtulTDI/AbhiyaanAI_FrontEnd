@@ -1,8 +1,8 @@
-import React from 'react';
-import { useTranslation } from 'react-i18next';
 import { FieldConfig } from '../types';
 import { Sender } from '../types/Sender';
 import DynamicForm from './DynamicForm';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 type Props = {
   mode: 'create' | 'edit';
