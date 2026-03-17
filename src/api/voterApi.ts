@@ -1,8 +1,18 @@
-import { Platform } from "react-native";
-import * as FileSystem from "expo-file-system";
-import axios from "./axiosInstance";
-import { AgeGroupStats, BoothStats, CasteStats, ColorCodeStats, GenderGroupStats, GetFamilyMembers, GetPaginatedVoters, PaginatedSurnameStats, Voter } from "../types/Voter";
-import { base64ToBlob } from "../utils/common";
+import { Platform } from 'react-native';
+import * as FileSystem from 'expo-file-system';
+import axios from './axiosInstance';
+import {
+  AgeGroupStats,
+  BoothStats,
+  CasteStats,
+  ColorCodeStats,
+  GenderGroupStats,
+  GetFamilyMembers,
+  GetPaginatedVoters,
+  PaginatedSurnameStats,
+  Voter
+} from '../types/Voter';
+import { base64ToBlob } from '../utils/common';
 
 /**
  * Get paginated voters with optional search
@@ -13,23 +23,20 @@ export const getVoters = (
   searchText?: string,
   age?: string,
   gender?: string,
-  searchType?: string,
+  searchType?: string
 ) =>
-  axios.get<GetPaginatedVoters>(
-    "/Voters/getvoters",
-    {
-      useApiPrefix: true,
-      useVoterBase: true,
-      params: {
-        page: pageNumber,
-        pageSize,
-        ...(searchText ? { searchText } : {}),
-        ...(age !== undefined ? { age } : {}),
-        ...(gender ? { gender } : {}),
-        ...(searchType ? { searchType } : {}),
-      },
+  axios.get<GetPaginatedVoters>('/Voters/getvoters', {
+    useApiPrefix: true,
+    useVoterBase: true,
+    params: {
+      page: pageNumber,
+      pageSize,
+      ...(searchText ? { searchText } : {}),
+      ...(age !== undefined ? { age } : {}),
+      ...(gender ? { gender } : {}),
+      ...(searchType ? { searchType } : {})
     }
-  );
+  });
 
 /**
  * Get paginated voters with optional search
@@ -48,87 +55,89 @@ export const getVotersByCategory = (
   booth?: number,
   boothAddress?: string
 ) =>
-  axios.get<GetPaginatedVoters>(
-    "/Voters/get-voters-by-category",
-    {
-      useApiPrefix: true,
-      useVoterBase: true,
-      params: {
-        page: pageNumber,
-        pageSize,
-        ...(type !== undefined ? { type } : {}),
-        ...(supportColor ? { supportColor } : {}),
-        ...(surname ? { surname } : {}),
-        ...(searchText ? { searchText } : {}),
-        ...(age !== undefined ? { age } : {}),
-        ...(gender ? { gender } : {}),
-        ...(casteId ? { casteId } : {}),
-        ...(booth ? { booth } : {}),
-        ...(boothAddress ? { boothAddress } : {}),
-        ...(searchType ? { searchType } : {}),
-      },
+  axios.get<GetPaginatedVoters>('/Voters/get-voters-by-category', {
+    useApiPrefix: true,
+    useVoterBase: true,
+    params: {
+      page: pageNumber,
+      pageSize,
+      ...(type !== undefined ? { type } : {}),
+      ...(supportColor ? { supportColor } : {}),
+      ...(surname ? { surname } : {}),
+      ...(searchText ? { searchText } : {}),
+      ...(age !== undefined ? { age } : {}),
+      ...(gender ? { gender } : {}),
+      ...(casteId ? { casteId } : {}),
+      ...(booth ? { booth } : {}),
+      ...(boothAddress ? { boothAddress } : {}),
+      ...(searchType ? { searchType } : {})
     }
-  );
+  });
 
 /**
  * Get voter by id
  */
 export const getVoterById = (id) =>
-  axios.get<Voter>(`/Voters/get-voters-by-id/${id}`, { useApiPrefix: true, useVoterBase: true });
-
+  axios.get<Voter>(`/Voters/get-voters-by-id/${id}`, {
+    useApiPrefix: true,
+    useVoterBase: true
+  });
 
 /**
  * Add multiple voters
  */
 export const uploadVoters = async (file: any, applicationId: string) => {
   const formData = new FormData();
-  const fileName = file.name || "upload.xlsx";
+  const fileName = file.name || 'upload.xlsx';
   const mimeType =
-    file.mimeType ||
-    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+    file.mimeType || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
-  if (file?.uri?.startsWith("data:")) {
+  if (file?.uri?.startsWith('data:')) {
     // Base64 case
-    const base64 = file.uri.split(",")[1];
+    const base64 = file.uri.split(',')[1];
     const blob = await base64ToBlob(base64, mimeType);
 
-    if (Platform.OS === "web") {
+    if (Platform.OS === 'web') {
       const webFile = new File([blob], fileName, { type: mimeType });
-      formData.append("file", webFile);
+      formData.append('file', webFile);
     } else {
       const tempPath = `${FileSystem.cacheDirectory}${fileName}`;
       await FileSystem.writeAsStringAsync(tempPath, base64, {
-        encoding: FileSystem.EncodingType.Base64,
+        encoding: FileSystem.EncodingType.Base64
       });
 
-      formData.append("file", {
+      formData.append('file', {
         uri: tempPath,
         name: fileName,
-        type: mimeType,
+        type: mimeType
       } as any);
     }
   } else if (file instanceof File) {
     // Web File
-    formData.append("file", file);
-  } else if (file?.uri?.startsWith("file://")) {
+    formData.append('file', file);
+  } else if (file?.uri?.startsWith('file://')) {
     // RN Picker or native uri
-    formData.append("file", {
+    formData.append('file', {
       uri: file.uri,
       name: fileName,
-      type: mimeType,
+      type: mimeType
     } as any);
   } else {
-    throw new Error("Unsupported file format");
+    throw new Error('Unsupported file format');
   }
 
-  const response = await axios.post(`/Voters/import?applicationId=${applicationId}`, formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-    useApiPrefix: true,
-    useVoterBase: true,
-    transformRequest: (data) => data,
-  });
+  const response = await axios.post(
+    `/Voters/import?applicationId=${applicationId}`,
+    formData,
+    {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      },
+      useApiPrefix: true,
+      useVoterBase: true,
+      transformRequest: (data) => data
+    }
+  );
 
   return response.data;
 };
@@ -137,77 +146,125 @@ export const uploadVoters = async (file: any, applicationId: string) => {
  * Update voter mobile number
  */
 export const updateMobileNumber = (id, number) =>
-  axios.put<Voter>(`/Voters/update-mobile-number/${id}?mobileNumber=${number}`, {}, { useApiPrefix: true, useVoterBase: true });
+  axios.put<Voter>(
+    `/Voters/update-mobile-number/${id}?mobileNumber=${number}`,
+    {},
+    { useApiPrefix: true, useVoterBase: true }
+  );
 
 /**
  * Verify voter
  */
 export const verifyVoter = (id, type) =>
-  axios.put<Voter>(`/Voters/verify-voter/${id}?isVerify=${type}`, {}, { useApiPrefix: true, useVoterBase: true });
+  axios.put<Voter>(
+    `/Voters/verify-voter/${id}?isVerify=${type}`,
+    {},
+    { useApiPrefix: true, useVoterBase: true }
+  );
 
 /**
  * Star voter
  */
 export const updateStarVoter = (id, type) =>
-  axios.put<Voter>(`/Voters/update-star-voter/${id}?isStarVoter=${type}`, {}, { useApiPrefix: true, useVoterBase: true });
+  axios.put<Voter>(
+    `/Voters/update-star-voter/${id}?isStarVoter=${type}`,
+    {},
+    { useApiPrefix: true, useVoterBase: true }
+  );
 
 /**
  * Get family members
  */
 export const getFamilyMembers = (id) =>
-  axios.get<GetFamilyMembers>(`/Voters/get-family-members/${id}`, { useApiPrefix: true, useVoterBase: true });
+  axios.get<GetFamilyMembers>(`/Voters/get-family-members/${id}`, {
+    useApiPrefix: true,
+    useVoterBase: true
+  });
 
 /**
  * Get eligible family members
  */
-export const getEligibleFamilyMembers = (applicationId, pageNumber, pageSize, voterId, searchText) =>
-  axios.get<GetFamilyMembers>(`/Voters/getvoters-eligible-for-family/${applicationId}?voterId=${voterId}&page=${pageNumber}&pageSize=${pageSize}&searchText=${searchText}`, { useApiPrefix: true, useVoterBase: true });
-
+export const getEligibleFamilyMembers = (
+  applicationId,
+  pageNumber,
+  pageSize,
+  voterId,
+  searchText
+) =>
+  axios.get<GetFamilyMembers>(
+    `/Voters/getvoters-eligible-for-family/${applicationId}?voterId=${voterId}&page=${pageNumber}&pageSize=${pageSize}&searchText=${searchText}`,
+    { useApiPrefix: true, useVoterBase: true }
+  );
 
 /**
  * Add family member
  */
 export const addFamilyMember = (data) =>
-  axios.post<Voter>("/Voters/addvoter-to-family", data, { useApiPrefix: true, useVoterBase: true });
+  axios.post<Voter>('/Voters/addvoter-to-family', data, {
+    useApiPrefix: true,
+    useVoterBase: true
+  });
 
 /**
  * Remove family member
  */
 export const removeFamilyMember = (id) =>
-  axios.post<Voter>(`/Voters/remove-from-family?voterId=${id}`, {}, { useApiPrefix: true, useVoterBase: true });
+  axios.post<Voter>(
+    `/Voters/remove-from-family?voterId=${id}`,
+    {},
+    { useApiPrefix: true, useVoterBase: true }
+  );
 
 /**
  * Get color codes
  */
 export const getColorCodes = () =>
-  axios.get<ColorCodeStats>('/Voters/get-support-stats', { useApiPrefix: true, useVoterBase: true });
+  axios.get<ColorCodeStats>('/Voters/get-support-stats', {
+    useApiPrefix: true,
+    useVoterBase: true
+  });
 
 /**
  * Get surnames
  */
 export const getSurnames = (pageNumber, pageSize) =>
-  axios.get<PaginatedSurnameStats>(`/Voters/get-surname-stats?page=${pageNumber}&pageSize=${pageSize}`, { useApiPrefix: true, useVoterBase: true });
+  axios.get<PaginatedSurnameStats>(
+    `/Voters/get-surname-stats?page=${pageNumber}&pageSize=${pageSize}`,
+    { useApiPrefix: true, useVoterBase: true }
+  );
 
 /**
  * Get age stats
  */
 export const getAgeStats = () =>
-  axios.get<AgeGroupStats>('/Voters/get-age-stats', { useApiPrefix: true, useVoterBase: true });
+  axios.get<AgeGroupStats>('/Voters/get-age-stats', {
+    useApiPrefix: true,
+    useVoterBase: true
+  });
 
 /**
  * Get gender stats
  */
 export const getGenderStats = () =>
-  axios.get<GenderGroupStats>('/Voters/get-gender-stats', { useApiPrefix: true, useVoterBase: true });
+  axios.get<GenderGroupStats>('/Voters/get-gender-stats', {
+    useApiPrefix: true,
+    useVoterBase: true
+  });
 
 /**
  * Get caste stats
  */
 export const getCasteStats = () =>
-  axios.get<CasteStats>('/Voters/get-caste-stats', { useApiPrefix: true, useVoterBase: true });
+  axios.get<CasteStats>('/Voters/get-caste-stats', {
+    useApiPrefix: true,
+    useVoterBase: true
+  });
 
 /**
  * Get booth
  */
 export const getBoothStats = () =>
-  axios.get<BoothStats>('/Voters/get-list-area-stats', { useApiPrefix: true, useVoterBase: true });
+  axios.get<BoothStats>('/Voters/get-list-area-stats', {
+    useApiPrefix: true,
+    useVoterBase: true
+  });

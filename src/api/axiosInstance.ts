@@ -1,11 +1,11 @@
-import axios, { AxiosInstance } from "axios";
-import { Platform } from "react-native";
-import Constants from "expo-constants";
-import { navigate } from "../navigation/NavigationService";
-import { getAuthData, clearAuthData } from "../utils/storage";
-import { triggerToast } from "../services/toastService";
+import axios, { AxiosInstance } from 'axios';
+import { Platform } from 'react-native';
+import Constants from 'expo-constants';
+import { navigate } from '../navigation/NavigationService';
+import { getAuthData, clearAuthData } from '../utils/storage';
+import { triggerToast } from '../services/toastService';
 
-declare module "axios" {
+declare module 'axios' {
   export interface AxiosRequestConfig {
     useApiPrefix?: boolean;
     useAltBase?: boolean;
@@ -20,7 +20,7 @@ const VOTER_API_BASE = Constants.expoConfig.extra.VOTER_API;
 const createAxiosInstance = (baseURL: string): AxiosInstance => {
   const instance = axios.create({
     baseURL,
-    timeout: 60000,
+    timeout: 60000
   });
 
   // Request Interceptor
@@ -31,7 +31,7 @@ const createAxiosInstance = (baseURL: string): AxiosInstance => {
         config.headers.Authorization = `Bearer ${accessToken}`;
       }
 
-      if (config.useApiPrefix && config.url?.startsWith("/")) {
+      if (config.useApiPrefix && config.url?.startsWith('/')) {
         config.url = `/api${config.url}`;
       }
 
@@ -45,15 +45,21 @@ const createAxiosInstance = (baseURL: string): AxiosInstance => {
 
       const method = config.method?.toUpperCase();
 
-      if (["POST", "PUT", "PATCH"].includes(method)) {
-        if (!(config.data && config.data.constructor && config.data.constructor.name === "FormData")) {
-          config.headers["Content-Type"] = "application/json";
+      if (['POST', 'PUT', 'PATCH'].includes(method)) {
+        if (
+          !(
+            config.data &&
+            config.data.constructor &&
+            config.data.constructor.name === 'FormData'
+          )
+        ) {
+          config.headers['Content-Type'] = 'application/json';
         }
       }
 
-      config.headers["Accept"] = "application/json";
+      config.headers['Accept'] = 'application/json';
 
-      if (Platform.OS !== "web") {
+      if (Platform.OS !== 'web') {
         console.debug(`[API][REQ] ${method} ${config.baseURL}${config.url}`);
       }
 
@@ -65,10 +71,10 @@ const createAxiosInstance = (baseURL: string): AxiosInstance => {
   // Response Interceptor
   instance.interceptors.response.use(
     (response) => {
-      if (Platform.OS !== "web") {
+      if (Platform.OS !== 'web') {
         console.debug(
           `[API][RES] ${response.config.method?.toUpperCase()} ${response.config.baseURL}${response.config.url}` +
-          ` | Status=${response.status}`
+            ` | Status=${response.status}`
         );
       }
       return response;
@@ -77,21 +83,21 @@ const createAxiosInstance = (baseURL: string): AxiosInstance => {
       const status = error?.response?.status;
       const message = error?.response?.data;
 
-      if (Platform.OS !== "web") {
+      if (Platform.OS !== 'web') {
         console.debug(
           `[API][ERR] ${error.config?.method?.toUpperCase()} ${error.config?.baseURL}${error.config?.url}` +
-          (status ? ` | Status=${status}` : "") +
-          (message ? ` | Message=${JSON.stringify(message)}` : "")
+            (status ? ` | Status=${status}` : '') +
+            (message ? ` | Message=${JSON.stringify(message)}` : '')
         );
       }
 
-      if (status === 401 && message !== "Invalid login") {
+      if (status === 401 && message !== 'Invalid login') {
         try {
           await clearAuthData();
-          triggerToast("Session expired. Please log in again.", "error");
-          navigate("Login");
+          triggerToast('Session expired. Please log in again.', 'error');
+          navigate('Login');
         } catch (e) {
-          console.error("Failed to clear auth data or navigate:", e);
+          console.error('Failed to clear auth data or navigate:', e);
         }
       }
 

@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from "react";
+import React, { useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -7,12 +7,12 @@ import {
   FlatList,
   Platform,
   LayoutRectangle,
-  Dimensions,
-} from "react-native";
-import { Portal, TextInput, useTheme } from "react-native-paper";
-import { useTranslation } from "react-i18next";
-import { AppTheme } from "../theme";
-import { usePlatformInfo } from "../hooks/usePlatformInfo";
+  Dimensions
+} from 'react-native';
+import { Portal, TextInput, useTheme } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
+import { AppTheme } from '../theme';
+import { usePlatformInfo } from '../hooks/usePlatformInfo';
 
 /* ================= TYPES ================= */
 
@@ -55,7 +55,7 @@ export default function FormDropdown({
   customOutline,
   noMargin,
   showSearch = true,
-  showClearIcon = true,
+  showClearIcon = true
 }: Props) {
   const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
@@ -65,13 +65,11 @@ export default function FormDropdown({
   const anchorRef = useRef<View>(null);
 
   const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState("");
-  const [anchorLayout, setAnchorLayout] = useState<LayoutRectangle | null>(
-    null
-  );
+  const [search, setSearch] = useState('');
+  const [anchorLayout, setAnchorLayout] = useState<LayoutRectangle | null>(null);
   const [openUpwards, setOpenUpwards] = useState(false);
 
-  const windowHeight = Dimensions.get("window").height;
+  const windowHeight = Dimensions.get('window').height;
 
   /* ================= DERIVED ================= */
 
@@ -82,9 +80,7 @@ export default function FormDropdown({
 
   const filteredOptions = useMemo(() => {
     if (!search) return options;
-    return options.filter((o) =>
-      o.label.toLowerCase().includes(search.toLowerCase())
-    );
+    return options.filter((o) => o.label.toLowerCase().includes(search.toLowerCase()));
   }, [search, options]);
 
   /* ================= HANDLERS ================= */
@@ -96,8 +92,7 @@ export default function FormDropdown({
       const spaceBelow = windowHeight - (y + h);
       const spaceAbove = y;
 
-      const shouldOpenUpwards =
-        spaceBelow < MENU_MAX_HEIGHT && spaceAbove > spaceBelow;
+      const shouldOpenUpwards = spaceBelow < MENU_MAX_HEIGHT && spaceAbove > spaceBelow;
 
       setOpenUpwards(shouldOpenUpwards);
 
@@ -105,7 +100,7 @@ export default function FormDropdown({
         x,
         y,
         width,
-        height: h,
+        height: h
       });
 
       setOpen(true);
@@ -114,7 +109,7 @@ export default function FormDropdown({
 
   const closeMenu = () => {
     setOpen(false);
-    setSearch("");
+    setSearch('');
   };
 
   /* ================= RENDER ================= */
@@ -122,22 +117,20 @@ export default function FormDropdown({
   return (
     <>
       {/* ================= INPUT ================= */}
-      <View
-        style={{ marginBottom: (isAndroid || isIOS) && !noMargin ? 25 : 0 }}
-      >
+      <View style={{ marginBottom: (isAndroid || isIOS) && !noMargin ? 25 : 0 }}>
         <View
           style={{
             backgroundColor: selectedOption?.colorCode
-              ? selectedOption.colorCode + "10"
+              ? selectedOption.colorCode + '10'
               : theme.colors.white,
-            borderRadius: 8,
+            borderRadius: 8
           }}
         >
           <Pressable ref={anchorRef} onPress={openMenu}>
             <TextInput
               pointerEvents="box-only"
               mode="outlined"
-              value={selectedOption?.label || ""}
+              value={selectedOption?.label || ''}
               placeholder={placeholder}
               placeholderTextColor={theme.colors.placeholder}
               editable={false}
@@ -153,16 +146,16 @@ export default function FormDropdown({
               activeOutlineColor={theme.colors.primary}
               right={
                 value && showClearIcon ? (
-                  <TextInput.Icon icon="close" onPress={() => onSelect("")} />
+                  <TextInput.Icon icon="close" onPress={() => onSelect('')} />
                 ) : (
                   <TextInput.Icon
-                    icon={openUpwards ? "menu-up" : "menu-down"}
+                    icon={openUpwards ? 'menu-up' : 'menu-down'}
                     onPress={openMenu}
                   />
                 )
               }
               contentStyle={{
-                marginLeft: selectedOption?.colorCode ? 45 : 0,
+                marginLeft: selectedOption?.colorCode ? 45 : 0
               }}
               left={
                 selectedOption?.colorCode ? (
@@ -194,21 +187,21 @@ export default function FormDropdown({
                   : anchorLayout.y + anchorLayout.height + MENU_OFFSET,
                 bottom: openUpwards
                   ? windowHeight - anchorLayout.y + MENU_OFFSET
-                  : undefined,
-              },
+                  : undefined
+              }
             ]}
           >
             {/* Search */}
             {showSearch && (
               <TextInput
                 mode="outlined"
-                placeholder={t("search")}
+                placeholder={t('search')}
                 placeholderTextColor={theme.colors.placeholder}
                 value={search}
                 onChangeText={setSearch}
                 style={styles.search}
                 outlineStyle={styles.searchOutline}
-                autoFocus={Platform.OS === "web"}
+                autoFocus={Platform.OS === 'web'}
               />
             )}
 
@@ -227,10 +220,10 @@ export default function FormDropdown({
                       hovered && styles.optionHover,
                       selected && {
                         backgroundColor: item.colorCode
-                          ? item.colorCode + "15"
-                          : theme.colors.primary + "14",
+                          ? item.colorCode + '15'
+                          : theme.colors.primary + '14'
                       },
-                      item.itemStyle,
+                      item.itemStyle
                     ]}
                     onPress={() => {
                       onSelect(item.value);
@@ -244,7 +237,7 @@ export default function FormDropdown({
                           height: 8,
                           borderRadius: 4,
                           backgroundColor: item.colorCode,
-                          marginRight: 8,
+                          marginRight: 8
                         }}
                       />
                     )}
@@ -268,19 +261,19 @@ const createStyles = (theme: AppTheme, height: number) =>
   StyleSheet.create({
     input: {
       height: 44,
-      backgroundColor: "transparent",
+      backgroundColor: 'transparent'
     },
 
     outline: {
-      borderRadius: 8,
+      borderRadius: 8
     },
 
     backdrop: {
-      ...StyleSheet.absoluteFillObject,
+      ...StyleSheet.absoluteFillObject
     },
 
     menu: {
-      position: "absolute",
+      position: 'absolute',
       zIndex: 1000,
       maxHeight: MENU_MAX_HEIGHT,
       backgroundColor: theme.colors.white,
@@ -288,51 +281,51 @@ const createStyles = (theme: AppTheme, height: number) =>
       borderWidth: 1,
       borderColor: theme.colors.borderGray,
       elevation: 12,
-      shadowColor: "#000",
+      shadowColor: '#000',
       shadowOpacity: 0.1,
       shadowRadius: 20,
-      shadowOffset: { width: 0, height: 8 },
+      shadowOffset: { width: 0, height: 8 }
     },
 
     search: {
       margin: 10,
       height: 40,
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.white
     },
 
     searchOutline: {
-      borderRadius: 8,
+      borderRadius: 8
     },
 
     option: {
-      flexDirection: "row",
-      alignItems: "center",
+      flexDirection: 'row',
+      alignItems: 'center',
       paddingHorizontal: 16,
       paddingVertical: 11,
-      gap: 10,
+      gap: 10
     },
 
     optionHover: {
-      backgroundColor: theme.colors.lightGray + "90",
-      borderRadius: 10,
+      backgroundColor: theme.colors.lightGray + '90',
+      borderRadius: 10
     },
 
     optionText: {
       fontSize: 14,
       lineHeight: 20,
-      color: theme.colors.onSurface,
+      color: theme.colors.onSurface
     },
 
     divider: {
       height: 1,
       backgroundColor: theme.colors.lightGray,
-      marginLeft: 16,
+      marginLeft: 16
     },
 
     error: {
       fontSize: 12,
       color: theme.colors.error,
       marginTop: 4,
-      paddingLeft: 4,
-    },
+      paddingLeft: 4
+    }
   });

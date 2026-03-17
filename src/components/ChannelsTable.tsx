@@ -1,16 +1,12 @@
-import React, { useRef, useState } from "react";
-import { TouchableOpacity, StyleSheet, Animated, Easing, Platform } from "react-native";
-import { useTheme } from "react-native-paper";
-import { Ionicons } from "@expo/vector-icons";
-import CommonTable from "./CommonTable";
-import { Channel } from "../types/Channel";
-import { AppTheme } from "../theme";
+import React, { useRef, useState } from 'react';
+import { TouchableOpacity, StyleSheet, Animated, Easing, Platform } from 'react-native';
+import { useTheme } from 'react-native-paper';
+import { Ionicons } from '@expo/vector-icons';
+import CommonTable from './CommonTable';
+import { Channel } from '../types/Channel';
+import { AppTheme } from '../theme';
 
-export default function ChannelsTable({
-  channels,
-  onDelete,
-  onUpdateSettings,
-}) {
+export default function ChannelsTable({ channels, onDelete, onUpdateSettings }) {
   const theme = useTheme<AppTheme>();
   const { colors } = theme;
 
@@ -25,7 +21,7 @@ export default function ChannelsTable({
         toValue: 1,
         duration: 800,
         easing: Easing.linear,
-        useNativeDriver: Platform.OS !== "web",
+        useNativeDriver: Platform.OS !== 'web'
       })
     );
     loopAnimation.current.start();
@@ -52,18 +48,18 @@ export default function ChannelsTable({
 
   const spin = spinValue.interpolate({
     inputRange: [0, 1],
-    outputRange: ["0deg", "360deg"],
+    outputRange: ['0deg', '360deg']
   });
 
   const columns = [
     {
-      label: "Name",
-      key: "name",
-      flex: 3,
+      label: 'Name',
+      key: 'name',
+      flex: 3
     },
     {
-      label: "Settings",
-      key: "settings",
+      label: 'Settings',
+      key: 'settings',
       flex: 3,
       render: (item: Channel) => (
         <TouchableOpacity
@@ -73,17 +69,17 @@ export default function ChannelsTable({
         >
           <Animated.View
             style={{
-              transform: [{ rotate: loadingId === item.id ? spin : "0deg" }],
+              transform: [{ rotate: loadingId === item.id ? spin : '0deg' }]
             }}
           >
             <Ionicons name="settings-outline" size={22} color={colors.primary} />
           </Animated.View>
         </TouchableOpacity>
-      ),
+      )
     },
     {
-      label: "Action",
-      key: "actions",
+      label: 'Action',
+      key: 'actions',
       flex: 1,
       render: (item: Channel) => (
         <Ionicons
@@ -92,8 +88,8 @@ export default function ChannelsTable({
           color="red"
           onPress={() => onDelete(item.id)}
         />
-      ),
-    },
+      )
+    }
   ];
 
   return (
@@ -110,7 +106,7 @@ const styles = StyleSheet.create({
   settingsButton: {
     padding: 6,
     borderRadius: 20,
-    alignItems: "flex-start",
-    justifyContent: "center",
-  },
+    alignItems: 'flex-start',
+    justifyContent: 'center'
+  }
 });

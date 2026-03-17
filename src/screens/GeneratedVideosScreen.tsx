@@ -1,30 +1,24 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { View, StyleSheet, Platform } from "react-native";
-import {
-  IconButton,
-  Surface,
-  Text,
-  useTheme,
-  ProgressBar,
-} from "react-native-paper";
-import { useTranslation } from "react-i18next";
-import dayjs from "dayjs";
-import { useFocusEffect } from "@react-navigation/native";
-import { FontAwesome, Ionicons } from "@expo/vector-icons";
-import CommonTable from "../components/CommonTable";
-import { Recipient } from "../types/Recipient";
-import { extractErrorMessage } from "../utils/common";
-import { getAuthData } from "../utils/storage";
-import { useToast } from "../components/ToastProvider";
-import FormDropdown from "../components/FormDropdown";
-import { getRecipientsWithCompletedVideoId } from "../api/recipientApi";
-import { getVideos } from "../api/videoApi";
-import { sendVideo } from "../api/whatsappApi";
-import { useServerTable } from "../hooks/useServerTable";
-import { usePlatformInfo } from "../hooks/usePlatformInfo";
-import ResponsiveKeyboardView from "../components/ResponsiveKeyboardView";
-import { FixedLabel } from "../components/FixedLabel";
-import { AppTheme } from "../theme";
+import React, { useCallback, useEffect, useState } from 'react';
+import { View, StyleSheet, Platform } from 'react-native';
+import { IconButton, Surface, Text, useTheme, ProgressBar } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
+import dayjs from 'dayjs';
+import { useFocusEffect } from '@react-navigation/native';
+import { FontAwesome, Ionicons } from '@expo/vector-icons';
+import CommonTable from '../components/CommonTable';
+import { Recipient } from '../types/Recipient';
+import { extractErrorMessage } from '../utils/common';
+import { getAuthData } from '../utils/storage';
+import { useToast } from '../components/ToastProvider';
+import FormDropdown from '../components/FormDropdown';
+import { getRecipientsWithCompletedVideoId } from '../api/recipientApi';
+import { getVideos } from '../api/videoApi';
+import { sendVideo } from '../api/whatsappApi';
+import { useServerTable } from '../hooks/useServerTable';
+import { usePlatformInfo } from '../hooks/usePlatformInfo';
+import ResponsiveKeyboardView from '../components/ResponsiveKeyboardView';
+import { FixedLabel } from '../components/FixedLabel';
+import { AppTheme } from '../theme';
 
 export default function GeneratedVideoScreen() {
   const { isWeb, isMobileWeb } = usePlatformInfo();
@@ -38,13 +32,13 @@ export default function GeneratedVideoScreen() {
   const [loading, setLoading] = useState(false);
   const [sendingId, setSendingId] = useState<string | null>(null);
   const [progressMap, setProgressMap] = useState<Record<string, number>>({});
-  const [searchText, setSearchText] = useState("");
+  const [searchText, setSearchText] = useState('');
   const [tableParams, setTableParams] = useState<{
     videoId: string | null;
     searchText: string;
   }>({
     videoId: null,
-    searchText: "",
+    searchText: ''
   });
 
   const fetchVideos = useCallback(async () => {
@@ -57,7 +51,7 @@ export default function GeneratedVideoScreen() {
 
       const transformedVideos = videosData.map((video) => ({
         label: video.campaignName,
-        value: video.id,
+        value: video.id
       }));
 
       setBaseVideos(transformedVideos);
@@ -65,10 +59,7 @@ export default function GeneratedVideoScreen() {
         setSelectedVideoId((prev) => prev ?? transformedVideos[0]?.value);
       }
     } catch (error: any) {
-      showToast(
-        extractErrorMessage(error, t("video.loadVideoFailMessage")),
-        "error"
-      );
+      showToast(extractErrorMessage(error, t('video.loadVideoFailMessage')), 'error');
     }
   }, []);
 
@@ -86,20 +77,15 @@ export default function GeneratedVideoScreen() {
           params.videoId,
           page,
           pageSize,
-          params?.searchText ?? ""
+          params?.searchText ?? ''
         );
 
         return {
-          items: Array.isArray(response?.data?.items)
-            ? response.data.items
-            : [],
-          totalCount: response?.data?.totalRecords ?? 0,
+          items: Array.isArray(response?.data?.items) ? response.data.items : [],
+          totalCount: response?.data?.totalRecords ?? 0
         };
       } catch (error: any) {
-        showToast(
-          extractErrorMessage(error, t("voter.loadVoterFailMessage")),
-          "error"
-        );
+        showToast(extractErrorMessage(error, t('voter.loadVoterFailMessage')), 'error');
         return { items: [], totalCount: 0 };
       } finally {
         setLoading(false);
@@ -108,18 +94,19 @@ export default function GeneratedVideoScreen() {
     []
   );
 
-  const table = useServerTable<
-    Recipient,
-    { videoId: string | null; searchText: string }
-  >(fetchVoters, { initialPage: 0, initialRowsPerPage: 10 }, tableParams);
+  const table = useServerTable<Recipient, { videoId: string | null; searchText: string }>(
+    fetchVoters,
+    { initialPage: 0, initialRowsPerPage: 10 },
+    tableParams
+  );
 
   const memoizedDropdown = React.useMemo(() => {
     return (
       <>
-        <FixedLabel label={t("campaign")} />
+        <FixedLabel label={t('campaign')} />
         <View style={{ width: 300 }}>
           <FormDropdown
-            placeholder={t("selectCampaign")}
+            placeholder={t('selectCampaign')}
             value={selectedVideoId}
             options={baseVideos}
             onSelect={(val) => setSelectedVideoId(val)}
@@ -133,7 +120,7 @@ export default function GeneratedVideoScreen() {
   useEffect(() => {
     setTableParams((prev) => ({
       ...prev,
-      videoId: selectedVideoId,
+      videoId: selectedVideoId
     }));
     table.setPage(0);
   }, [selectedVideoId]);
@@ -161,15 +148,15 @@ export default function GeneratedVideoScreen() {
         {
           channelId: channelId,
           recipientId: item.id,
-          campaignID: selectedVideoId,
+          campaignID: selectedVideoId
         },
         userId
       );
-      showToast(t("video.sendSuccess"), "success");
-      updateRowStatus(item.id, { sendStatus: "sent" });
+      showToast(t('video.sendSuccess'), 'success');
+      updateRowStatus(item.id, { sendStatus: 'sent' });
     } catch (error) {
-      showToast(extractErrorMessage(error, t("video.sendFail")), "error");
-      updateRowStatus(item.id, { sendStatus: "pending" });
+      showToast(extractErrorMessage(error, t('video.sendFail')), 'error');
+      updateRowStatus(item.id, { sendStatus: 'pending' });
     } finally {
       setSendingId(null);
       setProgressMap((prev) => {
@@ -180,37 +167,35 @@ export default function GeneratedVideoScreen() {
   };
 
   const columns = [
-    { label: t("name"), key: "fullName", flex: 0.8 },
-    { label: t("mobile"), key: "phoneNumber", flex: 0.4 },
+    { label: t('name'), key: 'fullName', flex: 0.8 },
+    { label: t('mobile'), key: 'phoneNumber', flex: 0.4 },
     {
-      label: t("createdAt"),
-      key: "createdAt",
+      label: t('createdAt'),
+      key: 'createdAt',
       flex: 0.4,
       render: (item) =>
-        item.createdAt
-          ? dayjs(item.createdAt).format("DD MMM YYYY, hh:mm A")
-          : "-",
+        item.createdAt ? dayjs(item.createdAt).format('DD MMM YYYY, hh:mm A') : '-'
     },
     {
-      label: t("actions"),
-      key: "actions",
+      label: t('actions'),
+      key: 'actions',
       flex: 1,
       smallColumn: true,
       render: (item: Recipient) => {
-        const sendStatus = item?.sendStatus?.toLowerCase?.() ?? "pending";
+        const sendStatus = item?.sendStatus?.toLowerCase?.() ?? 'pending';
         const disableRowActions = sendingId !== null && sendingId !== item.id;
         const progress = progressMap[item.id];
 
         return (
           <View
             style={{
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "center",
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center'
             }}
           >
             {sendingId === item.id && progress !== undefined ? (
-              <View style={{ width: 40, alignItems: "center" }}>
+              <View style={{ width: 40, alignItems: 'center' }}>
                 <Text style={{ fontSize: 12, color: colors.primary }}>
                   {Math.floor(progress * 100)}%
                 </Text>
@@ -221,21 +206,17 @@ export default function GeneratedVideoScreen() {
                     width: 36,
                     height: 4,
                     borderRadius: 2,
-                    marginTop: 2,
+                    marginTop: 2
                   }}
                 />
               </View>
-            ) : sendStatus === "pending" ? (
+            ) : sendStatus === 'pending' ? (
               <IconButton
                 icon={() => (
                   <FontAwesome
                     name="whatsapp"
                     size={22}
-                    color={
-                      disableRowActions
-                        ? colors.mediumGray
-                        : colors.whatsappGreen
-                    }
+                    color={disableRowActions ? colors.mediumGray : colors.whatsappGreen}
                   />
                 )}
                 onPress={() => handleSendVideo(item)}
@@ -245,11 +226,7 @@ export default function GeneratedVideoScreen() {
             ) : (
               <IconButton
                 icon={() => (
-                  <FontAwesome
-                    name="check-circle"
-                    size={22}
-                    color={colors.success}
-                  />
+                  <FontAwesome name="check-circle" size={22} color={colors.success} />
                 )}
                 disabled
                 style={{ margin: 0 }}
@@ -257,8 +234,8 @@ export default function GeneratedVideoScreen() {
             )}
           </View>
         );
-      },
-    },
+      }
+    }
   ];
 
   const handleVoterSearch = useCallback(
@@ -266,7 +243,7 @@ export default function GeneratedVideoScreen() {
       setSearchText(text);
       setTableParams((prev) => ({
         ...prev,
-        searchText: text,
+        searchText: text
       }));
       table.setPage(0);
     },
@@ -278,14 +255,14 @@ export default function GeneratedVideoScreen() {
       {/* Header */}
       <View style={styles.headerRow}>
         <Text variant="titleLarge" style={styles.heading}>
-          {t("generatedVideoPageLabel")}
+          {t('generatedVideoPageLabel')}
         </Text>
       </View>
 
       {isWeb && !isMobileWeb && <>{memoizedDropdown}</>}
 
       {/* Mobile top compact toolbar (contains campaign dropdown) */}
-      {Platform.OS !== "web" && (
+      {Platform.OS !== 'web' && (
         <View style={styles.mobileToolbar}>{memoizedDropdown}</View>
       )}
 
@@ -297,16 +274,10 @@ export default function GeneratedVideoScreen() {
             columns={columns}
             loading={loading}
             emptyIcon={
-              <Ionicons
-                name="videocam-outline"
-                size={48}
-                color={colors.disabledText}
-              />
+              <Ionicons name="videocam-outline" size={48} color={colors.disabledText} />
             }
-            emptyText={t("video.noData")}
-            tableHeight={
-              isWeb && !isMobileWeb ? "calc(100vh - 345px)" : undefined
-            }
+            emptyText={t('video.noData')}
+            tableHeight={isWeb && !isMobileWeb ? 'calc(100vh - 345px)' : undefined}
             tableType="tableUnderDropdown"
             enableSearch
             onSearchChange={(filters) => {
@@ -332,34 +303,34 @@ const createStyles = (theme: AppTheme) =>
     container: {
       padding: 16,
       flex: 1,
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.white
     },
     heading: {
-      fontWeight: "bold",
-      color: theme.colors.primary,
+      fontWeight: 'bold',
+      color: theme.colors.primary
     },
     headerRow: {
-      marginBottom: 12,
+      marginBottom: 12
     },
     toolbar: {
-      flexDirection: "row",
-      alignItems: "center",
+      flexDirection: 'row',
+      alignItems: 'center',
       padding: 8,
       borderRadius: 4,
       backgroundColor: theme.colors.paperBackground,
       borderWidth: 1,
       borderColor: theme.colors.subtleBorder,
       marginBottom: 12,
-      justifyContent: "space-between",
+      justifyContent: 'space-between'
     },
     mobileToolbar: {
       paddingVertical: 6,
       paddingHorizontal: 2,
-      marginBottom: 6,
+      marginBottom: 6
     },
     waChip: {
-      flexDirection: "row",
-      alignItems: "center",
+      flexDirection: 'row',
+      alignItems: 'center',
       borderRadius: 16,
       paddingHorizontal: 16,
       paddingVertical: 12,
@@ -367,79 +338,79 @@ const createStyles = (theme: AppTheme) =>
       shadowColor: theme.colors.black,
       shadowOpacity: 0.05,
       shadowRadius: 6,
-      elevation: 2,
+      elevation: 2
     },
     waChipText: {
       fontSize: 15,
-      marginBottom: 2,
+      marginBottom: 2
     },
     waChipSubText: {
       fontSize: 12,
-      color: theme.colors.textSecondary,
+      color: theme.colors.textSecondary
     },
     fab: {
-      position: "absolute",
+      position: 'absolute',
       bottom: 20,
       right: 20,
       borderRadius: 28,
       elevation: 5,
       shadowColor: theme.colors.black,
       shadowOpacity: 0.15,
-      shadowRadius: 6,
+      shadowRadius: 6
     },
     modalContainer: {
       flex: 1,
-      justifyContent: "center",
-      alignItems: "center",
-      padding: 16,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 16
     },
     modalCard: {
-      width: "90%",
+      width: '90%',
       maxWidth: 420,
       backgroundColor: theme.colors.white,
       borderRadius: 16,
       padding: 20,
-      alignItems: "center",
+      alignItems: 'center',
       borderWidth: 1,
-      borderColor: theme.colors.mutedBorder,
+      borderColor: theme.colors.mutedBorder
     },
     modalTitle: {
       fontSize: 20,
-      fontWeight: "700",
-      textAlign: "center",
+      fontWeight: '700',
+      textAlign: 'center',
       marginBottom: 8,
-      color: theme.colors.primary,
+      color: theme.colors.primary
     },
     modalSubtitle: {
       fontSize: 14,
-      textAlign: "center",
+      textAlign: 'center',
       color: theme.colors.textSecondary,
-      marginBottom: 20,
+      marginBottom: 20
     },
     qrWrapper: {
       width: 220,
       height: 220,
       borderRadius: 12,
       backgroundColor: theme.colors.lightBackground,
-      alignItems: "center",
-      justifyContent: "center",
+      alignItems: 'center',
+      justifyContent: 'center',
       marginBottom: 16,
-      elevation: 1,
+      elevation: 1
     },
     qrImage: {
       width: 200,
       height: 200,
-      borderRadius: 12,
+      borderRadius: 12
     },
     modalHint: {
       fontSize: 13,
       color: theme.colors.darkGrayText,
-      textAlign: "center",
-      marginBottom: 20,
+      textAlign: 'center',
+      marginBottom: 20
     },
     closeButton: {
       marginTop: 8,
-      alignSelf: "stretch",
-      borderRadius: 8,
-    },
+      alignSelf: 'stretch',
+      borderRadius: 8
+    }
   });

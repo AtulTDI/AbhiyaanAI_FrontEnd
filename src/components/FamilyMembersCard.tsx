@@ -1,23 +1,14 @@
-import React, { useEffect, useState } from "react";
-import {
-  View,
-  ActivityIndicator,
-  Pressable,
-  useWindowDimensions,
-} from "react-native";
-import { Text, IconButton, Button, useTheme } from "react-native-paper";
-import { useTranslation } from "react-i18next";
-import { useToast } from "./ToastProvider";
-import { Voter } from "../types/Voter";
-import AddFamilyMembersDialog from "./AddFamilyMemberDialog";
-import DeleteConfirmationDialog from "./DeleteConfirmationDialog";
-import {
-  addFamilyMember,
-  getFamilyMembers,
-  removeFamilyMember,
-} from "../api/voterApi";
-import { extractErrorMessage } from "../utils/common";
-import { AppTheme } from "../theme";
+import React, { useEffect, useState } from 'react';
+import { View, ActivityIndicator, Pressable, useWindowDimensions } from 'react-native';
+import { Text, IconButton, Button, useTheme } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
+import { useToast } from './ToastProvider';
+import { Voter } from '../types/Voter';
+import AddFamilyMembersDialog from './AddFamilyMemberDialog';
+import DeleteConfirmationDialog from './DeleteConfirmationDialog';
+import { addFamilyMember, getFamilyMembers, removeFamilyMember } from '../api/voterApi';
+import { extractErrorMessage } from '../utils/common';
+import { AppTheme } from '../theme';
 
 type Props = {
   voter: Voter;
@@ -62,12 +53,9 @@ export default function FamilyMembersCard({ voter, onSelectMember }: Props) {
     try {
       await removeFamilyMember(deleteId);
       await fetchMembers();
-      showToast(t("voter.deleteFamilyMemberSuccess"), "success");
+      showToast(t('voter.deleteFamilyMemberSuccess'), 'success');
     } catch (e: any) {
-      showToast(
-        extractErrorMessage(e, t("voter.deleteFamilyMemberFail")),
-        "error"
-      );
+      showToast(extractErrorMessage(e, t('voter.deleteFamilyMemberFail')), 'error');
     } finally {
       setDeleteOpen(false);
       setDeleteId(null);
@@ -79,39 +67,39 @@ export default function FamilyMembersCard({ voter, onSelectMember }: Props) {
   const handleAddMembers = async (members: string[]) => {
     const data = {
       sourceVoterId: voter.id,
-      targetVoterIds: members,
+      targetVoterIds: members
     };
 
     try {
       await addFamilyMember(data);
       await fetchMembers();
-      showToast(t("voter.addFamilyMemberSuccess"), "success");
+      showToast(t('voter.addFamilyMemberSuccess'), 'success');
     } catch (e: any) {
-      showToast(extractErrorMessage(e, t("voter.addFail")), "error");
+      showToast(extractErrorMessage(e, t('voter.addFail')), 'error');
     }
   };
 
   /* ================= RENDER ================= */
 
   return (
-    <View style={{ width: "100%", gap: 12 }}>
+    <View style={{ width: '100%', gap: 12 }}>
       {/* Header */}
       <View
         style={{
-          width: "100%",
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
+          width: '100%',
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center'
         }}
       >
         <Text
           style={{
-            fontWeight: "700",
+            fontWeight: '700',
             fontSize: 16,
-            color: theme.colors.primary,
+            color: theme.colors.primary
           }}
         >
-          {t("voter.familyMembers")}
+          {t('voter.familyMembers')}
         </Text>
 
         <Button
@@ -120,29 +108,27 @@ export default function FamilyMembersCard({ voter, onSelectMember }: Props) {
           style={{ borderRadius: 10, paddingHorizontal: 6 }}
           onPress={() => setAddOpen(true)}
         >
-          {t("voter.addFamilyMember")}
+          {t('voter.addFamilyMember')}
         </Button>
       </View>
 
       {/* Loader */}
-      {loading && (
-        <ActivityIndicator size="small" color={theme.colors.primary} />
-      )}
+      {loading && <ActivityIndicator size="small" color={theme.colors.primary} />}
 
       {/* Empty */}
       {!loading && members.length === 0 && (
         <View
           style={{
-            width: "100%",
+            width: '100%',
             backgroundColor: theme.colors.paperBackground,
             borderRadius: 12,
             borderWidth: 1,
             borderColor: theme.colors.subtleBorder,
-            padding: 14,
+            padding: 14
           }}
         >
           <Text style={{ color: theme.colors.textSecondary }}>
-            {t("voter.noFamilyMembers")}
+            {t('voter.noFamilyMembers')}
           </Text>
         </View>
       )}
@@ -150,17 +136,17 @@ export default function FamilyMembersCard({ voter, onSelectMember }: Props) {
       {/* Cards Grid */}
       <View
         style={{
-          width: "100%",
-          flexDirection: "row",
-          flexWrap: "wrap",
+          width: '100%',
+          flexDirection: 'row',
+          flexWrap: 'wrap'
         }}
       >
         {members.map((m) => (
           <View
             key={m.id}
             style={{
-              width: isWeb ? "50%" : "100%",
-              padding: isWeb ? 6 : 4,
+              width: isWeb ? '50%' : '100%',
+              padding: isWeb ? 6 : 4
             }}
           >
             <Pressable onPress={() => onSelectMember(m.id)}>
@@ -170,15 +156,15 @@ export default function FamilyMembersCard({ voter, onSelectMember }: Props) {
                   borderRadius: 12,
                   borderWidth: 1,
                   borderColor: theme.colors.subtleBorder,
-                  flexDirection: "row",
-                  overflow: "hidden",
+                  flexDirection: 'row',
+                  overflow: 'hidden'
                 }}
               >
                 {/* Accent strip */}
                 <View
                   style={{
                     width: 4,
-                    backgroundColor: theme.colors.primaryLight,
+                    backgroundColor: theme.colors.primaryLight
                   }}
                 />
 
@@ -187,23 +173,23 @@ export default function FamilyMembersCard({ voter, onSelectMember }: Props) {
                   style={{
                     flex: 1,
                     paddingVertical: 12,
-                    paddingHorizontal: 14,
+                    paddingHorizontal: 14
                   }}
                 >
                   {/* Top row */}
                   <View
                     style={{
-                      flexDirection: "row",
-                      justifyContent: "space-between",
-                      alignItems: "flex-start",
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      alignItems: 'flex-start'
                     }}
                   >
                     <View style={{ flex: 1, paddingRight: 8 }}>
                       <Text
                         variant="titleMedium"
                         style={{
-                          fontWeight: "600",
-                          color: theme.colors.primary,
+                          fontWeight: '600',
+                          color: theme.colors.primary
                         }}
                       >
                         {m.fullName}
@@ -213,14 +199,14 @@ export default function FamilyMembersCard({ voter, onSelectMember }: Props) {
                         style={{
                           marginTop: 2,
                           fontSize: 13,
-                          color: theme.colors.textSecondary,
+                          color: theme.colors.textSecondary
                         }}
                       >
-                        {t("voter.ageGender", {
+                        {t('voter.ageGender', {
                           age: m.age,
                           gender: t(`voter.gender${m.gender}`, {
-                            defaultValue: m.gender,
-                          }),
+                            defaultValue: m.gender
+                          })
                         })}
                       </Text>
                     </View>
@@ -242,10 +228,10 @@ export default function FamilyMembersCard({ voter, onSelectMember }: Props) {
                       style={{
                         marginTop: 6,
                         fontSize: 13,
-                        color: theme.colors.textSecondary,
+                        color: theme.colors.textSecondary
                       }}
                     >
-                      {t("voter.fatherHusband")}:{" "}
+                      {t('voter.fatherHusband')}:{' '}
                       <Text style={{ color: theme.colors.textPrimary }}>
                         {m.fatherHusbandName}
                       </Text>
@@ -256,27 +242,25 @@ export default function FamilyMembersCard({ voter, onSelectMember }: Props) {
                   <View
                     style={{
                       marginTop: 8,
-                      alignSelf: "flex-start",
+                      alignSelf: 'flex-start',
                       paddingHorizontal: 8,
                       paddingVertical: 2,
                       borderRadius: 8,
                       backgroundColor: m.isVerified
                         ? theme.colors.successBackground
-                        : theme.colors.errorBackground,
+                        : theme.colors.errorBackground
                     }}
                   >
                     <Text
                       style={{
                         fontSize: 12,
-                        fontWeight: "500",
+                        fontWeight: '500',
                         color: m.isVerified
                           ? theme.colors.successText
-                          : theme.colors.errorText,
+                          : theme.colors.errorText
                       }}
                     >
-                      {m.isVerified
-                        ? t("voter.verified")
-                        : t("voter.notVerified")}
+                      {m.isVerified ? t('voter.verified') : t('voter.notVerified')}
                     </Text>
                   </View>
                 </View>
@@ -289,8 +273,8 @@ export default function FamilyMembersCard({ voter, onSelectMember }: Props) {
       {/* Delete Dialog */}
       <DeleteConfirmationDialog
         visible={deleteOpen}
-        title={t("voter.deleteFamilyMember")}
-        message={t("voter.confirmDeleteFamilyMember")}
+        title={t('voter.deleteFamilyMember')}
+        message={t('voter.confirmDeleteFamilyMember')}
         onCancel={() => setDeleteOpen(false)}
         onConfirm={confirmDelete}
       />

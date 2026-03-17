@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 import {
   View,
   FlatList,
   StyleSheet,
   useWindowDimensions,
   KeyboardAvoidingView,
-  Platform,
-} from "react-native";
+  Platform
+} from 'react-native';
 import {
   Dialog,
   Searchbar,
@@ -17,14 +17,14 @@ import {
   Divider,
   useTheme,
   Portal,
-  ActivityIndicator,
-} from "react-native-paper";
-import { useTranslation } from "react-i18next";
-import { Voter } from "../types/Voter";
-import { getEligibleFamilyMembers } from "../api/voterApi";
-import { useDebounce } from "../hooks/useDebounce";
-import { getAuthData } from "../utils/storage";
-import { AppTheme } from "../theme";
+  ActivityIndicator
+} from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
+import { Voter } from '../types/Voter';
+import { getEligibleFamilyMembers } from '../api/voterApi';
+import { useDebounce } from '../hooks/useDebounce';
+import { getAuthData } from '../utils/storage';
+import { AppTheme } from '../theme';
 
 type Props = {
   visible: boolean;
@@ -41,7 +41,7 @@ export default function AddFamilyMembersDialog({
   voter,
   existingIds,
   onClose,
-  onAdd,
+  onAdd
 }: Props) {
   const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
@@ -50,7 +50,7 @@ export default function AddFamilyMembersDialog({
 
   const isTablet = width >= 900;
 
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
   const debounced = useDebounce(search, 400);
 
   const [list, setList] = useState<Voter[]>([]);
@@ -92,7 +92,7 @@ export default function AddFamilyMembersDialog({
       );
 
       const filtered = res.data.data.filter(
-        (v: Voter) => v.id !== voter.id && !existingIds.includes(v.id),
+        (v: Voter) => v.id !== voter.id && !existingIds.includes(v.id)
       );
 
       const total = res.data.totalRecords ?? 0;
@@ -108,9 +108,7 @@ export default function AddFamilyMembersDialog({
 
       setList((prev) => (reset ? filtered : [...prev, ...filtered]));
 
-      const newFilteredLength = reset
-        ? filtered.length
-        : list.length + filtered.length;
+      const newFilteredLength = reset ? filtered.length : list.length + filtered.length;
 
       const noMoreFromServer = res.data.data.length === 0;
       const reachedTotal = loadedCount + newlyLoaded >= total;
@@ -140,9 +138,9 @@ export default function AddFamilyMembersDialog({
   return (
     <Portal>
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 0}
-        style={{ flex: 1, justifyContent: "center" }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 0}
+        style={{ flex: 1, justifyContent: 'center' }}
       >
         <Dialog
           visible={visible}
@@ -150,37 +148,37 @@ export default function AddFamilyMembersDialog({
           style={[
             styles.dialog,
             {
-              width: isTablet ? 520 : "92%",
-              height: isTablet ? 620 : 520,
-            },
+              width: isTablet ? 520 : '92%',
+              height: isTablet ? 620 : 520
+            }
           ]}
         >
           <View style={styles.header}>
-            <Text style={styles.title}>{t("voter.addFamilyMembers")}</Text>
-            <Text style={styles.subtitle}>{t("voter.addFamilySubtitle")}</Text>
+            <Text style={styles.title}>{t('voter.addFamilyMembers')}</Text>
+            <Text style={styles.subtitle}>{t('voter.addFamilySubtitle')}</Text>
           </View>
 
           <Divider style={styles.divider} />
 
           <View style={styles.topSection}>
             <Searchbar
-              placeholder={t("voter.searchVoters")}
+              placeholder={t('voter.searchVoters')}
               value={search}
               onChangeText={setSearch}
               style={styles.search}
               inputStyle={{
                 fontSize: 14,
                 minHeight: 44,
-                height: 44,
+                height: 44
               }}
             />
           </View>
 
           <View style={styles.counterBar}>
             <Text style={styles.counterText}>
-              {t("survey.showing", { defaultValue: "Showing" })}{" "}
-              <Text style={styles.counterHighlight}>{loadedCount}</Text>{" "}
-              {t("survey.of", { defaultValue: "of" })}{" "}
+              {t('survey.showing', { defaultValue: 'Showing' })}{' '}
+              <Text style={styles.counterHighlight}>{loadedCount}</Text>{' '}
+              {t('survey.of', { defaultValue: 'of' })}{' '}
               <Text style={styles.counterHighlight}>{totalCount}</Text>
             </Text>
           </View>
@@ -199,11 +197,11 @@ export default function AddFamilyMembersDialog({
               keyboardDismissMode="none"
               showsVerticalScrollIndicator={false}
               contentContainerStyle={{
-                paddingHorizontal: 12,
+                paddingHorizontal: 12
               }}
               ListFooterComponent={
                 hasMore ? (
-                  <View style={{ padding: 8, alignItems: "center" }}>
+                  <View style={{ padding: 8, alignItems: 'center' }}>
                     {loading ? (
                       <ActivityIndicator size="small" />
                     ) : (
@@ -215,14 +213,14 @@ export default function AddFamilyMembersDialog({
                           borderRadius: 8,
                           minWidth: 100,
                           height: 32,
-                          justifyContent: "center",
+                          justifyContent: 'center'
                         }}
                         labelStyle={{
                           fontSize: 12,
-                          lineHeight: 14,
+                          lineHeight: 14
                         }}
                       >
-                        {t("survey.loadMore", { defaultValue: "Load More" })}
+                        {t('survey.loadMore', { defaultValue: 'Load More' })}
                       </Button>
                     )}
                   </View>
@@ -230,7 +228,7 @@ export default function AddFamilyMembersDialog({
               }
               ListEmptyComponent={
                 !loading ? (
-                  <Text style={styles.emptyText}>{t("voter.noData")}</Text>
+                  <Text style={styles.emptyText}>{t('voter.noData')}</Text>
                 ) : null
               }
               renderItem={({ item }) => {
@@ -239,18 +237,15 @@ export default function AddFamilyMembersDialog({
                   <List.Item
                     title={item.fullName}
                     description={t(`voter.gender${item.gender}`, {
-                      defaultValue: item.gender,
+                      defaultValue: item.gender
                     })}
                     titleStyle={styles.listTitle}
                     descriptionStyle={styles.listDescription}
                     onPress={() => toggle(item)}
-                    style={[
-                      styles.listItem,
-                      checked && styles.listItemSelected,
-                    ]}
+                    style={[styles.listItem, checked && styles.listItemSelected]}
                     left={() => (
                       <Checkbox
-                        status={checked ? "checked" : "unchecked"}
+                        status={checked ? 'checked' : 'unchecked'}
                         color={theme.colors.primary}
                       />
                     )}
@@ -268,7 +263,7 @@ export default function AddFamilyMembersDialog({
               style={{ borderRadius: 10 }}
               textColor={theme.colors.textSecondary}
             >
-              {t("cancel")}
+              {t('cancel')}
             </Button>
             <Button
               mode="contained"
@@ -276,8 +271,8 @@ export default function AddFamilyMembersDialog({
               style={{ borderRadius: 10 }}
               onPress={confirm}
             >
-              {t("voter.addWithCount", {
-                count: Object.keys(selected).length,
+              {t('voter.addWithCount', {
+                count: Object.keys(selected).length
               })}
             </Button>
           </View>
@@ -294,9 +289,9 @@ const createStyles = (theme: AppTheme) =>
     dialog: {
       borderRadius: 16,
       backgroundColor: theme.colors.white,
-      alignSelf: "center",
-      maxHeight: "85%",
-      display: "flex",
+      alignSelf: 'center',
+      maxHeight: '85%',
+      display: 'flex'
     },
     header: {
       paddingHorizontal: 20,
@@ -304,25 +299,25 @@ const createStyles = (theme: AppTheme) =>
       paddingBottom: 14,
       backgroundColor: theme.colors.paperBackground,
       marginTop: 0,
-      borderRadius: 16,
+      borderRadius: 16
     },
     title: {
       fontSize: 18,
-      fontWeight: "700",
-      color: theme.colors.primary,
+      fontWeight: '700',
+      color: theme.colors.primary
     },
     subtitle: {
       marginTop: 4,
       fontSize: 13,
-      color: theme.colors.textSecondary,
+      color: theme.colors.textSecondary
     },
     divider: {
-      backgroundColor: theme.colors.divider,
+      backgroundColor: theme.colors.divider
     },
     topSection: {
       paddingHorizontal: 12,
       paddingTop: 8,
-      paddingBottom: 6,
+      paddingBottom: 6
     },
     search: {
       backgroundColor: theme.colors.white,
@@ -330,63 +325,63 @@ const createStyles = (theme: AppTheme) =>
       borderColor: theme.colors.subtleBorder,
       borderRadius: 12,
       height: 44,
-      minHeight: 44,
+      minHeight: 44
     },
     counterBar: {
       paddingHorizontal: 16,
       paddingVertical: 6,
       backgroundColor: theme.colors.paperBackground,
       borderBottomWidth: 1,
-      borderBottomColor: theme.colors.divider,
+      borderBottomColor: theme.colors.divider
     },
     counterText: {
       fontSize: 13,
-      color: theme.colors.textSecondary,
+      color: theme.colors.textSecondary
     },
     counterHighlight: {
-      fontWeight: "700",
-      color: theme.colors.primary,
+      fontWeight: '700',
+      color: theme.colors.primary
     },
     listItem: {
       paddingVertical: 4,
       paddingRight: 8,
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.white
     },
     listItemSelected: {
       backgroundColor: theme.colors.softOrange,
-      borderRadius: 4,
+      borderRadius: 4
     },
     listTitle: {
       fontSize: 14,
-      fontWeight: "600",
-      color: theme.colors.textPrimary,
+      fontWeight: '600',
+      color: theme.colors.textPrimary
     },
     listDescription: {
       fontSize: 12,
-      color: theme.colors.textSecondary,
+      color: theme.colors.textSecondary
     },
     emptyText: {
-      textAlign: "center",
+      textAlign: 'center',
       paddingVertical: 24,
       color: theme.colors.textSecondary,
-      fontSize: 13,
+      fontSize: 13
     },
     actions: {
-      display: "flex",
-      flexDirection: "row",
+      display: 'flex',
+      flexDirection: 'row',
       paddingHorizontal: 16,
       paddingVertical: 16,
-      justifyContent: "space-between",
+      justifyContent: 'space-between'
     },
     overlayLoader: {
-      position: "absolute",
+      position: 'absolute',
       top: 0,
       left: 0,
       right: 0,
       bottom: 0,
-      alignItems: "center",
-      justifyContent: "center",
-      backgroundColor: "rgba(255,255,255,0.6)",
-      zIndex: 10,
-    },
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: 'rgba(255,255,255,0.6)',
+      zIndex: 10
+    }
   });

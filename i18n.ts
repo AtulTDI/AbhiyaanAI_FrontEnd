@@ -9,22 +9,20 @@ import mr from './locales/mr.json';
 const resources = {
   en: { translation: en },
   hi: { translation: hi },
-  mr: { translation: mr },
+  mr: { translation: mr }
 };
 
 const locales = RNLocalize.getLocales();
 const deviceLanguage = locales && locales.length > 0 ? locales[0].languageCode : 'en';
 
-i18n
-  .use(initReactI18next)
-  .init({
-    compatibilityJSON: 'v4',
-    lng: deviceLanguage,
-    fallbackLng: 'en',
-    resources,
-    interpolation: {
-      escapeValue: false,
-    },
-  });
+i18n.use(initReactI18next).init({
+  compatibilityJSON: 'v4',
+  lng: deviceLanguage,
+  fallbackLng: 'en',
+  resources,
+  interpolation: {
+    escapeValue: false
+  }
+});
 
 export default i18n;

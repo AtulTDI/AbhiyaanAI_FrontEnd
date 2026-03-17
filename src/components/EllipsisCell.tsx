@@ -1,8 +1,8 @@
-import React, { useRef, useEffect, useState } from "react";
-import { Text, TouchableOpacity, Platform, StyleSheet } from "react-native";
-import { useTheme } from "react-native-paper";
-import Tooltip from "react-native-walkthrough-tooltip";
-import { AppTheme } from "../theme";
+import React, { useRef, useEffect, useState } from 'react';
+import { Text, TouchableOpacity, Platform, StyleSheet } from 'react-native';
+import { useTheme } from 'react-native-paper';
+import Tooltip from 'react-native-walkthrough-tooltip';
+import { AppTheme } from '../theme';
 
 type EllipsisCellProps = {
   cellKey: string;
@@ -29,14 +29,14 @@ export function EllipsisCell({
   const [isTruncated, setIsTruncated] = useState(false);
 
   useEffect(() => {
-    if (Platform.OS === "web" && textRef.current) {
+    if (Platform.OS === 'web' && textRef.current) {
       const el = textRef.current as HTMLElement;
       setIsTruncated(el.scrollWidth > el.clientWidth);
     }
   }, [value, width]);
 
   const handleMouseEnter = () => {
-    if (Platform.OS === "web" && isTruncated && !tableWithSelection) {
+    if (Platform.OS === 'web' && isTruncated && !tableWithSelection) {
       setVisibleTooltip(cellKey);
     }
   };
@@ -54,7 +54,7 @@ export function EllipsisCell({
       <TouchableOpacity
         style={{ width }}
         activeOpacity={0.8}
-        onLongPress={() => Platform.OS !== "web" && setVisibleTooltip(cellKey)}
+        onLongPress={() => Platform.OS !== 'web' && setVisibleTooltip(cellKey)}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={() => setVisibleTooltip(null)}
       >
@@ -64,9 +64,9 @@ export function EllipsisCell({
             textStyle,
             {
               maxWidth: width,
-              overflow: !tableWithSelection ? "hidden" : "visible !important",
-              cursor: isTruncated ? "pointer" : "default",
-            },
+              overflow: !tableWithSelection ? 'hidden' : 'visible !important',
+              cursor: isTruncated ? 'pointer' : 'default'
+            }
           ]}
           numberOfLines={1}
           ellipsizeMode="tail"
@@ -85,11 +85,11 @@ const createStyles = (theme: AppTheme) =>
       borderRadius: 8,
       paddingVertical: 6,
       paddingHorizontal: 10,
-      maxWidth: 250,
+      maxWidth: 250
     },
     tooltipText: {
       color: theme.colors.white,
       fontSize: 13,
-      lineHeight: 18,
-    },
+      lineHeight: 18
+    }
   });

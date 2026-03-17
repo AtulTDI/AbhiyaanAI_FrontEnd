@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from "react";
-import { View, StyleSheet, Platform, TouchableOpacity } from "react-native";
+import React, { useState, useRef, useEffect } from 'react';
+import { View, StyleSheet, Platform, TouchableOpacity } from 'react-native';
 import {
   Text,
   TextInput,
@@ -11,34 +11,30 @@ import {
   Portal,
   Modal,
   Surface,
-  IconButton,
-} from "react-native-paper";
-import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import { useTranslation } from "react-i18next";
-import {
-  ResizeMode,
-  Video as ExpoVideo,
-  AVPlaybackStatusSuccess,
-} from "expo-av";
-import { Asset } from "expo-asset";
-import * as Sharing from "expo-sharing";
-import * as FileSystem from "expo-file-system";
-import { useToast } from "./ToastProvider";
-import * as DocumentPicker from "expo-document-picker";
-import CommonUpload from "./CommonUpload";
-import { generateSampleVideo } from "../api/videoApi";
-import { getAuthData } from "../utils/storage";
-import { extractErrorMessage } from "../utils/common";
-import { usePlatformInfo } from "../hooks/usePlatformInfo";
+  IconButton
+} from 'react-native-paper';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { useTranslation } from 'react-i18next';
+import { ResizeMode, Video as ExpoVideo, AVPlaybackStatusSuccess } from 'expo-av';
+import { Asset } from 'expo-asset';
+import * as Sharing from 'expo-sharing';
+import * as FileSystem from 'expo-file-system';
+import { useToast } from './ToastProvider';
+import * as DocumentPicker from 'expo-document-picker';
+import CommonUpload from './CommonUpload';
+import { generateSampleVideo } from '../api/videoApi';
+import { getAuthData } from '../utils/storage';
+import { extractErrorMessage } from '../utils/common';
+import { usePlatformInfo } from '../hooks/usePlatformInfo';
 import {
   joinGroups,
   leaveGroups,
   onEvent,
   startConnection,
-  stopConnection,
-} from "../services/signalrService";
-import { FixedLabel } from "./FixedLabel";
-import { AppTheme } from "../theme";
+  stopConnection
+} from '../services/signalrService';
+import { FixedLabel } from './FixedLabel';
+import { AppTheme } from '../theme';
 
 interface FormData {
   campaign: string;
@@ -62,7 +58,7 @@ type Props = {
 export default function VideoUploadForm({
   onAddVideo,
   setShowAddView,
-  uploading,
+  uploading
 }: Props) {
   const { isWeb, isMobileWeb } = usePlatformInfo();
   const { t } = useTranslation();
@@ -76,14 +72,14 @@ export default function VideoUploadForm({
   const messageInputRef = useRef<any>(null);
 
   const [formData, setFormData] = useState<FormData>({
-    campaign: "",
-    message: "",
+    campaign: '',
+    message: '',
     cloningSpeed: 1,
     file: null,
-    errors: {},
+    errors: {}
   });
   const [expanded, setExpanded] = useState(true);
-  const [name, setName] = useState("");
+  const [name, setName] = useState('');
   const [generatedUri, setGeneratedUri] = useState<string | null>(null);
   const [voiceCloneId, setVoiceCloneId] = useState<string | null>(null);
   const [messageEditorVisible, setMessageEditorVisible] = useState(false);
@@ -97,7 +93,7 @@ export default function VideoUploadForm({
         const data = await getAuthData();
         setAuthData(data);
       } catch (e) {
-        console.error("Failed to load auth data", e);
+        console.error('Failed to load auth data', e);
       }
     };
 
@@ -120,14 +116,14 @@ export default function VideoUploadForm({
       await joinGroups(userId);
 
       onEvent(
-        "ReceiveVideoUpdate",
+        'ReceiveVideoUpdate',
         (
           recipientId: string,
           status: string,
           customizedVideoLink: string,
           voiceCloneId: string
         ) => {
-          if (status === "Completed" && customizedVideoLink) {
+          if (status === 'Completed' && customizedVideoLink) {
             setGeneratedUri(customizedVideoLink);
             setVoiceCloneId(voiceCloneId);
             setLoading(false);
@@ -141,20 +137,17 @@ export default function VideoUploadForm({
       await generateSampleVideo({
         file: formData?.file,
         recipientName: name.trim(),
-        cloningSpeed: formData?.cloningSpeed,
+        cloningSpeed: formData?.cloningSpeed
       });
     } catch (error) {
-      showToast(
-        extractErrorMessage(error, "Failed to generate sample video"),
-        "error"
-      );
+      showToast(extractErrorMessage(error, 'Failed to generate sample video'), 'error');
       setLoading(false);
     }
   };
 
   const handleGenerateSampleVideo = async () => {
     if (!name.trim()) {
-      showToast("Failed to generate sample video", "error");
+      showToast('Failed to generate sample video', 'error');
       return;
     }
     setLoading(true);
@@ -162,16 +155,16 @@ export default function VideoUploadForm({
   };
 
   const normalizePastedText = (txt: string) => {
-    let normalized = txt.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
-    normalized = normalized.replace(/^\s+/, "").replace(/\s+$/, "");
+    let normalized = txt.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    normalized = normalized.replace(/^\s+/, '').replace(/\s+$/, '');
     return normalized;
   };
 
   const handleSubmit = () => {
-    const errors: FormData["errors"] = {};
+    const errors: FormData['errors'] = {};
     if (!formData.campaign.trim())
-      errors.campaign = t("fieldRequired", { field: t("campaign") });
-    if (!formData.file) errors.file = "Please upload a base video";
+      errors.campaign = t('fieldRequired', { field: t('campaign') });
+    if (!formData.file) errors.file = 'Please upload a base video';
 
     if (Object.keys(errors).length > 0) {
       setFormData((prev) => ({ ...prev, errors }));
@@ -190,7 +183,7 @@ export default function VideoUploadForm({
       message: normalizePastedText(formData.message),
       cloningSpeed: formData.cloningSpeed,
       voiceCloneId: voiceCloneId,
-      file: formData.file,
+      file: formData.file
     };
 
     onAddVideo(payload);
@@ -198,14 +191,14 @@ export default function VideoUploadForm({
 
   const downloadSampleVideo = async () => {
     try {
-      const asset = Asset.fromModule(require("../assets/sample-video.mp4"));
+      const asset = Asset.fromModule(require('../assets/sample-video.mp4'));
       await asset.downloadAsync();
       const fileUri = asset.localUri || asset.uri;
 
-      if (Platform.OS === "web") {
-        const link = document.createElement("a");
+      if (Platform.OS === 'web') {
+        const link = document.createElement('a');
         link.href = fileUri;
-        link.download = "sample-video.mp4";
+        link.download = 'sample-video.mp4';
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -215,7 +208,7 @@ export default function VideoUploadForm({
         await Sharing.shareAsync(dest);
       }
     } catch (error) {
-      console.error("Error downloading video:", error);
+      console.error('Error downloading video:', error);
     }
   };
 
@@ -225,32 +218,32 @@ export default function VideoUploadForm({
         ref={scrollRef}
         contentContainerStyle={{
           padding: 16,
-          paddingBottom: 100,
+          paddingBottom: 100
         }}
         enableOnAndroid
-        extraScrollHeight={Platform.OS === "ios" ? 120 : 140}
+        extraScrollHeight={Platform.OS === 'ios' ? 120 : 140}
         keyboardShouldPersistTaps="handled"
       >
         <View
           style={{
-            display: "flex",
-            flexDirection: isWeb && !isMobileWeb ? "row" : "column",
-            gap: isWeb && !isMobileWeb ? 12 : 0,
+            display: 'flex',
+            flexDirection: isWeb && !isMobileWeb ? 'row' : 'column',
+            gap: isWeb && !isMobileWeb ? 12 : 0
           }}
         >
           {/* Campaign */}
           <View style={{ flex: 1 }}>
-            <FixedLabel label={t("campaign")} required />
+            <FixedLabel label={t('campaign')} required />
             <TextInput
               ref={campaignInputRef}
-              placeholder={t("placeholder.enterCampaign")}
+              placeholder={t('placeholder.enterCampaign')}
               placeholderTextColor={theme.colors.placeholder}
               value={formData.campaign}
               onChangeText={(text) =>
                 setFormData((prev) => ({
                   ...prev,
                   campaign: text,
-                  errors: { ...prev.errors, campaign: undefined },
+                  errors: { ...prev.errors, campaign: undefined }
                 }))
               }
               mode="outlined"
@@ -272,9 +265,9 @@ export default function VideoUploadForm({
               activeOpacity={0.7}
               onPress={() => setMessageEditorVisible(true)}
             >
-              <FixedLabel label={t("campaignMessage")} required />
+              <FixedLabel label={t('campaignMessage')} required />
               <TextInput
-                placeholder={t("placeholder.enterCampaignMessage")}
+                placeholder={t('placeholder.enterCampaignMessage')}
                 placeholderTextColor={theme.colors.placeholder}
                 value={formData.message}
                 mode="outlined"
@@ -302,9 +295,9 @@ export default function VideoUploadForm({
 
           {/* Cloning Speed */}
           <View style={{ flex: 1 }}>
-            <FixedLabel label={t("cloningSpeed")} required />
+            <FixedLabel label={t('cloningSpeed')} required />
             <TextInput
-              placeholder={t("placeholder.cloningSpeedPlaceholder")}
+              placeholder={t('placeholder.cloningSpeedPlaceholder')}
               placeholderTextColor={theme.colors.placeholder}
               value={`${formData.cloningSpeed.toFixed(1)}x`}
               mode="outlined"
@@ -318,11 +311,11 @@ export default function VideoUploadForm({
                 setFormData((prev) => ({
                   ...prev,
                   cloningSpeed: num,
-                  errors: { ...prev.errors, cloningSpeed: undefined },
+                  errors: { ...prev.errors, cloningSpeed: undefined }
                 }));
               }}
               style={styles.input}
-              contentStyle={{ textAlign: "center" }}
+              contentStyle={{ textAlign: 'center' }}
               editable={false}
               right={
                 <TextInput.Affix
@@ -330,14 +323,11 @@ export default function VideoUploadForm({
                   onPress={() =>
                     setFormData((prev) => ({
                       ...prev,
-                      cloningSpeed: Math.min(
-                        1.2,
-                        +(prev.cloningSpeed + 0.1).toFixed(1)
-                      ),
+                      cloningSpeed: Math.min(1.2, +(prev.cloningSpeed + 0.1).toFixed(1))
                     }))
                   }
                   textStyle={{
-                    fontSize: 22,
+                    fontSize: 22
                   }}
                 />
               }
@@ -347,14 +337,11 @@ export default function VideoUploadForm({
                   onPress={() =>
                     setFormData((prev) => ({
                       ...prev,
-                      cloningSpeed: Math.max(
-                        0.8,
-                        +(prev.cloningSpeed - 0.1).toFixed(1)
-                      ),
+                      cloningSpeed: Math.max(0.8, +(prev.cloningSpeed - 0.1).toFixed(1))
                     }))
                   }
                   textStyle={{
-                    fontSize: 22,
+                    fontSize: 22
                   }}
                 />
               }
@@ -378,22 +365,22 @@ export default function VideoUploadForm({
             textColor={colors.greenAccent}
             style={{
               borderRadius: 8,
-              borderColor: colors.greenAccent,
+              borderColor: colors.greenAccent
             }}
           >
-            {t("video.downloadSample")}
+            {t('video.downloadSample')}
           </Button>
         </View>
 
         {/* Upload Base Video */}
         <CommonUpload
-          label={t("uploadBaseVideoTabLabel")}
+          label={t('uploadBaseVideoTabLabel')}
           fileType="video"
           onUpload={(file) =>
             setFormData((prev) => ({
               ...prev,
               file,
-              errors: { ...prev.errors, file: undefined },
+              errors: { ...prev.errors, file: undefined }
             }))
           }
           onCancel={() => {
@@ -413,25 +400,25 @@ export default function VideoUploadForm({
             <Divider style={{ marginVertical: 20 }} />
 
             <List.Accordion
-              title={t("video.generateSampleVideo")}
+              title={t('video.generateSampleVideo')}
               expanded={expanded}
               onPress={() => setExpanded(!expanded)}
               titleStyle={{
-                fontWeight: "bold",
-                color: theme.colors.primary,
+                fontWeight: 'bold',
+                color: theme.colors.primary
               }}
             >
               <View style={{ marginTop: 16 }}>
-                <FixedLabel label={t("name")} />
+                <FixedLabel label={t('name')} />
                 <TextInput
-                  placeholder={t("placeholder.enterName")}
+                  placeholder={t('placeholder.enterName')}
                   placeholderTextColor={theme.colors.placeholder}
                   value={name}
                   onChangeText={setName}
                   mode="outlined"
                   style={styles.input}
                 />
-                <View style={{ width: "100%", alignItems: "flex-end" }}>
+                <View style={{ width: '100%', alignItems: 'flex-end' }}>
                   <Button
                     mode="contained"
                     onPress={handleGenerateSampleVideo}
@@ -439,9 +426,7 @@ export default function VideoUploadForm({
                     disabled={loading}
                     style={{ marginTop: 8, borderRadius: 5 }}
                   >
-                    {loading
-                      ? t("video.generatingVideo")
-                      : t("video.generateAndPreview")}
+                    {loading ? t('video.generatingVideo') : t('video.generateAndPreview')}
                   </Button>
                 </View>
 
@@ -462,28 +447,25 @@ export default function VideoUploadForm({
                       onLoad={(status) => {
                         if (!status.isLoaded) return;
 
-                        const { naturalSize } =
-                          status as AVPlaybackStatusSuccess & {
-                            naturalSize: {
-                              width: number;
-                              height: number;
-                              orientation?: "portrait" | "landscape";
-                            };
+                        const { naturalSize } = status as AVPlaybackStatusSuccess & {
+                          naturalSize: {
+                            width: number;
+                            height: number;
+                            orientation?: 'portrait' | 'landscape';
                           };
+                        };
 
                         if (naturalSize?.width && naturalSize?.height) {
-                          setVideoAspect(
-                            naturalSize.height / naturalSize.width
-                          );
+                          setVideoAspect(naturalSize.height / naturalSize.width);
                         }
                       }}
                       style={{
-                        width: "100%",
-                        height: "150%",
+                        width: '100%',
+                        height: '150%',
                         aspectRatio: videoAspect ?? 16 / 9,
                         borderRadius: 8,
                         marginTop: 12,
-                        alignSelf: "center",
+                        alignSelf: 'center'
                       }}
                     />
                   </View>
@@ -503,7 +485,7 @@ export default function VideoUploadForm({
           <Surface style={styles.messageModalCard} elevation={4}>
             {/* Header */}
             <View style={styles.messageHeader}>
-              <Text style={styles.messageTitle}>{t("campaignMessage")}</Text>
+              <Text style={styles.messageTitle}>{t('campaignMessage')}</Text>
 
               <IconButton
                 icon="close"
@@ -522,7 +504,7 @@ export default function VideoUploadForm({
                 setFormData((prev) => ({
                   ...prev,
                   message: text,
-                  errors: { ...prev.errors, message: undefined },
+                  errors: { ...prev.errors, message: undefined }
                 }))
               }
               mode="outlined"
@@ -541,7 +523,7 @@ export default function VideoUploadForm({
                 style={styles.secondaryButton}
                 textColor={colors.darkGrayText}
               >
-                {t("cancel")}
+                {t('cancel')}
               </Button>
 
               <Button
@@ -551,7 +533,7 @@ export default function VideoUploadForm({
                 buttonColor={colors.primary}
                 textColor={colors.white}
               >
-                {t("save")}
+                {t('save')}
               </Button>
             </View>
           </Surface>
@@ -565,7 +547,7 @@ export default function VideoUploadForm({
           onPress={() => setShowAddView(false)}
           style={styles.actionButton}
         >
-          {t("cancel")}
+          {t('cancel')}
         </Button>
         <Button
           mode="contained"
@@ -575,13 +557,13 @@ export default function VideoUploadForm({
             !formData.file ||
             uploading ||
             ((authData.isProfessionalVoiceCloning === true ||
-              authData.isProfessionalVoiceCloning === "true") &&
+              authData.isProfessionalVoiceCloning === 'true') &&
               !voiceCloneId)
           }
           loading={uploading}
           style={styles.actionButton}
         >
-          {t("uploadBaseVideoTabLabel")}
+          {t('uploadBaseVideoTabLabel')}
         </Button>
       </View>
     </View>
@@ -596,10 +578,10 @@ const createStyles = (
     input: {
       marginBottom: 0,
       backgroundColor: theme.colors.white,
-      height: 44,
+      height: 44
     },
     footer: {
-      position: "absolute",
+      position: 'absolute',
       bottom: 0,
       left: 0,
       right: 0,
@@ -607,22 +589,22 @@ const createStyles = (
       backgroundColor: theme.colors.white,
       borderTopWidth: 1,
       borderTopColor: theme.colors.lightGray,
-      flexDirection: "row",
-      gap: 12,
+      flexDirection: 'row',
+      gap: 12
     },
     actionButton: {
       flex: 1,
-      borderRadius: 6,
+      borderRadius: 6
     },
     downloadButton: {
-      display: "flex",
-      alignItems: "flex-end",
-      marginTop: 12,
+      display: 'flex',
+      alignItems: 'flex-end',
+      marginTop: 12
     },
     messageModalCard: {
-      width: "92%",
+      width: '92%',
       maxWidth: 520,
-      maxHeight: "75%",
+      maxHeight: '75%',
       backgroundColor: theme.colors.white,
       borderRadius: 18,
       padding: 20,
@@ -633,57 +615,57 @@ const createStyles = (
       shadowRadius: 12,
       shadowOffset: { width: 0, height: 6 },
       elevation: 6,
-      overflow: "hidden",
+      overflow: 'hidden'
     },
     messageHeader: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
-      marginBottom: 10,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 10
     },
     dialogContainer: {
       flex: 1,
-      justifyContent: "center",
-      alignItems: "center",
+      justifyContent: 'center',
+      alignItems: 'center',
       paddingHorizontal: 16,
-      paddingVertical: 24,
+      paddingVertical: 24
     },
     messageTitle: {
       fontSize: 18,
-      fontWeight: "700",
-      color: theme.colors.primary,
+      fontWeight: '700',
+      color: theme.colors.primary
     },
     closeIcon: {
-      margin: 0,
+      margin: 0
     },
     messageSubtitle: {
       fontSize: 13,
       color: theme.colors.textSecondary,
-      marginBottom: 14,
+      marginBottom: 14
     },
     messageInput: {
       minHeight: 180,
       maxHeight: 260,
       backgroundColor: theme.colors.paperBackground,
       fontSize: 15,
-      paddingTop: platform.isWeb ? 0 : 8,
+      paddingTop: platform.isWeb ? 0 : 8
     },
     modalActions: {
-      flexDirection: "row",
+      flexDirection: 'row',
       gap: 12,
       marginTop: 16,
       paddingTop: 8,
       borderTopWidth: 1,
       borderTopColor: theme.colors.lightGray,
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.white
     },
     secondaryButton: {
       flex: 1,
       borderRadius: 10,
-      borderColor: theme.colors.borderGray,
+      borderColor: theme.colors.borderGray
     },
     primaryButton: {
       flex: 1,
-      borderRadius: 10,
-    },
+      borderRadius: 10
+    }
   });

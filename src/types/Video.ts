@@ -8,7 +8,7 @@ export type Video = {
   voiceCloneId?: string;
   status: string;
   file: any;
-}
+};
 
 export type GetPaginatedVideos = {
   videos: { items: Video[] };
@@ -17,22 +17,22 @@ export type GetPaginatedVideos = {
   pageSize: number;
   totalPages: number;
   totalRecords: number;
-}
+};
 
 export type GenerateVideo = {
   baseVideoId: string;
   recipientIds: string[];
-}
+};
 
 export type GetVideoLink = {
   recipientId: string;
   baseVideoID: string;
   platformType: string;
   sharableLink?: string;
-}
+};
 
 export type SampleVideo = {
   file: any;
   recipientName: string;
-  cloningSpeed?: number; 
-}
+  cloningSpeed?: number;
+};

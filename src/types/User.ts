@@ -9,7 +9,7 @@ export type User = {
   role: string;
   createdAt?: string;
   createdBy?: string;
-}
+};
 
 export type GetPaginatedUsers = {
   items: User[];
@@ -17,7 +17,7 @@ export type GetPaginatedUsers = {
   pageSize: number;
   totalPages: number;
   totalRecords: number;
-}
+};
 
 export type CreateUserPayload = {
   firstName: string;
@@ -27,7 +27,7 @@ export type CreateUserPayload = {
   phoneNumber: string;
   applicationId?: string;
   role: string;
-}
+};
 
 export type EditUserPayload = {
   firstName: string;
@@ -37,4 +37,4 @@ export type EditUserPayload = {
   phoneNumber: string;
   applicationId?: string;
   role: string;
-}
+};

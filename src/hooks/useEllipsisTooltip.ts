@@ -1,5 +1,5 @@
-import { useRef, useState, useCallback } from "react";
-import { usePlatformInfo } from "./usePlatformInfo";
+import { useRef, useState, useCallback } from 'react';
+import { usePlatformInfo } from './usePlatformInfo';
 
 export function useEllipsisTooltip(cellKey: string) {
   const { isWeb, isMobileWeb } = usePlatformInfo();
@@ -31,6 +31,6 @@ export function useEllipsisTooltip(cellKey: string) {
     setVisibleTooltip,
     handleMouseEnter,
     handleMouseLeave,
-    handleLongPress,
+    handleLongPress
   };
 }

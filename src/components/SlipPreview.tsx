@@ -1,6 +1,6 @@
-import React, { forwardRef } from "react";
-import { View, Text, StyleSheet, Image } from "react-native";
-import ViewShot from "react-native-view-shot";
+import React, { forwardRef } from 'react';
+import { View, Text, StyleSheet, Image } from 'react-native';
+import ViewShot from 'react-native-view-shot';
 
 type Props = {
   candidate: {
@@ -23,16 +23,16 @@ type Props = {
 };
 
 const SlipPreview = forwardRef<ViewShot, Props>(({ candidate, voter }, ref) => {
-  const date = voter.electionDate?.split(" ")[0];
-  const time = voter.electionDate?.replace(date, "").trim();
+  const date = voter.electionDate?.split(' ')[0];
+  const time = voter.electionDate?.replace(date, '').trim();
 
   return (
     <ViewShot
       ref={ref}
       options={{
-        format: "png",
+        format: 'png',
         quality: 1.0,
-        result: "base64",
+        result: 'base64',
         width: 384,
         height: 800
       }}
@@ -42,7 +42,7 @@ const SlipPreview = forwardRef<ViewShot, Props>(({ candidate, voter }, ref) => {
         <View style={styles.section}>
           <View style={styles.row}>
             <Text allowFontScaling={false} style={styles.label}>
-              उमेदवार:{" "}
+              उमेदवार:{' '}
             </Text>
             <Text allowFontScaling={false} style={styles.value}>
               {candidate.candidateName}
@@ -51,7 +51,7 @@ const SlipPreview = forwardRef<ViewShot, Props>(({ candidate, voter }, ref) => {
 
           <View style={styles.row}>
             <Text allowFontScaling={false} style={styles.label}>
-              पार्टी:{" "}
+              पार्टी:{' '}
             </Text>
             <Text allowFontScaling={false} style={styles.value}>
               {candidate.partyName}
@@ -75,7 +75,7 @@ const SlipPreview = forwardRef<ViewShot, Props>(({ candidate, voter }, ref) => {
         <View style={styles.section}>
           <View style={styles.row}>
             <Text allowFontScaling={false} style={styles.label}>
-              नाव:{" "}
+              नाव:{' '}
             </Text>
             <Text allowFontScaling={false} style={styles.value}>
               {voter.voterName}
@@ -84,14 +84,14 @@ const SlipPreview = forwardRef<ViewShot, Props>(({ candidate, voter }, ref) => {
 
           <View style={styles.inlineRow}>
             <Text allowFontScaling={false} style={styles.label}>
-              प्रभाग:{" "}
+              प्रभाग:{' '}
             </Text>
             <Text allowFontScaling={false} style={styles.value}>
               {voter.prabagNumber}
             </Text>
             <Text allowFontScaling={false} style={styles.label}>
-              {" "}
-              अ.क्र:{" "}
+              {' '}
+              अ.क्र:{' '}
             </Text>
             <Text allowFontScaling={false} style={styles.value}>
               {voter.rank}
@@ -100,7 +100,7 @@ const SlipPreview = forwardRef<ViewShot, Props>(({ candidate, voter }, ref) => {
 
           <View style={styles.row}>
             <Text allowFontScaling={false} style={styles.label}>
-              मतदान कार्ड:{" "}
+              मतदान कार्ड:{' '}
             </Text>
             <Text allowFontScaling={false} style={styles.value}>
               {voter.epicId}
@@ -109,7 +109,7 @@ const SlipPreview = forwardRef<ViewShot, Props>(({ candidate, voter }, ref) => {
 
           <View style={styles.row}>
             <Text allowFontScaling={false} style={styles.label}>
-              विधानसभा क्र:{" "}
+              विधानसभा क्र:{' '}
             </Text>
             <Text allowFontScaling={false} style={styles.value}>
               {voter.assemblyNumber}
@@ -144,17 +144,17 @@ const SlipPreview = forwardRef<ViewShot, Props>(({ candidate, voter }, ref) => {
         <View style={styles.section}>
           <View style={styles.row}>
             <Text allowFontScaling={false} style={styles.label}>
-              दिनांक:{" "}
+              दिनांक:{' '}
             </Text>
             <Text allowFontScaling={false} style={styles.value}>
               {date}
             </Text>
           </View>
 
-          {time && time !== "Invalid Date" && (
+          {time && time !== 'Invalid Date' && (
             <View style={styles.row}>
               <Text allowFontScaling={false} style={styles.label}>
-                वेळ:{" "}
+                वेळ:{' '}
               </Text>
               <Text allowFontScaling={false} style={styles.value}>
                 {time}
@@ -175,75 +175,75 @@ export default SlipPreview;
 const styles = StyleSheet.create({
   slip: {
     width: 384,
-    backgroundColor: "#FFFFFF",
-    alignSelf: "flex-start",
+    backgroundColor: '#FFFFFF',
+    alignSelf: 'flex-start',
     paddingHorizontal: 8,
     paddingTop: 4,
-    paddingBottom: 8,
+    paddingBottom: 8
   },
   section: {
-    marginVertical: 6,
+    marginVertical: 6
   },
   row: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     marginVertical: 4,
-    minHeight: 28,
+    minHeight: 28
   },
   inlineRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    alignItems: "center",
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
     marginVertical: 4,
-    minHeight: 28,
+    minHeight: 28
   },
   label: {
     fontSize: 22,
-    fontWeight: "700",
+    fontWeight: '700',
     lineHeight: 24,
     includeFontPadding: false,
-    textAlignVertical: "center",
-    color: "#000000",
-    letterSpacing: 0.2,
+    textAlignVertical: 'center',
+    color: '#000000',
+    letterSpacing: 0.2
   },
   value: {
     fontSize: 22,
     lineHeight: 24,
     includeFontPadding: false,
-    textAlignVertical: "center",
-    color: "#000000",
+    textAlignVertical: 'center',
+    color: '#000000',
     flex: 1,
-    flexWrap: "wrap",
-    letterSpacing: 0.2,
+    flexWrap: 'wrap',
+    letterSpacing: 0.2
   },
   wrapText: {
     fontSize: 22,
     lineHeight: 24,
     includeFontPadding: false,
-    color: "#000000",
+    color: '#000000',
     marginTop: 2,
-    letterSpacing: 0.2,
+    letterSpacing: 0.2
   },
   divider: {
     height: 10,
-    backgroundColor: "#000000",
+    backgroundColor: '#000000',
     marginVertical: 8,
-    width: "100%",
+    width: '100%'
   },
   symbolRow: {
-    alignItems: "center",
+    alignItems: 'center',
     marginVertical: 8,
-    justifyContent: "center",
+    justifyContent: 'center'
   },
   symbol: {
     width: 80,
     height: 80,
-    resizeMode: "contain",
+    resizeMode: 'contain'
   },
   spacer: {
-    height: 6,
+    height: 6
   },
   footerSpacer: {
-    height: 16,
-  },
+    height: 16
+  }
 });

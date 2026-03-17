@@ -11,7 +11,7 @@ async function requestAccountsPermissions() {
         message: 'App needs access to your device accounts',
         buttonNeutral: 'Ask Me Later',
         buttonNegative: 'Cancel',
-        buttonPositive: 'OK',
+        buttonPositive: 'OK'
       }
     );
 
@@ -22,7 +22,7 @@ async function requestAccountsPermissions() {
         message: 'App needs access to your contacts to read accounts',
         buttonNeutral: 'Ask Me Later',
         buttonNegative: 'Cancel',
-        buttonPositive: 'OK',
+        buttonPositive: 'OK'
       }
     );
 
@@ -33,7 +33,7 @@ async function requestAccountsPermissions() {
         message: 'App needs permission to add or delete contacts on your device',
         buttonNeutral: 'Ask Me Later',
         buttonNegative: 'Cancel',
-        buttonPositive: 'OK',
+        buttonPositive: 'OK'
       }
     );
 

@@ -20,7 +20,7 @@
 }
 
 /* Your menu overrides */
-div[data-testid="menu-view"],
-div[data-testid="menu-surface"] {
+div[data-testid='menu-view'],
+div[data-testid='menu-surface'] {
   background-color: #fff !important;
 }

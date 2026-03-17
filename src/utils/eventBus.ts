@@ -11,9 +11,8 @@ class EventBus {
   }
 
   off(event: string, callback: Listener) {
-    this.listeners[event] = this.listeners[event]?.filter(
-      (listener) => listener !== callback
-    ) || [];
+    this.listeners[event] =
+      this.listeners[event]?.filter((listener) => listener !== callback) || [];
   }
 
   emit(event: string, data?: any) {

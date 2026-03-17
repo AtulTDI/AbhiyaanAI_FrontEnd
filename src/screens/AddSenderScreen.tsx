@@ -1,25 +1,25 @@
-import React, { useCallback, useState } from "react";
-import { View, StyleSheet, ScrollView } from "react-native";
-import { Text, useTheme, Button } from "react-native-paper";
-import { useTranslation } from "react-i18next";
-import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import { useFocusEffect } from "@react-navigation/native";
-import { Sender } from "../types/Sender";
-import SenderForm from "../components/SenderForm";
-import SenderTable from "../components/SenderTable";
-import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
-import { useToast } from "../components/ToastProvider";
+import React, { useCallback, useState } from 'react';
+import { View, StyleSheet, ScrollView } from 'react-native';
+import { Text, useTheme, Button } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { useFocusEffect } from '@react-navigation/native';
+import { Sender } from '../types/Sender';
+import SenderForm from '../components/SenderForm';
+import SenderTable from '../components/SenderTable';
+import DeleteConfirmationDialog from '../components/DeleteConfirmationDialog';
+import { useToast } from '../components/ToastProvider';
 import {
   createSender,
   deleteSenderById,
   editSenderById,
-  getSenders,
-} from "../api/senderApi";
-import { extractErrorMessage } from "../utils/common";
-import { useServerTable } from "../hooks/useServerTable";
-import { useInternalBackHandler } from "../hooks/useInternalBackHandler";
-import { encryptWithBackendKey } from "../services/rsaEncryptor";
-import { AppTheme } from "../theme";
+  getSenders
+} from '../api/senderApi';
+import { extractErrorMessage } from '../utils/common';
+import { useServerTable } from '../hooks/useServerTable';
+import { useInternalBackHandler } from '../hooks/useInternalBackHandler';
+import { encryptWithBackendKey } from '../services/rsaEncryptor';
+import { AppTheme } from '../theme';
 
 export default function AddSenderScreen() {
   const { t } = useTranslation();
@@ -45,13 +45,13 @@ export default function AddSenderScreen() {
   const fetchSenders = useCallback(async (page: number, pageSize: number) => {
     return getSenders(page, pageSize).then((response) => ({
       items: Array.isArray(response?.data?.items) ? response.data.items : [],
-      totalCount: response?.data?.totalRecords ?? 0,
+      totalCount: response?.data?.totalRecords ?? 0
     }));
   }, []);
 
   const table = useServerTable<Sender, string>(fetchSenders, {
     initialPage: 0,
-    initialRowsPerPage: 10,
+    initialRowsPerPage: 10
   });
 
   useFocusEffect(
@@ -61,7 +61,7 @@ export default function AddSenderScreen() {
       table.setPage(0);
       table.setRowsPerPage(10);
       table.fetchData(0, 10);
-    }, []),
+    }, [])
   );
 
   const addSender = async (senderData: {
@@ -72,20 +72,18 @@ export default function AddSenderScreen() {
     password: string;
   }) => {
     try {
-      const encryptedPassword = await encryptWithBackendKey(
-        senderData?.password,
-      );
+      const encryptedPassword = await encryptWithBackendKey(senderData?.password);
       await createSender({
         ...senderData,
         password: encryptedPassword,
-        role: "Sender",
+        role: 'Sender'
       });
       await table.fetchData(0, table.rowsPerPage);
       setShowAddSenderView(false);
       setSenderToEdit(null);
-      showToast(t("sender.addSuccess"), "success");
+      showToast(t('sender.addSuccess'), 'success');
     } catch (error: any) {
-      showToast(extractErrorMessage(error, t("sender.addFailed")), "error");
+      showToast(extractErrorMessage(error, t('sender.addFailed')), 'error');
     }
   };
 
@@ -98,14 +96,14 @@ export default function AddSenderScreen() {
       await editSenderById(senderToEdit.id, {
         ...senderData,
         password: undefined,
-        role: "Sender",
+        role: 'Sender'
       });
       await table.fetchData(table.page, table.rowsPerPage);
       setShowAddSenderView(false);
       setSenderToEdit(null);
-      showToast(t("sender.editSuccess"), "success");
+      showToast(t('sender.editSuccess'), 'success');
     } catch (error: any) {
-      showToast(extractErrorMessage(error, t("sender.editFailed")), "error");
+      showToast(extractErrorMessage(error, t('sender.editFailed')), 'error');
     }
   };
 
@@ -124,9 +122,9 @@ export default function AddSenderScreen() {
       try {
         await deleteSenderById(selectedSenderId);
         await table.fetchData(table.page, table.rowsPerPage);
-        showToast(t("sender.deleteSucess"), "success");
+        showToast(t('sender.deleteSucess'), 'success');
       } catch (error: any) {
-        showToast(extractErrorMessage(error, t("sender.deleteFail")), "error");
+        showToast(extractErrorMessage(error, t('sender.deleteFail')), 'error');
       }
       setSelectedSenderId(null);
       setDeleteDialogVisible(false);
@@ -143,9 +141,9 @@ export default function AddSenderScreen() {
           >
             {showAddSenderView
               ? senderToEdit
-                ? t("sender.edit")
-                : t("sender.add")
-              : t("sender.plural")}
+                ? t('sender.edit')
+                : t('sender.add')
+              : t('sender.plural')}
           </Text>
           {!showAddSenderView && (
             <Button
@@ -153,14 +151,14 @@ export default function AddSenderScreen() {
               onPress={() => setShowAddSenderView(true)}
               icon="plus"
               labelStyle={{
-                fontWeight: "bold",
+                fontWeight: 'bold',
                 fontSize: 14,
-                color: theme.colors.onPrimary,
+                color: theme.colors.onPrimary
               }}
               buttonColor={theme.colors.primary}
               style={{ borderRadius: 5 }}
             >
-              {t("sender.add")}
+              {t('sender.add')}
             </Button>
           )}
         </View>
@@ -168,14 +166,14 @@ export default function AddSenderScreen() {
         {showAddSenderView ? (
           <KeyboardAwareScrollView
             contentContainerStyle={{
-              flexGrow: 1,
+              flexGrow: 1
             }}
             extraScrollHeight={50}
             enableOnAndroid={true}
             keyboardShouldPersistTaps="handled"
           >
             <SenderForm
-              mode={senderToEdit ? "edit" : "create"}
+              mode={senderToEdit ? 'edit' : 'create'}
               onCreate={senderToEdit ? editSender : addSender}
               senderToEdit={senderToEdit}
               setSenderToEdit={setSenderToEdit}
@@ -202,8 +200,8 @@ export default function AddSenderScreen() {
 
       <DeleteConfirmationDialog
         visible={deleteDialogVisible}
-        title={t("sender.delete")}
-        message={t("sender.confirmDelete")}
+        title={t('sender.delete')}
+        message={t('sender.confirmDelete')}
         onCancel={() => setDeleteDialogVisible(false)}
         onConfirm={confirmDeleteSender}
       />
@@ -216,15 +214,15 @@ const createStyles = (theme: AppTheme) =>
     container: {
       padding: 16,
       backgroundColor: theme.colors.white,
-      flex: 1,
+      flex: 1
     },
     heading: {
-      fontWeight: "bold",
+      fontWeight: 'bold'
     },
     header: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-      marginBottom: 16,
-    },
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 16
+    }
   });

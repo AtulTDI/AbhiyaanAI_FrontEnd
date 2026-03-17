@@ -1,44 +1,39 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   View,
   StyleSheet,
   useWindowDimensions,
   KeyboardAvoidingView,
-  Platform,
-} from "react-native";
-import { Text, useTheme, Surface, Button } from "react-native-paper";
-import { useTranslation } from "react-i18next";
-import { useFocusEffect } from "@react-navigation/native";
-import {
-  TabView,
-  TabBar,
-  TabBarItem,
-  SceneRendererProps,
-} from "react-native-tab-view";
-import { Asset } from "expo-asset";
-import * as FileSystem from "expo-file-system";
-import * as Sharing from "expo-sharing";
-import VoterForm from "../components/VoterForm";
-import VoterUpload from "../components/VoterUpload";
-import VoterTable from "../components/VoterTable";
-import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
-import { useToast } from "../components/ToastProvider";
+  Platform
+} from 'react-native';
+import { Text, useTheme, Surface, Button } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
+import { useFocusEffect } from '@react-navigation/native';
+import { TabView, TabBar, TabBarItem, SceneRendererProps } from 'react-native-tab-view';
+import { Asset } from 'expo-asset';
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
+import VoterForm from '../components/VoterForm';
+import VoterUpload from '../components/VoterUpload';
+import VoterTable from '../components/VoterTable';
+import DeleteConfirmationDialog from '../components/DeleteConfirmationDialog';
+import { useToast } from '../components/ToastProvider';
 import {
   CreateRecipientPayload,
   EditRecipientPayload,
-  Recipient,
-} from "../types/Recipient";
-import { useServerTable } from "../hooks/useServerTable";
-import { usePlatformInfo } from "../hooks/usePlatformInfo";
-import { useInternalBackHandler } from "../hooks/useInternalBackHandler";
+  Recipient
+} from '../types/Recipient';
+import { useServerTable } from '../hooks/useServerTable';
+import { usePlatformInfo } from '../hooks/usePlatformInfo';
+import { useInternalBackHandler } from '../hooks/useInternalBackHandler';
 import {
   createRecipient,
   deleteRecipientById,
   editRecipientById,
-  getRecipients,
-} from "../api/recipientApi";
-import { extractErrorMessage } from "../utils/common";
-import { AppTheme } from "../theme";
+  getRecipients
+} from '../api/recipientApi';
+import { extractErrorMessage } from '../utils/common';
+import { AppTheme } from '../theme';
 
 type TabRoute = {
   key: string;
@@ -58,17 +53,17 @@ export default function AddVoterScreen() {
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
   const [selectedVoterId, setSelectedVoterId] = useState<string | null>(null);
   const [voterToEdit, setVoterToEdit] = useState<Recipient | null>(null);
-  const [searchText, setSearchText] = useState("");
+  const [searchText, setSearchText] = useState('');
   const [tableParams, setTableParams] = useState<{ searchText?: string }>({
-    searchText: "",
+    searchText: ''
   });
 
   const routes = useMemo(
     () => [
-      { key: "manual", title: t("voter.registerVoter") },
-      { key: "excel", title: t("voter.bulkRegister") },
+      { key: 'manual', title: t('voter.registerVoter') },
+      { key: 'excel', title: t('voter.bulkRegister') }
     ],
-    [t],
+    [t]
   );
 
   const canHandleInternalBack = showAddVoterView;
@@ -94,28 +89,20 @@ export default function AddVoterScreen() {
   useInternalBackHandler(canHandleInternalBack, handleInternalBack);
 
   const fetchVoters = useCallback(
-    async (
-      page: number,
-      pageSize: number,
-      params?: { searchText?: string },
-    ) => {
-      const response = await getRecipients(
-        page,
-        pageSize,
-        params?.searchText ?? "",
-      );
+    async (page: number, pageSize: number, params?: { searchText?: string }) => {
+      const response = await getRecipients(page, pageSize, params?.searchText ?? '');
       return {
         items: Array.isArray(response?.data?.items) ? response.data.items : [],
-        totalCount: response?.data?.totalRecords ?? 0,
+        totalCount: response?.data?.totalRecords ?? 0
       };
     },
-    [],
+    []
   );
 
   const table = useServerTable<Recipient, { searchText?: string }>(
     fetchVoters,
     { initialPage: 0, initialRowsPerPage: 10 },
-    tableParams,
+    tableParams
   );
 
   useFocusEffect(
@@ -125,7 +112,7 @@ export default function AddVoterScreen() {
       table.setPage(0);
       table.setRowsPerPage(10);
       table.fetchData(0, 10);
-    }, []),
+    }, [])
   );
 
   const handleVoterSearch = useCallback(
@@ -134,19 +121,19 @@ export default function AddVoterScreen() {
       setTableParams({ searchText: text });
       table.setPage(0);
     },
-    [table],
+    [table]
   );
 
   const addVoter = async (voterData: CreateRecipientPayload) => {
     try {
       await createRecipient(voterData);
-      table.fetchData(0, table.rowsPerPage, { searchText: "" });
-      setSearchText("");
-      showToast(t("voter.addSuccess"), "success");
+      table.fetchData(0, table.rowsPerPage, { searchText: '' });
+      setSearchText('');
+      showToast(t('voter.addSuccess'), 'success');
       setShowAddVoterView(false);
       setVoterToEdit(null);
     } catch (error: any) {
-      showToast(extractErrorMessage(error, t("voter.addFailed")), "error");
+      showToast(extractErrorMessage(error, t('voter.addFailed')), 'error');
     }
   };
 
@@ -154,13 +141,13 @@ export default function AddVoterScreen() {
     if (!voterToEdit) return;
     try {
       await editRecipientById(voterToEdit.id, voterData);
-      await table.fetchData(table.page, table.rowsPerPage, { searchText: "" });
-      setSearchText("");
-      showToast(t("voter.editSuccess"), "success");
+      await table.fetchData(table.page, table.rowsPerPage, { searchText: '' });
+      setSearchText('');
+      showToast(t('voter.editSuccess'), 'success');
       setShowAddVoterView(false);
       setVoterToEdit(null);
     } catch (error: any) {
-      showToast(extractErrorMessage(error, t("voter.editFailed")), "error");
+      showToast(extractErrorMessage(error, t('voter.editFailed')), 'error');
     }
   };
 
@@ -178,11 +165,11 @@ export default function AddVoterScreen() {
     if (selectedVoterId) {
       try {
         await deleteRecipientById(selectedVoterId);
-        setSearchText("");
-        table.fetchData(table.page, table.rowsPerPage, { searchText: "" });
-        showToast(t("voter.deleteSucess"), "success");
+        setSearchText('');
+        table.fetchData(table.page, table.rowsPerPage, { searchText: '' });
+        showToast(t('voter.deleteSucess'), 'success');
       } catch (error: any) {
-        showToast(extractErrorMessage(error, t("voter.deleteFail")), "error");
+        showToast(extractErrorMessage(error, t('voter.deleteFail')), 'error');
       }
       setSelectedVoterId(null);
       setDeleteDialogVisible(false);
@@ -191,33 +178,31 @@ export default function AddVoterScreen() {
 
   const downloadSampleExcel = async () => {
     try {
-      if (Platform.OS === "web") {
-        const link = document.createElement("a");
-        link.href = "/sample-voter-upload.xlsx";
-        link.download = "sample-voter-upload.xlsx";
+      if (Platform.OS === 'web') {
+        const link = document.createElement('a');
+        link.href = '/sample-voter-upload.xlsx';
+        link.download = 'sample-voter-upload.xlsx';
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
       } else {
-        const asset = Asset.fromModule(
-          require("../assets/sample-voter-upload.xlsx"),
-        );
+        const asset = Asset.fromModule(require('../assets/sample-voter-upload.xlsx'));
         await asset.downloadAsync();
         const dest = `${FileSystem.cacheDirectory}sample-voter-upload.xlsx`;
         await FileSystem.copyAsync({
           from: asset.localUri || asset.uri,
-          to: dest,
+          to: dest
         });
         await Sharing.shareAsync(dest);
       }
     } catch (error) {
-      console.error(t("voter.excelDownloadFail"), error);
+      console.error(t('voter.excelDownloadFail'), error);
     }
   };
 
   const renderScene = ({ route }) => {
     switch (route.key) {
-      case "manual":
+      case 'manual':
         return (
           <VoterForm
             mode="create"
@@ -227,7 +212,7 @@ export default function AddVoterScreen() {
             setShowAddVoterView={setShowAddVoterView}
           />
         );
-      case "excel":
+      case 'excel':
         return (
           <View style={{ flex: 1 }}>
             <View style={styles.downloadBtnWrapper}>
@@ -238,13 +223,13 @@ export default function AddVoterScreen() {
                 textColor={colors.greenAccent}
                 style={{ borderRadius: 8, borderColor: colors.greenAccent }}
               >
-                {t("voter.downloadSample")}
+                {t('voter.downloadSample')}
               </Button>
             </View>
             <VoterUpload
               fetchVoters={() => {
-                table.fetchData(0, table.rowsPerPage, { searchText: "" });
-                setSearchText("");
+                table.fetchData(0, table.rowsPerPage, { searchText: '' });
+                setSearchText('');
               }}
               setShowAddVoterView={setShowAddVoterView}
             />
@@ -258,7 +243,7 @@ export default function AddVoterScreen() {
   const renderTabBar = (
     props: SceneRendererProps & {
       navigationState: { index: number; routes: TabRoute[] };
-    },
+    }
   ) => (
     <TabBar
       {...props}
@@ -276,10 +261,10 @@ export default function AddVoterScreen() {
             labelText={route.title}
             labelStyle={{
               color: focused ? colors.warning : colors.darkGrayText,
-              fontWeight: focused ? "600" : "500",
+              fontWeight: focused ? '600' : '500',
               fontSize: 14,
-              textTransform: "capitalize",
-              marginVertical: 8,
+              textTransform: 'capitalize',
+              marginVertical: 8
             }}
           />
         );
@@ -297,9 +282,9 @@ export default function AddVoterScreen() {
           >
             {showAddVoterView
               ? voterToEdit
-                ? t("voter.edit")
-                : t("voter.add")
-              : t("voter.plural")}
+                ? t('voter.edit')
+                : t('voter.add')
+              : t('voter.plural')}
           </Text>
 
           {!showAddVoterView && (
@@ -308,21 +293,21 @@ export default function AddVoterScreen() {
               onPress={() => setShowAddVoterView(true)}
               icon="plus"
               labelStyle={{
-                fontWeight: "bold",
+                fontWeight: 'bold',
                 fontSize: 14,
-                color: theme.colors.onPrimary,
+                color: theme.colors.onPrimary
               }}
               buttonColor={theme.colors.primary}
               style={{ borderRadius: 5 }}
             >
-              {t("voter.add")}
+              {t('voter.add')}
             </Button>
           )}
         </View>
 
         {showAddVoterView ? (
           <KeyboardAvoidingView
-            behavior={isIOS ? "padding" : undefined}
+            behavior={isIOS ? 'padding' : undefined}
             style={{ flex: 1 }}
           >
             {voterToEdit ? (
@@ -366,8 +351,8 @@ export default function AddVoterScreen() {
 
       <DeleteConfirmationDialog
         visible={deleteDialogVisible}
-        title={t("voter.delete")}
-        message={t("voter.confirmDelete")}
+        title={t('voter.delete')}
+        message={t('voter.confirmDelete')}
         onCancel={() => setDeleteDialogVisible(false)}
         onConfirm={confirmDeleteVoter}
       />
@@ -378,21 +363,21 @@ export default function AddVoterScreen() {
 const styles = StyleSheet.create({
   container: {
     padding: 16,
-    flex: 1,
+    flex: 1
   },
   heading: {
-    fontWeight: "bold",
+    fontWeight: 'bold'
   },
   header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16
   },
   downloadBtnWrapper: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
     paddingTop: 15,
-    paddingBottom: 8,
-  },
+    paddingBottom: 8
+  }
 });

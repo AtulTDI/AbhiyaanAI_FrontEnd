@@ -1,11 +1,8 @@
-import { BackHandler } from "react-native";
-import { useFocusEffect } from "@react-navigation/native";
-import { useCallback } from "react";
+import { BackHandler } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback } from 'react';
 
-export function useInternalBackHandler(
-  canGoBack: boolean,
-  onBack: () => void
-) {
+export function useInternalBackHandler(canGoBack: boolean, onBack: () => void) {
   useFocusEffect(
     useCallback(() => {
       const onHardwareBack = () => {
@@ -17,7 +14,7 @@ export function useInternalBackHandler(
       };
 
       const subscription = BackHandler.addEventListener(
-        "hardwareBackPress",
+        'hardwareBackPress',
         onHardwareBack
       );
 

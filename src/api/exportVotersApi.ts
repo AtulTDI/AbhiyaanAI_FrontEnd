@@ -1,5 +1,5 @@
-import { Platform } from "react-native";
-import axios from "./axiosInstance";
+import { Platform } from 'react-native';
+import axios from './axiosInstance';
 
 /**
  * Export voters list as PDF
@@ -14,18 +14,22 @@ export const exportVotersPdf = (
   booth?: string,
   boothAddress?: string
 ) =>
-  axios.post("/ExportVoters/export-voters", {}, {
-    useApiPrefix: true,
-    useVoterBase: true,
-    responseType: Platform.OS === "web" ? "blob" : "arraybuffer",
-    params: {
-      type,
-      ...(surname ? { surname } : {}),
-      ...(supportColor ? { supportColor } : {}),
-      ...(age ? { age } : {}),
-      ...(gender ? { gender } : {}),
-      ...(casteId ? { casteId } : {}),
-      ...(booth ? { booth } : {}),
-      ...(boothAddress ? { boothAddress } : {}),
-    },
-  });
+  axios.post(
+    '/ExportVoters/export-voters',
+    {},
+    {
+      useApiPrefix: true,
+      useVoterBase: true,
+      responseType: Platform.OS === 'web' ? 'blob' : 'arraybuffer',
+      params: {
+        type,
+        ...(surname ? { surname } : {}),
+        ...(supportColor ? { supportColor } : {}),
+        ...(age ? { age } : {}),
+        ...(gender ? { gender } : {}),
+        ...(casteId ? { casteId } : {}),
+        ...(booth ? { booth } : {}),
+        ...(boothAddress ? { boothAddress } : {})
+      }
+    }
+  );

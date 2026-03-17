@@ -1,10 +1,10 @@
-import React, { useRef } from "react";
-import { View, StyleSheet, Image, TouchableOpacity } from "react-native";
-import { Text, useTheme } from "react-native-paper";
-import { Ionicons } from "@expo/vector-icons";
-import * as FileSystem from "expo-file-system";
-import { useTranslation } from "react-i18next";
-import { usePlatformInfo } from "../hooks/usePlatformInfo";
+import React, { useRef } from 'react';
+import { View, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { Text, useTheme } from 'react-native-paper';
+import { Ionicons } from '@expo/vector-icons';
+import * as FileSystem from 'expo-file-system';
+import { useTranslation } from 'react-i18next';
+import { usePlatformInfo } from '../hooks/usePlatformInfo';
 
 export type ImageAsset = {
   uri: string;
@@ -19,11 +19,7 @@ type Props = {
   onChange: (image: ImageAsset | null) => void;
 };
 
-export default function SingleImageUpload({
-  value,
-  previewUrl,
-  onChange,
-}: Props) {
+export default function SingleImageUpload({ value, previewUrl, onChange }: Props) {
   const { t } = useTranslation();
   const theme = useTheme();
   const { isWeb } = usePlatformInfo();
@@ -33,10 +29,10 @@ export default function SingleImageUpload({
   const pickWeb = () => {
     let input = fileInputRef.current;
     if (!input) {
-      input = document.createElement("input");
-      input.type = "file";
-      input.accept = "image/*";
-      input.style.display = "none";
+      input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.style.display = 'none';
       input.onchange = () => {
         const file = input!.files?.[0];
         if (!file) return;
@@ -45,33 +41,33 @@ export default function SingleImageUpload({
           uri: URL.createObjectURL(file),
           name: file.name,
           type: file.type,
-          file,
+          file
         });
       };
       document.body.appendChild(input);
       fileInputRef.current = input;
     }
-    input.value = "";
+    input.value = '';
     input.click();
   };
 
   /* ---------- Native picker ---------- */
   const pickNative = async () => {
-    const ImagePicker = await import("expo-image-picker");
+    const ImagePicker = await import('expo-image-picker');
 
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (perm.status !== "granted") return;
+    if (perm.status !== 'granted') return;
 
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 0.8,
+      quality: 0.8
     });
 
     if (result.canceled) return;
 
     let uri = result.assets[0].uri;
 
-    if (uri.startsWith("content://")) {
+    if (uri.startsWith('content://')) {
       const dest = `${FileSystem.cacheDirectory}img_${Date.now()}.jpg`;
       await FileSystem.copyAsync({ from: uri, to: dest });
       uri = dest;
@@ -79,8 +75,8 @@ export default function SingleImageUpload({
 
     onChange({
       uri,
-      name: uri.split("/").pop(),
-      type: result.assets[0].type,
+      name: uri.split('/').pop(),
+      type: result.assets[0].type
     });
   };
 
@@ -113,13 +109,9 @@ export default function SingleImageUpload({
           </>
         ) : (
           <View style={styles.placeholder}>
-            <Ionicons
-              name="image-outline"
-              size={28}
-              color={theme.colors.onSurface}
-            />
+            <Ionicons name="image-outline" size={28} color={theme.colors.onSurface} />
             <Text style={{ color: theme.colors.onSurface, marginTop: 6 }}>
-              {t("candidate.uploadImage")}
+              {t('candidate.uploadImage')}
             </Text>
           </View>
         )}
@@ -130,33 +122,33 @@ export default function SingleImageUpload({
 
 const styles = StyleSheet.create({
   container: {
-    width: "100%",
+    width: '100%'
   },
   box: {
     height: 160,
     borderWidth: 1,
-    borderStyle: "dashed",
+    borderStyle: 'dashed',
     borderRadius: 10,
-    overflow: "hidden",
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#fff",
+    overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff'
   },
   placeholder: {
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center'
   },
   preview: {
-    width: "100%",
-    height: "100%",
-    resizeMode: "contain",
+    width: '100%',
+    height: '100%',
+    resizeMode: 'contain'
   },
   removeBtn: {
-    position: "absolute",
+    position: 'absolute',
     top: 8,
     right: 8,
-    backgroundColor: "rgba(0,0,0,0.6)",
+    backgroundColor: 'rgba(0,0,0,0.6)',
     padding: 6,
-    borderRadius: 20,
-  },
+    borderRadius: 20
+  }
 });

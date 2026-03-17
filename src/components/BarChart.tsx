@@ -1,50 +1,48 @@
-import React, { useRef, memo } from "react";
-import { ScrollView, View, Text, Dimensions } from "react-native";
-import Svg, { G, Text as SvgText, Rect, Line } from "react-native-svg";
-import { useTranslation } from "react-i18next";
+import React, { useRef, memo } from 'react';
+import { ScrollView, View, Text, Dimensions } from 'react-native';
+import Svg, { G, Text as SvgText, Rect, Line } from 'react-native-svg';
+import { useTranslation } from 'react-i18next';
 
-const Bar = memo(
-  ({ x, value, maxValue, chartHeight, width, color, titleColor }) => {
-    const scaledHeight = (value / maxValue) * chartHeight;
+const Bar = memo(({ x, value, maxValue, chartHeight, width, color, titleColor }) => {
+  const scaledHeight = (value / maxValue) * chartHeight;
 
-    return (
-      <G>
-        <Rect
-          x={x}
-          y={-scaledHeight}
-          width={width}
-          height={scaledHeight}
-          fill={color}
-          rx={4}
-        />
-        {value > 0 && (
-          <SvgText
-            x={x + width / 2}
-            y={-scaledHeight - 8}
-            fontSize="12"
-            fill={titleColor}
-            textAnchor="middle"
-            fontWeight="600"
-          >
-            {value}
-          </SvgText>
-        )}
-      </G>
-    );
-  }
-);
+  return (
+    <G>
+      <Rect
+        x={x}
+        y={-scaledHeight}
+        width={width}
+        height={scaledHeight}
+        fill={color}
+        rx={4}
+      />
+      {value > 0 && (
+        <SvgText
+          x={x + width / 2}
+          y={-scaledHeight - 8}
+          fontSize="12"
+          fill={titleColor}
+          textAnchor="middle"
+          fontWeight="600"
+        >
+          {value}
+        </SvgText>
+      )}
+    </G>
+  );
+});
 
 const BarChart = ({
   data = [],
   width,
   height,
-  barColor = "#3b82f6",
-  titleColor = "#1f2937",
+  barColor = '#3b82f6',
+  titleColor = '#1f2937',
   noData = false,
-  backgroundColor = "#fdfaf7",
+  backgroundColor = '#fdfaf7'
 }) => {
   const { t } = useTranslation();
-  const screenWidth = Dimensions.get("window").width;
+  const screenWidth = Dimensions.get('window').width;
   const scrollRef = useRef(null);
 
   const topPadding = 30;
@@ -68,22 +66,19 @@ const BarChart = ({
 
   const yStepCount = 5;
   const yStepValue = Math.ceil(rawMaxValue / yStepCount);
-  const ySteps = Array.from(
-    { length: yStepCount + 1 },
-    (_, i) => i * yStepValue
-  );
+  const ySteps = Array.from({ length: yStepCount + 1 }, (_, i) => i * yStepValue);
 
   const splitLabel = (label) => {
-    if (!label) return ["", ""];
+    if (!label) return ['', ''];
 
-    const words = label.split(" ");
+    const words = label.split(' ');
     if (words.length <= 2) {
-      return [words.join(" "), ""];
+      return [words.join(' '), ''];
     }
 
     const mid = Math.ceil(words.length / 2);
-    const firstLine = words.slice(0, mid).join(" ");
-    const secondLine = words.slice(mid).join(" ");
+    const firstLine = words.slice(0, mid).join(' ');
+    const secondLine = words.slice(mid).join(' ');
 
     return [firstLine, secondLine];
   };
@@ -99,14 +94,12 @@ const BarChart = ({
         transform={`rotate(-90, 15, ${dynamicChartHeight / 2 + topPadding})`}
         fontWeight="600"
       >
-        {t("value") || "Value"}
+        {t('value') || 'Value'}
       </SvgText>
 
       {ySteps.map((y, i) => {
         const yPos =
-          dynamicChartHeight -
-          (y / visualMaxValue) * dynamicChartHeight +
-          topPadding;
+          dynamicChartHeight - (y / visualMaxValue) * dynamicChartHeight + topPadding;
 
         return (
           <G key={`grid-${i}`}>
@@ -194,19 +187,17 @@ const BarChart = ({
         backgroundColor,
         borderRadius: 12,
         paddingVertical: 10,
-        overflow: "hidden",
-        shadowColor: "#000",
+        overflow: 'hidden',
+        shadowColor: '#000',
         shadowOpacity: 0.05,
         shadowRadius: 10,
-        elevation: 2,
+        elevation: 2
       }}
     >
       {allZero ? (
-        <View
-          style={{ height, justifyContent: "center", alignItems: "center" }}
-        >
-          <Text style={{ color: titleColor, fontSize: 16, fontWeight: "600" }}>
-            {t("dashboard.noData")}
+        <View style={{ height, justifyContent: 'center', alignItems: 'center' }}>
+          <Text style={{ color: titleColor, fontSize: 16, fontWeight: '600' }}>
+            {t('dashboard.noData')}
           </Text>
         </View>
       ) : scrollNeeded ? (
@@ -217,7 +208,7 @@ const BarChart = ({
           style={{ paddingHorizontal: 5 }}
           contentContainerStyle={{
             paddingBottom: 15,
-            width: svgWidth,
+            width: svgWidth
           }}
         >
           {renderChartContent(svgWidth)}

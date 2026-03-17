@@ -1,13 +1,13 @@
-import React, { useCallback } from "react";
-import { Ionicons } from "@expo/vector-icons";
-import { StyleSheet, View } from "react-native";
-import { useTheme } from "react-native-paper";
-import { useTranslation } from "react-i18next";
-import dayjs from "dayjs";
-import { Recipient } from "../types/Recipient";
-import CommonTable from "./CommonTable";
-import ResponsiveKeyboardView from "./ResponsiveKeyboardView";
-import { AppTheme } from "../theme";
+import React, { useCallback } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { StyleSheet, View } from 'react-native';
+import { useTheme } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
+import dayjs from 'dayjs';
+import { Recipient } from '../types/Recipient';
+import CommonTable from './CommonTable';
+import ResponsiveKeyboardView from './ResponsiveKeyboardView';
+import { AppTheme } from '../theme';
 
 type Props = {
   data: Recipient[];
@@ -40,27 +40,25 @@ export default function VoterTable({
 
   const columns = [
     {
-      label: t("name"),
-      key: "fullName",
-      flex: 0.9,
+      label: t('name'),
+      key: 'fullName',
+      flex: 0.9
     },
     {
-      label: t("mobile"),
-      key: "phoneNumber",
-      flex: 0.3,
+      label: t('mobile'),
+      key: 'phoneNumber',
+      flex: 0.3
     },
     {
-      label: t("createdAt"),
-      key: "createdAt",
+      label: t('createdAt'),
+      key: 'createdAt',
       flex: 0.4,
       render: (item: Recipient) =>
-        item.createdAt
-          ? dayjs(item.createdAt).format("DD MMM YYYY, hh:mm A")
-          : "-",
+        item.createdAt ? dayjs(item.createdAt).format('DD MMM YYYY, hh:mm A') : '-'
     },
     {
-      label: t("actions"),
-      key: "actions",
+      label: t('actions'),
+      key: 'actions',
       flex: 0.9,
       smallColumn: true,
       render: (item: Recipient) => (
@@ -78,8 +76,8 @@ export default function VoterTable({
             onPress={() => onDelete(item.id)}
           />
         </View>
-      ),
-    },
+      )
+    }
   ];
 
   return (
@@ -91,13 +89,9 @@ export default function VoterTable({
         tableWithSelection={false}
         keyExtractor={(item) => item.id}
         emptyIcon={
-          <Ionicons
-            name="people-outline"
-            size={48}
-            color={colors.disabledText}
-          />
+          <Ionicons name="people-outline" size={48} color={colors.disabledText} />
         }
-        emptyText={t("voter.noData")}
+        emptyText={t('voter.noData')}
         page={page}
         rowsPerPage={rowsPerPage}
         totalCount={totalCount}
@@ -114,8 +108,8 @@ export default function VoterTable({
 
 const styles = StyleSheet.create({
   actions: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-  },
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5
+  }
 });

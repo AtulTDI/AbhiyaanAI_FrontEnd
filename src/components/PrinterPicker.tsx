@@ -1,14 +1,14 @@
-import React, { useEffect, useState } from "react";
-import { View, FlatList, Modal, StyleSheet, Pressable } from "react-native";
+import React, { useEffect, useState } from 'react';
+import { View, FlatList, Modal, StyleSheet, Pressable } from 'react-native';
 import {
   Text,
   ActivityIndicator,
   Divider,
   TouchableRipple,
-  useTheme,
-} from "react-native-paper";
-import { NativeModules } from "react-native";
-import { AppTheme } from "../theme";
+  useTheme
+} from 'react-native-paper';
+import { NativeModules } from 'react-native';
+import { AppTheme } from '../theme';
 
 const { ThermalPrinter } = NativeModules;
 
@@ -35,7 +35,7 @@ export default function PrinterPicker({ visible, onSelect, onClose }) {
       const list = await ThermalPrinter.getBondedDevices();
       setDevices(list || []);
     } catch (e) {
-      console.log("Error loading devices", e);
+      console.log('Error loading devices', e);
     }
     setLoading(false);
   };
@@ -51,7 +51,7 @@ export default function PrinterPicker({ visible, onSelect, onClose }) {
       await onSelect(item);
       setConnectedMac(item.mac);
     } catch (e) {
-      setErrorMessage("Failed to connect to printer");
+      setErrorMessage('Failed to connect to printer');
       setTimeout(() => {
         setErrorMessage(null);
       }, 2000);
@@ -71,16 +71,11 @@ export default function PrinterPicker({ visible, onSelect, onClose }) {
           handleSelect(item);
         }}
         rippleColor={theme.colors.primarySoft}
-        style={[
-          styles.deviceItem,
-          (selected || connecting) && styles.deviceItemSelected,
-        ]}
+        style={[styles.deviceItem, (selected || connecting) && styles.deviceItemSelected]}
       >
         <View style={styles.row}>
           <View style={{ flex: 1 }}>
-            <Text style={styles.deviceName}>
-              {item.name || "Unknown Device"}
-            </Text>
+            <Text style={styles.deviceName}>{item.name || 'Unknown Device'}</Text>
             <Text style={styles.deviceMac}>{item.mac}</Text>
           </View>
 
@@ -98,12 +93,7 @@ export default function PrinterPicker({ visible, onSelect, onClose }) {
   };
 
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="fade"
-      onRequestClose={onClose}
-    >
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <Pressable style={styles.overlay} onPress={onClose}>
         <Pressable style={styles.sheet} onPress={(e) => e.stopPropagation()}>
           <View style={styles.handle} />
@@ -135,9 +125,7 @@ export default function PrinterPicker({ visible, onSelect, onClose }) {
                 data={devices}
                 keyExtractor={(item) => item.mac}
                 renderItem={renderItem}
-                ItemSeparatorComponent={() => (
-                  <View style={styles.separatorSpace} />
-                )}
+                ItemSeparatorComponent={() => <View style={styles.separatorSpace} />}
                 showsVerticalScrollIndicator={false}
               />
             )}
@@ -158,8 +146,8 @@ const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
     overlay: {
       flex: 1,
-      backgroundColor: "rgba(0,0,0,0.45)",
-      justifyContent: "flex-end",
+      backgroundColor: 'rgba(0,0,0,0.45)',
+      justifyContent: 'flex-end'
     },
     sheet: {
       backgroundColor: theme.colors.paperBackground,
@@ -168,43 +156,43 @@ const createStyles = (theme: AppTheme) =>
       paddingTop: 12,
       paddingBottom: 20,
       paddingHorizontal: 20,
-      maxHeight: "80%",
-      elevation: 12,
+      maxHeight: '80%',
+      elevation: 12
     },
     handle: {
       width: 40,
       height: 5,
       borderRadius: 14,
       backgroundColor: theme.colors.softGray,
-      alignSelf: "center",
-      marginBottom: 12,
+      alignSelf: 'center',
+      marginBottom: 12
     },
     headerRow: {
-      flexDirection: "row",
-      alignItems: "center",
-      marginBottom: 6,
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 6
     },
     title: {
       fontSize: 20,
-      fontWeight: "700",
-      color: theme.colors.primary,
+      fontWeight: '700',
+      color: theme.colors.primary
     },
     subtitle: {
       fontSize: 13,
       color: theme.colors.textSecondary,
-      marginTop: 2,
+      marginTop: 2
     },
     divider: {
       backgroundColor: theme.colors.divider,
       height: 1,
-      marginVertical: 8,
+      marginVertical: 8
     },
     content: {
-      paddingVertical: 8,
+      paddingVertical: 8
     },
     row: {
-      flexDirection: "row",
-      alignItems: "center",
+      flexDirection: 'row',
+      alignItems: 'center'
     },
     deviceItem: {
       paddingVertical: 14,
@@ -213,43 +201,43 @@ const createStyles = (theme: AppTheme) =>
       backgroundColor: theme.colors.white,
       elevation: 1,
       borderWidth: 1,
-      borderColor: theme.colors.surface,
+      borderColor: theme.colors.surface
     },
     deviceItemSelected: {
       backgroundColor: theme.colors.primarySurface,
       borderWidth: 1,
-      borderColor: theme.colors.primaryLight,
+      borderColor: theme.colors.primaryLight
     },
     deviceName: {
       fontSize: 13,
-      fontWeight: "600",
-      color: theme.colors.textPrimary,
+      fontWeight: '600',
+      color: theme.colors.textPrimary
     },
     deviceMac: {
       fontSize: 11,
       marginTop: 4,
       color: theme.colors.textSecondary,
-      letterSpacing: 0.3,
+      letterSpacing: 0.3
     },
     separatorSpace: {
-      height: 10,
+      height: 10
     },
     emptyText: {
-      textAlign: "center",
+      textAlign: 'center',
       color: theme.colors.textSecondary,
       marginTop: 30,
-      fontSize: 14,
+      fontSize: 14
     },
     cancelButton: {
-      alignSelf: "flex-end",
+      alignSelf: 'flex-end',
       paddingVertical: 10,
       paddingHorizontal: 8,
-      borderRadius: 8,
+      borderRadius: 8
     },
     cancelText: {
       color: theme.colors.error,
-      fontWeight: "600",
-      fontSize: 15,
+      fontWeight: '600',
+      fontSize: 15
     },
     errorBox: {
       backgroundColor: theme.colors.errorBackground,
@@ -258,11 +246,11 @@ const createStyles = (theme: AppTheme) =>
       borderRadius: 10,
       marginBottom: 8,
       borderWidth: 1,
-      borderColor: theme.colors.error,
+      borderColor: theme.colors.error
     },
     errorText: {
       color: theme.colors.errorText,
       fontSize: 13,
-      fontWeight: "500",
-    },
+      fontWeight: '500'
+    }
   });

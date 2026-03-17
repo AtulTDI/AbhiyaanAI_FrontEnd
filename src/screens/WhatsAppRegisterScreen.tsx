@@ -1,16 +1,12 @@
-import React, { useCallback, useState } from "react";
-import { View, StyleSheet, Image, ActivityIndicator } from "react-native";
-import { Surface, Text, Button, useTheme } from "react-native-paper";
-import { useFocusEffect } from "@react-navigation/native";
-import { useToast } from "../components/ToastProvider";
-import { extractErrorMessage } from "../utils/common";
-import { AppTheme } from "../theme";
-import { getAuthData } from "../utils/storage";
-import {
-  generateQr,
-  getRegistrationStatus,
-  whatsAppLogout,
-} from "../api/whatsappApi";
+import React, { useCallback, useState } from 'react';
+import { View, StyleSheet, Image, ActivityIndicator } from 'react-native';
+import { Surface, Text, Button, useTheme } from 'react-native-paper';
+import { useFocusEffect } from '@react-navigation/native';
+import { useToast } from '../components/ToastProvider';
+import { extractErrorMessage } from '../utils/common';
+import { AppTheme } from '../theme';
+import { getAuthData } from '../utils/storage';
+import { generateQr, getRegistrationStatus, whatsAppLogout } from '../api/whatsappApi';
 
 export default function WhatsAppRegisterScreen() {
   const theme = useTheme<AppTheme>();
@@ -41,7 +37,7 @@ export default function WhatsAppRegisterScreen() {
         }
       }
     } catch (error: any) {
-      showToast(extractErrorMessage(error, "Failed to fetch status"), "error");
+      showToast(extractErrorMessage(error, 'Failed to fetch status'), 'error');
     } finally {
       setLoading(false);
     }
@@ -52,11 +48,11 @@ export default function WhatsAppRegisterScreen() {
     const response = await whatsAppLogout(userId);
 
     if (response.data?.success) {
-      showToast("User logged out successfully", "success");
+      showToast('User logged out successfully', 'success');
       setRegistered(false);
       setQrImageUrl(null);
     } else {
-      showToast("Something went wrong", "error");
+      showToast('Something went wrong', 'error');
     }
   };
 
@@ -69,10 +65,7 @@ export default function WhatsAppRegisterScreen() {
   return (
     <Surface style={styles.container} elevation={1}>
       <View style={styles.header}>
-        <Text
-          variant="headlineSmall"
-          style={[styles.heading, { color: colors.primary }]}
-        >
+        <Text variant="headlineSmall" style={[styles.heading, { color: colors.primary }]}>
           WhatsApp Device Registration
         </Text>
       </View>
@@ -84,11 +77,7 @@ export default function WhatsAppRegisterScreen() {
           <Text variant="titleMedium" style={styles.successText}>
             Your device is already registered with WhatsApp 🎉
           </Text>
-          <Button
-            mode="contained"
-            style={styles.logoutButton}
-            onPress={handleLogout}
-          >
+          <Button mode="contained" style={styles.logoutButton} onPress={handleLogout}>
             Logout
           </Button>
         </View>
@@ -117,51 +106,51 @@ const styles = StyleSheet.create({
   container: {
     padding: 16,
     flex: 1,
-    justifyContent: "center",
+    justifyContent: 'center'
   },
   heading: {
-    fontWeight: "bold",
-    textAlign: "center",
+    fontWeight: 'bold',
+    textAlign: 'center'
   },
   header: {
-    marginBottom: 24,
+    marginBottom: 24
   },
   centerBox: {
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center'
   },
   instruction: {
-    textAlign: "center",
-    marginBottom: 16,
+    textAlign: 'center',
+    marginBottom: 16
   },
   qrImage: {
     width: 220,
     height: 220,
     marginVertical: 20,
-    borderRadius: 12,
+    borderRadius: 12
   },
   subText: {
-    textAlign: "center",
-    color: "gray",
-    marginTop: 12,
+    textAlign: 'center',
+    color: 'gray',
+    marginTop: 12
   },
   noQrText: {
-    textAlign: "center",
-    color: "gray",
-    marginVertical: 20,
+    textAlign: 'center',
+    color: 'gray',
+    marginVertical: 20
   },
   successIcon: {
     width: 80,
     height: 80,
-    marginBottom: 16,
+    marginBottom: 16
   },
   successText: {
-    textAlign: "center",
-    marginBottom: 20,
+    textAlign: 'center',
+    marginBottom: 20
   },
   logoutButton: {
     marginTop: 16,
     borderRadius: 8,
-    width: "60%",
-  },
+    width: '60%'
+  }
 });

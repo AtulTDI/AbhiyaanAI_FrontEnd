@@ -1,8 +1,8 @@
-import React, { createContext, useState, useContext, ReactNode } from "react";
-import { Modal, StyleSheet, View } from "react-native";
-import { Button, useTheme } from "react-native-paper";
-import { ResizeMode, Video as ExpoVideo } from "expo-av";
-import { AppTheme } from "../theme";
+import React, { createContext, useState, useContext, ReactNode } from 'react';
+import { Modal, StyleSheet, View } from 'react-native';
+import { Button, useTheme } from 'react-native-paper';
+import { ResizeMode, Video as ExpoVideo } from 'expo-av';
+import { AppTheme } from '../theme';
 
 type ContextType = {
   open: (uri: string) => void;
@@ -13,7 +13,7 @@ const VideoPreviewContext = createContext<ContextType | null>(null);
 
 export const useVideoPreview = () => {
   const ctx = useContext(VideoPreviewContext);
-  if (!ctx) throw new Error("useVideoPreview must be used within Provider");
+  if (!ctx) throw new Error('useVideoPreview must be used within Provider');
   return ctx;
 };
 
@@ -54,19 +54,19 @@ const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
     fullscreenContainer: {
       flex: 1,
-      backgroundColor: theme.colors.black,
+      backgroundColor: theme.colors.black
     },
     videoContainer: {
       flex: 1,
-      justifyContent: "center",
-      alignItems: "center",
+      justifyContent: 'center',
+      alignItems: 'center'
     },
     video: {
-      width: "100%",
-      height: "100%",
+      width: '100%',
+      height: '100%'
     },
     closeButton: {
       margin: 16,
-      alignSelf: "center",
-    },
+      alignSelf: 'center'
+    }
   });

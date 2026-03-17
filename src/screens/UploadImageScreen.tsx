@@ -1,26 +1,26 @@
-import React, { useCallback, useState } from "react";
-import { StyleSheet, View, KeyboardAvoidingView } from "react-native";
-import { useFocusEffect } from "@react-navigation/native";
-import { Surface, Text, Button, useTheme } from "react-native-paper";
-import { useTranslation } from "react-i18next";
-import ImageTable from "../components/ImageTable";
-import ImageUploadForm from "../components/ImageUploadForm";
-import { useToast } from "../components/ToastProvider";
-import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
-import { useServerTable } from "../hooks/useServerTable";
-import { usePlatformInfo } from "../hooks/usePlatformInfo";
-import { useInternalBackHandler } from "../hooks/useInternalBackHandler";
-import { GetPaginatedImages, Image } from "../types/Image";
+import React, { useCallback, useState } from 'react';
+import { StyleSheet, View, KeyboardAvoidingView } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+import { Surface, Text, Button, useTheme } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
+import ImageTable from '../components/ImageTable';
+import ImageUploadForm from '../components/ImageUploadForm';
+import { useToast } from '../components/ToastProvider';
+import DeleteConfirmationDialog from '../components/DeleteConfirmationDialog';
+import { useServerTable } from '../hooks/useServerTable';
+import { usePlatformInfo } from '../hooks/usePlatformInfo';
+import { useInternalBackHandler } from '../hooks/useInternalBackHandler';
+import { GetPaginatedImages, Image } from '../types/Image';
 import {
   deleteImageById,
   getImages,
   shareImageById,
   updateImageById,
-  uploadImages,
-} from "../api/imageApi";
-import { getAuthData } from "../utils/storage";
-import { extractErrorMessage, sortByDateDesc } from "../utils/common";
-import { AppTheme } from "../theme";
+  uploadImages
+} from '../api/imageApi';
+import { getAuthData } from '../utils/storage';
+import { extractErrorMessage, sortByDateDesc } from '../utils/common';
+import { AppTheme } from '../theme';
 
 export default function UploadImageScreen() {
   const { isWeb, isIOS } = usePlatformInfo();
@@ -52,21 +52,16 @@ export default function UploadImageScreen() {
     try {
       const response = await getImages(page, pageSize);
       const sortedImages = sortByDateDesc(
-        response?.data && Array.isArray(response.data.items)
-          ? response.data.items
-          : [],
-        "createdAt",
+        response?.data && Array.isArray(response.data.items) ? response.data.items : [],
+        'createdAt'
       );
 
       return {
         items: sortedImages ?? [],
-        totalCount: response?.data?.totalRecords ?? 0,
+        totalCount: response?.data?.totalRecords ?? 0
       };
     } catch (error: any) {
-      showToast(
-        extractErrorMessage(error, t("image.loadImageFailMessage")),
-        "error",
-      );
+      showToast(extractErrorMessage(error, t('image.loadImageFailMessage')), 'error');
     } finally {
       setLoading(false);
     }
@@ -74,7 +69,7 @@ export default function UploadImageScreen() {
 
   const table = useServerTable<GetPaginatedImages>(fetchImages, {
     initialPage: 0,
-    initialRowsPerPage: 10,
+    initialRowsPerPage: 10
   });
 
   useFocusEffect(
@@ -83,26 +78,26 @@ export default function UploadImageScreen() {
       table.setPage(0);
       table.setRowsPerPage(10);
       table.fetchData(0, 10);
-    }, []),
+    }, [])
   );
 
   const guessMimeType = (filename?: string) => {
-    if (!filename) return "image/jpeg";
-    const ext = filename.split(".").pop()?.toLowerCase();
+    if (!filename) return 'image/jpeg';
+    const ext = filename.split('.').pop()?.toLowerCase();
     switch (ext) {
-      case "jpg":
-      case "jpeg":
-        return "image/jpeg";
-      case "png":
-        return "image/png";
-      case "gif":
-        return "image/gif";
-      case "heic":
-        return "image/heic";
-      case "webp":
-        return "image/webp";
+      case 'jpg':
+      case 'jpeg':
+        return 'image/jpeg';
+      case 'png':
+        return 'image/png';
+      case 'gif':
+        return 'image/gif';
+      case 'heic':
+        return 'image/heic';
+      case 'webp':
+        return 'image/webp';
       default:
-        return "application/octet-stream";
+        return 'application/octet-stream';
     }
   };
 
@@ -112,31 +107,31 @@ export default function UploadImageScreen() {
     const { campaignName, caption, images } = imageData;
 
     if (!imageToEdit) {
-      formData.append("userId", String(userId));
+      formData.append('userId', String(userId));
     }
 
-    formData.append("campaignName", campaignName);
-    formData.append(imageToEdit ? "message" : "caption", caption || "");
+    formData.append('campaignName', campaignName);
+    formData.append(imageToEdit ? 'message' : 'caption', caption || '');
 
     !imageToEdit &&
       images.forEach((img: any, index: number) => {
         if (img.locked) {
-          if (img.uri) formData.append("existingImages[]", img.uri);
+          if (img.uri) formData.append('existingImages[]', img.uri);
           return;
         }
 
         if (isWeb && img.file instanceof File) {
-          formData.append("Images", img.file);
+          formData.append('Images', img.file);
           return;
         }
 
         const name = img.name || `photo_${Date.now()}_${index}.jpg`;
         const type = img.type || guessMimeType(name);
 
-        formData.append("Images", {
+        formData.append('Images', {
           uri: img.uri,
           name,
-          type,
+          type
         } as any);
       });
 
@@ -149,10 +144,7 @@ export default function UploadImageScreen() {
       await table.fetchData(0, table.rowsPerPage);
       setShowAddView(false);
     } catch (error) {
-      showToast(
-        extractErrorMessage(error, t("image.addImageFailMessage")),
-        "error",
-      );
+      showToast(extractErrorMessage(error, t('image.addImageFailMessage')), 'error');
     } finally {
       setUploading(false);
     }
@@ -168,10 +160,7 @@ export default function UploadImageScreen() {
       await shareImageById(id, true);
       await table.fetchData(table.page, table.rowsPerPage);
     } catch (error) {
-      showToast(
-        extractErrorMessage(error, t("image.shareImageFailMessage")),
-        "error",
-      );
+      showToast(extractErrorMessage(error, t('image.shareImageFailMessage')), 'error');
     }
   };
 
@@ -180,10 +169,7 @@ export default function UploadImageScreen() {
       await shareImageById(id, false);
       await table.fetchData(table.page, table.rowsPerPage);
     } catch (error) {
-      showToast(
-        extractErrorMessage(error, t("image.shareImageFailMessage")),
-        "error",
-      );
+      showToast(extractErrorMessage(error, t('image.shareImageFailMessage')), 'error');
     }
   };
 
@@ -197,12 +183,9 @@ export default function UploadImageScreen() {
       try {
         await deleteImageById(selectedImageId);
         await table.fetchData(table.page, table.rowsPerPage);
-        showToast(t("image.deleteSucessMessage"), "success");
+        showToast(t('image.deleteSucessMessage'), 'success');
       } catch (error: any) {
-        showToast(
-          extractErrorMessage(error, t("image.deleteFailMessage")),
-          "error",
-        );
+        showToast(extractErrorMessage(error, t('image.deleteFailMessage')), 'error');
       }
       setSelectedImageId(null);
       setDeleteDialogVisible(false);
@@ -213,7 +196,7 @@ export default function UploadImageScreen() {
     <>
       <Surface style={styles.container} elevation={1}>
         <KeyboardAvoidingView
-          behavior={isIOS ? "padding" : undefined}
+          behavior={isIOS ? 'padding' : undefined}
           style={{ flex: 1 }}
         >
           {!showAddView ? (
@@ -224,7 +207,7 @@ export default function UploadImageScreen() {
                   variant="titleLarge"
                   style={[styles.heading, { color: colors.primary }]}
                 >
-                  {t("image.plural")}
+                  {t('image.plural')}
                 </Text>
                 <Button
                   mode="contained"
@@ -234,7 +217,7 @@ export default function UploadImageScreen() {
                   buttonColor={colors.primary}
                   textColor={colors.onPrimary}
                 >
-                  {t("image.add")}
+                  {t('image.add')}
                 </Button>
               </View>
 
@@ -263,7 +246,7 @@ export default function UploadImageScreen() {
                   variant="titleLarge"
                   style={[styles.heading, { color: colors.primary }]}
                 >
-                  {t(imageToEdit ? "image.edit" : "image.add")}
+                  {t(imageToEdit ? 'image.edit' : 'image.add')}
                 </Text>
               </View>
 
@@ -281,8 +264,8 @@ export default function UploadImageScreen() {
 
       <DeleteConfirmationDialog
         visible={deleteDialogVisible}
-        title={t("image.delete")}
-        message={t("image.confirmDelete")}
+        title={t('image.delete')}
+        message={t('image.confirmDelete')}
         onCancel={() => setDeleteDialogVisible(false)}
         onConfirm={confirmDeleteImage}
       />
@@ -293,15 +276,15 @@ export default function UploadImageScreen() {
 const styles = StyleSheet.create({
   container: {
     padding: 16,
-    flex: 1,
+    flex: 1
   },
   headerRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16
   },
   heading: {
-    fontWeight: "bold",
-  },
+    fontWeight: 'bold'
+  }
 });

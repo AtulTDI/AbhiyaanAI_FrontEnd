@@ -1,17 +1,17 @@
-import React, { useState, useCallback } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
-import { useTranslation } from "react-i18next";
-import { Text } from "react-native-paper";
-import { useTheme } from "react-native-paper";
-import { useFocusEffect } from "@react-navigation/native";
-import { deleteVoiceById, getVoices } from "../api/voiceApi";
-import { GetPaginatedVoices } from "../types/Voice";
-import { useToast } from "../components/ToastProvider";
-import PremiumVoicesTable from "../components/PremiumVoicesTable";
-import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
-import { extractErrorMessage, sortByDateDesc } from "../utils/common";
-import { useServerTable } from "../hooks/useServerTable";
-import { AppTheme } from "../theme";
+import React, { useState, useCallback } from 'react';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { Text } from 'react-native-paper';
+import { useTheme } from 'react-native-paper';
+import { useFocusEffect } from '@react-navigation/native';
+import { deleteVoiceById, getVoices } from '../api/voiceApi';
+import { GetPaginatedVoices } from '../types/Voice';
+import { useToast } from '../components/ToastProvider';
+import PremiumVoicesTable from '../components/PremiumVoicesTable';
+import DeleteConfirmationDialog from '../components/DeleteConfirmationDialog';
+import { extractErrorMessage, sortByDateDesc } from '../utils/common';
+import { useServerTable } from '../hooks/useServerTable';
+import { AppTheme } from '../theme';
 
 export default function PremiumVoicesScreen() {
   const { t } = useTranslation();
@@ -25,22 +25,19 @@ export default function PremiumVoicesScreen() {
   const fetchVoices = useCallback(async (page: number, pageSize: number) => {
     try {
       const response = await getVoices(page, pageSize);
-      const sortedVoices = sortByDateDesc(
-        response?.data?.items || [],
-        "createdAt"
-      );
+      const sortedVoices = sortByDateDesc(response?.data?.items || [], 'createdAt');
       return {
         items: sortedVoices ?? [],
-        totalCount: response?.data?.totalRecords ?? 0,
+        totalCount: response?.data?.totalRecords ?? 0
       };
     } catch (error: any) {
-      showToast(extractErrorMessage(error, t("voice.loadFailed")), "error");
+      showToast(extractErrorMessage(error, t('voice.loadFailed')), 'error');
     }
   }, []);
 
   const table = useServerTable<GetPaginatedVoices>(fetchVoices, {
     initialPage: 0,
-    initialRowsPerPage: 10,
+    initialRowsPerPage: 10
   });
 
   useFocusEffect(
@@ -61,12 +58,9 @@ export default function PremiumVoicesScreen() {
       try {
         await deleteVoiceById(selectedVoiceId);
         table.fetchData(table.page, table.rowsPerPage);
-        showToast(t("voice.deleteSucessMessage"), "success");
+        showToast(t('voice.deleteSucessMessage'), 'success');
       } catch (error: any) {
-        showToast(
-          extractErrorMessage(error, t("voice.deleteFailMessage")),
-          "error"
-        );
+        showToast(extractErrorMessage(error, t('voice.deleteFailMessage')), 'error');
       }
       setSelectedVoiceId(null);
       setDeleteDialogVisible(false);
@@ -81,7 +75,7 @@ export default function PremiumVoicesScreen() {
             variant="titleLarge"
             style={[styles.heading, { color: theme.colors.primary }]}
           >
-            {t("premiumVoicesTabLabel")}
+            {t('premiumVoicesTabLabel')}
           </Text>
         </View>
 
@@ -102,8 +96,8 @@ export default function PremiumVoicesScreen() {
 
       <DeleteConfirmationDialog
         visible={deleteDialogVisible}
-        title={t("voice.delete")}
-        message={t("voice.confirmDelete")}
+        title={t('voice.delete')}
+        message={t('voice.confirmDelete')}
         onCancel={() => setDeleteDialogVisible(false)}
         onConfirm={confirmDeleteVoice}
       />
@@ -116,15 +110,15 @@ const createStyles = (theme: AppTheme) =>
     container: {
       padding: 16,
       backgroundColor: theme.colors.white,
-      flexGrow: 1,
+      flexGrow: 1
     },
     heading: {
-      fontWeight: "bold",
+      fontWeight: 'bold'
     },
     header: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-      marginBottom: 16,
-    },
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 16
+    }
   });

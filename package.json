@@ -133,10 +133,15 @@
     "@react-native-community/cli": "^20.1.1",
     "@types/react": "~19.0.10",
     "@types/react-navigation": "^3.0.8",
+    "@typescript-eslint/eslint-plugin": "^8.57.0",
+    "@typescript-eslint/parser": "^8.57.0",
     "cross-env": "^10.0.0",
     "dotenv-cli": "^10.0.0",
+    "eslint": "^9.39.4",
+    "eslint-plugin-import": "^2.32.0",
     "patch-package": "^8.0.0",
     "postinstall-postinstall": "^2.1.0",
+    "prettier": "^3.8.1",
     "typescript": "~5.8.3"
   },
   "private": true

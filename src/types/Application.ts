@@ -10,12 +10,12 @@ export type Application = {
   premiumVoice?: boolean;
   whapiBaseUrl?: string;
   whapiVendorUid?: string;
-  whapiBearerToken?: string; 
+  whapiBearerToken?: string;
   isElection?: boolean;
   showVideoCampaign?: boolean;
   showImageCampaign?: boolean;
   isActive: boolean;
-}
+};
 
 export type GetPaginatedApplications = {
   items: Application[];
@@ -25,7 +25,7 @@ export type GetPaginatedApplications = {
   totalRecords: number;
   premiumVoice: boolean;
   isElection?: boolean;
-}
+};
 
 export type CreateApplicationPayload = {
   appName: string;
@@ -36,8 +36,8 @@ export type CreateApplicationPayload = {
   isElection?: boolean;
   whapiBaseUrl?: string;
   whapiVendorUid?: string;
-  whapiBearerToken?: string; 
-}
+  whapiBearerToken?: string;
+};
 
 export type EditApplicationPayload = {
   name: string;
@@ -49,5 +49,5 @@ export type EditApplicationPayload = {
   isActive: boolean;
   whapiBaseUrl?: string;
   whapiVendorUid?: string;
-  whapiBearerToken?: string; 
-}
+  whapiBearerToken?: string;
+};

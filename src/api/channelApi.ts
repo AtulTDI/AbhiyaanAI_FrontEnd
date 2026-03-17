@@ -1,5 +1,5 @@
-import axios from "./axiosInstance";
-import { Channel, CreateChannelPayload } from "../types/Channel";
+import axios from './axiosInstance';
+import { Channel, CreateChannelPayload } from '../types/Channel';
 
 /**
  * Get all WhatsApp channels for the given application.
@@ -11,10 +11,10 @@ export const getChannels = (applicationId: string) =>
   );
 
 export const getAllChannels = () =>
-  axios.get<Channel[]>(
-    `/WHChannel/getallchannels`,
-    { useApiPrefix: true, useAltBase: true }
-  );
+  axios.get<Channel[]>(`/WHChannel/getallchannels`, {
+    useApiPrefix: true,
+    useAltBase: true
+  });
 
 /**
  * Create a new WhatsApp channel.
@@ -40,16 +40,13 @@ export const updateChannelSetting = (id: string) =>
  * Delete a WhatsApp channel by ID.
  */
 export const deleteChannelById = (id: string) =>
-  axios.delete(
-    `/WHChannel/${id}/deletechannel`,
-    { useApiPrefix: true, useAltBase: true }
-  );
+  axios.delete(`/WHChannel/${id}/deletechannel`, {
+    useApiPrefix: true,
+    useAltBase: true
+  });
 
 /**
  * Generate QR code for a WhatsApp channel by ID.
  */
 export const generateChannelQr = (id: string, userId: string) =>
-  axios.get(
-    `/WhtaspApp/getqr`,
-    { useApiPrefix: true, useAltBase: true }
-  );
+  axios.get(`/WhtaspApp/getqr`, { useApiPrefix: true, useAltBase: true });

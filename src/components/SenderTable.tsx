@@ -1,12 +1,12 @@
-import React from "react";
-import { useTranslation } from "react-i18next";
-import dayjs from "dayjs";
-import { Ionicons } from "@expo/vector-icons";
-import { View, StyleSheet } from "react-native";
-import { useTheme } from "react-native-paper";
-import { Sender } from "../types/Sender";
-import CommonTable from "./CommonTable";
-import { AppTheme } from "../theme";
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import dayjs from 'dayjs';
+import { Ionicons } from '@expo/vector-icons';
+import { View, StyleSheet } from 'react-native';
+import { useTheme } from 'react-native-paper';
+import { Sender } from '../types/Sender';
+import CommonTable from './CommonTable';
+import { AppTheme } from '../theme';
 
 type Props = {
   data: Sender[];
@@ -29,32 +29,30 @@ export default function SenderTable({
   onPageChange,
   onRowsPerPageChange,
   onEdit,
-  onDelete,
+  onDelete
 }: Props) {
   const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
   const { colors } = theme;
   const columns = [
     {
-      label: t("name"),
-      key: "fullName",
+      label: t('name'),
+      key: 'fullName',
       flex: 0.5,
-      render: (item) => item.firstName + " " + item.lastName,
+      render: (item) => item.firstName + ' ' + item.lastName
     },
-    { label: t("mobile"), key: "phoneNumber", flex: 0.4 },
-    { label: t("email"), key: "email", flex: 0.4 },
+    { label: t('mobile'), key: 'phoneNumber', flex: 0.4 },
+    { label: t('email'), key: 'email', flex: 0.4 },
     {
-      label: t("createdAt"),
-      key: "createdAt",
+      label: t('createdAt'),
+      key: 'createdAt',
       flex: 0.4,
       render: (item) =>
-        item.createdAt
-          ? dayjs(item.createdAt).format("DD MMM YYYY, hh:mm A")
-          : "-",
+        item.createdAt ? dayjs(item.createdAt).format('DD MMM YYYY, hh:mm A') : '-'
     },
     {
-      label: t("actions"),
-      key: "actions",
+      label: t('actions'),
+      key: 'actions',
       flex: 0.9,
       smallColumn: true,
       render: (item) => (
@@ -72,8 +70,8 @@ export default function SenderTable({
             onPress={() => onDelete(item.id)}
           />
         </View>
-      ),
-    },
+      )
+    }
   ];
 
   return (
@@ -81,13 +79,9 @@ export default function SenderTable({
       data={data}
       columns={columns}
       emptyIcon={
-        <Ionicons
-          name="person-remove-outline"
-          size={48}
-          color={colors.disabledText}
-        />
+        <Ionicons name="person-remove-outline" size={48} color={colors.disabledText} />
       }
-      emptyText={t("sender.noData")}
+      emptyText={t('sender.noData')}
       loading={loading}
       page={page}
       rowsPerPage={rowsPerPage}
@@ -100,8 +94,8 @@ export default function SenderTable({
 
 const styles = StyleSheet.create({
   actions: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-  },
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5
+  }
 });

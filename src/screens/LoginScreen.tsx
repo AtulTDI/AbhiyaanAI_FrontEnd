@@ -1,30 +1,30 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 import {
   Image,
   StyleSheet,
   SafeAreaView,
   KeyboardAvoidingView,
   ScrollView,
-  View,
-} from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
-import { useTheme } from "react-native-paper";
-import SignIn from "../components/SignIn";
-import ForgotPassword from "../components/ForgotPassword";
-import { usePlatformInfo } from "../hooks/usePlatformInfo";
-import { getBrandAssets } from "../utils/brandAssets";
-import { AppTheme } from "../theme";
+  View
+} from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useTheme } from 'react-native-paper';
+import SignIn from '../components/SignIn';
+import ForgotPassword from '../components/ForgotPassword';
+import { usePlatformInfo } from '../hooks/usePlatformInfo';
+import { getBrandAssets } from '../utils/brandAssets';
+import { AppTheme } from '../theme';
 
 export default function LoginScreen() {
   const { isIOS } = usePlatformInfo();
   const { icon } = getBrandAssets();
   const [showSignInPage, setShowSignInPage] = useState(true);
-  const [authError, setAuthError] = useState("");
+  const [authError, setAuthError] = useState('');
   const theme = useTheme<AppTheme>();
   const { colors } = theme;
 
   useEffect(() => {
-    setAuthError("");
+    setAuthError('');
   }, [showSignInPage]);
 
   return (
@@ -36,7 +36,7 @@ export default function LoginScreen() {
     >
       <SafeAreaView style={styles.safeArea}>
         <KeyboardAvoidingView
-          behavior={isIOS ? "padding" : undefined}
+          behavior={isIOS ? 'padding' : undefined}
           style={styles.flex}
         >
           <ScrollView
@@ -51,8 +51,8 @@ export default function LoginScreen() {
                   styles.formWrapper,
                   {
                     backgroundColor: colors.white,
-                    borderColor: colors.outline,
-                  },
+                    borderColor: colors.outline
+                  }
                 ]}
               >
                 {showSignInPage ? (
@@ -79,35 +79,35 @@ export default function LoginScreen() {
 
 const styles = StyleSheet.create({
   gradient: {
-    flex: 1,
+    flex: 1
   },
   safeArea: {
-    flex: 1,
+    flex: 1
   },
   flex: {
-    flex: 1,
+    flex: 1
   },
   scrollContainer: {
     flexGrow: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 32,
+    paddingVertical: 32
   },
   innerContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-    width: "100%",
-    maxWidth: 400,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    maxWidth: 400
   },
   logo: {
     width: 280,
     height: 250,
-    marginBottom: 16,
+    marginBottom: 16
   },
   formWrapper: {
-    width: "100%",
+    width: '100%',
     borderRadius: 12,
-    borderWidth: 1,
-  },
+    borderWidth: 1
+  }
 });

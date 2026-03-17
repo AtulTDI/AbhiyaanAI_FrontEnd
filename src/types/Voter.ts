@@ -60,27 +60,27 @@ export type GenderGroupStats = {
   male: number;
   female: number;
   other: number;
-}
+};
 
 export type CasteStats = {
-  casteId: string,
-  casteNameEn: string,
-  casteNameMr: string,
-  count: number
-}
+  casteId: string;
+  casteNameEn: string;
+  casteNameMr: string;
+  count: number;
+};
 
 export type BoothStats = {
-  listNumber: string,
-  address: string,
-  count: number
-}
+  listNumber: string;
+  address: string;
+  count: number;
+};
 
 export type GetPaginatedVoters = {
   data: Voter[];
   page: number;
   pageSize: number;
   totalRecords: number;
-}
+};
 
 export type GetFamilyMembers = {
   data: Voter[];
@@ -89,7 +89,7 @@ export type GetFamilyMembers = {
   headVoterId: string;
   members: Voter[];
   totalRecords: number;
-}
+};
 
 export interface VoterSurveyRequest {
   id?: string;
@@ -97,19 +97,19 @@ export interface VoterSurveyRequest {
   supportType?: number;
   supportStrength?: number;
   casteId?: string;
-  otherCaste?: string,
-  newAddress: string,
-  society: string,
-  flatNumber: string,
-  email: string,
-  secondaryMobileNumber: string,
-  dateOfBirth: string,
-  needsFollowUp: boolean,
-  specialVisitDate: string,
-  specialVisitRemarks: string,
-  voterDied: boolean,
-  remarks: string,
-  isVoted: boolean,
+  otherCaste?: string;
+  newAddress: string;
+  society: string;
+  flatNumber: string;
+  email: string;
+  secondaryMobileNumber: string;
+  dateOfBirth: string;
+  needsFollowUp: boolean;
+  specialVisitDate: string;
+  specialVisitRemarks: string;
+  voterDied: boolean;
+  remarks: string;
+  isVoted: boolean;
   demands?: VoterDemandItem[];
 }
 

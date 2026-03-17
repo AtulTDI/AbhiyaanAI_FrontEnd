@@ -1,9 +1,9 @@
-import React from "react";
-import { View, StyleSheet, useWindowDimensions } from "react-native";
-import { Dialog, Portal, Text, Button, useTheme } from "react-native-paper";
-import { useTranslation } from "react-i18next";
-import { Ionicons } from "@expo/vector-icons";
-import { AppTheme } from "../theme";
+import React from 'react';
+import { View, StyleSheet, useWindowDimensions } from 'react-native';
+import { Dialog, Portal, Text, Button, useTheme } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
+import { Ionicons } from '@expo/vector-icons';
+import { AppTheme } from '../theme';
 
 type Props = {
   visible: boolean;
@@ -16,11 +16,11 @@ type Props = {
 
 const DeleteConfirmationDialog = ({
   visible,
-  title = "Delete Confirmation",
-  message = "Are you sure you want to delete this item?",
+  title = 'Delete Confirmation',
+  message = 'Are you sure you want to delete this item?',
   deleteLoading,
   onConfirm,
-  onCancel,
+  onCancel
 }: Props) => {
   const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
@@ -39,8 +39,8 @@ const DeleteConfirmationDialog = ({
           {
             backgroundColor: colors.background,
             width: dialogWidth,
-            alignSelf: "center",
-          },
+            alignSelf: 'center'
+          }
         ]}
       >
         <View style={styles.iconWrapper}>
@@ -50,7 +50,7 @@ const DeleteConfirmationDialog = ({
         </View>
 
         <Dialog.Title
-          style={[styles.title, { color: colors.warning, textAlign: "center" }]}
+          style={[styles.title, { color: colors.warning, textAlign: 'center' }]}
         >
           {title}
         </Dialog.Title>
@@ -59,9 +59,9 @@ const DeleteConfirmationDialog = ({
           <Text
             variant="bodyMedium"
             style={{
-              textAlign: "center",
+              textAlign: 'center',
               color: theme.colors.onSurface,
-              fontSize: 14,
+              fontSize: 14
             }}
           >
             {message}
@@ -76,7 +76,7 @@ const DeleteConfirmationDialog = ({
             style={styles.button}
             labelStyle={styles.label}
           >
-            {t("cancel")}
+            {t('cancel')}
           </Button>
           <Button
             mode="contained"
@@ -88,7 +88,7 @@ const DeleteConfirmationDialog = ({
             loading={deleteLoading}
             disabled={deleteLoading}
           >
-            {t("delete")}
+            {t('delete')}
           </Button>
         </Dialog.Actions>
       </Dialog>
@@ -99,38 +99,38 @@ const DeleteConfirmationDialog = ({
 const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
     dialog: {
-      borderRadius: 12,
+      borderRadius: 12
     },
     iconWrapper: {
-      alignItems: "center",
-      marginTop: 12,
+      alignItems: 'center',
+      marginTop: 12
     },
     iconContainer: {
       padding: 10,
       borderRadius: 50,
-      backgroundColor: theme.colors.errorBackgroundLight,
+      backgroundColor: theme.colors.errorBackgroundLight
     },
     title: {
-      fontWeight: "600",
+      fontWeight: '600',
       fontSize: 18,
-      marginBottom: 4,
+      marginBottom: 4
     },
     actions: {
-      justifyContent: "center",
+      justifyContent: 'center',
       paddingHorizontal: 16,
       paddingBottom: 16,
       gap: 10,
-      flexDirection: "row",
+      flexDirection: 'row'
     },
     button: {
       borderRadius: 6,
-      flex: 1,
+      flex: 1
     },
     label: {
-      textTransform: "none",
+      textTransform: 'none',
       fontSize: 14,
-      fontWeight: "500",
-    },
+      fontWeight: '500'
+    }
   });
 
 export default DeleteConfirmationDialog;

@@ -1,12 +1,12 @@
-import React from "react";
-import dayjs from "dayjs";
-import { User } from "../types/User";
-import { Ionicons } from "@expo/vector-icons";
-import { View, StyleSheet } from "react-native";
-import { Text, useTheme } from "react-native-paper";
-import CommonTable from "./CommonTable";
-import { AppTheme } from "../theme";
-import { useTranslation } from "react-i18next";
+import React from 'react';
+import dayjs from 'dayjs';
+import { User } from '../types/User';
+import { Ionicons } from '@expo/vector-icons';
+import { View, StyleSheet } from 'react-native';
+import { Text, useTheme } from 'react-native-paper';
+import CommonTable from './CommonTable';
+import { AppTheme } from '../theme';
+import { useTranslation } from 'react-i18next';
 
 type Props = {
   role: string;
@@ -33,39 +33,37 @@ export default function UserTable({
   onRowsPerPageChange,
   onEdit,
   onDelete,
-  getHeaderTitle,
+  getHeaderTitle
 }: Props) {
   const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
   const { colors } = theme;
   const columns = [
     {
-      label: t("name"),
-      key: "fullName",
-      flex: role === "Admin" ? 0.4 : 0.5,
-      render: (item) => item.firstName + " " + item.lastName,
+      label: t('name'),
+      key: 'fullName',
+      flex: role === 'Admin' ? 0.4 : 0.5,
+      render: (item) => item.firstName + ' ' + item.lastName
     },
-    { label: t("mobile"), key: "phoneNumber", flex: 0.2 },
+    { label: t('mobile'), key: 'phoneNumber', flex: 0.2 },
     {
-      label: t("email"),
-      key: "email",
-      flex: role === "Admin" ? 0.3 : 0.5,
+      label: t('email'),
+      key: 'email',
+      flex: role === 'Admin' ? 0.3 : 0.5
     },
     {
-      label: t("createdAt"),
-      key: "createdAt",
+      label: t('createdAt'),
+      key: 'createdAt',
       flex: 0.4,
       render: (item) => (
         <Text>
-          {item.createdAt
-            ? dayjs(item.createdAt).format("DD MMM YYYY, hh:mm A")
-            : "-"}
+          {item.createdAt ? dayjs(item.createdAt).format('DD MMM YYYY, hh:mm A') : '-'}
         </Text>
-      ),
+      )
     },
     {
-      label: t("actions"),
-      key: "actions",
+      label: t('actions'),
+      key: 'actions',
       flex: 0.9,
       smallColumn: true,
       render: (item) => (
@@ -83,15 +81,15 @@ export default function UserTable({
             onPress={() => onDelete(item.id)}
           />
         </View>
-      ),
-    },
+      )
+    }
   ];
 
-  if (role === "Admin") {
+  if (role === 'Admin') {
     columns.splice(3, 0, {
-      label: t("application.singular"),
-      key: "applicationName",
-      flex: 0.4,
+      label: t('application.singular'),
+      key: 'applicationName',
+      flex: 0.4
     });
   }
 
@@ -101,13 +99,9 @@ export default function UserTable({
       columns={columns}
       loading={loading}
       emptyIcon={
-        <Ionicons
-          name="person-remove-outline"
-          size={48}
-          color={colors.disabledText}
-        />
+        <Ionicons name="person-remove-outline" size={48} color={colors.disabledText} />
       }
-      emptyText={t("noDataFound", { header: getHeaderTitle().toLowerCase() })}
+      emptyText={t('noDataFound', { header: getHeaderTitle().toLowerCase() })}
       page={page}
       rowsPerPage={rowsPerPage}
       totalCount={totalCount}
@@ -119,8 +113,8 @@ export default function UserTable({
 
 const styles = StyleSheet.create({
   actions: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-  },
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5
+  }
 });

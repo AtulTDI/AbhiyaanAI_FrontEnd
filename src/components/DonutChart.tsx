@@ -1,9 +1,9 @@
-import React, { useState } from "react";
-import { View, Text, Pressable } from "react-native";
-import Svg, { G, Path, Text as SvgText } from "react-native-svg";
-import { useTranslation } from "react-i18next";
-import colors from "../constants/colors";
-import BarChart from "./BarChart";
+import React, { useState } from 'react';
+import { View, Text, Pressable } from 'react-native';
+import Svg, { G, Path, Text as SvgText } from 'react-native-svg';
+import { useTranslation } from 'react-i18next';
+import colors from '../constants/colors';
+import BarChart from './BarChart';
 
 const DonutChart = ({
   data = [],
@@ -11,7 +11,7 @@ const DonutChart = ({
   holeRadius = 55,
   width = 320,
   height = 200,
-  noData = false,
+  noData = false
 }) => {
   const { t } = useTranslation();
   const [drilledSlice, setDrilledSlice] = useState(null);
@@ -19,15 +19,15 @@ const DonutChart = ({
 
   if (noData) {
     return (
-      <View style={{ height, justifyContent: "center", alignItems: "center" }}>
+      <View style={{ height, justifyContent: 'center', alignItems: 'center' }}>
         <Text
           style={{
             color: colors.primaryDark,
             fontSize: 16,
-            fontWeight: "600",
+            fontWeight: '600'
           }}
         >
-          {t("dashboard.noData")}
+          {t('dashboard.noData')}
         </Text>
       </View>
     );
@@ -40,8 +40,8 @@ const DonutChart = ({
     colors.primaryLight,
     colors.darkOrange,
     colors.softOrange,
-    "#22c55e",
-    "#6366f1",
+    '#22c55e',
+    '#6366f1'
   ];
 
   const createDonutPath = (startAngle, endAngle, radius) => {
@@ -57,15 +57,15 @@ const DonutChart = ({
   const visibleLegends = showAllLegends ? data : data.slice(0, 4);
 
   return (
-    <View style={{ alignItems: !drilledSlice && "center", width: "100%" }}>
+    <View style={{ alignItems: !drilledSlice && 'center', width: '100%' }}>
       {drilledSlice ? (
         <>
           <BarChart
             data={[
               {
                 label: drilledSlice.label,
-                value: drilledSlice.value,
-              },
+                value: drilledSlice.value
+              }
             ]}
             width={10}
             height={height}
@@ -73,7 +73,7 @@ const DonutChart = ({
             titleColor={colors.primaryDark}
           />
 
-          <View style={{ width: "100%", alignItems: "center" }}>
+          <View style={{ width: '100%', alignItems: 'center' }}>
             <Pressable
               onPress={() => setDrilledSlice(null)}
               style={{
@@ -81,13 +81,11 @@ const DonutChart = ({
                 paddingVertical: 8,
                 paddingHorizontal: 16,
                 backgroundColor: colors.primary,
-                borderRadius: 8,
+                borderRadius: 8
               }}
             >
-              <Text
-                style={{ fontSize: 12, fontWeight: "600", color: colors.white }}
-              >
-                ⬅ {t("back")}
+              <Text style={{ fontSize: 12, fontWeight: '600', color: colors.white }}>
+                ⬅ {t('back')}
               </Text>
             </Pressable>
           </View>
@@ -145,12 +143,12 @@ const DonutChart = ({
 
           {/* Legends */}
           {data.length > 0 && (
-            <View style={{ marginTop: 16, alignItems: "center" }}>
+            <View style={{ marginTop: 16, alignItems: 'center' }}>
               <View
                 style={{
-                  flexDirection: "row",
-                  flexWrap: "wrap",
-                  justifyContent: "center",
+                  flexDirection: 'row',
+                  flexWrap: 'wrap',
+                  justifyContent: 'center'
                 }}
               >
                 {visibleLegends.map((d, i) => (
@@ -158,15 +156,15 @@ const DonutChart = ({
                     key={i}
                     onPress={() => setDrilledSlice(d)}
                     style={{
-                      flexDirection: "row",
-                      alignItems: "center",
+                      flexDirection: 'row',
+                      alignItems: 'center',
                       margin: 6,
                       paddingHorizontal: 10,
                       paddingVertical: 6,
                       borderRadius: 8,
                       backgroundColor: colors.softOrange,
                       borderWidth: 1,
-                      borderColor: colors.primaryLight,
+                      borderColor: colors.primaryLight
                     }}
                   >
                     <View
@@ -175,15 +173,15 @@ const DonutChart = ({
                         height: 14,
                         borderRadius: 7,
                         backgroundColor: sliceColors[i % sliceColors.length],
-                        marginRight: 6,
+                        marginRight: 6
                       }}
                     />
                     <Text
                       style={{
                         fontSize: 12,
                         color: colors.darkerGrayText,
-                        fontWeight: "600",
-                        maxWidth: 120,
+                        fontWeight: '600',
+                        maxWidth: 120
                       }}
                       numberOfLines={1}
                       ellipsizeMode="tail"
@@ -202,13 +200,13 @@ const DonutChart = ({
                   <Text
                     style={{
                       color: colors.primary,
-                      fontWeight: "600",
-                      fontSize: 12,
+                      fontWeight: '600',
+                      fontSize: 12
                     }}
                   >
                     {showAllLegends
-                      ? t("dashboard.showLess") || "Show Less ▲"
-                      : t("dashboard.showMore") || "Show More ▼"}
+                      ? t('dashboard.showLess') || 'Show Less ▲'
+                      : t('dashboard.showMore') || 'Show More ▼'}
                   </Text>
                 </Pressable>
               )}

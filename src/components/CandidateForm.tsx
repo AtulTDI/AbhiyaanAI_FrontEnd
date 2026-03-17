@@ -1,23 +1,17 @@
-import React, { useState, useEffect } from "react";
-import { View, StyleSheet } from "react-native";
-import {
-  TextInput,
-  Button,
-  HelperText,
-  Surface,
-  useTheme,
-} from "react-native-paper";
-import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import { useTranslation } from "react-i18next";
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet } from 'react-native';
+import { TextInput, Button, HelperText, Surface, useTheme } from 'react-native-paper';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { useTranslation } from 'react-i18next';
 
-import { Candidate } from "../types/Candidate";
-import SingleImageUpload, { ImageAsset } from "./SingleImageUpload";
-import { usePlatformInfo } from "../hooks/usePlatformInfo";
-import { FixedLabel } from "./FixedLabel";
-import { AppTheme } from "../theme";
+import { Candidate } from '../types/Candidate';
+import SingleImageUpload, { ImageAsset } from './SingleImageUpload';
+import { usePlatformInfo } from '../hooks/usePlatformInfo';
+import { FixedLabel } from './FixedLabel';
+import { AppTheme } from '../theme';
 
 type Props = {
-  mode: "create" | "edit";
+  mode: 'create' | 'edit';
   candidate?: Candidate | null;
   loading?: boolean;
   onSubmit: (data: {
@@ -36,28 +30,28 @@ export default function CandidateForm({
   candidate,
   loading,
   onSubmit,
-  onCancel,
+  onCancel
 }: Props) {
   const { t } = useTranslation();
   const { isWeb, isMobileWeb } = usePlatformInfo();
   const theme = useTheme<AppTheme>();
 
-  const isEdit = mode === "edit";
+  const isEdit = mode === 'edit';
   const isTwoColumn = isWeb && !isMobileWeb;
 
   /* ---------------- State ---------------- */
 
-  const [name, setName] = useState("");
-  const [nameMr, setNameMr] = useState("");
-  const [partyName, setPartyName] = useState("");
-  const [partyNameMr, setPartyNameMr] = useState("");
-  const [symbolNameMr, setSymbolNameMr] = useState("");
+  const [name, setName] = useState('');
+  const [nameMr, setNameMr] = useState('');
+  const [partyName, setPartyName] = useState('');
+  const [partyNameMr, setPartyNameMr] = useState('');
+  const [symbolNameMr, setSymbolNameMr] = useState('');
 
-  const [candidatePhoto, setCandidatePhoto] = useState<
-    ImageAsset | null | undefined
-  >(undefined);
+  const [candidatePhoto, setCandidatePhoto] = useState<ImageAsset | null | undefined>(
+    undefined
+  );
   const [symbolImage, setSymbolImage] = useState<ImageAsset | null | undefined>(
-    undefined,
+    undefined
   );
 
   const [errors, setErrors] = useState<{
@@ -73,11 +67,11 @@ export default function CandidateForm({
   /* ---------------- Init / Reset ---------------- */
 
   useEffect(() => {
-    setName(candidate?.name || "");
-    setNameMr(candidate?.nameMr || "");
-    setPartyName(candidate?.partyName || "");
-    setPartyNameMr(candidate?.partyNameMr || "");
-    setSymbolNameMr(candidate?.symbolName || "");
+    setName(candidate?.name || '');
+    setNameMr(candidate?.nameMr || '');
+    setPartyName(candidate?.partyName || '');
+    setPartyNameMr(candidate?.partyNameMr || '');
+    setSymbolNameMr(candidate?.symbolName || '');
     setCandidatePhoto(undefined);
     setSymbolImage(undefined);
     setErrors({});
@@ -88,39 +82,35 @@ export default function CandidateForm({
   const validate = () => {
     const e: typeof errors = {};
 
-    if (!name.trim()) e.name = t("fieldRequired", { field: t("name") });
-    if (!nameMr.trim())
-      e.nameMr = t("fieldRequired", { field: t("candidate.mrName") });
+    if (!name.trim()) e.name = t('fieldRequired', { field: t('name') });
+    if (!nameMr.trim()) e.nameMr = t('fieldRequired', { field: t('candidate.mrName') });
 
-    if (!partyName.trim())
-      e.party = t("fieldRequired", { field: t("candidate.party") });
+    if (!partyName.trim()) e.party = t('fieldRequired', { field: t('candidate.party') });
     if (!partyNameMr.trim())
-      e.partyMr = t("fieldRequired", {
-        field: t("candidate.mrPartyName"),
+      e.partyMr = t('fieldRequired', {
+        field: t('candidate.mrPartyName')
       });
     if (!symbolNameMr.trim())
-      e.symbolMr = t("fieldRequired", {
-        field: t("candidate.mrSymbolName"),
+      e.symbolMr = t('fieldRequired', {
+        field: t('candidate.mrSymbolName')
       });
 
     if (!isEdit) {
-      if (!candidatePhoto) e.photo = t("candidate.photoRequired");
-      if (!symbolImage) e.symbol = t("candidate.symbolRequired");
+      if (!candidatePhoto) e.photo = t('candidate.photoRequired');
+      if (!symbolImage) e.symbol = t('candidate.symbolRequired');
     } else {
       const finalCandidatePhoto =
-        candidatePhoto !== undefined
-          ? candidatePhoto
-          : candidate?.candidatePhotoUrl;
+        candidatePhoto !== undefined ? candidatePhoto : candidate?.candidatePhotoUrl;
 
       const finalSymbolImage =
         symbolImage !== undefined ? symbolImage : candidate?.symbolImageUrl;
 
       if (!finalCandidatePhoto) {
-        e.photo = t("candidate.photoRequired");
+        e.photo = t('candidate.photoRequired');
       }
 
       if (!finalSymbolImage) {
-        e.symbol = t("candidate.symbolRequired");
+        e.symbol = t('candidate.symbolRequired');
       }
     }
 
@@ -138,7 +128,7 @@ export default function CandidateForm({
       nameMr: nameMr.trim(),
       partyName: partyName.trim(),
       partyNameMr: partyNameMr.trim(),
-      symbolName: symbolNameMr.trim(),
+      symbolName: symbolNameMr.trim()
     };
 
     if (candidatePhoto !== undefined) payload.candidatePhoto = candidatePhoto;
@@ -168,9 +158,9 @@ export default function CandidateForm({
         {/* Row 1: Name + MR Name */}
         <View style={isTwoColumn ? styles.row : styles.column}>
           <View style={styles.col}>
-            <FixedLabel label={t("name")} required />
+            <FixedLabel label={t('name')} required />
             <TextInput
-              placeholder={t("placeholder.enterCandidateName")}
+              placeholder={t('placeholder.enterCandidateName')}
               placeholderTextColor={theme.colors.placeholder}
               value={name}
               onChangeText={(v) => {
@@ -180,19 +170,15 @@ export default function CandidateForm({
               mode="outlined"
               style={styles.input}
             />
-            <HelperText
-              type="error"
-              visible={!!errors.name}
-              style={{ paddingLeft: 0 }}
-            >
+            <HelperText type="error" visible={!!errors.name} style={{ paddingLeft: 0 }}>
               {errors.name}
             </HelperText>
           </View>
 
           <View style={styles.col}>
-            <FixedLabel label={t("candidate.mrName")} required />
+            <FixedLabel label={t('candidate.mrName')} required />
             <TextInput
-              placeholder={t("placeholder.enterMrCandidateName")}
+              placeholder={t('placeholder.enterMrCandidateName')}
               placeholderTextColor={theme.colors.placeholder}
               value={nameMr}
               onChangeText={(v) => {
@@ -202,11 +188,7 @@ export default function CandidateForm({
               mode="outlined"
               style={styles.input}
             />
-            <HelperText
-              type="error"
-              visible={!!errors.nameMr}
-              style={{ paddingLeft: 0 }}
-            >
+            <HelperText type="error" visible={!!errors.nameMr} style={{ paddingLeft: 0 }}>
               {errors.nameMr}
             </HelperText>
           </View>
@@ -215,9 +197,9 @@ export default function CandidateForm({
         {/* Row 2: Party + MR Party */}
         <View style={isTwoColumn ? styles.row : styles.column}>
           <View style={styles.col}>
-            <FixedLabel label={t("candidate.party")} required />
+            <FixedLabel label={t('candidate.party')} required />
             <TextInput
-              placeholder={t("placeholder.enterPartyName")}
+              placeholder={t('placeholder.enterPartyName')}
               placeholderTextColor={theme.colors.placeholder}
               value={partyName}
               onChangeText={(v) => {
@@ -227,19 +209,15 @@ export default function CandidateForm({
               mode="outlined"
               style={styles.input}
             />
-            <HelperText
-              type="error"
-              visible={!!errors.party}
-              style={{ paddingLeft: 0 }}
-            >
+            <HelperText type="error" visible={!!errors.party} style={{ paddingLeft: 0 }}>
               {errors.party}
             </HelperText>
           </View>
 
           <View style={styles.col}>
-            <FixedLabel label={t("candidate.mrPartyName")} required />
+            <FixedLabel label={t('candidate.mrPartyName')} required />
             <TextInput
-              placeholder={t("placeholder.enterMrPartyName")}
+              placeholder={t('placeholder.enterMrPartyName')}
               placeholderTextColor={theme.colors.placeholder}
               value={partyNameMr}
               onChangeText={(v) => {
@@ -262,9 +240,9 @@ export default function CandidateForm({
         {/* Row 3: Symbol Name */}
         <View style={isTwoColumn ? styles.row : styles.column}>
           <View style={styles.col}>
-            <FixedLabel label={t("candidate.mrSymbolName")} required />
+            <FixedLabel label={t('candidate.mrSymbolName')} required />
             <TextInput
-              placeholder={t("placeholder.enterMrSymbolName")}
+              placeholder={t('placeholder.enterMrSymbolName')}
               placeholderTextColor={theme.colors.placeholder}
               value={symbolNameMr}
               onChangeText={(v) => {
@@ -287,7 +265,7 @@ export default function CandidateForm({
         {/* Row 4: Images */}
         <View style={isTwoColumn ? styles.row : styles.column}>
           <View style={styles.col}>
-            <FixedLabel label={t("candidate.photo")} required />
+            <FixedLabel label={t('candidate.photo')} required />
             <SingleImageUpload
               value={candidatePhoto}
               previewUrl={candidate?.candidatePhotoUrl}
@@ -296,17 +274,13 @@ export default function CandidateForm({
                 setErrors((e) => ({ ...e, photo: undefined }));
               }}
             />
-            <HelperText
-              type="error"
-              visible={!!errors.photo}
-              style={{ paddingLeft: 0 }}
-            >
+            <HelperText type="error" visible={!!errors.photo} style={{ paddingLeft: 0 }}>
               {errors.photo}
             </HelperText>
           </View>
 
           <View style={styles.col}>
-            <FixedLabel label={t("candidate.symbol")} required />
+            <FixedLabel label={t('candidate.symbol')} required />
             <SingleImageUpload
               value={symbolImage}
               previewUrl={candidate?.symbolImageUrl}
@@ -315,11 +289,7 @@ export default function CandidateForm({
                 setErrors((e) => ({ ...e, symbol: undefined }));
               }}
             />
-            <HelperText
-              type="error"
-              visible={!!errors.symbol}
-              style={{ paddingLeft: 0 }}
-            >
+            <HelperText type="error" visible={!!errors.symbol} style={{ paddingLeft: 0 }}>
               {errors.symbol}
             </HelperText>
           </View>
@@ -328,7 +298,7 @@ export default function CandidateForm({
         {/* Actions */}
         <View style={styles.actions}>
           <Button mode="outlined" onPress={handleCancel} style={styles.btn}>
-            {t("cancel")}
+            {t('cancel')}
           </Button>
           <Button
             mode="contained"
@@ -337,7 +307,7 @@ export default function CandidateForm({
             disabled={loading}
             style={styles.btn}
           >
-            {isEdit ? t("update") : t("create")}
+            {isEdit ? t('update') : t('create')}
           </Button>
         </View>
       </Surface>
@@ -349,36 +319,36 @@ export default function CandidateForm({
 
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
+    padding: 16
   },
   form: {
     padding: 16,
     borderRadius: 8,
-    backgroundColor: "#fff",
+    backgroundColor: '#fff'
   },
   row: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: 16,
-    marginBottom: 8,
+    marginBottom: 8
   },
   column: {
-    flexDirection: "column",
-    marginBottom: 8,
+    flexDirection: 'column',
+    marginBottom: 8
   },
   col: {
-    flex: 1,
+    flex: 1
   },
   input: {
     height: 44,
-    backgroundColor: "#fff",
+    backgroundColor: '#fff'
   },
   actions: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: 12,
-    marginTop: 16,
+    marginTop: 16
   },
   btn: {
     flex: 1,
-    borderRadius: 6,
-  },
+    borderRadius: 6
+  }
 });

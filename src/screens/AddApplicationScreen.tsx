@@ -1,29 +1,29 @@
-import React, { useState, useCallback } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
-import { useTranslation } from "react-i18next";
-import { Button, Text } from "react-native-paper";
-import { useTheme } from "react-native-paper";
-import { useFocusEffect } from "@react-navigation/native";
+import React, { useState, useCallback } from 'react';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { Button, Text } from 'react-native-paper';
+import { useTheme } from 'react-native-paper';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   createApplication,
   editApplicationById,
   getApplications,
-  toggleApplication,
-} from "../api/applicationApi";
+  toggleApplication
+} from '../api/applicationApi';
 import {
   Application,
   CreateApplicationPayload,
   EditApplicationPayload,
-  GetPaginatedApplications,
-} from "../types/Application";
-import { useToast } from "../components/ToastProvider";
-import ApplicationsTable from "../components/ApplicationsTable";
-import ApplicationForm from "../components/ApplicationForm";
-import { extractErrorMessage, sortByDateDesc } from "../utils/common";
-import { uploadVoters } from "../api/voterApi";
-import { useServerTable } from "../hooks/useServerTable";
-import { useInternalBackHandler } from "../hooks/useInternalBackHandler";
-import { AppTheme } from "../theme";
+  GetPaginatedApplications
+} from '../types/Application';
+import { useToast } from '../components/ToastProvider';
+import ApplicationsTable from '../components/ApplicationsTable';
+import ApplicationForm from '../components/ApplicationForm';
+import { extractErrorMessage, sortByDateDesc } from '../utils/common';
+import { uploadVoters } from '../api/voterApi';
+import { useServerTable } from '../hooks/useServerTable';
+import { useInternalBackHandler } from '../hooks/useInternalBackHandler';
+import { AppTheme } from '../theme';
 
 export default function AddApplicationScreen() {
   const { t } = useTranslation();
@@ -32,8 +32,7 @@ export default function AddApplicationScreen() {
   const { showToast } = useToast();
 
   const [showAddApplicationView, setShowAddApplicationView] = useState(false);
-  const [applicationToEdit, setApplicationToEdit] =
-    useState<Application | null>(null);
+  const [applicationToEdit, setApplicationToEdit] = useState<Application | null>(null);
   const [voterFile, setVoterFile] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const canHandleInternalBack = showAddApplicationView;
@@ -50,31 +49,22 @@ export default function AddApplicationScreen() {
 
   useInternalBackHandler(canHandleInternalBack, handleInternalBack);
 
-  const fetchApplications = useCallback(
-    async (page: number, pageSize: number) => {
-      try {
-        const response = await getApplications(page, pageSize);
-        const sortedApps = sortByDateDesc(
-          response?.data?.items || [],
-          "createdAt",
-        );
-        return {
-          items: sortedApps ?? [],
-          totalCount: response?.data?.totalRecords ?? 0,
-        };
-      } catch (error: any) {
-        showToast(
-          extractErrorMessage(error, t("application.loadFailed")),
-          "error",
-        );
-      }
-    },
-    [],
-  );
+  const fetchApplications = useCallback(async (page: number, pageSize: number) => {
+    try {
+      const response = await getApplications(page, pageSize);
+      const sortedApps = sortByDateDesc(response?.data?.items || [], 'createdAt');
+      return {
+        items: sortedApps ?? [],
+        totalCount: response?.data?.totalRecords ?? 0
+      };
+    } catch (error: any) {
+      showToast(extractErrorMessage(error, t('application.loadFailed')), 'error');
+    }
+  }, []);
 
   const table = useServerTable<GetPaginatedApplications>(fetchApplications, {
     initialPage: 0,
-    initialRowsPerPage: 10,
+    initialRowsPerPage: 10
   });
 
   useFocusEffect(
@@ -84,14 +74,14 @@ export default function AddApplicationScreen() {
       table.setPage(0);
       table.setRowsPerPage(10);
       table.fetchData(0, 10);
-    }, []),
+    }, [])
   );
 
   const handleVoterFileUpload = async (applicationId: string) => {
     try {
       await uploadVoters(voterFile, applicationId);
     } catch (error) {
-      showToast(extractErrorMessage(error, t("voter.addFailed")), "error");
+      showToast(extractErrorMessage(error, t('voter.addFailed')), 'error');
     }
   };
 
@@ -105,12 +95,9 @@ export default function AddApplicationScreen() {
       await table.fetchData(0, table.rowsPerPage);
       setShowAddApplicationView(false);
       setApplicationToEdit(null);
-      showToast(t("application.addSuccess"), "success");
+      showToast(t('application.addSuccess'), 'success');
     } catch (error: any) {
-      showToast(
-        extractErrorMessage(error, t("application.addFailed")),
-        "error",
-      );
+      showToast(extractErrorMessage(error, t('application.addFailed')), 'error');
     } finally {
       setLoading(false);
     }
@@ -123,7 +110,7 @@ export default function AddApplicationScreen() {
       await editApplicationById(applicationToEdit.id, {
         ...data,
         name: data?.appName,
-        isActive: applicationToEdit?.isActive,
+        isActive: applicationToEdit?.isActive
       });
       if (voterFile) {
         await handleVoterFileUpload(applicationToEdit.id);
@@ -131,12 +118,9 @@ export default function AddApplicationScreen() {
       await table.fetchData(table.page, table.rowsPerPage);
       setShowAddApplicationView(false);
       setApplicationToEdit(null);
-      showToast(t("application.editSuccess"), "success");
+      showToast(t('application.editSuccess'), 'success');
     } catch (error: any) {
-      showToast(
-        extractErrorMessage(error, t("application.editFailed")),
-        "error",
-      );
+      showToast(extractErrorMessage(error, t('application.editFailed')), 'error');
     } finally {
       setLoading(false);
     }
@@ -151,12 +135,9 @@ export default function AddApplicationScreen() {
     try {
       await toggleApplication(item.id, !item.isActive);
       await table.fetchData(table.page, table.rowsPerPage);
-      showToast(t("application.editSuccess"), "success");
+      showToast(t('application.editSuccess'), 'success');
     } catch (error: any) {
-      showToast(
-        extractErrorMessage(error, t("application.editFailed")),
-        "error",
-      );
+      showToast(extractErrorMessage(error, t('application.editFailed')), 'error');
     }
   };
 
@@ -168,8 +149,8 @@ export default function AddApplicationScreen() {
           style={[styles.heading, { color: theme.colors.primary }]}
         >
           {showAddApplicationView
-            ? t(applicationToEdit ? "application.edit" : "application.add")
-            : t("application.plural")}
+            ? t(applicationToEdit ? 'application.edit' : 'application.add')
+            : t('application.plural')}
         </Text>
         {!showAddApplicationView && (
           <Button
@@ -177,21 +158,21 @@ export default function AddApplicationScreen() {
             onPress={() => setShowAddApplicationView(true)}
             icon="plus"
             labelStyle={{
-              fontWeight: "bold",
+              fontWeight: 'bold',
               fontSize: 14,
-              color: theme.colors.onPrimary,
+              color: theme.colors.onPrimary
             }}
             buttonColor={theme.colors.primary}
             style={{ borderRadius: 5 }}
           >
-            {t("application.add")}
+            {t('application.add')}
           </Button>
         )}
       </View>
 
       {showAddApplicationView ? (
         <ApplicationForm
-          mode={applicationToEdit ? "edit" : "create"}
+          mode={applicationToEdit ? 'edit' : 'create'}
           loading={loading}
           onCreate={applicationToEdit ? editApplication : addApplication}
           onVoterFileUpload={(file) => setVoterFile(file)}
@@ -224,15 +205,15 @@ const createStyles = (theme: AppTheme) =>
     container: {
       padding: 16,
       backgroundColor: theme.colors.white,
-      flexGrow: 1,
+      flexGrow: 1
     },
     heading: {
-      fontWeight: "bold",
+      fontWeight: 'bold'
     },
     header: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-      marginBottom: 16,
-    },
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 16
+    }
   });

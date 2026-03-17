@@ -1,14 +1,14 @@
-import React, { useState } from "react";
-import { View, Modal, StyleSheet, TouchableOpacity } from "react-native";
-import { Button, Text, useTheme } from "react-native-paper";
-import { useTranslation } from "react-i18next";
-import dayjs from "dayjs";
-import { Ionicons } from "@expo/vector-icons";
-import { ResizeMode, Video as ExpoVideo } from "expo-av";
-import CommonTable from "./CommonTable";
-import ApprovalToggle from "./ApprovalToggle";
-import { Image } from "../types/Image";
-import { AppTheme } from "../theme";
+import React, { useState } from 'react';
+import { View, Modal, StyleSheet, TouchableOpacity } from 'react-native';
+import { Button, Text, useTheme } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
+import dayjs from 'dayjs';
+import { Ionicons } from '@expo/vector-icons';
+import { ResizeMode, Video as ExpoVideo } from 'expo-av';
+import CommonTable from './CommonTable';
+import ApprovalToggle from './ApprovalToggle';
+import { Image } from '../types/Image';
+import { AppTheme } from '../theme';
 
 type Props = {
   data: Image[];
@@ -35,7 +35,7 @@ export default function ImageTable({
   onShare,
   onUnshare,
   onEdit,
-  onDelete,
+  onDelete
 }: Props) {
   const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
@@ -44,66 +44,57 @@ export default function ImageTable({
   const [selectedVideoUri, setSelectedVideoUri] = useState<string | null>(null);
 
   const columns = [
-    { label: t("campaign"), key: "campaignName", flex: 0.8 },
+    { label: t('campaign'), key: 'campaignName', flex: 0.8 },
     {
-      label: t("uploadedAt"),
-      key: "createdAt",
+      label: t('uploadedAt'),
+      key: 'createdAt',
       flex: 0.4,
       render: (item) => (
-        <Text>{dayjs(item.createdAt).format("DD MMM YYYY, hh:mm A")}</Text>
-      ),
+        <Text>{dayjs(item.createdAt).format('DD MMM YYYY, hh:mm A')}</Text>
+      )
     },
     {
-      label: t("approval"),
-      key: "isShared",
+      label: t('approval'),
+      key: 'isShared',
       flex: 0.4,
       render: (item) => (
         <ApprovalToggle
           isApproved={item.isShared}
-          onToggle={() =>
-            item.isShared ? onUnshare(item.id) : onShare(item.id)
-          }
+          onToggle={() => (item.isShared ? onUnshare(item.id) : onShare(item.id))}
           iconSize={20}
-          labelStyle={{ fontWeight: "bold" }}
+          labelStyle={{ fontWeight: 'bold' }}
         />
-      ),
+      )
     },
     {
-      label: t("actions"),
-      key: "actions",
+      label: t('actions'),
+      key: 'actions',
       flex: 0.9,
       smallColumn: true,
       render: (item: Image) => (
         <View
           style={{
-            flexDirection: "row",
-            alignItems: "center",
+            flexDirection: 'row',
+            alignItems: 'center',
             gap: 5,
-            marginLeft: true,
+            marginLeft: true
           }}
         >
           {/* Edit */}
-          <TouchableOpacity
-            onPress={() => onEdit(item)}
-            style={{ alignItems: "center" }}
-          >
+          <TouchableOpacity onPress={() => onEdit(item)} style={{ alignItems: 'center' }}>
             <Ionicons name="pencil" size={20} color={colors.primary} />
           </TouchableOpacity>
 
           {/* Delete */}
           <TouchableOpacity
             onPress={() => onDelete(item.id)}
-            style={{ alignItems: "center" }}
+            style={{ alignItems: 'center' }}
           >
-            <Ionicons
-              name="trash-outline"
-              size={24}
-              color={colors.criticalError}
-            />
+            <Ionicons name="trash-outline" size={24} color={colors.criticalError} />
           </TouchableOpacity>
         </View>
-      ),
-    },
+      )
+    }
   ];
 
   return (
@@ -113,13 +104,9 @@ export default function ImageTable({
         columns={columns}
         loading={loading}
         emptyIcon={
-          <Ionicons
-            name="images-outline"
-            size={48}
-            color={colors.disabledText}
-          />
+          <Ionicons name="images-outline" size={48} color={colors.disabledText} />
         }
-        emptyText={t("image.noData")}
+        emptyText={t('image.noData')}
         keyExtractor={(item) => item.id}
         page={page}
         rowsPerPage={rowsPerPage}
@@ -129,11 +116,7 @@ export default function ImageTable({
       />
 
       {/* Video Player Modal */}
-      <Modal
-        visible={!!selectedVideoUri}
-        animationType="slide"
-        transparent={false}
-      >
+      <Modal visible={!!selectedVideoUri} animationType="slide" transparent={false}>
         <View style={styles.fullscreenContainer}>
           {selectedVideoUri && (
             <ExpoVideo
@@ -161,22 +144,22 @@ export default function ImageTable({
 const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
     actions: {
-      flexDirection: "row",
-      alignItems: "center",
+      flexDirection: 'row',
+      alignItems: 'center'
     },
     fullscreenContainer: {
       flex: 1,
       backgroundColor: theme.colors.black,
-      justifyContent: "center",
-      alignItems: "center",
-      paddingTop: 40,
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingTop: 40
     },
     video: {
-      width: "100%",
-      flex: 1,
+      width: '100%',
+      flex: 1
     },
     closeButton: {
       margin: 16,
-      alignSelf: "center",
-    },
+      alignSelf: 'center'
+    }
   });

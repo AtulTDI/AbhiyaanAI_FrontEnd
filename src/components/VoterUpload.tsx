@@ -1,9 +1,9 @@
-import React from "react";
-import { useTranslation } from "react-i18next";
-import CommonUpload from "./CommonUpload";
-import { uploadRecipients } from "../api/recipientApi";
-import { extractErrorMessage } from "../utils/common";
-import { useToast } from "./ToastProvider";
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import CommonUpload from './CommonUpload';
+import { uploadRecipients } from '../api/recipientApi';
+import { extractErrorMessage } from '../utils/common';
+import { useToast } from './ToastProvider';
 
 export default function VoterUpload({ fetchVoters, setShowAddVoterView }) {
   const { t } = useTranslation();
@@ -15,13 +15,13 @@ export default function VoterUpload({ fetchVoters, setShowAddVoterView }) {
       await fetchVoters();
       setShowAddVoterView(false);
     } catch (error) {
-      showToast(extractErrorMessage(error, t("voter.addFailed")), "error");
+      showToast(extractErrorMessage(error, t('voter.addFailed')), 'error');
     }
   };
 
   return (
     <CommonUpload
-      label={t("voter.uploadVoterExcel")}
+      label={t('voter.uploadVoterExcel')}
       fileType="excel"
       onUpload={(file) => handleUpload(file)}
     />

@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
+import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   View,
   Text,
@@ -9,23 +9,18 @@ import {
   useWindowDimensions,
   Animated,
   Pressable,
-  Keyboard,
-} from "react-native";
-import {
-  Menu,
-  useTheme,
-  ActivityIndicator,
-  TextInput,
-} from "react-native-paper";
-import { Row } from "react-native-table-component";
-import { MaterialIcons } from "@expo/vector-icons";
-import { usePlatformInfo } from "../hooks/usePlatformInfo";
-import { EllipsisCell } from "./EllipsisCell";
-import { AppTheme } from "../theme";
+  Keyboard
+} from 'react-native';
+import { Menu, useTheme, ActivityIndicator, TextInput } from 'react-native-paper';
+import { Row } from 'react-native-table-component';
+import { MaterialIcons } from '@expo/vector-icons';
+import { usePlatformInfo } from '../hooks/usePlatformInfo';
+import { EllipsisCell } from './EllipsisCell';
+import { AppTheme } from '../theme';
 
 type Column<T> = {
   label: string | React.ReactNode;
-  key?: keyof T | "actions" | "radio" | string;
+  key?: keyof T | 'actions' | 'radio' | string;
   flex: number;
   smallColumn?: boolean;
   render?: (item: T, index: number) => React.ReactNode;
@@ -40,7 +35,7 @@ type Props<T> = {
   emptyIcon?: React.ReactNode;
   loading?: boolean;
   tableWithSelection?: boolean;
-  tableType?: "tableUnderStepper" | "tableUnderDropdown" | "tableUnderHeader";
+  tableType?: 'tableUnderStepper' | 'tableUnderDropdown' | 'tableUnderHeader';
   tableHeight?: string;
   page?: number;
   rowsPerPage?: number;
@@ -69,7 +64,7 @@ export default function CommonTable<T>({
   totalCount,
   onPageChange,
   onRowsPerPageChange,
-  onSearchChange,
+  onSearchChange
 }: Props<T>) {
   const { isWeb, isMobileWeb } = usePlatformInfo();
   const { t } = useTranslation();
@@ -92,8 +87,7 @@ export default function CommonTable<T>({
   const rowsPerPage = controlledRowsPerPage ?? internalRowsPerPage;
   const startIndex = page * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
-  const paginatedData =
-    controlledPage != null ? data : data.slice(startIndex, endIndex);
+  const paginatedData = controlledPage != null ? data : data.slice(startIndex, endIndex);
   const totalPages = Math.ceil(
     totalCount > 0 ? totalCount / rowsPerPage : data.length / rowsPerPage
   );
@@ -110,12 +104,12 @@ export default function CommonTable<T>({
       Animated.timing(fadeAnim, {
         toValue: 0,
         duration: 200,
-        useNativeDriver: true,
+        useNativeDriver: true
       }).start(() => {
         setShowSearch(false);
         setFilters((prev) => ({
           ...prev,
-          search: "",
+          search: ''
         }));
       });
     } else {
@@ -124,7 +118,7 @@ export default function CommonTable<T>({
       Animated.timing(fadeAnim, {
         toValue: 1,
         duration: 200,
-        useNativeDriver: true,
+        useNativeDriver: true
       }).start(() => {
         setTimeout(() => {
           searchInputRef.current?.focus?.();
@@ -142,41 +136,41 @@ export default function CommonTable<T>({
         renderHeader: () => (
           <Pressable onPress={toggleSearch} style={styles.searchIcon}>
             <MaterialIcons
-              name={showSearch ? "close" : "search"}
+              name={showSearch ? 'close' : 'search'}
               size={18}
               color={theme.colors.primary}
             />
           </Pressable>
-        ),
+        )
       };
     }
 
     if (!tableWithSelection) {
       baseColumns = [
         {
-          key: "__sno__",
-          label: enableSearch ? "" : t("sno"),
+          key: '__sno__',
+          label: enableSearch ? '' : t('sno'),
           flex: columns?.length > 7 ? 0.4 : totalCount >= 100 ? 0.3 : 0.2,
           smallColumn: true,
           renderHeader: () =>
             enableSearch ? (
               <Pressable onPress={toggleSearch} style={styles.searchIcon}>
                 <MaterialIcons
-                  name={showSearch ? "close" : "search"}
+                  name={showSearch ? 'close' : 'search'}
                   size={18}
                   color={theme.colors.primary}
                 />
               </Pressable>
             ) : (
-              <Text style={styles.headerCell}>{t("sno")}</Text>
+              <Text style={styles.headerCell}>{t('sno')}</Text>
             ),
           render: (_: T, index: number) => (
             <View style={enableSearch ? styles.srNoContainer : styles.dataCell}>
               <Text>{startIndex + index + 1}</Text>
             </View>
-          ),
+          )
         },
-        ...baseColumns,
+        ...baseColumns
       ];
     }
 
@@ -191,9 +185,7 @@ export default function CommonTable<T>({
     enhancedColumns.map((col) => {
       const value = item[col.key as keyof T];
       if (col.render) return col.render(item, index);
-      return typeof value === "string" || typeof value === "number"
-        ? String(value)
-        : "-";
+      return typeof value === 'string' || typeof value === 'number' ? String(value) : '-';
     })
   );
 
@@ -206,8 +198,7 @@ export default function CommonTable<T>({
       return (col.flex / totalFlex) * screenWidth;
     }
 
-    if ((isWeb || screenWidth < 600 || isMobileWeb) && col?.smallColumn)
-      return 80;
+    if ((isWeb || screenWidth < 600 || isMobileWeb) && col?.smallColumn) return 80;
 
     if (screenWidth < 600 || isMobileWeb) {
       return Math.max(col.flex * 150, 200);
@@ -231,23 +222,20 @@ export default function CommonTable<T>({
   let availableHeight;
 
   if (isWeb && !isMobileWeb) {
-    if (
-      typeof tableHeight === "string" &&
-      tableHeight.includes("calc(100vh -")
-    ) {
+    if (typeof tableHeight === 'string' && tableHeight.includes('calc(100vh -')) {
       const match = tableHeight.match(/calc\(100vh\s*-\s*(\d+)px\)/);
       const basePx = match ? parseInt(match[1], 10) : 260;
       const adjustedPx = showSearch ? basePx + 70 : basePx;
       availableHeight = `calc(100vh - ${adjustedPx}px)`;
     } else {
       availableHeight = showSearch
-        ? `calc(${tableHeight ?? "100vh - 260px"} - 70px)`
-        : tableHeight ?? "calc(100vh - 260px)";
+        ? `calc(${tableHeight ?? '100vh - 260px'} - 70px)`
+        : (tableHeight ?? 'calc(100vh - 260px)');
     }
   } else {
-    if (tableType === "tableUnderStepper") {
+    if (tableType === 'tableUnderStepper') {
       availableHeight = screenHeight * (showSearch ? 0.37 : 0.45);
-    } else if (tableType === "tableUnderDropdown") {
+    } else if (tableType === 'tableUnderDropdown') {
       availableHeight = screenHeight * (showSearch ? 0.5 : 0.6);
     } else {
       availableHeight = screenHeight * (showSearch ? 0.56 : 0.66);
@@ -256,14 +244,14 @@ export default function CommonTable<T>({
 
   useEffect(() => {
     const onKeyboardHide = () => {
-      if (!filters.search || filters.search.trim() === "") {
+      if (!filters.search || filters.search.trim() === '') {
         setShowSearch(false);
-        setFilters((prev) => ({ ...prev, search: "" }));
+        setFilters((prev) => ({ ...prev, search: '' }));
       }
     };
 
     const keyboardDidHideListener = Keyboard.addListener(
-      "keyboardDidHide",
+      'keyboardDidHide',
       onKeyboardHide
     );
 
@@ -301,7 +289,7 @@ export default function CommonTable<T>({
       requestAnimationFrame(() => {
         horizontalScrollRef.current?.scrollTo({
           x: 0,
-          animated: true,
+          animated: true
         });
       });
     };
@@ -314,7 +302,7 @@ export default function CommonTable<T>({
   }, [showSearch]);
 
   useEffect(() => {
-    const onShow = Keyboard.addListener("keyboardDidShow", () => {
+    const onShow = Keyboard.addListener('keyboardDidShow', () => {
       requestAnimationFrame(() => {
         horizontalScrollRef.current?.scrollTo({ x: 0, animated: true });
       });
@@ -336,10 +324,7 @@ export default function CommonTable<T>({
 
   useEffect(() => {
     if (onSearchChange && filters.search !== undefined) {
-      const delay = setTimeout(
-        () => onSearchChange({ search: filters.search }),
-        1000
-      );
+      const delay = setTimeout(() => onSearchChange({ search: filters.search }), 1000);
       return () => clearTimeout(delay);
     }
   }, [filters.search]);
@@ -356,13 +341,10 @@ export default function CommonTable<T>({
               data={tableHead.map((head, idx) => (
                 <View
                   key={idx}
-                  style={{ width: widthArr[idx], justifyContent: "center" }}
+                  style={{ width: widthArr[idx], justifyContent: 'center' }}
                 >
                   <Text
-                    style={[
-                      styles.headerCell,
-                      { color: colors.white, width: "100%" },
-                    ]}
+                    style={[styles.headerCell, { color: colors.white, width: '100%' }]}
                     numberOfLines={1}
                     ellipsizeMode="tail"
                   >
@@ -375,7 +357,7 @@ export default function CommonTable<T>({
             />
             <View style={styles.loaderContainer}>
               <ActivityIndicator size="large" color={colors.primary} />
-              <Text style={styles.loaderText}>{t("loadingData")}</Text>
+              <Text style={styles.loaderText}>{t('loadingData')}</Text>
             </View>
           </>
         ) : data.length === 0 ? (
@@ -384,13 +366,10 @@ export default function CommonTable<T>({
               data={tableHead.map((head, idx) => (
                 <View
                   key={idx}
-                  style={{ width: widthArr[idx], justifyContent: "center" }}
+                  style={{ width: widthArr[idx], justifyContent: 'center' }}
                 >
                   <Text
-                    style={[
-                      styles.headerCell,
-                      { color: colors.white, width: "100%" },
-                    ]}
+                    style={[styles.headerCell, { color: colors.white, width: '100%' }]}
                     numberOfLines={1}
                     ellipsizeMode="tail"
                   >
@@ -412,11 +391,11 @@ export default function CommonTable<T>({
                       {
                         translateY: fadeAnim.interpolate({
                           inputRange: [0, 1],
-                          outputRange: [-10, 0],
-                        }),
-                      },
-                    ],
-                  },
+                          outputRange: [-10, 0]
+                        })
+                      }
+                    ]
+                  }
                 ]}
               >
                 <View style={styles.fullWidthSearchContainer}>
@@ -424,19 +403,14 @@ export default function CommonTable<T>({
                     ref={searchInputRef}
                     mode="outlined"
                     placeholder="Search by name or mobile number"
-                    value={filters.search || ""}
+                    value={filters.search || ''}
                     onChangeText={(text) =>
                       setFilters((prev) => ({
                         ...prev,
-                        search: text,
+                        search: text
                       }))
                     }
-                    left={
-                      <TextInput.Icon
-                        icon="magnify"
-                        color={theme.colors.primary}
-                      />
-                    }
+                    left={<TextInput.Icon icon="magnify" color={theme.colors.primary} />}
                     style={styles.fullWidthSearchInput}
                     outlineColor={theme.colors.borderGray}
                     activeOutlineColor={theme.colors.primary}
@@ -455,9 +429,7 @@ export default function CommonTable<T>({
                   color={colors.borderGray}
                 />
               )}
-              <Text style={styles.emptyText}>
-                {emptyText ?? t("defaultNoData")}
-              </Text>
+              <Text style={styles.emptyText}>{emptyText ?? t('defaultNoData')}</Text>
             </View>
           </>
         ) : (
@@ -468,13 +440,10 @@ export default function CommonTable<T>({
               nestedScrollEnabled
               showsHorizontalScrollIndicator={enableHorizontalScroll}
               contentContainerStyle={{
-                minWidth: "100%",
-                flexGrow: 1,
+                minWidth: '100%',
+                flexGrow: 1
               }}
-              style={[
-                styles.scrollArea,
-                isMobileWeb ? { overflowX: "auto" } : {},
-              ]}
+              style={[styles.scrollArea, isMobileWeb ? { overflowX: 'auto' } : {}]}
             >
               <View>
                 {/* Header Row */}
@@ -482,12 +451,12 @@ export default function CommonTable<T>({
                   data={tableHead.map((head, idx) => (
                     <View
                       key={idx}
-                      style={{ width: widthArr[idx], justifyContent: "center" }}
+                      style={{ width: widthArr[idx], justifyContent: 'center' }}
                     >
                       <Text
                         style={[
                           styles.headerCell,
-                          { color: colors.white, width: "100%" },
+                          { color: colors.white, width: '100%' }
                         ]}
                         numberOfLines={1}
                         ellipsizeMode="tail"
@@ -511,11 +480,11 @@ export default function CommonTable<T>({
                           {
                             translateY: fadeAnim.interpolate({
                               inputRange: [0, 1],
-                              outputRange: [-10, 0],
-                            }),
-                          },
-                        ],
-                      },
+                              outputRange: [-10, 0]
+                            })
+                          }
+                        ]
+                      }
                     ]}
                   >
                     <View style={styles.fullWidthSearchContainer}>
@@ -523,18 +492,15 @@ export default function CommonTable<T>({
                         ref={searchInputRef}
                         mode="outlined"
                         placeholder="Search by name or mobile number"
-                        value={filters.search || ""}
+                        value={filters.search || ''}
                         onChangeText={(text) =>
                           setFilters((prev) => ({
                             ...prev,
-                            search: text,
+                            search: text
                           }))
                         }
                         left={
-                          <TextInput.Icon
-                            icon="magnify"
-                            color={theme.colors.primary}
-                          />
+                          <TextInput.Icon icon="magnify" color={theme.colors.primary} />
                         }
                         style={styles.fullWidthSearchInput}
                         outlineColor={theme.colors.borderGray}
@@ -582,13 +548,13 @@ export default function CommonTable<T>({
             <View
               style={[
                 styles.paginationContainer,
-                isMobileWeb && { paddingVertical: 6, paddingHorizontal: 8 },
+                isMobileWeb && { paddingVertical: 6, paddingHorizontal: 8 }
               ]}
             >
               {isWeb && !isMobileWeb ? (
                 <>
                   <View style={styles.rowsPerPageWrapper}>
-                    <Text style={styles.pageText}>{t("rowsPerPage")}:</Text>
+                    <Text style={styles.pageText}>{t('rowsPerPage')}:</Text>
                     <Menu
                       visible={menuVisible}
                       onDismiss={() => setMenuVisible(false)}
@@ -616,8 +582,7 @@ export default function CommonTable<T>({
                   </View>
 
                   <Text style={styles.pageText}>
-                    {startIndex + 1}-
-                    {Math.min(endIndex, totalCount || data.length)} of{" "}
+                    {startIndex + 1}-{Math.min(endIndex, totalCount || data.length)} of{' '}
                     {totalCount || data.length}
                   </Text>
 
@@ -635,37 +600,31 @@ export default function CommonTable<T>({
                       <Text
                         style={[
                           styles.pageText,
-                          page === 0 && { color: colors.borderGray },
+                          page === 0 && { color: colors.borderGray }
                         ]}
                       >
-                        {t("previous")}
+                        {t('previous')}
                       </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                       style={styles.navButton}
                       disabled={page >= totalPages - 1}
-                      onPress={() =>
-                        handlePageChange(Math.min(page + 1, totalPages - 1))
-                      }
+                      onPress={() => handlePageChange(Math.min(page + 1, totalPages - 1))}
                     >
                       <Text
                         style={[
                           styles.pageText,
                           page >= totalPages - 1 && {
-                            color: colors.borderGray,
-                          },
+                            color: colors.borderGray
+                          }
                         ]}
                       >
-                        {t("next")}
+                        {t('next')}
                       </Text>
                       <MaterialIcons
                         name="chevron-right"
                         size={22}
-                        color={
-                          page >= totalPages - 1
-                            ? colors.borderGray
-                            : colors.black
-                        }
+                        color={page >= totalPages - 1 ? colors.borderGray : colors.black}
                       />
                     </TouchableOpacity>
                   </View>
@@ -685,26 +644,19 @@ export default function CommonTable<T>({
                   </TouchableOpacity>
 
                   <Text style={styles.pageText}>
-                    {startIndex + 1}-
-                    {Math.min(endIndex, totalCount || data.length)} /{" "}
+                    {startIndex + 1}-{Math.min(endIndex, totalCount || data.length)} /{' '}
                     {totalCount || data.length}
                   </Text>
 
                   <TouchableOpacity
                     style={styles.iconButton}
                     disabled={page >= totalPages - 1}
-                    onPress={() =>
-                      handlePageChange(Math.min(page + 1, totalPages - 1))
-                    }
+                    onPress={() => handlePageChange(Math.min(page + 1, totalPages - 1))}
                   >
                     <MaterialIcons
                       name="chevron-right"
                       size={24}
-                      color={
-                        page >= totalPages - 1
-                          ? colors.borderGray
-                          : colors.primary
-                      }
+                      color={page >= totalPages - 1 ? colors.borderGray : colors.primary}
                     />
                   </TouchableOpacity>
 
@@ -748,124 +700,124 @@ const createStyles = (
   platform: { isWeb: boolean; isMobileWeb: boolean }
 ) =>
   StyleSheet.create({
-    container: { flex: 1, width: "100%", minWidth: "100%", paddingTop: 8 },
+    container: { flex: 1, width: '100%', minWidth: '100%', paddingTop: 8 },
     tableWrapper: {
       flex: 1,
       backgroundColor: theme.colors.white,
       borderRadius: 8,
-      overflow: "hidden",
+      overflow: 'hidden',
       shadowColor: theme.colors.black,
       shadowOffset: { width: 0, height: 3 },
       shadowOpacity: 0.08,
       shadowRadius: 6,
       elevation: 4,
       borderWidth: 1,
-      borderColor: theme.colors.borderGray,
+      borderColor: theme.colors.borderGray
     },
     scrollArea: { flex: 1 },
     headerRow: { backgroundColor: theme.colors.primary, height: 46 },
     headerCell: {
-      fontWeight: "600",
+      fontWeight: '600',
       fontSize: 14,
-      textAlign: "left",
-      paddingHorizontal: 8,
+      textAlign: 'left',
+      paddingHorizontal: 8
     },
     dataRow: {
       height: 48,
       borderBottomWidth: 1,
-      borderColor: theme.colors.borderGray,
+      borderColor: theme.colors.borderGray
     },
     srNoContainer: {
-      paddingLeft: 10,
+      paddingLeft: 10
     },
     dataCell: {
       fontSize: 13,
-      textAlign: "left",
+      textAlign: 'left',
       color: theme.colors.onSurface,
       paddingHorizontal: 8,
       lineHeight: 20,
       ...(platform.isWeb && !platform.isMobileWeb
         ? {
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-            wordBreak: "break-word",
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            wordBreak: 'break-word'
           }
-        : {}),
+        : {})
     },
     divider: { height: 1, backgroundColor: theme.colors.borderGray },
     emptyContainer: {
-      alignItems: "center",
-      justifyContent: "center",
+      alignItems: 'center',
+      justifyContent: 'center',
       flex: 1,
-      paddingVertical: 50,
+      paddingVertical: 50
     },
     loaderContainer: {
       flex: 1,
-      justifyContent: "center",
-      alignItems: "center",
+      justifyContent: 'center',
+      alignItems: 'center'
     },
     loaderText: {
       marginTop: 10,
       fontSize: 14,
-      color: theme.colors.darkerGrayText,
+      color: theme.colors.darkerGrayText
     },
     emptyText: {
       fontSize: 15,
-      fontWeight: "500",
+      fontWeight: '500',
       marginTop: 8,
-      color: theme.colors.darkerGrayText,
+      color: theme.colors.darkerGrayText
     },
     paginationContainer: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
       paddingHorizontal: 14,
       paddingVertical: 10,
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.white
     },
     mobilePaginationWrapper: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
       flex: 1,
-      paddingHorizontal: 10,
+      paddingHorizontal: 10
     },
     iconButton: { padding: 6 },
-    rowsPerPageWrapper: { flexDirection: "row", alignItems: "center", gap: 4 },
+    rowsPerPageWrapper: { flexDirection: 'row', alignItems: 'center', gap: 4 },
     rowsPerPageButton: {
-      flexDirection: "row",
-      alignItems: "center",
+      flexDirection: 'row',
+      alignItems: 'center',
       paddingHorizontal: 6,
       paddingVertical: 2,
       borderWidth: 1,
       borderColor: theme.colors.borderGray,
       borderRadius: 6,
-      marginHorizontal: 6,
+      marginHorizontal: 6
     },
     dropdownTrigger: {
-      flexDirection: "row",
-      alignItems: "center",
+      flexDirection: 'row',
+      alignItems: 'center',
       paddingHorizontal: 8,
       paddingVertical: 4,
       borderWidth: 1,
       borderColor: theme.colors.borderGray,
       borderRadius: 6,
-      marginLeft: 4,
+      marginLeft: 4
     },
     pageText: { fontSize: 13, color: theme.colors.darkerGrayText },
-    pageNavWrapper: { flexDirection: "row", alignItems: "center", gap: 8 },
+    pageNavWrapper: { flexDirection: 'row', alignItems: 'center', gap: 8 },
     navButton: {
-      flexDirection: "row",
-      alignItems: "center",
+      flexDirection: 'row',
+      alignItems: 'center',
       gap: 4,
       paddingHorizontal: 6,
-      paddingVertical: 4,
+      paddingVertical: 4
     },
     searchIcon: {
       backgroundColor: theme.colors.white,
       borderRadius: 20,
-      padding: 5,
+      padding: 5
     },
     searchPanelInline: {
       backgroundColor: theme.colors.white,
@@ -874,19 +826,19 @@ const createStyles = (
       paddingVertical: 6,
       paddingHorizontal: 8,
       zIndex: 5,
-      width: "100%",
+      width: '100%'
     },
     fullWidthSearchContainer: {
-      width: "100%",
+      width: '100%',
       paddingHorizontal: 12,
       paddingVertical: 6,
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.white
     },
     fullWidthSearchInput: {
       backgroundColor: theme.colors.white,
       fontSize: 14,
       height: 44,
       borderRadius: 8,
-      width: "100%",
-    },
+      width: '100%'
+    }
   });

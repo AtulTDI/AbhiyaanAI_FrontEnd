@@ -1,15 +1,15 @@
-import React, { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import { FieldConfig, FieldType } from "../types";
-import { User } from "../types/User";
-import { getActiveApplications } from "../api/applicationApi";
-import { getAuthData } from "../utils/storage";
-import DynamicForm from "./DynamicForm";
+import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { FieldConfig, FieldType } from '../types';
+import { User } from '../types/User';
+import { getActiveApplications } from '../api/applicationApi';
+import { getAuthData } from '../utils/storage';
+import DynamicForm from './DynamicForm';
 
 type Props = {
   role: string;
-  mode: "create" | "edit";
+  mode: 'create' | 'edit';
   onCreate: (data: {
     firstName: string;
     lastName: string;
@@ -29,23 +29,23 @@ export default function UserForm({
   onCreate,
   userToEdit,
   setUserToEdit,
-  setShowAddUserView,
+  setShowAddUserView
 }: Props) {
   const { t } = useTranslation();
   const [applicationOptions, setApplicationOptions] = useState<any[]>([]);
   const [loggedInUserRole, setLoggedInUserRole] = useState<
-    "Admin" | "User" | "SuperAdmin" | null
+    'Admin' | 'User' | 'SuperAdmin' | null
   >(null);
-  const [formRole, setFormRole] = useState("");
+  const [formRole, setFormRole] = useState('');
 
   useEffect(() => {
     (async () => {
       const { role: storedRole } = await getAuthData();
 
       if (
-        storedRole === "Admin" ||
-        storedRole === "SuperAdmin" ||
-        storedRole === "User"
+        storedRole === 'Admin' ||
+        storedRole === 'SuperAdmin' ||
+        storedRole === 'User'
       ) {
         setLoggedInUserRole(storedRole);
       }
@@ -61,15 +61,15 @@ export default function UserForm({
 
         const formatted = appArray.map((app) => ({
           label: app.name,
-          value: app.id,
+          value: app.id
         }));
         setApplicationOptions(formatted);
       } catch (error) {
-        console.error("Failed to fetch applications", error);
+        console.error('Failed to fetch applications', error);
       }
     };
 
-    if (loggedInUserRole === "SuperAdmin" && role === "Admin") {
+    if (loggedInUserRole === 'SuperAdmin' && role === 'Admin') {
       fetchApplications();
     }
   }, [loggedInUserRole]);
@@ -77,56 +77,56 @@ export default function UserForm({
   const getUserFields = (): FieldConfig[] => {
     const fields: FieldConfig[] = [
       {
-        name: "firstName",
-        label: t("firstName"),
-        placeholder: t("placeholder.enterFirstName"),
-        type: "text",
-        required: true,
+        name: 'firstName',
+        label: t('firstName'),
+        placeholder: t('placeholder.enterFirstName'),
+        type: 'text',
+        required: true
       },
       {
-        name: "lastName",
-        label: t("lastName"),
-        placeholder: t("placeholder.enterLastName"),
-        type: "text",
-        required: true,
+        name: 'lastName',
+        label: t('lastName'),
+        placeholder: t('placeholder.enterLastName'),
+        type: 'text',
+        required: true
       },
       {
-        name: "email",
-        label: t("email"),
-        placeholder: "example@domain.com",
-        type: "email",
+        name: 'email',
+        label: t('email'),
+        placeholder: 'example@domain.com',
+        type: 'email',
         required: true,
-        disabled: mode === "edit",
+        disabled: mode === 'edit'
       },
       {
-        name: "password",
-        label: t("password"),
-        placeholder: t("placeholder.passwordHint"),
-        type: "password",
+        name: 'password',
+        label: t('password'),
+        placeholder: t('placeholder.passwordHint'),
+        type: 'password',
         required: true,
-        disabled: mode === "edit",
+        disabled: mode === 'edit'
       },
       {
-        name: "phoneNumber",
-        label: t("mobile"),
-        placeholder: t("placeholder.mobileHint"),
-        type: "number",
-        required: true,
-      },
+        name: 'phoneNumber',
+        label: t('mobile'),
+        placeholder: t('placeholder.mobileHint'),
+        type: 'number',
+        required: true
+      }
     ];
 
     const shouldShowApplicationField =
-      loggedInUserRole === "SuperAdmin" && role === "Admin";
+      loggedInUserRole === 'SuperAdmin' && role === 'Admin';
 
     if (shouldShowApplicationField) {
       fields.push({
-        name: "applicationId",
-        label: t("application.singular"),
-        placeholder: t("placeholder.selectApplicationPlaceholder"),
-        type: "dropdown" as FieldType,
+        name: 'applicationId',
+        label: t('application.singular'),
+        placeholder: t('placeholder.selectApplicationPlaceholder'),
+        type: 'dropdown' as FieldType,
         options: applicationOptions,
         required: true,
-        disabled: mode === "edit",
+        disabled: mode === 'edit'
       });
     }
 
@@ -144,23 +144,23 @@ export default function UserForm({
       <DynamicForm
         fields={getUserFields()}
         initialValues={{
-          firstName: userToEdit?.firstName || "",
-          lastName: userToEdit?.lastName || "",
-          email: userToEdit?.email || "",
-          password: mode === "edit" ? "******" : "",
-          applicationId: userToEdit?.applicationId || "",
-          phoneNumber: userToEdit?.phoneNumber || "",
+          firstName: userToEdit?.firstName || '',
+          lastName: userToEdit?.lastName || '',
+          email: userToEdit?.email || '',
+          password: mode === 'edit' ? '******' : '',
+          applicationId: userToEdit?.applicationId || '',
+          phoneNumber: userToEdit?.phoneNumber || ''
         }}
         mode={mode}
         onChange={(field, value) => {
-          if (field.name === "role") {
+          if (field.name === 'role') {
             setFormRole(value);
           }
         }}
         onSubmit={(data: any) =>
           onCreate({
             ...data,
-            role: role ? role : "User",
+            role: role ? role : 'User'
           })
         }
         onCancel={() => {

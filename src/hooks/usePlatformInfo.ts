@@ -1,17 +1,17 @@
-import { useWindowDimensions, Platform } from "react-native";
+import { useWindowDimensions, Platform } from 'react-native';
 
 export const usePlatformInfo = () => {
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
 
-  const isWeb = Platform.OS === "web";
-  const isAndroid = Platform.OS === "android";
-  const isIOS = Platform.OS === "ios";
+  const isWeb = Platform.OS === 'web';
+  const isAndroid = Platform.OS === 'android';
+  const isIOS = Platform.OS === 'ios';
 
   const isMobileApp = isAndroid || isIOS;
 
   let isRealMobileWeb = false;
-  if (isWeb && typeof navigator !== "undefined") {
-    const ua = (navigator.userAgent || navigator.vendor || "").toLowerCase();
+  if (isWeb && typeof navigator !== 'undefined') {
+    const ua = (navigator.userAgent || navigator.vendor || '').toLowerCase();
     const isIpad = /ipad/.test(ua);
     const isMobile = /android|iphone|ipod|mobile|crios|fxios/.test(ua);
     isRealMobileWeb = isMobile || isIpad;
@@ -30,6 +30,6 @@ export const usePlatformInfo = () => {
     isMobileApp,
     isMobileWeb,
     isTablet,
-    isDesktop,
+    isDesktop
   };
 };

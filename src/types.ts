@@ -7,13 +7,13 @@ export type RootStackParamList = {
   Processing: undefined;
   Generated: undefined;
   ResetPasswordScreen: undefined;
-  EpicScanner: undefined
+  EpicScanner: undefined;
 };
 
 export type DrawerLabelProps = {
   color: string;
   focused: boolean;
-  position?: "left" | "right";
+  position?: 'left' | 'right';
 };
 
 export type CustomLabelProps = DrawerLabelProps & {
@@ -27,7 +27,14 @@ export interface AuthProps {
   setShowSignInPage: (show: boolean) => void;
 }
 
-export type FieldType = "text" | "email" | "password" | "number" | "textarea" | "dropdown" | "checkbox";
+export type FieldType =
+  | 'text'
+  | 'email'
+  | 'password'
+  | 'number'
+  | 'textarea'
+  | 'dropdown'
+  | 'checkbox';
 
 export type FieldConfig = {
   name: string;
@@ -36,11 +43,11 @@ export type FieldConfig = {
   type: FieldType;
   min?: number;
   max?: number;
-  decimalPlaces?: number,
+  decimalPlaces?: number;
   validationRules?: {
     test: (val: string) => boolean;
     message: string;
-  }[],
+  }[];
   required?: boolean;
   options?: string[] | { label: string; value: string | number }[];
   disabled?: boolean;
@@ -53,5 +60,3 @@ export type Thumbnail = {
   name: string;
   file?: File;
 };
-
-

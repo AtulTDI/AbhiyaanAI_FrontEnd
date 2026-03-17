@@ -7,20 +7,20 @@ export default function RegisterWhatsapp() {
 
   useEffect(() => {
     fetch('http://localhost:5202/api/WhtaspApp/getqr') // your backend API
-      .then(res => res.json())
-      .then(data => {
+      .then((res) => res.json())
+      .then((data) => {
         try {
           //const parsed = typeof data === 'string' ? JSON.parse(data) : data;
           if (data.base64) {
             setQrCode(data.base64);
-            } else {
+          } else {
             console.warn('QR code not found in response:');
           }
         } catch (err) {
           console.error('Error parsing QR code:', err);
         }
       })
-      .catch(err => console.error('API error:', err))
+      .catch((err) => console.error('API error:', err))
       .finally(() => setLoading(false));
   }, []);
 

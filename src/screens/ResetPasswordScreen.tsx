@@ -1,23 +1,23 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   Image,
   StyleSheet,
   SafeAreaView,
   KeyboardAvoidingView,
   ScrollView,
-  View,
-} from "react-native";
-import { Text, TextInput, Button, Card, useTheme } from "react-native-paper";
-import { useRoute } from "@react-navigation/native";
-import { LinearGradient } from "expo-linear-gradient";
-import { useToast } from "../components/ToastProvider";
-import { resetPassword } from "../api/authApi";
-import { extractErrorMessage } from "../utils/common";
-import { getBrandAssets } from "../utils/brandAssets";
-import { encryptWithBackendKey } from "../services/rsaEncryptor";
-import { usePlatformInfo } from "../hooks/usePlatformInfo";
-import { navigate } from "../navigation/NavigationService";
-import { AppTheme } from "../theme";
+  View
+} from 'react-native';
+import { Text, TextInput, Button, Card, useTheme } from 'react-native-paper';
+import { useRoute } from '@react-navigation/native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useToast } from '../components/ToastProvider';
+import { resetPassword } from '../api/authApi';
+import { extractErrorMessage } from '../utils/common';
+import { getBrandAssets } from '../utils/brandAssets';
+import { encryptWithBackendKey } from '../services/rsaEncryptor';
+import { usePlatformInfo } from '../hooks/usePlatformInfo';
+import { navigate } from '../navigation/NavigationService';
+import { AppTheme } from '../theme';
 
 type RouteParams = {
   token: string;
@@ -34,8 +34,8 @@ export default function ResetPasswordScreen() {
   const { colors } = theme;
   const { showToast } = useToast();
 
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -43,24 +43,24 @@ export default function ResetPasswordScreen() {
 
   const handleResetPassword = async () => {
     if (!newPassword || !confirmPassword) {
-      return showToast("Please fill in both password fields", "info");
+      return showToast('Please fill in both password fields', 'info');
     }
 
     if (newPassword !== confirmPassword) {
-      return showToast("Passwords do not match", "warning");
+      return showToast('Passwords do not match', 'warning');
     }
 
     try {
       setIsSubmitting(true);
       const encryptedPassword = await encryptWithBackendKey(newPassword);
       await resetPassword(email, token, encryptedPassword);
-      showToast("Password reset successful. Please log in", "success");
+      showToast('Password reset successful. Please log in', 'success');
 
       setTimeout(() => {
-        navigate("Login");
+        navigate('Login');
       }, 1000);
     } catch (error: any) {
-      showToast(extractErrorMessage(error), "error");
+      showToast(extractErrorMessage(error), 'error');
     } finally {
       setIsSubmitting(false);
     }
@@ -75,7 +75,7 @@ export default function ResetPasswordScreen() {
     >
       <SafeAreaView style={styles.safeArea}>
         <KeyboardAvoidingView
-          behavior={isIOS ? "padding" : undefined}
+          behavior={isIOS ? 'padding' : undefined}
           style={styles.flex}
         >
           <ScrollView
@@ -90,8 +90,8 @@ export default function ResetPasswordScreen() {
                   styles.card,
                   {
                     backgroundColor: colors.white,
-                    shadowColor: colors.shadow,
-                  },
+                    shadowColor: colors.shadow
+                  }
                 ]}
               >
                 <Card.Content>
@@ -102,12 +102,7 @@ export default function ResetPasswordScreen() {
                     Reset Your Password
                   </Text>
 
-                  <Text
-                    style={[
-                      styles.subtitle,
-                      { color: colors.onSurfaceVariant },
-                    ]}
-                  >
+                  <Text style={[styles.subtitle, { color: colors.onSurfaceVariant }]}>
                     Resetting for: {email}
                   </Text>
 
@@ -124,7 +119,7 @@ export default function ResetPasswordScreen() {
                     activeOutlineColor={colors.primary}
                     right={
                       <TextInput.Icon
-                        icon={showNewPassword ? "eye-off" : "eye"}
+                        icon={showNewPassword ? 'eye-off' : 'eye'}
                         onPress={() => setShowNewPassword((prev) => !prev)}
                       />
                     }
@@ -144,7 +139,7 @@ export default function ResetPasswordScreen() {
                     activeOutlineColor={colors.primary}
                     right={
                       <TextInput.Icon
-                        icon={showConfirmPassword ? "eye-off" : "eye"}
+                        icon={showConfirmPassword ? 'eye-off' : 'eye'}
                         onPress={() => setShowConfirmPassword((prev) => !prev)}
                       />
                     }
@@ -172,53 +167,53 @@ export default function ResetPasswordScreen() {
 
 const styles = StyleSheet.create({
   gradient: {
-    flex: 1,
+    flex: 1
   },
   safeArea: {
-    flex: 1,
+    flex: 1
   },
   flex: {
-    flex: 1,
+    flex: 1
   },
   scrollContainer: {
     flexGrow: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 32,
+    paddingVertical: 32
   },
   innerContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-    width: "100%",
-    maxWidth: 400,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    maxWidth: 400
   },
   logo: {
     width: 280,
     height: 250,
-    marginBottom: 16,
+    marginBottom: 16
   },
   card: {
-    width: "100%",
+    width: '100%',
     borderRadius: 12,
     elevation: 4,
-    borderWidth: 1,
+    borderWidth: 1
   },
   title: {
-    textAlign: "center",
+    textAlign: 'center',
     marginBottom: 8,
-    fontWeight: "600",
+    fontWeight: '600'
   },
   subtitle: {
-    textAlign: "center",
+    textAlign: 'center',
     marginBottom: 20,
-    fontSize: 14,
+    fontSize: 14
   },
   input: {
-    marginBottom: 16,
+    marginBottom: 16
   },
   button: {
     borderRadius: 8,
-    marginTop: 8,
-  },
+    marginTop: 8
+  }
 });

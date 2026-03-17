@@ -1,33 +1,33 @@
-import React from "react";
-import { useEffect, useState } from "react";
-import { TouchableOpacity, useWindowDimensions, View } from "react-native";
-import { Text, useTheme } from "react-native-paper";
-import { useTranslation } from "react-i18next";
-import { createDrawerNavigator } from "@react-navigation/drawer";
-import { Ionicons } from "@expo/vector-icons";
-import { clearAuthData, getAuthData } from "../utils/storage";
-import { navigate } from "./NavigationService";
-import { stopConnection } from "../services/signalrService";
-import AdminDashboardScreen from "../screens/AdminDashboardScreen";
-import AddUserScreen from "../screens/AddUserScreen";
-import UploadVideoScreen from "../screens/UploadVideoScreen";
-import UploadImageScreen from "../screens/UploadImageScreen";
-import AddVoterScreen from "../screens/AddVoterScreen";
-import VotersScreen from "../screens/VotersScreen";
-import AddSenderScreen from "../screens/AddSenderScreen";
-import GenerateVideoScreen from "../screens/GenerateVideoScreen";
-import GeneratedVideoScreen from "../screens/GeneratedVideosScreen";
-import AddApplicationScreen from "../screens/AddApplicationScreen";
-import ActivateSenderScreen from "../screens/ActivateSenderScreen";
-import ProcessingVideosScreen from "../screens/ProcessingVideosScreen";
-import GeneratedImagesScreen from "../screens/GeneratedImagesScreen";
-import PremiumVoicesScreen from "../screens/PremiumVoicesScreen";
-import AddCandidateScreen from "../screens/AddCandidateScreen";
-import CustomDrawer from "../components/CustomDrawer";
-import CustomLabel from "../components/CustomLabel";
-import UserAvatarMenu from "../components/UserAvatarMenu";
-import LanguageSelector from "../components/LanguageSelector";
-import { AppTheme } from "../theme";
+import React from 'react';
+import { useEffect, useState } from 'react';
+import { TouchableOpacity, useWindowDimensions, View } from 'react-native';
+import { Text, useTheme } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
+import { createDrawerNavigator } from '@react-navigation/drawer';
+import { Ionicons } from '@expo/vector-icons';
+import { clearAuthData, getAuthData } from '../utils/storage';
+import { navigate } from './NavigationService';
+import { stopConnection } from '../services/signalrService';
+import AdminDashboardScreen from '../screens/AdminDashboardScreen';
+import AddUserScreen from '../screens/AddUserScreen';
+import UploadVideoScreen from '../screens/UploadVideoScreen';
+import UploadImageScreen from '../screens/UploadImageScreen';
+import AddVoterScreen from '../screens/AddVoterScreen';
+import VotersScreen from '../screens/VotersScreen';
+import AddSenderScreen from '../screens/AddSenderScreen';
+import GenerateVideoScreen from '../screens/GenerateVideoScreen';
+import GeneratedVideoScreen from '../screens/GeneratedVideosScreen';
+import AddApplicationScreen from '../screens/AddApplicationScreen';
+import ActivateSenderScreen from '../screens/ActivateSenderScreen';
+import ProcessingVideosScreen from '../screens/ProcessingVideosScreen';
+import GeneratedImagesScreen from '../screens/GeneratedImagesScreen';
+import PremiumVoicesScreen from '../screens/PremiumVoicesScreen';
+import AddCandidateScreen from '../screens/AddCandidateScreen';
+import CustomDrawer from '../components/CustomDrawer';
+import CustomLabel from '../components/CustomLabel';
+import UserAvatarMenu from '../components/UserAvatarMenu';
+import LanguageSelector from '../components/LanguageSelector';
+import { AppTheme } from '../theme';
 
 const Drawer = createDrawerNavigator();
 
@@ -38,22 +38,16 @@ export default function AppLayout() {
   const theme = useTheme<AppTheme>();
   const { colors } = theme;
 
-  const [userName, setUserName] = useState("");
-  const [role, setRole] = useState<
-    "Admin" | "User" | "SuperAdmin" | "Sender" | null
-  >(null);
-  const [userEmail, setUserEmail] = useState("");
-  const [applicationName, setApplicationName] = useState("");
+  const [userName, setUserName] = useState('');
+  const [role, setRole] = useState<'Admin' | 'User' | 'SuperAdmin' | 'Sender' | null>(
+    null
+  );
+  const [userEmail, setUserEmail] = useState('');
+  const [applicationName, setApplicationName] = useState('');
   const [videoCount, setVideoCount] = useState<number | null>(null);
-  const [showVideoCampaign, setShowVideoCampaignn] = useState<boolean | string>(
-    false,
-  );
-  const [showImageCampaign, setShowImageCampaignn] = useState<boolean | string>(
-    false,
-  );
-  const [isElectionRelated, setIsElectionRelated] = useState<boolean | string>(
-    false,
-  );
+  const [showVideoCampaign, setShowVideoCampaignn] = useState<boolean | string>(false);
+  const [showImageCampaign, setShowImageCampaignn] = useState<boolean | string>(false);
+  const [isElectionRelated, setIsElectionRelated] = useState<boolean | string>(false);
 
   useEffect(() => {
     (async () => {
@@ -65,17 +59,17 @@ export default function AppLayout() {
         applicationName: userApplication,
         iselectionRelatedapp: isElectionRelatedApp,
         showVideoCampaign: videoCampign,
-        showImageCampaign: imageCampaign,
+        showImageCampaign: imageCampaign
       } = await getAuthData();
 
       if (name) setUserName(name);
       if (email) setUserEmail(email);
       if (userApplication) setApplicationName(userApplication);
       if (
-        storedRole === "Admin" ||
-        storedRole === "SuperAdmin" ||
-        storedRole === "User" ||
-        storedRole === "Sender"
+        storedRole === 'Admin' ||
+        storedRole === 'SuperAdmin' ||
+        storedRole === 'User' ||
+        storedRole === 'Sender'
       ) {
         setRole(storedRole);
       }
@@ -95,9 +89,9 @@ export default function AppLayout() {
       stopConnection();
       await clearAuthData();
     } catch (error: any) {
-      const msg = error?.response?.data?.error || "Something went wrong.";
+      const msg = error?.response?.data?.error || 'Something went wrong.';
     } finally {
-      navigate("Login");
+      navigate('Login');
     }
   };
 
@@ -111,19 +105,19 @@ export default function AppLayout() {
     return (
       <View
         style={{
-          flexDirection: "row",
-          alignItems: "center",
+          flexDirection: 'row',
+          alignItems: 'center',
           marginRight: 10,
-          gap: 12,
+          gap: 12
         }}
       >
         <LanguageSelector />
 
-        {role === "Admin" && videoCount !== null && showVideoCampaign && (
+        {role === 'Admin' && videoCount !== null && showVideoCampaign && (
           <TouchableOpacity
             style={{
-              flexDirection: "row",
-              alignItems: "center",
+              flexDirection: 'row',
+              alignItems: 'center',
               backgroundColor: getCountColor(),
               paddingHorizontal: 12,
               paddingVertical: 6,
@@ -132,7 +126,7 @@ export default function AppLayout() {
               shadowOffset: { width: 0, height: 1 },
               shadowOpacity: 0.1,
               shadowRadius: 3,
-              elevation: 3,
+              elevation: 3
             }}
             activeOpacity={0.8}
           >
@@ -146,7 +140,7 @@ export default function AppLayout() {
               style={{
                 color: colors.white,
                 fontSize: 14,
-                fontWeight: "600",
+                fontWeight: '600'
               }}
             >
               {videoCount}
@@ -175,38 +169,38 @@ export default function AppLayout() {
       id={undefined}
       drawerContent={(props) => <CustomDrawer {...props} />}
       screenOptions={{
-        drawerType: isLargeScreen ? "permanent" : "front",
+        drawerType: isLargeScreen ? 'permanent' : 'front',
         headerShown: !isLargeScreen,
         headerLeft: isLargeScreen ? () => null : undefined,
         drawerActiveTintColor: colors.primary,
         drawerLabelStyle: {
           marginLeft: -16,
-          fontSize: 16,
+          fontSize: 16
         },
-        drawerActiveBackgroundColor: "transparent",
+        drawerActiveBackgroundColor: 'transparent',
         drawerItemStyle: {
           height: 48,
-          justifyContent: "center",
+          justifyContent: 'center',
           paddingVertical: 0,
-          marginVertical: 5,
-        },
+          marginVertical: 5
+        }
       }}
     >
-      {(role === "Admin" || role === "SuperAdmin") && (
+      {(role === 'Admin' || role === 'SuperAdmin') && (
         <>
-          {role === "SuperAdmin" && (
+          {role === 'SuperAdmin' && (
             <>
               <Drawer.Screen
                 name="AddDistributor"
                 children={() => <AddUserScreen role="Distributor" />}
                 options={{
                   headerShown: true,
-                  headerTitle: "",
+                  headerTitle: '',
                   headerRight: headerRightComponent,
                   drawerLabel: (props) => (
                     <CustomLabel
                       {...props}
-                      label={t("distributorTabLabel")}
+                      label={t('distributorTabLabel')}
                       icon={
                         <Ionicons
                           name="people-outline"
@@ -215,7 +209,7 @@ export default function AppLayout() {
                         />
                       }
                     />
-                  ),
+                  )
                 }}
               />
 
@@ -224,12 +218,12 @@ export default function AppLayout() {
                 component={AddApplicationScreen}
                 options={{
                   headerShown: true,
-                  headerTitle: "",
+                  headerTitle: '',
                   headerRight: headerRightComponent,
                   drawerLabel: (props) => (
                     <CustomLabel
                       {...props}
-                      label={t("applicationTabLabel")}
+                      label={t('applicationTabLabel')}
                       icon={
                         <Ionicons
                           name="apps"
@@ -238,7 +232,7 @@ export default function AppLayout() {
                         />
                       }
                     />
-                  ),
+                  )
                 }}
               />
 
@@ -247,12 +241,12 @@ export default function AppLayout() {
                 children={() => <AddUserScreen role="Admin" />}
                 options={{
                   headerShown: true,
-                  headerTitle: "",
+                  headerTitle: '',
                   headerRight: headerRightComponent,
                   drawerLabel: (props) => (
                     <CustomLabel
                       {...props}
-                      label={t("customerAdminTabLabel")}
+                      label={t('customerAdminTabLabel')}
                       icon={
                         <Ionicons
                           name="people-outline"
@@ -261,7 +255,7 @@ export default function AppLayout() {
                         />
                       }
                     />
-                  ),
+                  )
                 }}
               />
 
@@ -270,12 +264,12 @@ export default function AppLayout() {
                 children={() => <PremiumVoicesScreen />}
                 options={{
                   headerShown: true,
-                  headerTitle: "",
+                  headerTitle: '',
                   headerRight: headerRightComponent,
                   drawerLabel: (props) => (
                     <CustomLabel
                       {...props}
-                      label={t("premiumVoicesTabLabel")}
+                      label={t('premiumVoicesTabLabel')}
                       icon={
                         <Ionicons
                           name="radio-outline"
@@ -284,24 +278,24 @@ export default function AppLayout() {
                         />
                       }
                     />
-                  ),
+                  )
                 }}
               />
             </>
           )}
 
-          {role === "Admin" && (
+          {role === 'Admin' && (
             <Drawer.Screen
               name="Dashboard"
               component={AdminDashboardScreen}
               options={{
                 headerShown: true,
-                headerTitle: "",
+                headerTitle: '',
                 headerRight: headerRightComponent,
                 drawerLabel: (props) => (
                   <CustomLabel
                     {...props}
-                    label={t("dashboardTabLabel")}
+                    label={t('dashboardTabLabel')}
                     icon={
                       <Ionicons
                         name="grid-outline"
@@ -310,23 +304,23 @@ export default function AppLayout() {
                       />
                     }
                   />
-                ),
+                )
               }}
             />
           )}
 
-          {role === "Admin" && (
+          {role === 'Admin' && (
             <Drawer.Screen
               name="Candidates"
               component={AddCandidateScreen}
               options={{
                 headerShown: true,
-                headerTitle: "",
+                headerTitle: '',
                 headerRight: headerRightComponent,
                 drawerLabel: (props) => (
                   <CustomLabel
                     {...props}
-                    label={t("candidate.plural")}
+                    label={t('candidate.plural')}
                     icon={
                       <Ionicons
                         name="people-circle-outline"
@@ -335,23 +329,23 @@ export default function AppLayout() {
                       />
                     }
                   />
-                ),
+                )
               }}
             />
           )}
 
-          {role === "Admin" && (
+          {role === 'Admin' && (
             <Drawer.Screen
               name="VotersList"
               component={VotersScreen}
               options={{
                 headerShown: true,
-                headerTitle: "",
+                headerTitle: '',
                 headerRight: headerRightComponent,
                 drawerLabel: (props) => (
                   <CustomLabel
                     {...props}
-                    label={t("voter.plural")}
+                    label={t('voter.plural')}
                     icon={
                       <Ionicons
                         name="people-outline"
@@ -360,23 +354,23 @@ export default function AppLayout() {
                       />
                     }
                   />
-                ),
+                )
               }}
             />
           )}
 
-          {role === "Admin" && (
+          {role === 'Admin' && (
             <Drawer.Screen
               name="AddUser"
               component={AddUserScreen}
               options={{
                 headerShown: true,
-                headerTitle: "",
+                headerTitle: '',
                 headerRight: headerRightComponent,
                 drawerLabel: (props) => (
                   <CustomLabel
                     {...props}
-                    label={t("userTabLabel")}
+                    label={t('userTabLabel')}
                     icon={
                       <Ionicons
                         name="people-outline"
@@ -385,7 +379,7 @@ export default function AppLayout() {
                       />
                     }
                   />
-                ),
+                )
               }}
             />
           )}
@@ -415,7 +409,7 @@ export default function AppLayout() {
             />
           )} */}
 
-          {role === "Admin" && (
+          {role === 'Admin' && (
             <>
               {showVideoCampaign && (
                 <Drawer.Screen
@@ -423,12 +417,12 @@ export default function AppLayout() {
                   component={UploadVideoScreen}
                   options={{
                     headerShown: true,
-                    headerTitle: "",
+                    headerTitle: '',
                     headerRight: headerRightComponent,
                     drawerLabel: (props) => (
                       <CustomLabel
                         {...props}
-                        label={t("uploadBaseVideoTabLabel")}
+                        label={t('uploadBaseVideoTabLabel')}
                         icon={
                           <Ionicons
                             name="cloud-upload"
@@ -437,7 +431,7 @@ export default function AppLayout() {
                           />
                         }
                       />
-                    ),
+                    )
                   }}
                 />
               )}
@@ -448,12 +442,12 @@ export default function AppLayout() {
                   component={UploadImageScreen}
                   options={{
                     headerShown: true,
-                    headerTitle: "",
+                    headerTitle: '',
                     headerRight: headerRightComponent,
                     drawerLabel: (props) => (
                       <CustomLabel
                         {...props}
-                        label={t("uploadImageTabLabel")}
+                        label={t('uploadImageTabLabel')}
                         icon={
                           <Ionicons
                             name="images-outline"
@@ -462,7 +456,7 @@ export default function AppLayout() {
                           />
                         }
                       />
-                    ),
+                    )
                   }}
                 />
               )}
@@ -471,7 +465,7 @@ export default function AppLayout() {
         </>
       )}
 
-      {role === "User" && (
+      {role === 'User' && (
         <>
           {isElectionRelated ? (
             <Drawer.Screen
@@ -479,12 +473,12 @@ export default function AppLayout() {
               component={VotersScreen}
               options={{
                 headerShown: true,
-                headerTitle: "",
+                headerTitle: '',
                 headerRight: headerRightComponent,
                 drawerLabel: (props) => (
                   <CustomLabel
                     {...props}
-                    label={t("voter.plural")}
+                    label={t('voter.plural')}
                     icon={
                       <Ionicons
                         name="people-outline"
@@ -493,7 +487,7 @@ export default function AppLayout() {
                       />
                     }
                   />
-                ),
+                )
               }}
             />
           ) : (
@@ -502,12 +496,12 @@ export default function AppLayout() {
               component={AddVoterScreen}
               options={{
                 headerShown: true,
-                headerTitle: "",
+                headerTitle: '',
                 headerRight: headerRightComponent,
                 drawerLabel: (props) => (
                   <CustomLabel
                     {...props}
-                    label={t("voterTabLabel")}
+                    label={t('voterTabLabel')}
                     icon={
                       <Ionicons
                         name="people-outline"
@@ -516,7 +510,7 @@ export default function AppLayout() {
                       />
                     }
                   />
-                ),
+                )
               }}
             />
           )}
@@ -527,12 +521,12 @@ export default function AppLayout() {
               component={AddSenderScreen}
               options={{
                 headerShown: true,
-                headerTitle: "",
+                headerTitle: '',
                 headerRight: headerRightComponent,
                 drawerLabel: (props) => (
                   <CustomLabel
                     {...props}
-                    label={t("senderTabLabel")}
+                    label={t('senderTabLabel')}
                     icon={
                       <Ionicons
                         name="paper-plane-outline"
@@ -541,7 +535,7 @@ export default function AppLayout() {
                       />
                     }
                   />
-                ),
+                )
               }}
             />
           )}
@@ -552,12 +546,12 @@ export default function AppLayout() {
               component={GenerateVideoScreen}
               options={{
                 headerShown: true,
-                headerTitle: "",
+                headerTitle: '',
                 headerRight: headerRightComponent,
                 drawerLabel: (props) => (
                   <CustomLabel
                     {...props}
-                    label={t("generateVideoTabLabel")}
+                    label={t('generateVideoTabLabel')}
                     icon={
                       <Ionicons
                         name="sparkles-outline"
@@ -566,7 +560,7 @@ export default function AppLayout() {
                       />
                     }
                   />
-                ),
+                )
               }}
             />
           )}
@@ -577,12 +571,12 @@ export default function AppLayout() {
               component={ProcessingVideosScreen}
               options={{
                 headerShown: true,
-                headerTitle: "",
+                headerTitle: '',
                 headerRight: headerRightComponent,
                 drawerLabel: (props) => (
                   <CustomLabel
                     {...props}
-                    label={t("processingVideoTabLabel")}
+                    label={t('processingVideoTabLabel')}
                     icon={
                       <Ionicons
                         name="time-outline"
@@ -591,7 +585,7 @@ export default function AppLayout() {
                       />
                     }
                   />
-                ),
+                )
               }}
             />
           )}
@@ -602,12 +596,12 @@ export default function AppLayout() {
               component={GeneratedVideoScreen}
               options={{
                 headerShown: true,
-                headerTitle: "",
+                headerTitle: '',
                 headerRight: headerRightComponent,
                 drawerLabel: (props) => (
                   <CustomLabel
                     {...props}
-                    label={t("generatedVideoTabLabel")}
+                    label={t('generatedVideoTabLabel')}
                     icon={
                       <Ionicons
                         name="film-outline"
@@ -616,7 +610,7 @@ export default function AppLayout() {
                       />
                     }
                   />
-                ),
+                )
               }}
             />
           )}
@@ -627,12 +621,12 @@ export default function AppLayout() {
               component={GeneratedImagesScreen}
               options={{
                 headerShown: true,
-                headerTitle: "",
+                headerTitle: '',
                 headerRight: headerRightComponent,
                 drawerLabel: (props) => (
                   <CustomLabel
                     {...props}
-                    label={t("generatedImageTabLabel")}
+                    label={t('generatedImageTabLabel')}
                     icon={
                       <Ionicons
                         name="images-outline"
@@ -641,26 +635,26 @@ export default function AppLayout() {
                       />
                     }
                   />
-                ),
+                )
               }}
             />
           )}
         </>
       )}
 
-      {role === "Sender" && (
+      {role === 'Sender' && (
         <>
           <Drawer.Screen
             name="Generated"
             component={GeneratedVideoScreen}
             options={{
               headerShown: true,
-              headerTitle: "",
+              headerTitle: '',
               headerRight: headerRightComponent,
               drawerLabel: (props) => (
                 <CustomLabel
                   {...props}
-                  label={t("generatedVideoTabLabel")}
+                  label={t('generatedVideoTabLabel')}
                   icon={
                     <Ionicons
                       name="film-outline"
@@ -669,7 +663,7 @@ export default function AppLayout() {
                     />
                   }
                 />
-              ),
+              )
             }}
           />
 
@@ -678,12 +672,12 @@ export default function AppLayout() {
             component={GeneratedImagesScreen}
             options={{
               headerShown: true,
-              headerTitle: "",
+              headerTitle: '',
               headerRight: headerRightComponent,
               drawerLabel: (props) => (
                 <CustomLabel
                   {...props}
-                  label={t("generatedImageTabLabel")}
+                  label={t('generatedImageTabLabel')}
                   icon={
                     <Ionicons
                       name="images-outline"
@@ -692,7 +686,7 @@ export default function AppLayout() {
                     />
                   }
                 />
-              ),
+              )
             }}
           />
         </>

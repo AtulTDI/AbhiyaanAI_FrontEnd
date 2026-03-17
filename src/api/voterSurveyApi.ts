@@ -1,18 +1,18 @@
-import axios from "./axiosInstance";
+import axios from './axiosInstance';
 import {
   VoterSurveyRequest,
   VoterSurveyResponse,
   SupportTypeColor,
-  Caste,
-} from "../types/Voter";
+  Caste
+} from '../types/Voter';
 
 /**
  * Add Survey
  */
 export const addSurvey = (payload: VoterSurveyRequest) => {
-  return axios.post<{ id: string }>("/VotersSurvey/add-survey", payload, {
+  return axios.post<{ id: string }>('/VotersSurvey/add-survey', payload, {
     useApiPrefix: true,
-    useVoterBase: true,
+    useVoterBase: true
   });
 };
 
@@ -20,9 +20,9 @@ export const addSurvey = (payload: VoterSurveyRequest) => {
  * Get Support Types
  */
 export const getSupportTypes = () => {
-  return axios.get<SupportTypeColor[]>("/VotersSurvey/support-types", {
+  return axios.get<SupportTypeColor[]>('/VotersSurvey/support-types', {
     useApiPrefix: true,
-    useVoterBase: true,
+    useVoterBase: true
   });
 };
 
@@ -30,9 +30,9 @@ export const getSupportTypes = () => {
  * Get Castes
  */
 export const getCastes = () => {
-  return axios.get<Caste[]>("/VotersSurvey/get-castes", {
+  return axios.get<Caste[]>('/VotersSurvey/get-castes', {
     useApiPrefix: true,
-    useVoterBase: true,
+    useVoterBase: true
   });
 };
 
@@ -40,13 +40,10 @@ export const getCastes = () => {
  * Get Survey by Voter Id
  */
 export const getSurveyByVoterId = (voterId: string) => {
-  return axios.get<VoterSurveyResponse | null>(
-    `/VotersSurvey/get-survey/${voterId}`,
-    {
-      useApiPrefix: true,
-      useVoterBase: true,
-    }
-  );
+  return axios.get<VoterSurveyResponse | null>(`/VotersSurvey/get-survey/${voterId}`, {
+    useApiPrefix: true,
+    useVoterBase: true
+  });
 };
 
 /**
@@ -55,6 +52,6 @@ export const getSurveyByVoterId = (voterId: string) => {
 export const updateSurvey = (surveyId: string, payload: VoterSurveyRequest) => {
   return axios.put(`/VotersSurvey/update-survey/${surveyId}`, payload, {
     useApiPrefix: true,
-    useVoterBase: true,
+    useVoterBase: true
   });
 };

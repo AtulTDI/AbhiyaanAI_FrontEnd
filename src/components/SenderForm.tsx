@@ -1,11 +1,11 @@
-import React from "react";
-import { useTranslation } from "react-i18next";
-import { FieldConfig } from "../types";
-import { Sender } from "../types/Sender";
-import DynamicForm from "./DynamicForm";
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { FieldConfig } from '../types';
+import { Sender } from '../types/Sender';
+import DynamicForm from './DynamicForm';
 
 type Props = {
-  mode: "create" | "edit";
+  mode: 'create' | 'edit';
   onCreate: (data: {
     firstName: string;
     lastName: string;
@@ -23,38 +23,38 @@ export default function SenderForm({
   onCreate,
   senderToEdit,
   setSenderToEdit,
-  setShowAddSenderView,
+  setShowAddSenderView
 }: Props) {
   const { t } = useTranslation();
   const getSenderFields = (): FieldConfig[] => {
     const fields: FieldConfig[] = [
       {
-        name: "firstName",
-        label: t("firstName"),
-        type: "text",
-        required: true,
+        name: 'firstName',
+        label: t('firstName'),
+        type: 'text',
+        required: true
       },
-      { name: "lastName", label: t("lastName"), type: "text", required: true },
+      { name: 'lastName', label: t('lastName'), type: 'text', required: true },
       {
-        name: "email",
-        label: t("email"),
-        type: "email",
+        name: 'email',
+        label: t('email'),
+        type: 'email',
         required: true,
-        disabled: mode === "edit",
-      },
-      {
-        name: "password",
-        label: t("password"),
-        type: "password",
-        required: true,
-        disabled: mode === "edit",
+        disabled: mode === 'edit'
       },
       {
-        name: "phoneNumber",
-        label: t("mobile"),
-        type: "number",
+        name: 'password',
+        label: t('password'),
+        type: 'password',
         required: true,
+        disabled: mode === 'edit'
       },
+      {
+        name: 'phoneNumber',
+        label: t('mobile'),
+        type: 'number',
+        required: true
+      }
     ];
 
     return fields;
@@ -64,11 +64,11 @@ export default function SenderForm({
     <DynamicForm
       fields={getSenderFields()}
       initialValues={{
-        firstName: senderToEdit?.firstName || "",
-        lastName: senderToEdit?.lastName || "",
-        email: senderToEdit?.email || "",
-        password: mode === "edit" ? "******" : "",
-        phoneNumber: senderToEdit?.phoneNumber || "",
+        firstName: senderToEdit?.firstName || '',
+        lastName: senderToEdit?.lastName || '',
+        email: senderToEdit?.email || '',
+        password: mode === 'edit' ? '******' : '',
+        phoneNumber: senderToEdit?.phoneNumber || ''
       }}
       mode={mode}
       onSubmit={(data) =>

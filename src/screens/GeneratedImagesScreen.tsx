@@ -1,30 +1,24 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { View, StyleSheet, Platform } from "react-native";
-import {
-  IconButton,
-  Surface,
-  Text,
-  useTheme,
-  ProgressBar,
-} from "react-native-paper";
-import { useTranslation } from "react-i18next";
-import dayjs from "dayjs";
-import { useFocusEffect } from "@react-navigation/native";
-import { FontAwesome, Ionicons } from "@expo/vector-icons";
-import CommonTable from "../components/CommonTable";
-import { Recipient } from "../types/Recipient";
-import { extractErrorMessage } from "../utils/common";
-import { getAuthData } from "../utils/storage";
-import { useToast } from "../components/ToastProvider";
-import FormDropdown from "../components/FormDropdown";
-import { getRecipientsByCampaignId } from "../api/recipientApi";
-import { sendImage } from "../api/whatsappApi";
-import { getCampaigns } from "../api/imageApi";
-import { useServerTable } from "../hooks/useServerTable";
-import { usePlatformInfo } from "../hooks/usePlatformInfo";
-import ResponsiveKeyboardView from "../components/ResponsiveKeyboardView";
-import { FixedLabel } from "../components/FixedLabel";
-import { AppTheme } from "../theme";
+import React, { useCallback, useEffect, useState } from 'react';
+import { View, StyleSheet, Platform } from 'react-native';
+import { IconButton, Surface, Text, useTheme, ProgressBar } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
+import dayjs from 'dayjs';
+import { useFocusEffect } from '@react-navigation/native';
+import { FontAwesome, Ionicons } from '@expo/vector-icons';
+import CommonTable from '../components/CommonTable';
+import { Recipient } from '../types/Recipient';
+import { extractErrorMessage } from '../utils/common';
+import { getAuthData } from '../utils/storage';
+import { useToast } from '../components/ToastProvider';
+import FormDropdown from '../components/FormDropdown';
+import { getRecipientsByCampaignId } from '../api/recipientApi';
+import { sendImage } from '../api/whatsappApi';
+import { getCampaigns } from '../api/imageApi';
+import { useServerTable } from '../hooks/useServerTable';
+import { usePlatformInfo } from '../hooks/usePlatformInfo';
+import ResponsiveKeyboardView from '../components/ResponsiveKeyboardView';
+import { FixedLabel } from '../components/FixedLabel';
+import { AppTheme } from '../theme';
 
 export default function GeneratedImagesScreen() {
   const { isWeb, isMobileWeb } = usePlatformInfo();
@@ -34,19 +28,17 @@ export default function GeneratedImagesScreen() {
   const { colors } = theme;
   const { showToast } = useToast();
   const [campaigns, setCampaigns] = useState<any[]>([]);
-  const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(
-    null
-  );
+  const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [sendingId, setSendingId] = useState<string | null>(null);
   const [progressMap, setProgressMap] = useState<Record<string, number>>({});
-  const [searchText, setSearchText] = useState("");
+  const [searchText, setSearchText] = useState('');
   const [tableParams, setTableParams] = useState<{
     campaignId: string | null;
     searchText: string;
   }>({
     campaignId: null,
-    searchText: "",
+    searchText: ''
   });
 
   const fetchCampaigns = useCallback(async () => {
@@ -59,7 +51,7 @@ export default function GeneratedImagesScreen() {
 
       const transformedCampaigns = campaignsData.map((campaign) => ({
         label: campaign.campaignName,
-        value: campaign.id,
+        value: campaign.id
       }));
 
       setCampaigns(transformedCampaigns);
@@ -67,10 +59,7 @@ export default function GeneratedImagesScreen() {
         setSelectedCampaignId((prev) => prev ?? transformedCampaigns[0]?.value);
       }
     } catch (error: any) {
-      showToast(
-        extractErrorMessage(error, t("image.loadImageFailMessage")),
-        "error"
-      );
+      showToast(extractErrorMessage(error, t('image.loadImageFailMessage')), 'error');
     }
   }, []);
 
@@ -88,20 +77,15 @@ export default function GeneratedImagesScreen() {
           params.campaignId,
           page,
           pageSize,
-          params?.searchText ?? ""
+          params?.searchText ?? ''
         );
 
         return {
-          items: Array.isArray(response?.data?.items)
-            ? response.data.items
-            : [],
-          totalCount: response?.data?.totalRecords ?? 0,
+          items: Array.isArray(response?.data?.items) ? response.data.items : [],
+          totalCount: response?.data?.totalRecords ?? 0
         };
       } catch (error: any) {
-        showToast(
-          extractErrorMessage(error, t("voter.loadVoterFailMessage")),
-          "error"
-        );
+        showToast(extractErrorMessage(error, t('voter.loadVoterFailMessage')), 'error');
         return { items: [], totalCount: 0 };
       } finally {
         setLoading(false);
@@ -118,10 +102,10 @@ export default function GeneratedImagesScreen() {
   const memoizedDropdown = React.useMemo(() => {
     return (
       <>
-        <FixedLabel label={t("campaign")} />
+        <FixedLabel label={t('campaign')} />
         <View style={{ width: 300 }}>
           <FormDropdown
-            placeholder={t("selectCampaign")}
+            placeholder={t('selectCampaign')}
             value={selectedCampaignId}
             options={campaigns}
             onSelect={(val) => setSelectedCampaignId(val)}
@@ -135,7 +119,7 @@ export default function GeneratedImagesScreen() {
   useEffect(() => {
     setTableParams((prev) => ({
       ...prev,
-      campaignId: selectedCampaignId,
+      campaignId: selectedCampaignId
     }));
     table.setPage(0);
   }, [selectedCampaignId]);
@@ -163,15 +147,15 @@ export default function GeneratedImagesScreen() {
         {
           channelId: channelId,
           recipientId: item.id,
-          campaignID: selectedCampaignId,
+          campaignID: selectedCampaignId
         },
         userId
       );
-      showToast(t("image.sendSuccess"), "success");
-      updateRowStatus(item.id, { sendStatus: "sent" });
+      showToast(t('image.sendSuccess'), 'success');
+      updateRowStatus(item.id, { sendStatus: 'sent' });
     } catch (error) {
-      showToast(extractErrorMessage(error, t("image.sendFail")), "error");
-      updateRowStatus(item.id, { sendStatus: "pending" });
+      showToast(extractErrorMessage(error, t('image.sendFail')), 'error');
+      updateRowStatus(item.id, { sendStatus: 'pending' });
     } finally {
       setSendingId(null);
       setProgressMap((prev) => {
@@ -182,37 +166,35 @@ export default function GeneratedImagesScreen() {
   };
 
   const columns = [
-    { label: t("name"), key: "fullName", flex: 0.8 },
-    { label: t("mobile"), key: "phoneNumber", flex: 0.4 },
+    { label: t('name'), key: 'fullName', flex: 0.8 },
+    { label: t('mobile'), key: 'phoneNumber', flex: 0.4 },
     {
-      label: t("createdAt"),
-      key: "createdAt",
+      label: t('createdAt'),
+      key: 'createdAt',
       flex: 0.4,
       render: (item) =>
-        item.createdAt
-          ? dayjs(item.createdAt).format("DD MMM YYYY, hh:mm A")
-          : "-",
+        item.createdAt ? dayjs(item.createdAt).format('DD MMM YYYY, hh:mm A') : '-'
     },
     {
-      label: t("actions"),
-      key: "actions",
+      label: t('actions'),
+      key: 'actions',
       flex: 1,
       smallColumn: true,
       render: (item: Recipient) => {
-        const sendStatus = item?.sendStatus?.toLowerCase?.() ?? "pending";
+        const sendStatus = item?.sendStatus?.toLowerCase?.() ?? 'pending';
         const disableRowActions = sendingId !== null && sendingId !== item.id;
         const progress = progressMap[item.id];
 
         return (
           <View
             style={{
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "center",
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center'
             }}
           >
             {sendingId === item.id && progress !== undefined ? (
-              <View style={{ width: 40, alignItems: "center" }}>
+              <View style={{ width: 40, alignItems: 'center' }}>
                 <Text style={{ fontSize: 12, color: colors.primary }}>
                   {Math.floor(progress * 100)}%
                 </Text>
@@ -223,21 +205,17 @@ export default function GeneratedImagesScreen() {
                     width: 36,
                     height: 4,
                     borderRadius: 2,
-                    marginTop: 2,
+                    marginTop: 2
                   }}
                 />
               </View>
-            ) : sendStatus === "pending" ? (
+            ) : sendStatus === 'pending' ? (
               <IconButton
                 icon={() => (
                   <FontAwesome
                     name="whatsapp"
                     size={22}
-                    color={
-                      disableRowActions
-                        ? colors.mediumGray
-                        : colors.whatsappGreen
-                    }
+                    color={disableRowActions ? colors.mediumGray : colors.whatsappGreen}
                   />
                 )}
                 onPress={() => handleSendImage(item)}
@@ -247,11 +225,7 @@ export default function GeneratedImagesScreen() {
             ) : (
               <IconButton
                 icon={() => (
-                  <FontAwesome
-                    name="check-circle"
-                    size={22}
-                    color={colors.success}
-                  />
+                  <FontAwesome name="check-circle" size={22} color={colors.success} />
                 )}
                 disabled
                 style={{ margin: 0 }}
@@ -259,8 +233,8 @@ export default function GeneratedImagesScreen() {
             )}
           </View>
         );
-      },
-    },
+      }
+    }
   ];
 
   const handleVoterSearch = useCallback(
@@ -268,7 +242,7 @@ export default function GeneratedImagesScreen() {
       setSearchText(text);
       setTableParams((prev) => ({
         ...prev,
-        searchText: text,
+        searchText: text
       }));
       table.setPage(0);
     },
@@ -280,14 +254,14 @@ export default function GeneratedImagesScreen() {
       {/* Header */}
       <View style={styles.headerRow}>
         <Text variant="titleLarge" style={styles.heading}>
-          {t("generatedImagePageLabel")}
+          {t('generatedImagePageLabel')}
         </Text>
       </View>
 
       {isWeb && !isMobileWeb && memoizedDropdown}
 
       {/* Mobile top compact toolbar (contains campaign dropdown) */}
-      {Platform.OS !== "web" && (
+      {Platform.OS !== 'web' && (
         <View style={styles.mobileToolbar}>{memoizedDropdown}</View>
       )}
 
@@ -299,16 +273,10 @@ export default function GeneratedImagesScreen() {
             columns={columns}
             loading={loading}
             emptyIcon={
-              <Ionicons
-                name="images-outline"
-                size={48}
-                color={colors.disabledText}
-              />
+              <Ionicons name="images-outline" size={48} color={colors.disabledText} />
             }
-            emptyText={t("image.noData")}
-            tableHeight={
-              isWeb && !isMobileWeb ? "calc(100vh - 345px)" : undefined
-            }
+            emptyText={t('image.noData')}
+            tableHeight={isWeb && !isMobileWeb ? 'calc(100vh - 345px)' : undefined}
             tableType="tableUnderDropdown"
             enableSearch
             onSearchChange={(filters) => {
@@ -334,18 +302,18 @@ const createStyles = (theme: AppTheme) =>
     container: {
       padding: 16,
       flex: 1,
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.white
     },
     heading: {
-      fontWeight: "bold",
-      color: theme.colors.primary,
+      fontWeight: 'bold',
+      color: theme.colors.primary
     },
     headerRow: {
-      marginBottom: 12,
+      marginBottom: 12
     },
     mobileToolbar: {
       paddingVertical: 6,
       paddingHorizontal: 2,
-      marginBottom: 6,
-    },
+      marginBottom: 6
+    }
   });

@@ -1,30 +1,35 @@
-import axios from "./axiosInstance";
+import axios from './axiosInstance';
 import {
   User,
   CreateUserPayload,
   EditUserPayload,
-  GetPaginatedUsers,
-} from "../types/User";
-import { base64ToBlob } from "../utils/common";
+  GetPaginatedUsers
+} from '../types/User';
+import { base64ToBlob } from '../utils/common';
 
 /**
  * Get paginated users with optional search
  */
 export const getUsers = (pageNumber, pageSize) =>
-  axios.get<GetPaginatedUsers>(`/Users/users?page=${pageNumber + 1}&pageSize=${pageSize}`, { useApiPrefix: true });
-
+  axios.get<GetPaginatedUsers>(
+    `/Users/users?page=${pageNumber + 1}&pageSize=${pageSize}`,
+    { useApiPrefix: true }
+  );
 
 /**
  * Get paginated customer admins with optional search
  */
 export const getCustomerAdmins = (pageNumber, pageSize) =>
-  axios.get<GetPaginatedUsers>(`/Users/get-admins?page=${pageNumber + 1}&pageSize=${pageSize}`, { useApiPrefix: true });
+  axios.get<GetPaginatedUsers>(
+    `/Users/get-admins?page=${pageNumber + 1}&pageSize=${pageSize}`,
+    { useApiPrefix: true }
+  );
 
 /**
  * Add new user
  */
 export const createUser = (payload: CreateUserPayload) =>
-  axios.post<User>("/Users/register", payload, { useApiPrefix: true });
+  axios.post<User>('/Users/register', payload, { useApiPrefix: true });
 
 /**
  * Edit user by ID
@@ -45,35 +50,38 @@ export const uploadUsers = async (file: any) => {
   const formData = new FormData();
 
   // Case: base64 string in file.uri
-  if (file?.uri?.startsWith("data:")) {
-    const [metadata, base64] = file.uri.split(",");
-    const mimeType = file.mimeType || metadata.match(/data:(.*);base64/)?.[1] || "application/octet-stream";
+  if (file?.uri?.startsWith('data:')) {
+    const [metadata, base64] = file.uri.split(',');
+    const mimeType =
+      file.mimeType ||
+      metadata.match(/data:(.*);base64/)?.[1] ||
+      'application/octet-stream';
     const blob = base64ToBlob(base64, mimeType);
-    formData.append("file", blob, file.name || "upload.xlsx");
+    formData.append('file', blob, file.name || 'upload.xlsx');
   }
   // Case: plain File object (web)
   else if (file instanceof File) {
-    formData.append("file", file);
+    formData.append('file', file);
   }
   // Case: file from RN picker with uri
   else if (file?.uri) {
-    formData.append("file", {
+    formData.append('file', {
       uri: file.uri,
-      name: file.name || "upload.xlsx",
-      type: file.mimeType || "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      name: file.name || 'upload.xlsx',
+      type:
+        file.mimeType ||
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     } as any);
   } else {
-    throw new Error("Unsupported file format");
+    throw new Error('Unsupported file format');
   }
 
-  const response = await axios.post("/Users/import", formData, {
+  const response = await axios.post('/Users/import', formData, {
     headers: {
-      "Content-Type": "multipart/form-data",
+      'Content-Type': 'multipart/form-data'
     },
-    useApiPrefix: true,
+    useApiPrefix: true
   });
 
   return response.data;
 };
-
-

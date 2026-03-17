@@ -1,11 +1,11 @@
-import React from "react";
-import { View, StyleSheet } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { Text, useTheme } from "react-native-paper";
-import { useTranslation } from "react-i18next";
-import CommonTable from "./CommonTable";
-import { Candidate } from "../types/Candidate";
-import { AppTheme } from "../theme";
+import React from 'react';
+import { View, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { Text, useTheme } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
+import CommonTable from './CommonTable';
+import { Candidate } from '../types/Candidate';
+import { AppTheme } from '../theme';
 
 type Props = {
   data: Candidate[];
@@ -28,7 +28,7 @@ export default function CandidatesTable({
   onPageChange,
   onRowsPerPageChange,
   onEdit,
-  onDelete,
+  onDelete
 }: Props) {
   const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
@@ -36,20 +36,20 @@ export default function CandidatesTable({
 
   const columns = [
     {
-      label: t("name"),
-      key: "name",
+      label: t('name'),
+      key: 'name',
       flex: 0.8,
-      render: (item: Candidate) => <Text>{item.name}</Text>,
+      render: (item: Candidate) => <Text>{item.name}</Text>
     },
     {
-      label: t("candidate.party"),
-      key: "partyName",
+      label: t('candidate.party'),
+      key: 'partyName',
       flex: 0.8,
-      render: (item: Candidate) => <Text>{item.partyName || "-"}</Text>,
+      render: (item: Candidate) => <Text>{item.partyName || '-'}</Text>
     },
     {
-      label: t("actions"),
-      key: "actions",
+      label: t('actions'),
+      key: 'actions',
       flex: 1,
       smallColumn: true,
       render: (item: Candidate) => (
@@ -67,8 +67,8 @@ export default function CandidatesTable({
             onPress={() => onDelete(item.id)}
           />
         </View>
-      ),
-    },
+      )
+    }
   ];
 
   return (
@@ -77,13 +77,9 @@ export default function CandidatesTable({
       columns={columns}
       loading={loading}
       emptyIcon={
-        <Ionicons
-          name="people-circle-outline"
-          size={48}
-          color={colors.disabledText}
-        />
+        <Ionicons name="people-circle-outline" size={48} color={colors.disabledText} />
       }
-      emptyText={t("candidate.noData")}
+      emptyText={t('candidate.noData')}
       page={page}
       rowsPerPage={rowsPerPage}
       totalCount={totalCount}
@@ -95,8 +91,8 @@ export default function CandidatesTable({
 
 const styles = StyleSheet.create({
   actions: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-  },
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10
+  }
 });

@@ -1,12 +1,12 @@
-import React from "react";
-import { useTranslation } from "react-i18next";
-import dayjs from "dayjs";
-import { Application } from "../types/Application";
-import { Ionicons } from "@expo/vector-icons";
-import { View, StyleSheet } from "react-native";
-import { Text, useTheme, Switch } from "react-native-paper";
-import CommonTable from "./CommonTable";
-import { AppTheme } from "../theme";
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import dayjs from 'dayjs';
+import { Application } from '../types/Application';
+import { Ionicons } from '@expo/vector-icons';
+import { View, StyleSheet } from 'react-native';
+import { Text, useTheme, Switch } from 'react-native-paper';
+import CommonTable from './CommonTable';
+import { AppTheme } from '../theme';
 
 type Props = {
   data: Application[];
@@ -29,7 +29,7 @@ export default function ApplicationsTable({
   onPageChange,
   onRowsPerPageChange,
   onEdit,
-  onToggleStatus,
+  onToggleStatus
 }: Props) {
   const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
@@ -37,44 +37,44 @@ export default function ApplicationsTable({
 
   const columns = [
     {
-      label: t("name"),
-      key: "name",
-      flex: 1,
+      label: t('name'),
+      key: 'name',
+      flex: 1
     },
     {
-      label: t("videoCount"),
-      key: "videoCount",
+      label: t('videoCount'),
+      key: 'videoCount',
       flex: 0.8,
       render: (item: Application) => (
         <Text>{`${item.remainingVideoCount} / ${item.totalVideoCount}`}</Text>
-      ),
+      )
     },
     {
-      label: t("videoRate"),
-      key: "videoGenerationRate",
-      flex: 0.8,
+      label: t('videoRate'),
+      key: 'videoGenerationRate',
+      flex: 0.8
     },
     {
-      label: t("distributorButtonLabel"),
-      key: "salesAgentName",
-      flex: 1,
+      label: t('distributorButtonLabel'),
+      key: 'salesAgentName',
+      flex: 1
     },
     {
-      label: t("createdBy"),
-      key: "createdByUserName",
-      flex: 1,
+      label: t('createdBy'),
+      key: 'createdByUserName',
+      flex: 1
     },
     {
-      label: t("createdAt"),
-      key: "createdAt",
+      label: t('createdAt'),
+      key: 'createdAt',
       flex: 1,
       render: (item: Application) => (
-        <Text>{dayjs(item.createdAt).format("DD MMM YYYY, hh:mm A")}</Text>
-      ),
+        <Text>{dayjs(item.createdAt).format('DD MMM YYYY, hh:mm A')}</Text>
+      )
     },
     {
-      label: t("status"),
-      key: "isActive",
+      label: t('status'),
+      key: 'isActive',
       flex: 0.8,
       render: (item: Application) => (
         <View style={styles.statusToggle}>
@@ -83,10 +83,10 @@ export default function ApplicationsTable({
               fontSize: 12,
               marginRight: 8,
               color: item.isActive ? colors.success : colors.error,
-              fontWeight: "600",
+              fontWeight: '600'
             }}
           >
-            {item.isActive ? t("active") : t("inactive")}
+            {item.isActive ? t('active') : t('inactive')}
           </Text>
           <Switch
             value={item.isActive}
@@ -94,11 +94,11 @@ export default function ApplicationsTable({
             color={item.isActive ? colors.success : colors.error}
           />
         </View>
-      ),
+      )
     },
     {
-      label: t("actions"),
-      key: "actions",
+      label: t('actions'),
+      key: 'actions',
       flex: 0.9,
       smallColumn: true,
       render: (item: Application) => (
@@ -110,8 +110,8 @@ export default function ApplicationsTable({
             onPress={() => onEdit(item)}
           />
         </View>
-      ),
-    },
+      )
+    }
   ];
 
   return (
@@ -120,7 +120,7 @@ export default function ApplicationsTable({
       columns={columns}
       loading={loading}
       emptyIcon={<Ionicons name="apps" size={48} color={colors.disabledText} />}
-      emptyText={t("application.noData")}
+      emptyText={t('application.noData')}
       page={page}
       rowsPerPage={rowsPerPage}
       totalCount={totalCount}
@@ -132,13 +132,13 @@ export default function ApplicationsTable({
 
 const styles = StyleSheet.create({
   actions: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 5,
-    marginLeft: 8,
+    marginLeft: 8
   },
   statusToggle: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
+    flexDirection: 'row',
+    alignItems: 'center'
+  }
 });

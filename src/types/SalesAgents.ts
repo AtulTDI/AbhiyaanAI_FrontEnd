@@ -4,7 +4,7 @@ export type Distributor = {
   lastName: string;
   email: string;
   phoneNumber: string;
-}
+};
 
 export type GetPaginatedDistributors = {
   items: Distributor[];
@@ -12,7 +12,7 @@ export type GetPaginatedDistributors = {
   pageSize: number;
   totalPages: number;
   totalRecords: number;
-}
+};
 
 export type CreateDistributorPayload = {
   firstName: string;
@@ -21,10 +21,10 @@ export type CreateDistributorPayload = {
   password: string;
   phoneNumber: string;
   role: string;
-}
+};
 
 export type EditDistributorPayload = {
   firstName: string;
   lastName: string;
   phoneNumber: string;
-}
+};

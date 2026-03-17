@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
-import { FieldConfig, FieldType } from "../types";
-import { getActiveApplications } from "../api/applicationApi";
-import DynamicForm from "./DynamicForm";
+import React, { useEffect, useState } from 'react';
+import { FieldConfig, FieldType } from '../types';
+import { getActiveApplications } from '../api/applicationApi';
+import DynamicForm from './DynamicForm';
 
 type Props = {
   onCreate: (data: { channelName: string; applicationId: string }) => void;
@@ -12,7 +12,7 @@ type Props = {
 export default function CreateChannelForm({
   onCreate,
   setShowAddChannelView,
-  formSubmitLoading,
+  formSubmitLoading
 }: Props) {
   const [applicationOptions, setApplicationOptions] = useState<any[]>([]);
 
@@ -25,11 +25,11 @@ export default function CreateChannelForm({
 
         const formatted = appArray.map((app) => ({
           label: app.name,
-          value: app.id,
+          value: app.id
         }));
         setApplicationOptions(formatted);
       } catch (error) {
-        console.error("Failed to fetch applications", error);
+        console.error('Failed to fetch applications', error);
       }
     };
 
@@ -38,26 +38,26 @@ export default function CreateChannelForm({
 
   const getChannelFields = (): FieldConfig[] => [
     {
-      name: "channelName",
-      label: "Channel Name",
-      type: "text",
-      required: true,
+      name: 'channelName',
+      label: 'Channel Name',
+      type: 'text',
+      required: true
     },
     {
-      name: "applicationId",
-      label: "Application",
-      type: "dropdown" as FieldType,
+      name: 'applicationId',
+      label: 'Application',
+      type: 'dropdown' as FieldType,
       options: applicationOptions,
-      required: true,
-    },
+      required: true
+    }
   ];
 
   return (
     <DynamicForm
       fields={getChannelFields()}
       initialValues={{
-        channelName: "",
-        applicationId: "",
+        channelName: '',
+        applicationId: ''
       }}
       mode="create"
       formSubmitLoading={formSubmitLoading}

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 
 export default function useConfirmDialog() {
   const [visible, setVisible] = useState(false);
@@ -15,6 +15,6 @@ export default function useConfirmDialog() {
     visible,
     showDialog,
     hideDialog,
-    onConfirm,
+    onConfirm
   };
 }

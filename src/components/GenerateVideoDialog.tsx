@@ -1,20 +1,20 @@
-import React, { useEffect } from "react";
+import React, { useEffect } from 'react';
 import {
   View,
   StyleSheet,
   useWindowDimensions,
-  TextInput as RNTextInput,
-} from "react-native";
+  TextInput as RNTextInput
+} from 'react-native';
 import {
   Dialog,
   Portal,
   Button,
   useTheme,
   TextInput,
-  HelperText,
-} from "react-native-paper";
-import { Ionicons } from "@expo/vector-icons";
-import { AppTheme } from "../theme";
+  HelperText
+} from 'react-native-paper';
+import { Ionicons } from '@expo/vector-icons';
+import { AppTheme } from '../theme';
 
 type Props = {
   visible: boolean;
@@ -28,37 +28,37 @@ const GenerateVideoDialog = ({ visible, onGenerate, onCancel }: Props) => {
   const { width } = useWindowDimensions();
   const dialogWidth = width < 500 ? width - 32 : 400;
 
-  const [generateFor, setGenerateFor] = React.useState("");
-  const [mobile, setMobile] = React.useState("");
+  const [generateFor, setGenerateFor] = React.useState('');
+  const [mobile, setMobile] = React.useState('');
 
   const [errors, setErrors] = React.useState({
-    generateFor: "",
-    mobile: "",
+    generateFor: '',
+    mobile: ''
   });
 
   useEffect(() => {
     if (visible) {
-      setErrors({ generateFor: "", mobile: "" });
+      setErrors({ generateFor: '', mobile: '' });
     }
   }, [visible]);
 
   const validate = () => {
     const newErrors = {
-      generateFor: "",
-      mobile: "",
+      generateFor: '',
+      mobile: ''
     };
     let isValid = true;
 
     if (!generateFor.trim()) {
-      newErrors.generateFor = "Generate For is required";
+      newErrors.generateFor = 'Generate For is required';
       isValid = false;
     }
 
     if (!mobile.trim()) {
-      newErrors.mobile = "Mobile is required";
+      newErrors.mobile = 'Mobile is required';
       isValid = false;
     } else if (!/^\d{10}$/.test(mobile)) {
-      newErrors.mobile = "Enter a valid 10-digit mobile number";
+      newErrors.mobile = 'Enter a valid 10-digit mobile number';
       isValid = false;
     }
 
@@ -69,9 +69,9 @@ const GenerateVideoDialog = ({ visible, onGenerate, onCancel }: Props) => {
   const handleGenerate = () => {
     if (!validate()) return;
     onGenerate({ generateFor, mobile });
-    setGenerateFor("");
-    setMobile("");
-    setErrors({ generateFor: "", mobile: "" });
+    setGenerateFor('');
+    setMobile('');
+    setErrors({ generateFor: '', mobile: '' });
   };
 
   return (
@@ -84,21 +84,17 @@ const GenerateVideoDialog = ({ visible, onGenerate, onCancel }: Props) => {
           {
             backgroundColor: theme.colors.background,
             width: dialogWidth,
-            alignSelf: "center",
-          },
+            alignSelf: 'center'
+          }
         ]}
       >
         <View style={styles.iconWrapper}>
           <View style={styles.iconContainer}>
-            <Ionicons
-              name="sparkles-outline"
-              size={30}
-              color={theme.colors.primary}
-            />
+            <Ionicons name="sparkles-outline" size={30} color={theme.colors.primary} />
           </View>
         </View>
 
-        <Dialog.Title style={[styles.title, { textAlign: "center" }]}>
+        <Dialog.Title style={[styles.title, { textAlign: 'center' }]}>
           Generate Video
         </Dialog.Title>
 
@@ -109,7 +105,7 @@ const GenerateVideoDialog = ({ visible, onGenerate, onCancel }: Props) => {
             onChangeText={(text) => {
               setGenerateFor(text);
               if (errors.generateFor) {
-                setErrors((prev) => ({ ...prev, generateFor: "" }));
+                setErrors((prev) => ({ ...prev, generateFor: '' }));
               }
             }}
             mode="outlined"
@@ -128,10 +124,10 @@ const GenerateVideoDialog = ({ visible, onGenerate, onCancel }: Props) => {
             label="Mobile"
             value={mobile}
             onChangeText={(text) => {
-              const cleaned = text.replace(/[^0-9]/g, "").slice(0, 10);
+              const cleaned = text.replace(/[^0-9]/g, '').slice(0, 10);
               setMobile(cleaned);
               if (errors.mobile) {
-                setErrors((prev) => ({ ...prev, mobile: "" }));
+                setErrors((prev) => ({ ...prev, mobile: '' }));
               }
             }}
             mode="outlined"
@@ -139,11 +135,7 @@ const GenerateVideoDialog = ({ visible, onGenerate, onCancel }: Props) => {
             keyboardType="number-pad"
             style={styles.input}
           />
-          <HelperText
-            type="error"
-            visible={!!errors.mobile}
-            style={{ paddingLeft: 0 }}
-          >
+          <HelperText type="error" visible={!!errors.mobile} style={{ paddingLeft: 0 }}>
             {errors.mobile}
           </HelperText>
         </Dialog.Content>
@@ -174,40 +166,40 @@ const GenerateVideoDialog = ({ visible, onGenerate, onCancel }: Props) => {
 const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
     dialog: {
-      borderRadius: 12,
+      borderRadius: 12
     },
     iconWrapper: {
-      alignItems: "center",
-      marginTop: 12,
+      alignItems: 'center',
+      marginTop: 12
     },
     iconContainer: {
       padding: 10,
       borderRadius: 50,
-      backgroundColor: theme.colors.lightBackground,
+      backgroundColor: theme.colors.lightBackground
     },
     title: {
-      fontWeight: "600",
-      fontSize: 18,
+      fontWeight: '600',
+      fontSize: 18
     },
     input: {
-      backgroundColor: "transparent",
+      backgroundColor: 'transparent'
     },
     actions: {
-      justifyContent: "center",
+      justifyContent: 'center',
       paddingHorizontal: 16,
       paddingBottom: 16,
       gap: 10,
-      flexDirection: "row",
+      flexDirection: 'row'
     },
     button: {
       borderRadius: 6,
-      flex: 1,
+      flex: 1
     },
     label: {
-      textTransform: "none",
+      textTransform: 'none',
       fontSize: 14,
-      fontWeight: "500",
-    },
+      fontWeight: '500'
+    }
   });
 
 export default GenerateVideoDialog;

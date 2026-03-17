@@ -6,7 +6,7 @@ export type Recipient = {
   createdBy?: string;
   baseVideoId?: string;
   sendStatus?: string;
-}
+};
 
 export type GetPaginatedRecipients = {
   items: Recipient[];
@@ -14,14 +14,14 @@ export type GetPaginatedRecipients = {
   pageSize: number;
   totalPages: number;
   totalRecords: number;
-}
+};
 
 export type CreateRecipientPayload = {
   fullName: string;
   phoneNumber: string;
-}
+};
 
 export type EditRecipientPayload = {
   fullName?: string;
   phoneNumber?: string;
-}
+};

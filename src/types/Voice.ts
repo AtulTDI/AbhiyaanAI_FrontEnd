@@ -3,7 +3,7 @@ export type Voice = {
   applicationName: string;
   campaignName: string;
   lastCampaignRunDate: string;
-}
+};
 
 export type GetPaginatedVoices = {
   items: Voice[];
@@ -12,4 +12,4 @@ export type GetPaginatedVoices = {
   totalPages: number;
   totalRecords: number;
   premiumVoice: boolean;
-}
+};

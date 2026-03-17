@@ -1,6 +1,6 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { View, StyleSheet, FlatList, Pressable } from "react-native";
-import { useIsFocused, useNavigation } from "@react-navigation/native";
+import React, { useCallback, useEffect, useState } from 'react';
+import { View, StyleSheet, FlatList, Pressable } from 'react-native';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
 import {
   Text,
   useTheme,
@@ -9,19 +9,19 @@ import {
   IconButton,
   TextInput,
   ActivityIndicator,
-  Divider,
-} from "react-native-paper";
-import { useTranslation } from "react-i18next";
-import { useInternalBackHandler } from "../hooks/useInternalBackHandler";
-import { Buffer } from "buffer";
-import { MaterialIcons } from "@expo/vector-icons";
-import * as FileSystem from "expo-file-system";
-import * as Sharing from "expo-sharing";
-import VoterDetailView from "../components/VoterDetailView";
-import VoterCategoryScreen from "./VoterCategoryScreen";
-import { AgeGroupStats, ColorCodeStats, Voter } from "../types/Voter";
-import { useDebounce } from "../hooks/useDebounce";
-import { usePlatformInfo } from "../hooks/usePlatformInfo";
+  Divider
+} from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
+import { useInternalBackHandler } from '../hooks/useInternalBackHandler';
+import { Buffer } from 'buffer';
+import { MaterialIcons } from '@expo/vector-icons';
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
+import VoterDetailView from '../components/VoterDetailView';
+import VoterCategoryScreen from './VoterCategoryScreen';
+import { AgeGroupStats, ColorCodeStats, Voter } from '../types/Voter';
+import { useDebounce } from '../hooks/useDebounce';
+import { usePlatformInfo } from '../hooks/usePlatformInfo';
 import {
   getAgeStats,
   getBoothStats,
@@ -31,19 +31,19 @@ import {
   getSurnames,
   getVoterById,
   getVoters,
-  getVotersByCategory,
-} from "../api/voterApi";
-import FormDropdown from "../components/FormDropdown";
-import Subcategory from "../components/SubCategory";
-import { useToast } from "../components/ToastProvider";
-import { VOTER_CATEGORIES } from "../constants/voterCategories";
-import { setEpicScanHandler } from "../utils/epicScannerListener";
-import { exportVotersPdf } from "../api/exportVotersApi";
-import { AppTheme } from "../theme";
+  getVotersByCategory
+} from '../api/voterApi';
+import FormDropdown from '../components/FormDropdown';
+import Subcategory from '../components/SubCategory';
+import { useToast } from '../components/ToastProvider';
+import { VOTER_CATEGORIES } from '../constants/voterCategories';
+import { setEpicScanHandler } from '../utils/epicScannerListener';
+import { exportVotersPdf } from '../api/exportVotersApi';
+import { AppTheme } from '../theme';
 
-type AgeMode = "none" | "lt" | "gt" | "between";
-type ScreenView = "categories" | "subcategories" | "list" | "detail";
-type SubFilterType = "color" | "age" | "gender" | "caste" | "surname" | "booth";
+type AgeMode = 'none' | 'lt' | 'gt' | 'between';
+type ScreenView = 'categories' | 'subcategories' | 'list' | 'detail';
+type SubFilterType = 'color' | 'age' | 'gender' | 'caste' | 'surname' | 'booth';
 
 const PAGE_SIZE = 50;
 
@@ -57,18 +57,18 @@ export default function VotersScreen() {
 
   const numColumns = isWeb ? 2 : 1;
 
-  const [view, setView] = useState<ScreenView>("categories");
+  const [view, setView] = useState<ScreenView>('categories');
   const [selectedVoter, setSelectedVoter] = useState<Voter | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
 
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
-  const [gender, setGender] = useState<"All" | "Male" | "Female">("All");
+  const [search, setSearch] = useState('');
+  const [gender, setGender] = useState<'All' | 'Male' | 'Female'>('All');
 
-  const [ageMode, setAgeMode] = useState<AgeMode>("none");
-  const [ageValue, setAgeValue] = useState("");
-  const [minAge, setMinAge] = useState("");
-  const [maxAge, setMaxAge] = useState("");
+  const [ageMode, setAgeMode] = useState<AgeMode>('none');
+  const [ageValue, setAgeValue] = useState('');
+  const [minAge, setMinAge] = useState('');
+  const [maxAge, setMaxAge] = useState('');
 
   const [page, setPage] = useState(1);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
@@ -80,9 +80,7 @@ export default function VotersScreen() {
   const [voterStack, setVoterStack] = useState<Voter[]>([]);
   const [transitionLoading, setTransitionLoading] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
-  const [searchBy, setSearchBy] = useState<"fullname" | "epicid" | "address">(
-    "fullname",
-  );
+  const [searchBy, setSearchBy] = useState<'fullname' | 'epicid' | 'address'>('fullname');
   const [selectedSubFilter, setSelectedSubFilter] = useState<{
     type: SubFilterType | null;
     value: string | null;
@@ -90,7 +88,7 @@ export default function VotersScreen() {
   }>({
     type: null,
     value: null,
-    boothAddress: null,
+    boothAddress: null
   });
   const [subFilterItems, setSubFilterItems] = useState<any[]>([]);
   const [subFilterLoading, setSubFilterLoading] = useState(false);
@@ -100,55 +98,52 @@ export default function VotersScreen() {
   const [footerVertical, setFooterVertical] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const SUB_PAGE_SIZE = 20;
-  const subStartRecord =
-    subTotalRecords === 0 ? 0 : (subPage - 1) * SUB_PAGE_SIZE + 1;
+  const subStartRecord = subTotalRecords === 0 ? 0 : (subPage - 1) * SUB_PAGE_SIZE + 1;
   const subEndRecord = Math.min(subPage * SUB_PAGE_SIZE, subTotalRecords);
   const isFocused = useIsFocused();
   const wasFocused = React.useRef(true);
   const skipResetRef = React.useRef(false);
 
   const SEARCH_OPTIONS = [
-    { label: t("name"), value: "fullname" },
-    { label: t("voter.labelEpicId"), value: "epicid" },
-    { label: t("voter.labelAddress"), value: "address" },
+    { label: t('name'), value: 'fullname' },
+    { label: t('voter.labelEpicId'), value: 'epicid' },
+    { label: t('voter.labelAddress'), value: 'address' }
   ];
 
-  const selectedCategoryObj = VOTER_CATEGORIES.find(
-    (c) => c.id === selectedCategory,
-  );
+  const selectedCategoryObj = VOTER_CATEGORIES.find((c) => c.id === selectedCategory);
   const canHandleInternalBack =
-    view === "detail" || view === "list" || view === "subcategories";
+    view === 'detail' || view === 'list' || view === 'subcategories';
 
   const handleInternalBack = () => {
     if (transitionLoading || loading) return;
 
-    if (view === "detail") {
+    if (view === 'detail') {
       goBackFromDetail();
       return;
     }
 
-    if (view === "list") {
+    if (view === 'list') {
       if (selectedSubFilter.type && selectedSubFilter.value) {
         setSelectedSubFilter((prev) => ({
           ...prev,
           value: null,
-          boothAddress: null,
+          boothAddress: null
         }));
         setSubPage(1);
-        setView("subcategories");
+        setView('subcategories');
         return;
       }
 
       setSelectedCategory(null);
       clearFilters();
-      setView("categories");
+      setView('categories');
       return;
     }
 
-    if (view === "subcategories") {
+    if (view === 'subcategories') {
       setSelectedSubFilter({ type: null, value: null, boothAddress: null });
       setSubFilterItems([]);
-      setView("categories");
+      setView('categories');
       return;
     }
   };
@@ -175,10 +170,10 @@ export default function VotersScreen() {
 
   useEffect(() => {
     setEpicScanHandler((epicId: string) => {
-      setSearchBy("epicid");
+      setSearchBy('epicid');
       setSearch(epicId);
       setPage(1);
-      setView("list");
+      setView('list');
     });
   }, []);
 
@@ -187,18 +182,18 @@ export default function VotersScreen() {
       if (skipResetRef.current) {
         skipResetRef.current = false;
       } else {
-        setView("categories");
+        setView('categories');
         setSelectedCategory(null);
         setSelectedSubFilter({ type: null, value: null, boothAddress: null });
         setSelectedVoter(null);
         setVoterStack([]);
 
-        setSearch("");
-        setGender("All");
-        setAgeMode("none");
-        setAgeValue("");
-        setMinAge("");
-        setMaxAge("");
+        setSearch('');
+        setGender('All');
+        setAgeMode('none');
+        setAgeValue('');
+        setMinAge('');
+        setMaxAge('');
         setShowFilters(false);
 
         setPage(1);
@@ -213,57 +208,54 @@ export default function VotersScreen() {
   const fetchVoters = useCallback(async () => {
     let res;
 
-    if (view === "list") {
+    if (view === 'list') {
       try {
         setPageLoading(true);
         let ageParam: string | undefined;
 
-        if (ageMode === "between" && debouncedMinAge && debouncedMaxAge) {
+        if (ageMode === 'between' && debouncedMinAge && debouncedMaxAge) {
           ageParam = `${debouncedMinAge}-${debouncedMaxAge}`;
-        } else if (
-          (ageMode === "lt" || ageMode === "gt") &&
-          debouncedAgeValue
-        ) {
-          ageParam = `${ageMode === "lt" ? "<" : ">"}${debouncedAgeValue}`;
+        } else if ((ageMode === 'lt' || ageMode === 'gt') && debouncedAgeValue) {
+          ageParam = `${ageMode === 'lt' ? '<' : '>'}${debouncedAgeValue}`;
         }
 
         if (selectedCategory === 15) {
           res = await getVoters(
             page,
             PAGE_SIZE,
-            debouncedSearch ?? "",
+            debouncedSearch ?? '',
             ageParam,
-            gender === "All" ? undefined : gender,
-            searchBy,
+            gender === 'All' ? undefined : gender,
+            searchBy
           );
         } else {
           res = await getVotersByCategory(
             page,
             PAGE_SIZE,
-            debouncedSearch ?? "",
-            selectedSubFilter.type === "age"
+            debouncedSearch ?? '',
+            selectedSubFilter.type === 'age'
               ? (selectedSubFilter.value ?? undefined)
               : undefined,
-            selectedSubFilter.type === "gender"
+            selectedSubFilter.type === 'gender'
               ? (selectedSubFilter.value ?? undefined)
               : undefined,
             searchBy,
             selectedCategory,
-            selectedSubFilter.type === "color"
+            selectedSubFilter.type === 'color'
               ? (selectedSubFilter.value ?? undefined)
               : undefined,
-            selectedSubFilter.type === "surname"
+            selectedSubFilter.type === 'surname'
               ? (selectedSubFilter.value ?? undefined)
               : undefined,
-            selectedSubFilter.type === "caste"
+            selectedSubFilter.type === 'caste'
               ? (selectedSubFilter.value ?? undefined)
               : undefined,
-            selectedSubFilter.type === "booth"
+            selectedSubFilter.type === 'booth'
               ? (selectedSubFilter.value ?? undefined)
               : undefined,
-            selectedSubFilter.type === "booth"
+            selectedSubFilter.type === 'booth'
               ? (selectedSubFilter.boothAddress ?? undefined)
-              : undefined,
+              : undefined
           );
         }
 
@@ -283,7 +275,7 @@ export default function VotersScreen() {
     gender,
     searchBy,
     selectedCategory,
-    selectedSubFilter.value,
+    selectedSubFilter.value
   ]);
 
   const fetchSubFilters = async (type: SubFilterType) => {
@@ -291,7 +283,7 @@ export default function VotersScreen() {
     try {
       let data: any[] = [];
 
-      if (type === "color") {
+      if (type === 'color') {
         const res = await getColorCodes();
         const stats: ColorCodeStats = res.data;
 
@@ -300,11 +292,11 @@ export default function VotersScreen() {
           value: value.color,
           color: value.color,
           count: value.count,
-          metaKey: key,
+          metaKey: key
         }));
       }
 
-      if (type === "gender") {
+      if (type === 'gender') {
         const res = await getGenderStats();
         const result = res.data;
 
@@ -313,15 +305,15 @@ export default function VotersScreen() {
           value: key,
           count: count as number,
           icon:
-            key === "male"
-              ? "gender-male"
-              : key === "female"
-                ? "gender-female"
-                : "gender-transgender",
+            key === 'male'
+              ? 'gender-male'
+              : key === 'female'
+                ? 'gender-female'
+                : 'gender-transgender'
         }));
       }
 
-      if (type === "caste") {
+      if (type === 'caste') {
         const res = await getCasteStats();
         const result = res.data;
 
@@ -329,63 +321,63 @@ export default function VotersScreen() {
           label: t(`survey.castes.${item.casteNameEn}`),
           value: item.casteId,
           count: item.count,
-          icon: "account-group",
+          icon: 'account-group'
         }));
       }
 
-      if (type === "booth") {
+      if (type === 'booth') {
         const res = await getBoothStats();
         const result = res.data;
 
         data = result.map((item: any, index: number) => ({
           label: item.listArea,
-          value: `${item.listArea}||${item.address ?? ""}`,
+          value: `${item.listArea}||${item.address ?? ''}`,
           boothNumber: item.listArea,
           boothAddress: item.address ?? null,
           description: item.address,
           count: item.count,
-          icon: "map-marker",
+          icon: 'map-marker'
         }));
       }
-      if (type === "age") {
+      if (type === 'age') {
         const res = await getAgeStats();
         const stats: AgeGroupStats = res.data;
 
         data = [
           {
-            label: t("dashboard.voter.ageGroups.18_25"),
-            value: "18-25",
+            label: t('dashboard.voter.ageGroups.18_25'),
+            value: '18-25',
             count: stats.age18To25,
-            icon: "calendar-range",
+            icon: 'calendar-range'
           },
           {
-            label: t("dashboard.voter.ageGroups.26_35"),
-            value: "26-35",
+            label: t('dashboard.voter.ageGroups.26_35'),
+            value: '26-35',
             count: stats.age26To35,
-            icon: "calendar-range",
+            icon: 'calendar-range'
           },
           {
-            label: t("dashboard.voter.ageGroups.36_45"),
-            value: "36-45",
+            label: t('dashboard.voter.ageGroups.36_45'),
+            value: '36-45',
             count: stats.age36To45,
-            icon: "calendar-range",
+            icon: 'calendar-range'
           },
           {
-            label: t("dashboard.voter.ageGroups.46_60"),
-            value: "46-60",
+            label: t('dashboard.voter.ageGroups.46_60'),
+            value: '46-60',
             count: stats.age46To60,
-            icon: "calendar-range",
+            icon: 'calendar-range'
           },
           {
-            label: t("dashboard.voter.ageGroups.60_plus"),
-            value: ">60",
+            label: t('dashboard.voter.ageGroups.60_plus'),
+            value: '>60',
             count: stats.age60Plus,
-            icon: "calendar-range",
-          },
+            icon: 'calendar-range'
+          }
         ];
       }
 
-      if (type === "surname") {
+      if (type === 'surname') {
         const res = await getSurnames(subPage, SUB_PAGE_SIZE);
         const result = res.data;
 
@@ -396,7 +388,7 @@ export default function VotersScreen() {
           label: s.surname,
           value: s.surname,
           count: s.count,
-          icon: "account",
+          icon: 'account'
         }));
       }
 
@@ -407,13 +399,13 @@ export default function VotersScreen() {
   };
 
   useEffect(() => {
-    if (view === "subcategories" && selectedSubFilter.type) {
+    if (view === 'subcategories' && selectedSubFilter.type) {
       fetchSubFilters(selectedSubFilter.type);
     }
   }, [view, selectedSubFilter.type, subPage, i18n.language]);
 
   useEffect(() => {
-    if (view === "list") {
+    if (view === 'list') {
       fetchVoters();
     }
   }, [view, fetchVoters]);
@@ -427,13 +419,13 @@ export default function VotersScreen() {
   const endRecord = Math.min(page * PAGE_SIZE, voterCount);
 
   const clearFilters = () => {
-    setGender("All");
-    setAgeMode("none");
-    setAgeValue("");
-    setMinAge("");
-    setMaxAge("");
-    setSearch("");
-    setSearchBy("fullname");
+    setGender('All');
+    setAgeMode('none');
+    setAgeValue('');
+    setMinAge('');
+    setMaxAge('');
+    setSearch('');
+    setSearchBy('fullname');
     setPage(1);
     setShowFilters(false);
   };
@@ -443,18 +435,16 @@ export default function VotersScreen() {
       setTransitionLoading(true);
 
       const [voter] = await Promise.all([
-        typeof voterOrId === "string"
+        typeof voterOrId === 'string'
           ? getVoterById(voterOrId).then((r) => r.data)
           : Promise.resolve(voterOrId),
-        delay(500),
+        delay(500)
       ]);
 
-      setVoterStack((prev) =>
-        selectedVoter ? [...prev, selectedVoter] : prev,
-      );
+      setVoterStack((prev) => (selectedVoter ? [...prev, selectedVoter] : prev));
 
       setSelectedVoter(voter);
-      setView("detail");
+      setView('detail');
     } finally {
       setTransitionLoading(false);
     }
@@ -465,47 +455,47 @@ export default function VotersScreen() {
     setPage(1);
 
     if (categoryId === 9) {
-      setSelectedSubFilter({ type: "color", value: null, boothAddress: null });
-      setView("subcategories");
+      setSelectedSubFilter({ type: 'color', value: null, boothAddress: null });
+      setView('subcategories');
       return;
     }
 
     if (categoryId === 10) {
-      setSelectedSubFilter({ type: "age", value: null, boothAddress: null });
-      setView("subcategories");
+      setSelectedSubFilter({ type: 'age', value: null, boothAddress: null });
+      setView('subcategories');
       return;
     }
 
     if (categoryId === 8) {
       setSelectedSubFilter({
-        type: "surname",
+        type: 'surname',
         value: null,
-        boothAddress: null,
+        boothAddress: null
       });
       setSubPage(1);
-      setView("subcategories");
+      setView('subcategories');
       return;
     }
 
     if (categoryId === 11) {
-      setSelectedSubFilter({ type: "gender", value: null, boothAddress: null });
-      setView("subcategories");
+      setSelectedSubFilter({ type: 'gender', value: null, boothAddress: null });
+      setView('subcategories');
       return;
     }
 
     if (categoryId === 12) {
-      setSelectedSubFilter({ type: "caste", value: null, boothAddress: null });
-      setView("subcategories");
+      setSelectedSubFilter({ type: 'caste', value: null, boothAddress: null });
+      setView('subcategories');
       return;
     }
 
     if (categoryId === 13) {
-      setSelectedSubFilter({ type: "booth", value: null, boothAddress: null });
-      setView("subcategories");
+      setSelectedSubFilter({ type: 'booth', value: null, boothAddress: null });
+      setView('subcategories');
       return;
     }
 
-    setView("list");
+    setView('list');
   };
 
   const goBackFromDetail = async () => {
@@ -517,7 +507,7 @@ export default function VotersScreen() {
       setVoterStack((prev) => {
         if (prev.length === 0) {
           setSelectedVoter(null);
-          setView("list");
+          setView('list');
           return [];
         }
 
@@ -535,7 +525,7 @@ export default function VotersScreen() {
     return (
       <View style={styles.loaderContainer}>
         <ActivityIndicator size="large" color={theme.colors.primary} />
-        <Text style={styles.loaderText}>{t("voter.loading")}</Text>
+        <Text style={styles.loaderText}>{t('voter.loading')}</Text>
       </View>
     );
   }
@@ -548,7 +538,7 @@ export default function VotersScreen() {
     );
   }
 
-  if (view === "detail" && selectedVoter) {
+  if (view === 'detail' && selectedVoter) {
     return (
       <VoterDetailView
         voter={selectedVoter}
@@ -558,18 +548,18 @@ export default function VotersScreen() {
     );
   }
 
-  if (view === "categories") {
+  if (view === 'categories') {
     return <VoterCategoryScreen onSelectCategory={handleCategorySelect} />;
   }
 
-  if (view === "subcategories" && selectedSubFilter.type) {
+  if (view === 'subcategories' && selectedSubFilter.type) {
     const titleMap = {
-      color: t("voter.selectColorCode"),
-      age: t("voter.selectAgeGroup"),
-      surname: t("voter.selectSurname"),
-      gender: t("voter.selectGender"),
-      caste: t("voter.selectCaste"),
-      booth: t("voter.selectBooth"),
+      color: t('voter.selectColorCode'),
+      age: t('voter.selectAgeGroup'),
+      surname: t('voter.selectSurname'),
+      gender: t('voter.selectGender'),
+      caste: t('voter.selectCaste'),
+      booth: t('voter.selectBooth')
     };
 
     return (
@@ -587,26 +577,26 @@ export default function VotersScreen() {
         onBack={() => {
           setSelectedSubFilter({ type: null, value: null, boothAddress: null });
           setSubFilterItems([]);
-          setView("categories");
+          setView('categories');
         }}
         onSelect={(value) => {
-          if (selectedSubFilter.type === "booth") {
-            const [boothNumber, boothAddress] = value.split("||");
+          if (selectedSubFilter.type === 'booth') {
+            const [boothNumber, boothAddress] = value.split('||');
 
             setSelectedSubFilter({
-              type: "booth",
+              type: 'booth',
               value: boothNumber,
-              boothAddress: boothAddress || null,
+              boothAddress: boothAddress || null
             });
           } else {
             setSelectedSubFilter((prev) => ({
               ...prev,
               value,
-              boothAddress: null,
+              boothAddress: null
             }));
           }
 
-          setView("list");
+          setView('list');
         }}
       />
     );
@@ -615,10 +605,10 @@ export default function VotersScreen() {
   const downloadPdf = async (fileData: any, fileName: string) => {
     try {
       if (isWeb && !isMobileWeb) {
-        const blob = new Blob([fileData], { type: "application/pdf" });
+        const blob = new Blob([fileData], { type: 'application/pdf' });
         const url = window.URL.createObjectURL(blob);
 
-        const link = document.createElement("a");
+        const link = document.createElement('a');
         link.href = url;
         link.download = fileName;
         document.body.appendChild(link);
@@ -631,34 +621,30 @@ export default function VotersScreen() {
       const fileUri = FileSystem.cacheDirectory + fileName;
 
       let base64: string;
-      if (typeof fileData === "string") {
+      if (typeof fileData === 'string') {
         base64 = fileData;
       } else {
-        base64 = Buffer.from(fileData).toString("base64");
+        base64 = Buffer.from(fileData).toString('base64');
       }
 
       await FileSystem.writeAsStringAsync(fileUri, base64, {
-        encoding: FileSystem.EncodingType.Base64,
+        encoding: FileSystem.EncodingType.Base64
       });
 
       await Sharing.shareAsync(fileUri, {
-        mimeType: "application/pdf",
-        dialogTitle: "Open voter list",
+        mimeType: 'application/pdf',
+        dialogTitle: 'Open voter list'
       });
     } catch (err) {
-      console.error("PDF download/open failed", err);
-      showToast(t("voter.downloadFailed"), "error");
+      console.error('PDF download/open failed', err);
+      showToast(t('voter.downloadFailed'), 'error');
     }
   };
 
   const formatPart = (text?: string | number | null) => {
     if (!text) return null;
 
-    const cleaned = text
-      .toString()
-      .trim()
-      .replace(/\s+/g, "_")
-      .replace(/[^\w]/g, "");
+    const cleaned = text.toString().trim().replace(/\s+/g, '_').replace(/[^\w]/g, '');
 
     if (!cleaned) return null;
 
@@ -666,12 +652,9 @@ export default function VotersScreen() {
   };
 
   const resolveColorName = () => {
-    if (selectedSubFilter.type !== "color" || !selectedSubFilter.value)
-      return null;
+    if (selectedSubFilter.type !== 'color' || !selectedSubFilter.value) return null;
 
-    const item = subFilterItems.find(
-      (i) => i.value === selectedSubFilter.value,
-    );
+    const item = subFilterItems.find((i) => i.value === selectedSubFilter.value);
 
     if (!item) return null;
 
@@ -686,64 +669,64 @@ export default function VotersScreen() {
     const isLikelyId = (val: string) => /^[0-9a-fA-F-]{8,}$/.test(val);
 
     const categoryNameMap: Record<number, string> = {
-      0: "All_Voters",
-      1: "Star_Voters",
-      2: "Verified_Voters",
-      3: "Unverified_Voters",
-      4: "Deceased_Voters",
-      5: "Voted_Voters",
-      6: "Not_Voted_Voters",
-      7: "Needs_Followup_Voters",
-      8: "Voters_By_Support_Color",
-      9: "Voters_By_Caste",
-      10: "Voters_By_Age",
-      11: "Voters_By_Gender",
-      12: "Voters_By_Booth",
-      13: "Voters_By_Surname",
+      0: 'All_Voters',
+      1: 'Star_Voters',
+      2: 'Verified_Voters',
+      3: 'Unverified_Voters',
+      4: 'Deceased_Voters',
+      5: 'Voted_Voters',
+      6: 'Not_Voted_Voters',
+      7: 'Needs_Followup_Voters',
+      8: 'Voters_By_Support_Color',
+      9: 'Voters_By_Caste',
+      10: 'Voters_By_Age',
+      11: 'Voters_By_Gender',
+      12: 'Voters_By_Booth',
+      13: 'Voters_By_Surname'
     };
 
     const val = selectedSubFilter.value?.toString();
 
-    if (selectedSubFilter.type === "surname" && val) {
+    if (selectedSubFilter.type === 'surname' && val) {
       const part = formatPart(val);
       if (part) return `Voters_Surname_${part}.pdf`;
     }
 
-    if (selectedSubFilter.type === "age" && val) {
+    if (selectedSubFilter.type === 'age' && val) {
       const part = formatPart(val);
       if (part) return `Voters_Age_${part}.pdf`;
     }
 
-    if (selectedSubFilter.type === "gender" && val) {
+    if (selectedSubFilter.type === 'gender' && val) {
       const part = formatPart(val);
       if (part) return `Voters_Gender_${part}.pdf`;
     }
 
-    if (selectedSubFilter.type === "color") {
+    if (selectedSubFilter.type === 'color') {
       const colorName = resolveColorName();
       if (colorName) return `Voters_Support_${colorName}.pdf`;
     }
 
-    if (selectedSubFilter.type === "caste" && val && !isLikelyId(val)) {
+    if (selectedSubFilter.type === 'caste' && val && !isLikelyId(val)) {
       const part = formatPart(val);
       if (part) return `Voters_Caste_${part}.pdf`;
     }
 
-    if (selectedSubFilter.type === "booth" && val) {
+    if (selectedSubFilter.type === 'booth' && val) {
       const part = formatPart(val);
       if (part) return `Voters_Booth_${part}.pdf`;
     }
 
     if (selectedCategory === 15) {
-      if (ageMode === "between" && minAge && maxAge) {
+      if (ageMode === 'between' && minAge && maxAge) {
         return `Voters_Age_${minAge}_${maxAge}.pdf`;
       }
 
-      if ((ageMode === "lt" || ageMode === "gt") && ageValue) {
-        return `Voters_Age_${ageMode === "lt" ? "Below" : "Above"}_${ageValue}.pdf`;
+      if ((ageMode === 'lt' || ageMode === 'gt') && ageValue) {
+        return `Voters_Age_${ageMode === 'lt' ? 'Below' : 'Above'}_${ageValue}.pdf`;
       }
 
-      if (gender !== "All") {
+      if (gender !== 'All') {
         const part = formatPart(gender);
         if (part) return `Voters_Gender_${part}.pdf`;
       }
@@ -753,7 +736,7 @@ export default function VotersScreen() {
       return `${categoryNameMap[selectedCategory]}.pdf`;
     }
 
-    return "Voters_List.pdf";
+    return 'Voters_List.pdf';
   };
 
   const handleDownloadVoters = async () => {
@@ -762,46 +745,46 @@ export default function VotersScreen() {
 
       let ageParam: string | undefined;
 
-      if (ageMode === "between" && debouncedMinAge && debouncedMaxAge) {
+      if (ageMode === 'between' && debouncedMinAge && debouncedMaxAge) {
         ageParam = `${debouncedMinAge}-${debouncedMaxAge}`;
-      } else if ((ageMode === "lt" || ageMode === "gt") && debouncedAgeValue) {
-        ageParam = `${ageMode === "lt" ? "<" : ">"}${debouncedAgeValue}`;
+      } else if ((ageMode === 'lt' || ageMode === 'gt') && debouncedAgeValue) {
+        ageParam = `${ageMode === 'lt' ? '<' : '>'}${debouncedAgeValue}`;
       }
 
       const response = await exportVotersPdf(
         selectedCategory ?? 0,
-        selectedSubFilter.type === "surname"
+        selectedSubFilter.type === 'surname'
           ? (selectedSubFilter.value ?? undefined)
           : undefined,
-        selectedSubFilter.type === "color"
+        selectedSubFilter.type === 'color'
           ? (selectedSubFilter.value ?? undefined)
           : undefined,
-        selectedSubFilter.type === "age"
+        selectedSubFilter.type === 'age'
           ? (selectedSubFilter.value ?? undefined)
           : ageParam,
-        selectedSubFilter.type === "gender"
+        selectedSubFilter.type === 'gender'
           ? (selectedSubFilter.value ?? undefined)
-          : gender !== "All"
+          : gender !== 'All'
             ? gender
             : undefined,
-        selectedSubFilter.type === "caste"
+        selectedSubFilter.type === 'caste'
           ? (selectedSubFilter.value ?? undefined)
           : undefined,
-        selectedSubFilter.type === "booth"
+        selectedSubFilter.type === 'booth'
           ? (selectedSubFilter.value ?? undefined)
           : undefined,
-        selectedSubFilter.type === "booth"
+        selectedSubFilter.type === 'booth'
           ? (selectedSubFilter.boothAddress ?? undefined)
-          : undefined,
+          : undefined
       );
 
       const fileName = generateFileName();
 
       await downloadPdf(response.data, fileName);
-      showToast(t("voter.downloadSuccess"), "success");
+      showToast(t('voter.downloadSuccess'), 'success');
     } catch (err) {
-      console.error("PDF export failed", err);
-      showToast(t("voter.downloadFailed"), "error");
+      console.error('PDF export failed', err);
+      showToast(t('voter.downloadFailed'), 'error');
     } finally {
       setDownloading(false);
     }
@@ -809,19 +792,19 @@ export default function VotersScreen() {
 
   return (
     <View style={styles.screenContainer}>
-      <View style={{ position: "relative", flex: 1 }}>
+      <View style={{ position: 'relative', flex: 1 }}>
         {pageLoading && (
           <View
             style={{
-              position: "absolute",
+              position: 'absolute',
               top: 0,
               left: 0,
               right: 0,
               bottom: 0,
-              backgroundColor: "rgba(255,255,255,0.6)",
-              justifyContent: "center",
-              alignItems: "center",
-              zIndex: 10,
+              backgroundColor: 'rgba(255,255,255,0.6)',
+              justifyContent: 'center',
+              alignItems: 'center',
+              zIndex: 10
             }}
           >
             <ActivityIndicator size="large" color={theme.colors.primary} />
@@ -840,7 +823,7 @@ export default function VotersScreen() {
           ListHeaderComponent={
             <>
               <View style={styles.headerRow}>
-                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                   <IconButton
                     icon="arrow-left"
                     iconColor={theme.colors.primary}
@@ -849,28 +832,28 @@ export default function VotersScreen() {
                         setSelectedSubFilter((prev) => ({
                           ...prev,
                           value: null,
-                          boothAddress: null,
+                          boothAddress: null
                         }));
                         setSubPage(1);
-                        setView("subcategories");
+                        setView('subcategories');
                         return;
                       }
                       setSelectedCategory(null);
                       clearFilters();
-                      setView("categories");
+                      setView('categories');
                     }}
                   />
                   <Text variant="titleLarge" style={styles.heading}>
                     {selectedCategoryObj
                       ? t(selectedCategoryObj.title)
-                      : t("voter.plural")}
+                      : t('voter.plural')}
                   </Text>
                 </View>
 
                 {/* ⬇️ DOWNLOAD BUTTON */}
                 {selectedCategory !== 15 && voterCount > 0 && (
                   <IconButton
-                    icon={downloading ? "progress-clock" : "download"}
+                    icon={downloading ? 'progress-clock' : 'download'}
                     iconColor={theme.colors.primary}
                     size={22}
                     style={styles.iconBackground}
@@ -884,7 +867,7 @@ export default function VotersScreen() {
                 <View style={styles.mergedSearchWrapper}>
                   <TextInput
                     mode="outlined"
-                    placeholder={t("voter.searchPlaceholder")}
+                    placeholder={t('voter.searchPlaceholder')}
                     placeholderTextColor={theme.colors.placeholder}
                     value={search}
                     onChangeText={(text) => {
@@ -900,11 +883,11 @@ export default function VotersScreen() {
                     <IconButton
                       icon="qrcode-scan"
                       size={22}
-                      style={{ position: "absolute", right: 140, top: 6 }}
+                      style={{ position: 'absolute', right: 140, top: 6 }}
                       iconColor={theme.colors.primary}
                       onPress={() => {
                         skipResetRef.current = true;
-                        navigation.navigate("EpicScanner");
+                        navigation.navigate('EpicScanner');
                       }}
                     />
                   )}
@@ -930,9 +913,9 @@ export default function VotersScreen() {
                     style={styles.filterHeader}
                     onPress={() => setShowFilters((prev) => !prev)}
                   >
-                    <Text style={styles.filterTitle}>{t("voter.filters")}</Text>
+                    <Text style={styles.filterTitle}>{t('voter.filters')}</Text>
                     <IconButton
-                      icon={showFilters ? "chevron-up" : "chevron-down"}
+                      icon={showFilters ? 'chevron-up' : 'chevron-down'}
                       onPress={() => setShowFilters((prev) => !prev)}
                     />
                   </Pressable>
@@ -944,10 +927,10 @@ export default function VotersScreen() {
                       {isWeb ? (
                         <View style={styles.filterRow}>
                           <Text style={styles.filterSectionLabel}>
-                            {t("voter.gender")}
+                            {t('voter.gender')}
                           </Text>
 
-                          {["All", "Male", "Female"].map((g) => (
+                          {['All', 'Male', 'Female'].map((g) => (
                             <Chip
                               key={g}
                               selected={gender === g}
@@ -958,7 +941,7 @@ export default function VotersScreen() {
                               }}
                               style={[
                                 styles.filterChip,
-                                gender === g && styles.filterChipSelected,
+                                gender === g && styles.filterChipSelected
                               ]}
                             >
                               {t(`voter.gender${g}`)}
@@ -967,14 +950,12 @@ export default function VotersScreen() {
 
                           <View style={styles.verticalDivider} />
 
-                          <Text style={styles.filterSectionLabel}>
-                            {t("voter.age")}
-                          </Text>
+                          <Text style={styles.filterSectionLabel}>{t('voter.age')}</Text>
 
                           {[
-                            { key: "lt", label: t("voter.ageLt") },
-                            { key: "gt", label: t("voter.ageGt") },
-                            { key: "between", label: t("voter.ageBetween") },
+                            { key: 'lt', label: t('voter.ageLt') },
+                            { key: 'gt', label: t('voter.ageGt') },
+                            { key: 'between', label: t('voter.ageBetween') }
                           ].map((m) => (
                             <Chip
                               key={m.key}
@@ -982,24 +963,24 @@ export default function VotersScreen() {
                               showSelectedCheck={false}
                               onPress={() => {
                                 setAgeMode(m.key as AgeMode);
-                                setAgeValue("");
-                                setMinAge("");
-                                setMaxAge("");
+                                setAgeValue('');
+                                setMinAge('');
+                                setMaxAge('');
                                 setPage(1);
                               }}
                               style={[
                                 styles.filterChip,
-                                ageMode === m.key && styles.filterChipSelected,
+                                ageMode === m.key && styles.filterChipSelected
                               ]}
                             >
                               {m.label}
                             </Chip>
                           ))}
 
-                          {(ageMode === "lt" || ageMode === "gt") && (
+                          {(ageMode === 'lt' || ageMode === 'gt') && (
                             <TextInput
                               mode="outlined"
-                              placeholder={t("voter.age")}
+                              placeholder={t('voter.age')}
                               placeholderTextColor={theme.colors.placeholder}
                               value={ageValue}
                               onChangeText={setAgeValue}
@@ -1008,11 +989,11 @@ export default function VotersScreen() {
                             />
                           )}
 
-                          {ageMode === "between" && (
+                          {ageMode === 'between' && (
                             <>
                               <TextInput
                                 mode="outlined"
-                                placeholder={t("voter.minAge")}
+                                placeholder={t('voter.minAge')}
                                 placeholderTextColor={theme.colors.placeholder}
                                 value={minAge}
                                 onChangeText={setMinAge}
@@ -1021,7 +1002,7 @@ export default function VotersScreen() {
                               />
                               <TextInput
                                 mode="outlined"
-                                placeholder={t("voter.maxAge")}
+                                placeholder={t('voter.maxAge')}
                                 placeholderTextColor={theme.colors.placeholder}
                                 value={maxAge}
                                 onChangeText={setMaxAge}
@@ -1036,17 +1017,17 @@ export default function VotersScreen() {
                             onPress={clearFilters}
                             style={styles.clearChip}
                           >
-                            {t("voter.clear")}
+                            {t('voter.clear')}
                           </Chip>
                         </View>
                       ) : (
                         <>
                           <View style={styles.filterRow}>
                             <Text style={styles.filterSectionLabel}>
-                              {t("voter.gender")}
+                              {t('voter.gender')}
                             </Text>
 
-                            {["All", "Male", "Female"].map((g) => (
+                            {['All', 'Male', 'Female'].map((g) => (
                               <Chip
                                 key={g}
                                 selected={gender === g}
@@ -1057,7 +1038,7 @@ export default function VotersScreen() {
                                 }}
                                 style={[
                                   styles.filterChip,
-                                  gender === g && styles.filterChipSelected,
+                                  gender === g && styles.filterChipSelected
                                 ]}
                               >
                                 {t(`voter.gender${g}`)}
@@ -1067,13 +1048,13 @@ export default function VotersScreen() {
 
                           <View style={[styles.filterRow, { marginTop: 8 }]}>
                             <Text style={styles.filterSectionLabel}>
-                              {t("voter.age")}
+                              {t('voter.age')}
                             </Text>
 
                             {[
-                              { key: "lt", label: t("voter.ageLt") },
-                              { key: "gt", label: t("voter.ageGt") },
-                              { key: "between", label: t("voter.ageBetween") },
+                              { key: 'lt', label: t('voter.ageLt') },
+                              { key: 'gt', label: t('voter.ageGt') },
+                              { key: 'between', label: t('voter.ageBetween') }
                             ].map((m) => (
                               <Chip
                                 key={m.key}
@@ -1081,15 +1062,14 @@ export default function VotersScreen() {
                                 showSelectedCheck={false}
                                 onPress={() => {
                                   setAgeMode(m.key as AgeMode);
-                                  setAgeValue("");
-                                  setMinAge("");
-                                  setMaxAge("");
+                                  setAgeValue('');
+                                  setMinAge('');
+                                  setMaxAge('');
                                   setPage(1);
                                 }}
                                 style={[
                                   styles.filterChip,
-                                  ageMode === m.key &&
-                                    styles.filterChipSelected,
+                                  ageMode === m.key && styles.filterChipSelected
                                 ]}
                               >
                                 {m.label}
@@ -1097,11 +1077,11 @@ export default function VotersScreen() {
                             ))}
                           </View>
 
-                          {(ageMode === "lt" || ageMode === "gt") && (
+                          {(ageMode === 'lt' || ageMode === 'gt') && (
                             <View style={styles.ageInputRow}>
                               <TextInput
                                 mode="outlined"
-                                label={t("voter.ageLabel")}
+                                label={t('voter.ageLabel')}
                                 value={ageValue}
                                 onChangeText={setAgeValue}
                                 keyboardType="numeric"
@@ -1111,11 +1091,11 @@ export default function VotersScreen() {
                             </View>
                           )}
 
-                          {ageMode === "between" && (
+                          {ageMode === 'between' && (
                             <View style={styles.ageInputRow}>
                               <TextInput
                                 mode="outlined"
-                                label={t("voter.minAge")}
+                                label={t('voter.minAge')}
                                 value={minAge}
                                 onChangeText={setMinAge}
                                 keyboardType="numeric"
@@ -1124,7 +1104,7 @@ export default function VotersScreen() {
                               />
                               <TextInput
                                 mode="outlined"
-                                label={t("voter.maxAge")}
+                                label={t('voter.maxAge')}
                                 value={maxAge}
                                 onChangeText={setMaxAge}
                                 keyboardType="numeric"
@@ -1140,7 +1120,7 @@ export default function VotersScreen() {
                               onPress={clearFilters}
                               style={styles.clearChip}
                             >
-                              {t("voter.clear")}
+                              {t('voter.clear')}
                             </Chip>
                           </View>
                         </>
@@ -1160,23 +1140,23 @@ export default function VotersScreen() {
                   color={theme.colors.borderGray}
                   style={{ marginBottom: 8 }}
                 />
-                <Text style={styles.emptyText}>{t("voter.noData")}</Text>
+                <Text style={styles.emptyText}>{t('voter.noData')}</Text>
               </View>
             ) : null
           }
           renderItem={({ item }) => {
             const ageText =
-              item.age !== null && item.age !== undefined && item.age !== ""
+              item.age !== null && item.age !== undefined && item.age !== ''
                 ? item.age
-                : "-";
+                : '-';
 
             const addressText =
-              item.address && item.address.trim() !== "" ? item.address : "-";
+              item.address && item.address.trim() !== '' ? item.address : '-';
 
             const genderValue =
-              item.gender && item.gender.trim() !== ""
+              item.gender && item.gender.trim() !== ''
                 ? t(`voter.gender${item.gender}`)
-                : "-";
+                : '-';
 
             return (
               <Pressable
@@ -1186,10 +1166,7 @@ export default function VotersScreen() {
                 style={styles.cardPressable}
               >
                 <View
-                  style={[
-                    styles.cardShell,
-                    hoveredId === item.id && styles.cardHover,
-                  ]}
+                  style={[styles.cardShell, hoveredId === item.id && styles.cardHover]}
                 >
                   <View style={styles.cardContent}>
                     <View style={styles.cardText}>
@@ -1198,12 +1175,11 @@ export default function VotersScreen() {
                       </Text>
 
                       <Text style={styles.meta}>
-                        <Text style={styles.metaLabel}>{t("voter.age")}:</Text>{" "}
-                        {ageText}
-                        {"  |  "}
+                        <Text style={styles.metaLabel}>{t('voter.age')}:</Text> {ageText}
+                        {'  |  '}
                         <Text style={styles.metaLabel}>
-                          {t("voter.addressSection")}:
-                        </Text>{" "}
+                          {t('voter.addressSection')}:
+                        </Text>{' '}
                         {addressText}
                       </Text>
                     </View>
@@ -1220,12 +1196,7 @@ export default function VotersScreen() {
       </View>
 
       {voterCount > 0 && (
-        <View
-          style={[
-            styles.floatingBar,
-            footerVertical && styles.floatingBarVertical,
-          ]}
-        >
+        <View style={[styles.floatingBar, footerVertical && styles.floatingBarVertical]}>
           <Text
             style={styles.stickyCountText}
             numberOfLines={1}
@@ -1236,18 +1207,15 @@ export default function VotersScreen() {
               if (textWidth <= 180 && footerVertical) setFooterVertical(false);
             }}
           >
-            {t("voter.showingRecords", {
+            {t('voter.showingRecords', {
               start: startRecord,
               end: endRecord,
-              total: voterCount,
+              total: voterCount
             })}
           </Text>
 
           <View
-            style={[
-              styles.stickyPager,
-              footerVertical && styles.stickyPagerVertical,
-            ]}
+            style={[styles.stickyPager, footerVertical && styles.stickyPagerVertical]}
           >
             <IconButton
               size={18}
@@ -1259,7 +1227,7 @@ export default function VotersScreen() {
             />
 
             <Text style={styles.pageText}>
-              {t("voter.pageInfo", { current: page, total: totalPages })}
+              {t('voter.pageInfo', { current: page, total: totalPages })}
             </Text>
 
             <IconButton
@@ -1282,60 +1250,60 @@ const createStyles = (theme: AppTheme, platform: { isWeb: boolean }) =>
   StyleSheet.create({
     screenContainer: {
       flex: 1,
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.white
     },
     headerRow: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center'
     },
     iconBackground: {
-      backgroundColor: theme.colors.primary + "25",
+      backgroundColor: theme.colors.primary + '25',
       borderRadius: 20,
       borderWidth: 1,
-      borderColor: theme.colors.primary + "40",
+      borderColor: theme.colors.primary + '40'
     },
     loaderContainer: {
       flex: 1,
-      justifyContent: "center",
-      alignItems: "center",
-      backgroundColor: theme.colors.white,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: theme.colors.white
     },
     loaderText: {
       marginTop: 12,
-      color: theme.colors.textSecondary,
+      color: theme.colors.textSecondary
     },
     container: {
       padding: 16,
       backgroundColor: theme.colors.white,
       flexGrow: 1,
-      paddingBottom: 90,
+      paddingBottom: 90
     },
     heading: {
-      fontWeight: "700",
+      fontWeight: '700',
       marginBottom: 4,
-      color: theme.colors.primary,
+      color: theme.colors.primary
     },
     countRow: {
       marginBottom: 8,
-      alignItems: "center",
+      alignItems: 'center'
     },
     countText: {
       fontSize: 14,
       color: theme.colors.textSecondary,
-      fontWeight: 600,
+      fontWeight: 600
     },
     searchContainer: {
       backgroundColor: theme.colors.paperBackground,
       borderRadius: 14,
       padding: 2,
-      marginBottom: 12,
+      marginBottom: 12
     },
     search: {
       backgroundColor: theme.colors.white,
       borderRadius: 12,
       borderWidth: 1,
-      borderColor: theme.colors.subtleBorder,
+      borderColor: theme.colors.subtleBorder
     },
     filterPanel: {
       backgroundColor: theme.colors.paperBackground,
@@ -1344,90 +1312,90 @@ const createStyles = (theme: AppTheme, platform: { isWeb: boolean }) =>
       paddingVertical: 8,
       marginBottom: 12,
       borderWidth: 1,
-      borderColor: theme.colors.subtleBorder,
+      borderColor: theme.colors.subtleBorder
     },
     filterHeader: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-      height: 35,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      height: 35
     },
     filterTitle: {
-      fontWeight: "600",
-      color: theme.colors.textTertiary,
+      fontWeight: '600',
+      color: theme.colors.textTertiary
     },
     filterDivider: {
-      marginVertical: 8,
+      marginVertical: 8
     },
     filtersContainer: {
-      width: "100%",
-      paddingVertical: 4,
+      width: '100%',
+      paddingVertical: 4
     },
     filterRow: {
-      flexDirection: "row",
-      alignItems: "center",
-      flexWrap: "wrap",
-      gap: 8,
+      flexDirection: 'row',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      gap: 8
     },
     ageInputRow: {
-      width: "100%",
+      width: '100%',
       marginTop: 8,
-      flexDirection: "row",
-      gap: 8,
+      flexDirection: 'row',
+      gap: 8
     },
     clearRow: {
       marginTop: 12,
-      flexDirection: "row",
-      justifyContent: "flex-start",
+      flexDirection: 'row',
+      justifyContent: 'flex-start'
     },
     filterSectionLabel: {
       fontSize: 13,
-      fontWeight: "600",
+      fontWeight: '600',
       color: theme.colors.textSecondary,
-      marginRight: 6,
+      marginRight: 6
     },
     verticalDivider: {
       width: 1,
       height: 28,
       backgroundColor: theme.colors.divider,
-      marginHorizontal: 6,
+      marginHorizontal: 6
     },
     filterChip: {
       backgroundColor: theme.colors.white,
       borderWidth: 1,
-      borderColor: theme.colors.subtleBorder,
+      borderColor: theme.colors.subtleBorder
     },
     filterChipSelected: {
       backgroundColor: theme.colors.softOrange,
-      borderColor: theme.colors.primaryLight,
+      borderColor: theme.colors.primaryLight
     },
     compactAgeInput: {
-      width: platform.isWeb ? 80 : "100%",
+      width: platform.isWeb ? 80 : '100%',
       backgroundColor: theme.colors.white,
       height: platform.isWeb ? 32 : 44,
-      fontSize: platform.isWeb ? 15 : 14,
+      fontSize: platform.isWeb ? 15 : 14
     },
     clearChip: {
       backgroundColor: theme.colors.white,
       borderWidth: 1,
       borderColor: theme.colors.borderGray,
-      borderRadius: 8,
+      borderRadius: 8
     },
     row: {
-      gap: 16,
+      gap: 16
     },
     listWrapper: {
-      position: "relative",
-      minHeight: 450,
+      position: 'relative',
+      minHeight: 450
     },
     floatingBar: {
-      position: "absolute",
+      position: 'absolute',
       bottom: 12,
       left: 18,
       right: 18,
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
       borderRadius: 12,
       borderWidth: 1,
       backgroundColor: theme.colors.primarySurface,
@@ -1435,40 +1403,40 @@ const createStyles = (theme: AppTheme, platform: { isWeb: boolean }) =>
       paddingVertical: 12,
       paddingHorizontal: 12,
       elevation: 6,
-      shadowColor: "#000",
+      shadowColor: '#000',
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.15,
-      shadowRadius: 6,
+      shadowRadius: 6
     },
     floatingBarVertical: {
-      flexDirection: "column",
-      justifyContent: "center",
-      alignItems: "center",
+      flexDirection: 'column',
+      justifyContent: 'center',
+      alignItems: 'center',
       gap: 6,
-      paddingVertical: 8,
+      paddingVertical: 8
     },
     stickyPagerVertical: {
-      justifyContent: "center",
+      justifyContent: 'center'
     },
     stickyPager: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 0,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 0
     },
     pagerIcon: {
       margin: 0,
-      padding: 0,
+      padding: 0
     },
     stickyCountText: {
       fontSize: 13,
       color: theme.colors.textSecondary,
-      marginRight: 6,
+      marginRight: 6
     },
     cardPressable: {
       flex: 1,
       marginBottom: 12,
       borderRadius: 12,
-      cursor: "pointer",
+      cursor: 'pointer'
     },
     cardShell: {
       flex: 1,
@@ -1478,85 +1446,85 @@ const createStyles = (theme: AppTheme, platform: { isWeb: boolean }) =>
       borderColor: theme.colors.subtleBorder,
       borderLeftWidth: 3,
       borderLeftColor: theme.colors.primaryLight,
-      overflow: "hidden",
+      overflow: 'hidden'
     },
     cardHover: {
-      backgroundColor: theme.colors.softOrange + "40",
-      borderLeftColor: theme.colors.primary,
+      backgroundColor: theme.colors.softOrange + '40',
+      borderLeftColor: theme.colors.primary
     },
     cardContent: {
       paddingVertical: 14,
       paddingHorizontal: 16,
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center'
     },
     cardText: {
       flex: 1,
-      paddingRight: 8,
+      paddingRight: 8
     },
     name: {
-      fontWeight: "600",
-      color: theme.colors.primary,
+      fontWeight: '600',
+      color: theme.colors.primary
     },
     meta: {
       marginTop: 4,
       fontSize: 13,
-      color: theme.colors.textSecondary,
+      color: theme.colors.textSecondary
     },
     metaLabel: {
-      fontWeight: platform.isWeb ? "500" : "600",
-      color: theme.colors.textSecondary,
+      fontWeight: platform.isWeb ? '500' : '600',
+      color: theme.colors.textSecondary
     },
     genderBadge: {
       borderWidth: 1,
       borderColor: theme.colors.softOrange,
       paddingHorizontal: 10,
       paddingVertical: 4,
-      borderRadius: 12,
+      borderRadius: 12
     },
     genderText: {
       fontSize: 12,
-      fontWeight: "500",
-      color: theme.colors.darkOrange,
+      fontWeight: '500',
+      color: theme.colors.darkOrange
     },
     pageText: {
       marginHorizontal: 2,
-      fontWeight: "500",
+      fontWeight: '500',
       color: theme.colors.primary,
-      fontSize: 13,
+      fontSize: 13
     },
     transitionOverlay: {
       ...StyleSheet.absoluteFillObject,
       backgroundColor: theme.colors.white,
-      justifyContent: "center",
-      alignItems: "center",
-      zIndex: 999,
+      justifyContent: 'center',
+      alignItems: 'center',
+      zIndex: 999
     },
     mergedSearchWrapper: {
-      width: "100%",
-      position: "relative",
+      width: '100%',
+      position: 'relative'
     },
     mergedSearchInput: {
       backgroundColor: theme.colors.white,
-      borderRadius: 12,
+      borderRadius: 12
     },
     dropdownInsideInput: {
-      position: "absolute",
+      position: 'absolute',
       right: 8,
       top: 6,
       width: 130,
-      height: 36,
+      height: 36
     },
     emptyContainer: {
-      alignItems: "center",
-      justifyContent: "center",
-      paddingVertical: 30,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: 30
     },
     emptyText: {
       marginTop: 6,
       fontSize: 14,
       color: theme.colors.textSecondary,
-      textAlign: "center",
-    },
+      textAlign: 'center'
+    }
   });

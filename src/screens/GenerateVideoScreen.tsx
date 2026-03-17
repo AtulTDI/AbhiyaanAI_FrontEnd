@@ -1,23 +1,20 @@
-import React, { useCallback, useState } from "react";
-import { View, StyleSheet, Dimensions } from "react-native";
-import { Surface, Text, Button, useTheme } from "react-native-paper";
-import { useTranslation } from "react-i18next";
-import { useFocusEffect } from "@react-navigation/native";
-import { Ionicons } from "@expo/vector-icons";
-import ResponsiveKeyboardView from "../components/ResponsiveKeyboardView";
-import SelectBaseVideo from "../components/SelectBaseVideo";
-import SelectVoters from "../components/SelectVoters";
-import { useToast } from "../components/ToastProvider";
-import { navigate } from "../navigation/NavigationService";
-import { getAuthData } from "../utils/storage";
-import { extractErrorMessage } from "../utils/common";
-import { joinGroups, startConnection } from "../services/signalrService";
-import { usePlatformInfo } from "../hooks/usePlatformInfo";
-import {
-  generateCustomisedVideo,
-  getInProgressVideoCount,
-} from "../api/videoApi";
-import { AppTheme } from "../theme";
+import React, { useCallback, useState } from 'react';
+import { View, StyleSheet, Dimensions } from 'react-native';
+import { Surface, Text, Button, useTheme } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
+import { useFocusEffect } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
+import ResponsiveKeyboardView from '../components/ResponsiveKeyboardView';
+import SelectBaseVideo from '../components/SelectBaseVideo';
+import SelectVoters from '../components/SelectVoters';
+import { useToast } from '../components/ToastProvider';
+import { navigate } from '../navigation/NavigationService';
+import { getAuthData } from '../utils/storage';
+import { extractErrorMessage } from '../utils/common';
+import { joinGroups, startConnection } from '../services/signalrService';
+import { usePlatformInfo } from '../hooks/usePlatformInfo';
+import { generateCustomisedVideo, getInProgressVideoCount } from '../api/videoApi';
+import { AppTheme } from '../theme';
 
 export default function GenerateVideoScreen() {
   const { isWeb, isMobileWeb } = usePlatformInfo();
@@ -30,13 +27,13 @@ export default function GenerateVideoScreen() {
   const { showToast } = useToast();
   const [stepData, setStepData] = useState({
     0: null,
-    1: [],
+    1: []
   });
   const [isLoading, setIsLoading] = useState(false);
   const [showOverlay, setShowOverlay] = useState(false);
   const [totalVoterCount, setTotalVoterCount] = useState(0);
   const [selectedVoterCount, setSelectedVoterCount] = useState(0);
-  const steps = [t("selectBaseVideo"), t("selectVoters")];
+  const steps = [t('selectBaseVideo'), t('selectVoters')];
 
   useFocusEffect(
     useCallback(() => {
@@ -73,18 +70,15 @@ export default function GenerateVideoScreen() {
     const payload = {
       baseVideoId: stepData[0],
       recipientIds: allVotersSelected ? [] : stepData[1],
-      isSelectAllClicked: allVotersSelected ? allVotersSelected : undefined,
+      isSelectAllClicked: allVotersSelected ? allVotersSelected : undefined
     };
 
     try {
       await generateCustomisedVideo(payload);
-      showToast(t("video.generateVideoStart"), "success");
-      navigate("Processing");
+      showToast(t('video.generateVideoStart'), 'success');
+      navigate('Processing');
     } catch (error: any) {
-      showToast(
-        extractErrorMessage(error, t("video.generateVideoFail")),
-        "error"
-      );
+      showToast(extractErrorMessage(error, t('video.generateVideoFail')), 'error');
     } finally {
       setIsLoading(false);
     }
@@ -100,7 +94,7 @@ export default function GenerateVideoScreen() {
 
   const handleGenerate = async () => {
     if (!stepData[1] || stepData[1].length === 0) {
-      showToast(t("voter.selectOneVoter"), "warning");
+      showToast(t('voter.selectOneVoter'), 'warning');
       return;
     }
 
@@ -128,9 +122,7 @@ export default function GenerateVideoScreen() {
   const renderStepContent = () => {
     switch (activeStep) {
       case 0:
-        return (
-          <SelectBaseVideo stepData={stepData} setStepData={setStepData} />
-        );
+        return <SelectBaseVideo stepData={stepData} setStepData={setStepData} />;
       case 1:
         return (
           <SelectVoters
@@ -163,14 +155,14 @@ export default function GenerateVideoScreen() {
                       backgroundColor: isCompleted
                         ? colors.success
                         : isActive
-                        ? colors.primary
-                        : colors.background,
+                          ? colors.primary
+                          : colors.background,
                       borderColor: isCompleted
                         ? colors.success
                         : isActive
-                        ? colors.primary
-                        : colors.background,
-                    },
+                          ? colors.primary
+                          : colors.background
+                    }
                   ]}
                 >
                   {isCompleted ? (
@@ -179,7 +171,7 @@ export default function GenerateVideoScreen() {
                     <Text
                       style={{
                         color: isActive ? colors.white : colors.outline,
-                        fontWeight: "bold",
+                        fontWeight: 'bold'
                       }}
                     >
                       {index + 1}
@@ -190,17 +182,15 @@ export default function GenerateVideoScreen() {
                   style={{
                     marginTop: 6,
                     fontSize: 14,
-                    textAlign: "center",
+                    textAlign: 'center',
                     color: isActive ? colors.primary : colors.outline,
-                    fontWeight: isActive ? "bold" : "normal",
+                    fontWeight: isActive ? 'bold' : 'normal'
                   }}
                 >
                   {label}
                 </Text>
 
-                {index < steps.length - 1 && (
-                  <View style={styles.lineConnector} />
-                )}
+                {index < steps.length - 1 && <View style={styles.lineConnector} />}
               </View>
             );
           })}
@@ -211,7 +201,7 @@ export default function GenerateVideoScreen() {
           <Surface
             style={[
               styles.countContainer,
-              { marginTop: isWeb && !isMobileWeb ? -15 : 10 },
+              { marginTop: isWeb && !isMobileWeb ? -15 : 10 }
             ]}
           >
             <Ionicons
@@ -221,19 +211,16 @@ export default function GenerateVideoScreen() {
               style={{ marginRight: isWeb && !isMobileWeb ? 10 : 6 }}
             />
             <Text
-              style={[
-                styles.countText,
-                { fontSize: isWeb && !isMobileWeb ? 16 : 12 },
-              ]}
+              style={[styles.countText, { fontSize: isWeb && !isMobileWeb ? 16 : 12 }]}
             >
-              {t("selected")}:{" "}
+              {t('selected')}:{' '}
               <Text
                 style={[
                   styles.countHighlight,
-                  { fontSize: isWeb && !isMobileWeb ? 16 : 12 },
+                  { fontSize: isWeb && !isMobileWeb ? 16 : 12 }
                 ]}
               >
-                {selectedVoterCount} /{" "}
+                {selectedVoterCount} /{' '}
               </Text>
               {totalVoterCount}
             </Text>
@@ -241,9 +228,7 @@ export default function GenerateVideoScreen() {
         )}
 
         {/* Step Content */}
-        <View
-          style={[styles.content, { marginTop: activeStep === 1 ? 0 : 10 }]}
-        >
+        <View style={[styles.content, { marginTop: activeStep === 1 ? 0 : 10 }]}>
           {renderStepContent()}
         </View>
 
@@ -257,7 +242,7 @@ export default function GenerateVideoScreen() {
               disabled={isLoading}
               style={styles.selectAllBtn}
             >
-              {t("video.generateAllVideos")}
+              {t('video.generateAllVideos')}
             </Button>
           </View>
         )}
@@ -269,26 +254,22 @@ export default function GenerateVideoScreen() {
             disabled={activeStep === 0}
             style={styles.btn}
           >
-            {t("previous")}
+            {t('previous')}
           </Button>
           <Button
             mode="contained"
-            onPress={
-              activeStep === steps.length - 1 ? handleGenerate : handleNext
-            }
+            onPress={activeStep === steps.length - 1 ? handleGenerate : handleNext}
             loading={isLoading}
             disabled={
-              !stepData[0] ||
-              (activeStep === 1 && stepData[1].length === 0) ||
-              isLoading
+              !stepData[0] || (activeStep === 1 && stepData[1].length === 0) || isLoading
             }
             style={styles.btn}
           >
             {activeStep === steps.length - 1
               ? isLoading
-                ? t("video.generating")
-                : t("video.generateVideo")
-              : t("next")}
+                ? t('video.generating')
+                : t('video.generateVideo')
+              : t('next')}
           </Button>
           {isWeb && !isMobileWeb && activeStep === steps.length - 1 && (
             <Button
@@ -298,7 +279,7 @@ export default function GenerateVideoScreen() {
               disabled={isLoading}
               style={styles.btn}
             >
-              {t("video.generateAllVideos")}
+              {t('video.generateAllVideos')}
             </Button>
           )}
         </View>
@@ -314,13 +295,13 @@ export default function GenerateVideoScreen() {
                 style={{ marginBottom: 20, opacity: 0.85 }}
               />
               <Text style={styles.overlayMessageTitle}>
-                {t("video.processingProgress")}
+                {t('video.processingProgress')}
               </Text>
               <Text style={styles.overlayMessageText}>
-                {t("video.videoGenerationProgress")}
+                {t('video.videoGenerationProgress')}
               </Text>
               <Text style={styles.overlayMessageText}>
-                {t("video.waitForCompletion")}
+                {t('video.waitForCompletion')}
               </Text>
             </View>
           </View>
@@ -338,107 +319,107 @@ const createStyles = (
     container: {
       padding: 16,
       flex: 1,
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.white
     },
     stepperContainer: {
-      flexDirection: "row",
-      justifyContent: "center",
-      alignItems: "flex-start",
-      position: "relative",
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'flex-start',
+      position: 'relative'
     },
     step: {
-      alignItems: "center",
-      flex: 1,
+      alignItems: 'center',
+      flex: 1
     },
     circle: {
       width: 32,
       height: 32,
       borderRadius: 16,
       borderWidth: 2,
-      justifyContent: "center",
-      alignItems: "center",
+      justifyContent: 'center',
+      alignItems: 'center'
     },
     lineConnector: {
-      position: "absolute",
+      position: 'absolute',
       top: 16,
-      right: -Dimensions.get("window").width / 6 + 16,
+      right: -Dimensions.get('window').width / 6 + 16,
       height: 2,
-      width: Dimensions.get("window").width / 3 - 32,
+      width: Dimensions.get('window').width / 3 - 32,
       backgroundColor: theme.colors.borderGray,
-      zIndex: -1,
+      zIndex: -1
     },
     content: {
-      flex: 1,
+      flex: 1
     },
     buttons: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      marginTop: 20,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginTop: 20
     },
     selectAllBtn: {
       marginTop: 15,
       marginHorizontal: 6,
-      borderRadius: 8,
+      borderRadius: 8
     },
     btn: {
       flex: 1,
       marginHorizontal: 6,
-      borderRadius: 8,
+      borderRadius: 8
     },
     overlay: {
-      position: "absolute",
+      position: 'absolute',
       top: 0,
       left: 0,
       right: 0,
       bottom: 0,
-      backgroundColor: "rgba(0,0,0,0.6)",
-      justifyContent: "center",
-      alignItems: "center",
+      backgroundColor: 'rgba(0,0,0,0.6)',
+      justifyContent: 'center',
+      alignItems: 'center',
       zIndex: 10,
-      paddingHorizontal: 20,
+      paddingHorizontal: 20
     },
     overlayMessageContainer: {
       backgroundColor: theme.colors.white,
       borderRadius: 20,
       paddingVertical: 30,
       paddingHorizontal: 25,
-      width: platform.isWeb && !platform.isMobileWeb ? "50%" : "100%",
-      alignItems: "center",
+      width: platform.isWeb && !platform.isMobileWeb ? '50%' : '100%',
+      alignItems: 'center',
       shadowColor: theme.colors.black,
       shadowOffset: { width: 0, height: 6 },
       shadowOpacity: 0.25,
       shadowRadius: 12,
-      elevation: 12,
+      elevation: 12
     },
     overlayMessageTitle: {
       fontSize: 20,
-      fontWeight: "700",
+      fontWeight: '700',
       color: theme.colors.primary,
       marginBottom: 12,
-      textAlign: "center",
+      textAlign: 'center'
     },
     overlayMessageText: {
       fontSize: 16,
       color: theme.colors.darkGrayText,
-      textAlign: "center",
+      textAlign: 'center',
       marginBottom: 6,
-      lineHeight: 22,
+      lineHeight: 22
     },
     countContainer: {
-      flexDirection: "row",
-      alignItems: "center",
-      alignSelf: "center",
+      flexDirection: 'row',
+      alignItems: 'center',
+      alignSelf: 'center',
       paddingVertical: 8,
       paddingHorizontal: 14,
       borderRadius: 12,
-      backgroundColor: theme.colors.background,
+      backgroundColor: theme.colors.background
     },
     countText: {
       fontSize: 14,
-      color: theme.colors.textPrimary,
+      color: theme.colors.textPrimary
     },
     countHighlight: {
-      fontWeight: "700",
-      color: theme.colors.textPrimary,
-    },
+      fontWeight: '700',
+      color: theme.colors.textPrimary
+    }
   });

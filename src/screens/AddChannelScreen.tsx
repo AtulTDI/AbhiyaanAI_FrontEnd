@@ -1,21 +1,21 @@
-import React, { useState, useCallback } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
-import { Button, Text } from "react-native-paper";
-import { useTheme } from "react-native-paper";
-import { useFocusEffect } from "@react-navigation/native";
+import React, { useState, useCallback } from 'react';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { Button, Text } from 'react-native-paper';
+import { useTheme } from 'react-native-paper';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   createChannel,
   deleteChannelById,
   getAllChannels,
-  updateChannelSetting,
-} from "../api/channelApi";
-import { Channel } from "../types/Channel";
-import { useToast } from "../components/ToastProvider";
-import ChannelsTable from "../components/ChannelsTable";
-import CreateChannelForm from "../components/ChannelForm";
-import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
-import { extractErrorMessage, sortByDateDesc } from "../utils/common";
-import { AppTheme } from "../theme";
+  updateChannelSetting
+} from '../api/channelApi';
+import { Channel } from '../types/Channel';
+import { useToast } from '../components/ToastProvider';
+import ChannelsTable from '../components/ChannelsTable';
+import CreateChannelForm from '../components/ChannelForm';
+import DeleteConfirmationDialog from '../components/DeleteConfirmationDialog';
+import { extractErrorMessage, sortByDateDesc } from '../utils/common';
+import { AppTheme } from '../theme';
 
 export default function AddChannelScreen() {
   const theme = useTheme<AppTheme>();
@@ -25,9 +25,7 @@ export default function AddChannelScreen() {
   const [channels, setChannels] = useState([]);
   const [showAddChannelView, setShowAddChannelView] = useState(false);
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
-  const [selectedChannelId, setSelectedChannelId] = useState<string | null>(
-    null
-  );
+  const [selectedChannelId, setSelectedChannelId] = useState<string | null>(null);
   const [channelToEdit, setChannelToEdit] = useState<Channel | null>(null);
   const [formSubmitLoading, setFormSubmitLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -35,10 +33,10 @@ export default function AddChannelScreen() {
   const fetchChannels = useCallback(async () => {
     try {
       const response = await getAllChannels();
-      const sortedChannels = sortByDateDesc(response?.data || [], "createdAt");
+      const sortedChannels = sortByDateDesc(response?.data || [], 'createdAt');
       setChannels(sortedChannels);
     } catch (error) {
-      showToast("Failed to load channels", "error");
+      showToast('Failed to load channels', 'error');
     }
   }, []);
 
@@ -58,9 +56,9 @@ export default function AddChannelScreen() {
       await fetchChannels();
       setShowAddChannelView(false);
       setChannelToEdit(null);
-      showToast("Channel added successfully", "success");
+      showToast('Channel added successfully', 'success');
     } catch {
-      showToast("Failed to add channel", "error");
+      showToast('Failed to add channel', 'error');
       setFormSubmitLoading(false);
     }
   };
@@ -69,12 +67,9 @@ export default function AddChannelScreen() {
     try {
       await updateChannelSetting(id);
       await fetchChannels();
-      showToast("Channel updated", "success");
+      showToast('Channel updated', 'success');
     } catch (error: any) {
-      showToast(
-        extractErrorMessage(error, "Failed to update channel"),
-        "error"
-      );
+      showToast(extractErrorMessage(error, 'Failed to update channel'), 'error');
     }
   };
 
@@ -89,12 +84,9 @@ export default function AddChannelScreen() {
         setDeleteLoading(true);
         await deleteChannelById(selectedChannelId);
         await fetchChannels();
-        showToast("Channel deleted successfully!", "success");
+        showToast('Channel deleted successfully!', 'success');
       } catch (error: any) {
-        showToast(
-          extractErrorMessage(error, "Failed to delete channel"),
-          "error"
-        );
+        showToast(extractErrorMessage(error, 'Failed to delete channel'), 'error');
       } finally {
         setDeleteLoading(false);
       }
@@ -112,8 +104,8 @@ export default function AddChannelScreen() {
             style={[styles.heading, { color: theme.colors.primary }]}
           >
             {showAddChannelView
-              ? `${channelToEdit ? "Edit" : "Add"} Channel`
-              : "Channels"}
+              ? `${channelToEdit ? 'Edit' : 'Add'} Channel`
+              : 'Channels'}
           </Text>
           {!showAddChannelView && (
             <Button
@@ -121,9 +113,9 @@ export default function AddChannelScreen() {
               onPress={() => setShowAddChannelView(true)}
               icon="plus"
               labelStyle={{
-                fontWeight: "bold",
+                fontWeight: 'bold',
                 fontSize: 14,
-                color: theme.colors.onPrimary,
+                color: theme.colors.onPrimary
               }}
               buttonColor={theme.colors.primary}
               style={{ borderRadius: 5 }}
@@ -166,15 +158,15 @@ const createStyles = (theme: AppTheme) =>
     container: {
       padding: 16,
       backgroundColor: theme.colors.white,
-      flexGrow: 1,
+      flexGrow: 1
     },
     heading: {
-      fontWeight: "bold",
+      fontWeight: 'bold'
     },
     header: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-      marginBottom: 16,
-    },
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 16
+    }
   });

@@ -1,12 +1,12 @@
-import React from "react";
-import { Text, useTheme } from "react-native-paper";
-import { useTranslation } from "react-i18next";
-import { Ionicons } from "@expo/vector-icons";
-import dayjs from "dayjs";
-import { Voice } from "../types/Voice";
-import CommonTable from "./CommonTable";
-import { AppTheme } from "../theme";
-import { StyleSheet, View } from "react-native";
+import React from 'react';
+import { Text, useTheme } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
+import { Ionicons } from '@expo/vector-icons';
+import dayjs from 'dayjs';
+import { Voice } from '../types/Voice';
+import CommonTable from './CommonTable';
+import { AppTheme } from '../theme';
+import { StyleSheet, View } from 'react-native';
 
 type Props = {
   data: Voice[];
@@ -27,7 +27,7 @@ export default function PremiumVoicesTable({
   loading,
   onPageChange,
   onRowsPerPageChange,
-  onDelete,
+  onDelete
 }: Props) {
   const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
@@ -35,33 +35,31 @@ export default function PremiumVoicesTable({
 
   const columns = [
     {
-      label: t("id"),
-      key: "voiceId",
-      flex: 0.4,
+      label: t('id'),
+      key: 'voiceId',
+      flex: 0.4
     },
     {
-      label: t("application.singular"),
-      key: "applicationName",
-      flex: 0.4,
+      label: t('application.singular'),
+      key: 'applicationName',
+      flex: 0.4
     },
     {
-      label: t("campaign"),
-      key: "campaignName",
-      flex: 0.4,
+      label: t('campaign'),
+      key: 'campaignName',
+      flex: 0.4
     },
     {
-      label: t("voice.lastCampaignRunDate"),
-      key: "lastCampaignRunDate",
+      label: t('voice.lastCampaignRunDate'),
+      key: 'lastCampaignRunDate',
       flex: 0.3,
       render: (item: Voice) => (
-        <Text>
-          {dayjs(item.lastCampaignRunDate).format("DD MMM YYYY, hh:mm A")}
-        </Text>
-      ),
+        <Text>{dayjs(item.lastCampaignRunDate).format('DD MMM YYYY, hh:mm A')}</Text>
+      )
     },
     {
-      label: t("actions"),
-      key: "actions",
+      label: t('actions'),
+      key: 'actions',
       flex: 0.9,
       smallColumn: true,
       render: (item: Voice) => (
@@ -73,8 +71,8 @@ export default function PremiumVoicesTable({
             onPress={() => onDelete(item.voiceId)}
           />
         </View>
-      ),
-    },
+      )
+    }
   ];
 
   return (
@@ -82,10 +80,8 @@ export default function PremiumVoicesTable({
       data={data}
       columns={columns}
       loading={loading}
-      emptyIcon={
-        <Ionicons name="radio-outline" size={48} color={colors.disabledText} />
-      }
-      emptyText={t("voice.noData")}
+      emptyIcon={<Ionicons name="radio-outline" size={48} color={colors.disabledText} />}
+      emptyText={t('voice.noData')}
       page={page}
       rowsPerPage={rowsPerPage}
       totalCount={totalCount}
@@ -97,9 +93,9 @@ export default function PremiumVoicesTable({
 
 const styles = StyleSheet.create({
   actions: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 5,
-    marginLeft: 18,
-  },
+    marginLeft: 18
+  }
 });

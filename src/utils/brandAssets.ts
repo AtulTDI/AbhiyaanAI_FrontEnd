@@ -1,5 +1,5 @@
-import { ImageSourcePropType } from "react-native";
-import Constants from "expo-constants";
+import { ImageSourcePropType } from 'react-native';
+import Constants from 'expo-constants';
 
 const { BRAND } = Constants.expoConfig?.extra;
 
@@ -9,14 +9,14 @@ type BrandAssets = {
 
 const brandAssetsMap: Record<string, BrandAssets> = {
   abhiyan: {
-    icon: require("../../assets/abhiyan/icon.png"),
+    icon: require('../../assets/abhiyan/icon.png')
   },
   rajyog: {
-    icon: require("../../assets/rajyog/icon.png"),
+    icon: require('../../assets/rajyog/icon.png')
   },
   default: {
-    icon: require("../../assets/abhiyan/icon.png"),
-  },
+    icon: require('../../assets/abhiyan/icon.png')
+  }
 };
 
 export const getBrandAssets = (): BrandAssets => {

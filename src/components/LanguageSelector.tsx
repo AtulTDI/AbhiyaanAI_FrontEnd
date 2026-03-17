@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,16 +8,16 @@ import {
   Animated,
   Modal,
   Platform,
-  Pressable,
-} from "react-native";
-import { useTheme } from "react-native-paper";
-import i18n from "../../i18n";
-import { AppTheme } from "../theme";
+  Pressable
+} from 'react-native';
+import { useTheme } from 'react-native-paper';
+import i18n from '../../i18n';
+import { AppTheme } from '../theme';
 
 const languages = [
-  { code: "en", label: "English" },
-  { code: "hi", label: "हिन्दी" },
-  { code: "mr", label: "मराठी" },
+  { code: 'en', label: 'English' },
+  { code: 'hi', label: 'हिन्दी' },
+  { code: 'mr', label: 'मराठी' }
 ];
 
 export default function LanguageSelector() {
@@ -42,15 +42,15 @@ export default function LanguageSelector() {
     const handleLangChanged = () => {
       setCurrentLang(i18n.language);
     };
-    i18n.on("languageChanged", handleLangChanged);
+    i18n.on('languageChanged', handleLangChanged);
     return () => {
-      i18n.off("languageChanged", handleLangChanged);
+      i18n.off('languageChanged', handleLangChanged);
     };
   }, []);
 
   useEffect(() => {
     if (dropdownOpen && selectBoxRef.current) {
-      if (Platform.OS === "web") {
+      if (Platform.OS === 'web') {
         const domNode = selectBoxRef.current as any;
         if (domNode?.getBoundingClientRect) {
           const rect = domNode.getBoundingClientRect();
@@ -58,7 +58,7 @@ export default function LanguageSelector() {
             x: rect.left,
             y: rect.top,
             w: rect.width,
-            h: rect.height,
+            h: rect.height
           });
         }
       } else {
@@ -74,13 +74,13 @@ export default function LanguageSelector() {
       Animated.timing(fadeAnim, {
         toValue: dropdownOpen ? 1 : 0,
         duration: dropdownOpen ? 150 : 120,
-        useNativeDriver: true,
+        useNativeDriver: true
       }),
       Animated.timing(slideAnim, {
         toValue: dropdownOpen ? 0 : -8,
         duration: dropdownOpen ? 150 : 120,
-        useNativeDriver: true,
-      }),
+        useNativeDriver: true
+      })
     ]).start();
   }, [dropdownOpen]);
 
@@ -103,15 +103,13 @@ export default function LanguageSelector() {
           style={[
             styles.selectedText,
             {
-              color: dropdownOpen
-                ? theme.colors.textPrimary
-                : theme.colors.primaryDark,
-            },
+              color: dropdownOpen ? theme.colors.textPrimary : theme.colors.primaryDark
+            }
           ]}
         >
           {currentLabel}
         </Text>
-        <Text style={styles.arrow}>{dropdownOpen ? "▲" : "▼"}</Text>
+        <Text style={styles.arrow}>{dropdownOpen ? '▲' : '▼'}</Text>
       </TouchableOpacity>
 
       <Modal
@@ -120,10 +118,7 @@ export default function LanguageSelector() {
         animationType="none"
         onRequestClose={() => setDropdownOpen(false)}
       >
-        <Pressable
-          style={styles.overlay}
-          onPress={() => setDropdownOpen(false)}
-        >
+        <Pressable style={styles.overlay} onPress={() => setDropdownOpen(false)}>
           {position && (
             <Animated.View
               style={[
@@ -133,8 +128,8 @@ export default function LanguageSelector() {
                   left: position.x,
                   width: position.w,
                   opacity: fadeAnim,
-                  transform: [{ translateY: slideAnim }],
-                },
+                  transform: [{ translateY: slideAnim }]
+                }
               ]}
             >
               <FlatList
@@ -144,7 +139,7 @@ export default function LanguageSelector() {
                   <TouchableOpacity
                     style={[
                       styles.dropdownItem,
-                      currentLang === item.code && styles.selectedItem,
+                      currentLang === item.code && styles.selectedItem
                     ]}
                     onPress={() => switchLanguage(item.code)}
                     activeOpacity={0.6}
@@ -152,7 +147,7 @@ export default function LanguageSelector() {
                     <Text
                       style={[
                         styles.itemText,
-                        currentLang === item.code && styles.selectedItemText,
+                        currentLang === item.code && styles.selectedItemText
                       ]}
                     >
                       {item.label}
@@ -172,9 +167,9 @@ const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
     wrapper: { width: 120 },
     selectBox: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
       borderWidth: 1,
       borderColor: theme.colors.primaryDark,
       borderRadius: 6,
@@ -182,39 +177,39 @@ const createStyles = (theme: AppTheme) =>
       paddingHorizontal: 8,
       backgroundColor: theme.colors.white,
       elevation: 2,
-      shadowColor: "#000",
+      shadowColor: '#000',
       shadowOpacity: 0.08,
       shadowOffset: { width: 0, height: 1 },
       shadowRadius: 3,
-      cursor: "pointer",
+      cursor: 'pointer'
     },
-    selectedText: { fontSize: 13, fontWeight: "600" },
+    selectedText: { fontSize: 13, fontWeight: '600' },
     arrow: { fontSize: 11, color: theme.colors.primaryDark },
-    overlay: { flex: 1, backgroundColor: "transparent" },
+    overlay: { flex: 1, backgroundColor: 'transparent' },
     dropdown: {
-      position: "absolute",
+      position: 'absolute',
       borderWidth: 1,
       borderColor: theme.colors.primaryDark,
       borderRadius: 6,
       backgroundColor: theme.colors.white,
       maxHeight: 120,
-      overflow: "hidden",
+      overflow: 'hidden',
       elevation: 3,
-      shadowColor: "#000",
+      shadowColor: '#000',
       shadowOpacity: 0.12,
       shadowOffset: { width: 0, height: 2 },
       shadowRadius: 4,
       zIndex: 1000,
-      cursor: "pointer"
+      cursor: 'pointer'
     },
     dropdownItem: {
       paddingVertical: 8,
       paddingHorizontal: 10,
       borderBottomColor: theme.colors.mutedBorder,
       borderBottomWidth: 1,
-      cursor: "pointer",
+      cursor: 'pointer'
     },
     selectedItem: { backgroundColor: theme.colors.primaryLight },
     itemText: { fontSize: 13, color: theme.colors.textPrimary },
-    selectedItemText: { fontWeight: "700", color: theme.colors.primaryDark },
+    selectedItemText: { fontWeight: '700', color: theme.colors.primaryDark }
   });

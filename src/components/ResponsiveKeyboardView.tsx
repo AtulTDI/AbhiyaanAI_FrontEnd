@@ -1,7 +1,7 @@
-import React from "react";
-import { View, StyleSheet } from "react-native";
-import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import { usePlatformInfo } from "../hooks/usePlatformInfo";
+import React from 'react';
+import { View, StyleSheet } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { usePlatformInfo } from '../hooks/usePlatformInfo';
 
 type Props = {
   children: React.ReactNode;
@@ -14,7 +14,7 @@ export default function ResponsiveKeyboardView({
   children,
   style,
   contentContainerStyle,
-  extraScrollHeight = 60,
+  extraScrollHeight = 60
 }: Props) {
   const { isMobileApp } = usePlatformInfo();
 
@@ -36,5 +36,5 @@ export default function ResponsiveKeyboardView({
 }
 
 const styles = StyleSheet.create({
-  flexGrow: { flexGrow: 1 },
+  flexGrow: { flexGrow: 1 }
 });

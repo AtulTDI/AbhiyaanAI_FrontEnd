@@ -10,7 +10,7 @@ export type Sender = {
   createdAt?: string;
   createdBy?: string;
   emailConfirmed?: boolean;
-}
+};
 
 export type GetPaginatedSenders = {
   items: Sender[];
@@ -18,14 +18,14 @@ export type GetPaginatedSenders = {
   pageSize: number;
   totalPages: number;
   totalRecords: number;
-} 
+};
 
 export type GetSendersResponse = {
   users: Sender[];
   total: number;
   page: number;
   pageSize: number;
-}
+};
 
 export type CreateSenderPayload = {
   firstName: string;
@@ -34,7 +34,7 @@ export type CreateSenderPayload = {
   password: string;
   phoneNumber: string;
   role: string;
-}
+};
 
 export type EditSenderPayload = {
   firstName: string;
@@ -44,4 +44,4 @@ export type EditSenderPayload = {
   phoneNumber?: string;
   applicationId?: string;
   role: string;
-}
+};

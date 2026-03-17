@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react";
-import { StyleSheet, Platform } from "react-native";
-import { Text, TextInput, Button, Card, useTheme } from "react-native-paper";
-import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import { useToast } from "./ToastProvider";
-import { forgotPasswordLink } from "../api/authApi";
-import { extractErrorMessage } from "../utils/common";
-import { AppTheme } from "../theme";
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Platform } from 'react-native';
+import { Text, TextInput, Button, Card, useTheme } from 'react-native-paper';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { useToast } from './ToastProvider';
+import { forgotPasswordLink } from '../api/authApi';
+import { extractErrorMessage } from '../utils/common';
+import { AppTheme } from '../theme';
 
 type ForgotPasswordProps = {
   authError: string;
@@ -13,35 +13,33 @@ type ForgotPasswordProps = {
   setShowSignInPage: (show: boolean) => void;
 };
 
-export default function ForgotPassword({
-  setShowSignInPage,
-}: ForgotPasswordProps) {
+export default function ForgotPassword({ setShowSignInPage }: ForgotPasswordProps) {
   const theme = useTheme<AppTheme>();
   const { showToast } = useToast();
   const { colors } = theme;
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (Platform.OS === "web") {
+    if (Platform.OS === 'web') {
       const handleKeyDown = (e: KeyboardEvent) => {
-        if (e.key === "Enter") {
+        if (e.key === 'Enter') {
           e.preventDefault();
           handleReset();
         }
       };
-      window.addEventListener("keydown", handleKeyDown);
-      return () => window.removeEventListener("keydown", handleKeyDown);
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
     }
   }, [email]);
 
   const handleReset = async () => {
-    if (!email) return showToast("Please enter your email", "info");
+    if (!email) return showToast('Please enter your email', 'info');
 
     try {
       setIsLoading(true);
       await forgotPasswordLink(email);
-      showToast(`Password reset link sent to ${email}`, "success");
+      showToast(`Password reset link sent to ${email}`, 'success');
     } catch (error: any) {
       showToast(extractErrorMessage(error));
     } finally {
@@ -51,7 +49,7 @@ export default function ForgotPassword({
 
   return (
     <KeyboardAwareScrollView
-      contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
+      contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}
       extraScrollHeight={50}
       enableOnAndroid
       keyboardShouldPersistTaps="handled"
@@ -61,15 +59,12 @@ export default function ForgotPassword({
           styles.card,
           {
             backgroundColor: colors.surface,
-            shadowColor: colors.shadow,
-          },
+            shadowColor: colors.shadow
+          }
         ]}
       >
         <Card.Content>
-          <Text
-            variant="titleLarge"
-            style={[styles.title, { color: colors.onSurface }]}
-          >
+          <Text variant="titleLarge" style={[styles.title, { color: colors.onSurface }]}>
             Forgot Password
           </Text>
 
@@ -115,22 +110,22 @@ export default function ForgotPassword({
 
 const styles = StyleSheet.create({
   card: {
-    width: "100%",
+    width: '100%',
     maxWidth: 400,
-    alignSelf: "center",
+    alignSelf: 'center',
     borderRadius: 12,
-    elevation: 4,
+    elevation: 4
   },
   title: {
-    textAlign: "center",
+    textAlign: 'center',
     marginBottom: 20,
-    fontWeight: "600",
+    fontWeight: '600'
   },
   input: {
-    marginBottom: 16,
+    marginBottom: 16
   },
   button: {
     borderRadius: 8,
-    marginBottom: 16,
-  },
+    marginBottom: 16
+  }
 });

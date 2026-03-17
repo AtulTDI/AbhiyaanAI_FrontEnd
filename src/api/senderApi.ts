@@ -1,28 +1,34 @@
-import axios from "./axiosInstance";
+import axios from './axiosInstance';
 import {
   Sender,
   CreateSenderPayload,
   EditSenderPayload,
-  GetPaginatedSenders,
-} from "../types/Sender";
+  GetPaginatedSenders
+} from '../types/Sender';
 
 /**
  * Get paginated senders with optional search
  */
 export const getSenders = (pageNumber, pageSize) =>
-  axios.get<GetPaginatedSenders>(`/Sender/getusersender?page=${pageNumber + 1}&pageSize=${pageSize}`, { useApiPrefix: true });
+  axios.get<GetPaginatedSenders>(
+    `/Sender/getusersender?page=${pageNumber + 1}&pageSize=${pageSize}`,
+    { useApiPrefix: true }
+  );
 
 /**
  * Get sender by ID
  */
 export const getSenderByUserId = (id: string, pageNumber, pageSize) =>
-  axios.get<GetPaginatedSenders>(`/Sender/getsenderbyuserid/${id}?page=${pageNumber + 1}&pageSize=${pageSize}`, { useApiPrefix: true });
+  axios.get<GetPaginatedSenders>(
+    `/Sender/getsenderbyuserid/${id}?page=${pageNumber + 1}&pageSize=${pageSize}`,
+    { useApiPrefix: true }
+  );
 
 /**
  * Add new sender
  */
 export const createSender = (payload: CreateSenderPayload) =>
-  axios.post<Sender>("/Sender/register", payload, { useApiPrefix: true });
+  axios.post<Sender>('/Sender/register', payload, { useApiPrefix: true });
 
 /**
  * Activate sender
@@ -34,7 +40,7 @@ export const activateSender = (id: string) =>
  * Get sender
  */
 export const getSenderVideos = () =>
-  axios.get<Sender>("/Sender/getcompletedaivideoswithuserid", { useApiPrefix: true });
+  axios.get<Sender>('/Sender/getcompletedaivideoswithuserid', { useApiPrefix: true });
 
 /**
  * Edit sender by ID

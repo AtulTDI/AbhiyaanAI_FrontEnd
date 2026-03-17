@@ -10,7 +10,8 @@ Before setting up the project, ensure the following tools are installed:
 
 ### ✅ Node.js & npm
 
-Download and install from: https://nodejs.org  
+Download and install from: https://nodejs.org
+
 > Use LTS version (18.x or higher recommended)
 
 Verify installation:
@@ -24,7 +25,7 @@ npm -v
 
 ### ✅ Git
 
-- **Windows**: https://git-scm.com/download/win  
+- **Windows**: https://git-scm.com/download/win
 - **macOS**: Pre-installed or install via [Homebrew](https://brew.sh)
 
 ---
@@ -79,17 +80,17 @@ Create the file if not already present:
 
 ```js
 // app.config.js
-import "dotenv/config";
+import 'dotenv/config';
 
 export default {
   expo: {
-    name: "AbhiyaanAI",
-    slug: "abhiyaanai",
-    version: "1.0.0",
+    name: 'AbhiyaanAI',
+    slug: 'abhiyaanai',
+    version: '1.0.0',
     extra: {
-      apiUrl: process.env.EXPO_PUBLIC_API_URL,
-    },
-  },
+      apiUrl: process.env.EXPO_PUBLIC_API_URL
+    }
+  }
 };
 ```
 
@@ -170,12 +171,12 @@ npx expo build:ios
 
 ## ✅ Compatibility Matrix
 
-| Feature                | macOS | Windows |
-|------------------------|-------|---------|
-| Android Emulator       | ✅    | ✅      |
-| iOS Simulator (Xcode)  | ✅    | ❌      |
-| Web Development        | ✅    | ✅      |
-| Expo Go Testing        | ✅    | ✅      |
+| Feature               | macOS | Windows |
+| --------------------- | ----- | ------- |
+| Android Emulator      | ✅    | ✅      |
+| iOS Simulator (Xcode) | ✅    | ❌      |
+| Web Development       | ✅    | ✅      |
+| Expo Go Testing       | ✅    | ✅      |
 
 ---
 
@@ -214,9 +215,7 @@ git push origin feature/my-feature
   `npx expo start -c`
 - **Environment variable not picked?** Ensure `app.config.js` uses `dotenv/config` and variables start with `EXPO_PUBLIC_`.
 
-
 =============================================================================
-
 
 ````markdown
 # React Native (Expo Prebuild) – Android Build & Debug Guide
@@ -225,16 +224,17 @@ git push origin feature/my-feature
 
 Make sure the following are installed and configured:
 
-- **Node.js** (LTS recommended)  
+- **Node.js** (LTS recommended)
 - **npm** or **yarn**
-- **Java JDK 17+**  
+- **Java JDK 17+**
   ```bash
   java -version
+  ```
 ````
 
-* **Android Studio** (with Android SDK, AVD Manager, and platform tools)
-* **Gradle** (comes with Android Studio, verify `./gradlew -v`)
-* **ADB (Android Debug Bridge)**
+- **Android Studio** (with Android SDK, AVD Manager, and platform tools)
+- **Gradle** (comes with Android Studio, verify `./gradlew -v`)
+- **ADB (Android Debug Bridge)**
 
   ```bash
   adb version
@@ -262,13 +262,13 @@ EXPO_PUBLIC_API=https://api.yourdomain.com
 EXPO_PUBLIC_ALT_API=https://alt-api.yourdomain.com
 ```
 
-* Metro/Debug build automatically uses `.env.development`
-* Release APK build uses `.env.production`
+- Metro/Debug build automatically uses `.env.development`
+- Release APK build uses `.env.production`
 
 If using **[react-native-dotenv](https://www.npmjs.com/package/react-native-dotenv)** or Expo’s built-in env loader, variables prefixed with `EXPO_PUBLIC_` will be available in your code via:
 
 ```ts
-process.env.EXPO_PUBLIC_API
+process.env.EXPO_PUBLIC_API;
 ```
 
 ---
@@ -294,8 +294,8 @@ process.env.EXPO_PUBLIC_API
    npx expo start
    ```
 
-   * Press `a` to launch on emulator.
-   * Bundler serves JS live.
+   - Press `a` to launch on emulator.
+   - Bundler serves JS live.
 
 ---
 
@@ -308,7 +308,7 @@ cd android
 ./gradlew assembleDebug
 ```
 
-* APK path:
+- APK path:
 
   ```
   android/app/build/outputs/apk/debug/app-debug.apk
@@ -389,7 +389,7 @@ adb install -r android/app/build/outputs/apk/debug/app-debug.apk
 
 ## 🐞 Debugging Tips
 
-* **View logs**:
+- **View logs**:
 
   ```bash
   adb logcat
@@ -401,13 +401,13 @@ adb install -r android/app/build/outputs/apk/debug/app-debug.apk
   adb logcat *:E ReactNative:V ReactNativeJS:V
   ```
 
-* **Clear Metro cache**:
+- **Clear Metro cache**:
 
   ```bash
   npx expo start -c
   ```
 
-* **Clean Gradle build**:
+- **Clean Gradle build**:
 
   ```bash
   cd android
@@ -418,27 +418,31 @@ adb install -r android/app/build/outputs/apk/debug/app-debug.apk
 
 ## ⚡ Quick Commands
 
-* Start Metro + run app:
+- Start Metro + run app:
 
   ```bash
   npx expo start
   ```
-* Build debug APK:
+
+- Build debug APK:
 
   ```bash
   cd android && ./gradlew assembleDebug
   ```
-* Build release APK:
+
+- Build release APK:
 
   ```bash
   cd android && ./gradlew assembleRelease
   ```
-* Install APK:
+
+- Install APK:
 
   ```bash
   adb install -r <path-to-apk>
   ```
-* List devices:
+
+- List devices:
 
   ```bash
   adb devices
@@ -449,4 +453,3 @@ adb install -r android/app/build/outputs/apk/debug/app-debug.apk
 ## 🎉 Happy Coding!
 
 Build. Iterate. Deploy.
-

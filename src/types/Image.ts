@@ -5,7 +5,7 @@ export type Image = {
   images?: string[];
   isShared?: boolean;
   createdAt: string;
-}
+};
 
 export type GetPaginatedImages = {
   items: Image[];
@@ -13,4 +13,4 @@ export type GetPaginatedImages = {
   pageSize: number;
   totalPages: number;
   totalRecords: number;
-}
+};

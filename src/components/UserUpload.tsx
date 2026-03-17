@@ -1,8 +1,8 @@
-import React from "react";
-import CommonUpload from "./CommonUpload";
-import { useToast } from "./ToastProvider";
-import { uploadUsers } from "../api/userApi";
-import { extractErrorMessage } from "../utils/common";
+import React from 'react';
+import CommonUpload from './CommonUpload';
+import { useToast } from './ToastProvider';
+import { uploadUsers } from '../api/userApi';
+import { extractErrorMessage } from '../utils/common';
 
 export default function UserUpload({ fetchUsers, setShowAddUserView }) {
   const { showToast } = useToast();
@@ -13,7 +13,7 @@ export default function UserUpload({ fetchUsers, setShowAddUserView }) {
       await fetchUsers();
       setShowAddUserView(false);
     } catch (error) {
-      showToast(extractErrorMessage(error, "Failed to add user"), "error");
+      showToast(extractErrorMessage(error, 'Failed to add user'), 'error');
     }
   };
 

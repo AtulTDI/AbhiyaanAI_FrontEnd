@@ -1,7 +1,7 @@
-import React from "react";
-import { StyleSheet, Text, View } from "react-native";
-import { Card } from "react-native-paper";
-import colors from "../constants/colors";
+import React from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+import { Card } from 'react-native-paper';
+import colors from '../constants/colors';
 
 const KPICard = ({ item, idx }) => {
   return (
@@ -26,25 +26,25 @@ const styles = StyleSheet.create({
     shadowColor: colors.primaryDark,
     shadowOpacity: 0.1,
     shadowRadius: 6,
-    shadowOffset: { width: 0, height: 3 },
+    shadowOffset: { width: 0, height: 3 }
   },
   cardContent: {
     paddingVertical: 18,
-    paddingHorizontal: 16,
+    paddingHorizontal: 16
   },
   kpiTitle: {
     fontSize: 15,
-    fontWeight: "600",
-    color: "#d97706",
+    fontWeight: '600',
+    color: '#d97706',
     marginBottom: 4,
-    textTransform: "uppercase",
-    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+    letterSpacing: 0.8
   },
   kpiValue: {
     fontSize: 26,
-    fontWeight: "700",
-    color: colors.primary,
-  },
+    fontWeight: '700',
+    color: colors.primary
+  }
 });
 
 export default KPICard;

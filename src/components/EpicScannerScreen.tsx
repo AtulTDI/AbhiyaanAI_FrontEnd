@@ -1,21 +1,21 @@
-import React, { useEffect, useRef, useState } from "react";
-import { View, Text, StyleSheet, Platform } from "react-native";
-import MlkitOcr from "react-native-mlkit-ocr";
-import { useNavigation } from "@react-navigation/native";
-import { triggerEpicScan } from "../utils/epicScannerListener";
+import React, { useEffect, useRef, useState } from 'react';
+import { View, Text, StyleSheet, Platform } from 'react-native';
+import MlkitOcr from 'react-native-mlkit-ocr';
+import { useNavigation } from '@react-navigation/native';
+import { triggerEpicScan } from '../utils/epicScannerListener';
 
 let Camera: any = null;
 let useCameraDevice: any = null;
 
-if (Platform.OS !== "web") {
-  const VisionCamera = require("react-native-vision-camera");
+if (Platform.OS !== 'web') {
+  const VisionCamera = require('react-native-vision-camera');
   Camera = VisionCamera.Camera;
   useCameraDevice = VisionCamera.useCameraDevice;
 }
 
 export default function EpicScannerScreen() {
   const navigation = useNavigation<any>();
-  const device = useCameraDevice("back");
+  const device = useCameraDevice('back');
   const cameraRef = useRef(null);
 
   const [hasPermission, setHasPermission] = useState(false);
@@ -25,7 +25,7 @@ export default function EpicScannerScreen() {
   useEffect(() => {
     (async () => {
       const status = await Camera.requestCameraPermission();
-      setHasPermission(status === "granted");
+      setHasPermission(status === 'granted');
     })();
   }, []);
 
@@ -44,36 +44,36 @@ export default function EpicScannerScreen() {
         return;
       }
 
-      console.log("📸 Capturing...");
+      console.log('📸 Capturing...');
       const photo = await cameraRef.current.takeSnapshot({
-        quality: 80,
+        quality: 80
       });
 
-      const uri = "file://" + photo.path;
-      console.log("📷 Path:", uri);
+      const uri = 'file://' + photo.path;
+      console.log('📷 Path:', uri);
 
       const result = await MlkitOcr.detectFromFile(uri);
-      console.log("🧠 OCR:", result);
+      console.log('🧠 OCR:', result);
 
       if (!result || result.length === 0) {
         setTimeout(scanOnce, 300);
         return;
       }
 
-      let text = result.map((b) => b.text).join(" ");
+      let text = result.map((b) => b.text).join(' ');
       text = text
         .toUpperCase()
-        .replace(/O/g, "0")
-        .replace(/I/g, "1")
-        .replace(/Z/g, "2")
-        .replace(/[^A-Z0-9]/g, "");
+        .replace(/O/g, '0')
+        .replace(/I/g, '1')
+        .replace(/Z/g, '2')
+        .replace(/[^A-Z0-9]/g, '');
 
-      console.log("🔎 CLEAN:", text);
+      console.log('🔎 CLEAN:', text);
 
       const match = text.match(/[A-Z]{3}[0-9]{7}/);
 
       if (match) {
-        console.log("✅ EPIC:", match[0]);
+        console.log('✅ EPIC:', match[0]);
         scanningRef.current = false;
         triggerEpicScan(match[0]);
         navigation.goBack();
@@ -82,14 +82,14 @@ export default function EpicScannerScreen() {
 
       setTimeout(scanOnce, 300);
     } catch (e) {
-      console.log("🔥 Scan error:", e);
+      console.log('🔥 Scan error:', e);
       setTimeout(scanOnce, 1000);
     }
   };
 
   useEffect(() => {
     if (cameraReady && hasPermission) {
-      console.log("🚀 Start scanning");
+      console.log('🚀 Start scanning');
       scanOnce();
     }
   }, [cameraReady, hasPermission]);
@@ -113,7 +113,7 @@ export default function EpicScannerScreen() {
         video={false}
         preview={true}
         onInitialized={() => {
-          console.log("📷 Camera ready");
+          console.log('📷 Camera ready');
           setCameraReady(true);
         }}
       />
@@ -122,5 +122,5 @@ export default function EpicScannerScreen() {
 }
 
 const styles = StyleSheet.create({
-  center: { flex: 1, justifyContent: "center", alignItems: "center" },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center' }
 });

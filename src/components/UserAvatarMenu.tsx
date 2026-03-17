@@ -1,9 +1,9 @@
-import React, { useState } from "react";
-import { TouchableOpacity, View } from "react-native";
-import { Avatar, Divider, Menu, Text, useTheme } from "react-native-paper";
-import { useTranslation } from "react-i18next";
-import { MaterialIcons } from "@expo/vector-icons";
-import { AppTheme } from "../theme";
+import React, { useState } from 'react';
+import { TouchableOpacity, View } from 'react-native';
+import { Avatar, Divider, Menu, Text, useTheme } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
+import { MaterialIcons } from '@expo/vector-icons';
+import { AppTheme } from '../theme';
 
 interface Props {
   userName: string;
@@ -12,19 +12,14 @@ interface Props {
   role: string;
 }
 
-const UserAvatarMenu: React.FC<Props> = ({
-  userName,
-  email,
-  applicationName,
-  role,
-}) => {
+const UserAvatarMenu: React.FC<Props> = ({ userName, email, applicationName, role }) => {
   const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
   const { colors } = theme;
   const [visible, setVisible] = useState(false);
 
   return (
-    <View style={{ position: "relative", alignItems: "flex-end" }}>
+    <View style={{ position: 'relative', alignItems: 'flex-end' }}>
       <Menu
         visible={visible}
         onDismiss={() => setVisible(false)}
@@ -35,11 +30,11 @@ const UserAvatarMenu: React.FC<Props> = ({
               size={38}
               style={{
                 backgroundColor: colors.primary,
-                elevation: 4,
+                elevation: 4
               }}
               labelStyle={{
                 color: colors.white,
-                fontWeight: "500",
+                fontWeight: '500'
               }}
             />
           </TouchableOpacity>
@@ -52,7 +47,7 @@ const UserAvatarMenu: React.FC<Props> = ({
           minWidth: 250,
           paddingTop: 0,
           paddingBottom: 8,
-          marginTop: 5,
+          marginTop: 5
         }}
       >
         {/* Name Header with Orange Background */}
@@ -62,14 +57,14 @@ const UserAvatarMenu: React.FC<Props> = ({
             paddingVertical: 12,
             paddingHorizontal: 16,
             borderTopLeftRadius: 12,
-            borderTopRightRadius: 12,
+            borderTopRightRadius: 12
           }}
         >
           <Text
             style={{
               fontSize: 16,
-              fontWeight: "700",
-              color: colors.darkOrange,
+              fontWeight: '700',
+              color: colors.darkOrange
             }}
           >
             {userName}
@@ -84,22 +79,18 @@ const UserAvatarMenu: React.FC<Props> = ({
             style={{
               fontSize: 12,
               color: colors.textSecondary,
-              marginBottom: 2,
+              marginBottom: 2
             }}
           >
-            {t("email")}
+            {t('email')}
           </Text>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
             <MaterialIcons name="email" size={16} color={colors.textTertiary} />
-            <Text style={{ fontSize: 14, color: colors.textPrimary }}>
-              {email}
-            </Text>
+            <Text style={{ fontSize: 14, color: colors.textPrimary }}>{email}</Text>
           </View>
         </View>
 
-        <Divider
-          style={{ backgroundColor: colors.divider, marginVertical: 4 }}
-        />
+        <Divider style={{ backgroundColor: colors.divider, marginVertical: 4 }} />
 
         {/* Application Name */}
         {applicationName && (
@@ -109,28 +100,20 @@ const UserAvatarMenu: React.FC<Props> = ({
                 style={{
                   fontSize: 12,
                   color: colors.textSecondary,
-                  marginBottom: 2,
+                  marginBottom: 2
                 }}
               >
-                {t("application.singular")}
+                {t('application.singular')}
               </Text>
-              <View
-                style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
-              >
-                <MaterialIcons
-                  name="apps"
-                  size={16}
-                  color={colors.textTertiary}
-                />
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <MaterialIcons name="apps" size={16} color={colors.textTertiary} />
                 <Text style={{ fontSize: 14, color: colors.textPrimary }}>
                   {applicationName}
                 </Text>
               </View>
             </View>
 
-            <Divider
-              style={{ backgroundColor: colors.divider, marginVertical: 4 }}
-            />
+            <Divider style={{ backgroundColor: colors.divider, marginVertical: 4 }} />
           </View>
         )}
 
@@ -140,23 +123,19 @@ const UserAvatarMenu: React.FC<Props> = ({
             style={{
               fontSize: 12,
               color: colors.textSecondary,
-              marginBottom: 2,
+              marginBottom: 2
             }}
           >
-            {t("roleLabel")}
+            {t('roleLabel')}
           </Text>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-            <MaterialIcons
-              name="person"
-              size={16}
-              color={colors.textTertiary}
-            />
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <MaterialIcons name="person" size={16} color={colors.textTertiary} />
             <Text
               style={{
                 fontSize: 14,
                 color: colors.textPrimary,
-                fontWeight: "600",
-                textTransform: "capitalize",
+                fontWeight: '600',
+                textTransform: 'capitalize'
               }}
             >
               {role}

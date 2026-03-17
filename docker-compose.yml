@@ -1,4 +1,4 @@
-version: "3.9"
+version: '3.9'
 
 services:
   # ---------- Development (Expo Metro + Nginx proxy) ----------
@@ -16,24 +16,24 @@ services:
       - .:/app
       - /app/node_modules
     ports:
-      - "8081:8081"
-      - "19000:19000"
-      - "19001:19001"
-      - "19002:19002"
-      - "19006:19006"
+      - '8081:8081'
+      - '19000:19000'
+      - '19001:19001'
+      - '19002:19002'
+      - '19006:19006'
     environment:
       - APP_ENV=development
-    profiles: ["dev"]
+    profiles: ['dev']
 
   nginx-dev:
     image: nginx:1.27-alpine
     volumes:
       - ./nginx.dev.conf:/etc/nginx/conf.d/default.conf
     ports:
-      - "80:80"
+      - '80:80'
     depends_on:
       - dev
-    profiles: ["dev"]
+    profiles: ['dev']
 
   # ---------- UAT ----------
   uat:
@@ -49,13 +49,13 @@ services:
     image: abhiyan_ai_frontend:latest
     container_name: abhiyanai_frontend_uat
     ports:
-      - "80:80"
+      - '80:80'
     environment:
       - APP_ENV=uat
     restart: always
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
-    profiles: ["uat"]
+    profiles: ['uat']
 
   # ---------- Demo ----------
   demo:
@@ -71,13 +71,13 @@ services:
     image: abhiyan_ai_frontend:latest
     container_name: abhiyanai_frontend_demo
     ports:
-      - "80:80"
+      - '80:80'
     environment:
       - APP_ENV=demo
     restart: always
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
-    profiles: ["demo"]
+    profiles: ['demo']
 
   # ---------- Production ----------
   prod:
@@ -93,10 +93,10 @@ services:
     image: abhiyan_ai_frontend:latest
     container_name: abhiyanai_frontend_prod
     ports:
-      - "80:80"
+      - '80:80'
     environment:
       - APP_ENV=production
     restart: always
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
-    profiles: ["prod"]
+    profiles: ['prod']

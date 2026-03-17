@@ -1,13 +1,13 @@
-import React, { useRef, useState, useEffect } from "react";
-import { useTranslation } from "react-i18next";
+import React, { useRef, useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   View,
   StyleSheet,
   Platform,
   Dimensions,
   Image,
-  TouchableOpacity,
-} from "react-native";
+  TouchableOpacity
+} from 'react-native';
 import {
   Text,
   TextInput,
@@ -18,15 +18,15 @@ import {
   Portal,
   Modal,
   IconButton,
-  Surface,
-} from "react-native-paper";
-import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import { Ionicons } from "@expo/vector-icons";
-import * as FileSystem from "expo-file-system";
-import { Image as ImageType } from "../types/Image";
-import { FixedLabel } from "./FixedLabel";
-import DeleteConfirmationDialog from "./DeleteConfirmationDialog";
-import { usePlatformInfo } from "../hooks/usePlatformInfo";
+  Surface
+} from 'react-native-paper';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { Ionicons } from '@expo/vector-icons';
+import * as FileSystem from 'expo-file-system';
+import { Image as ImageType } from '../types/Image';
+import { FixedLabel } from './FixedLabel';
+import DeleteConfirmationDialog from './DeleteConfirmationDialog';
+import { usePlatformInfo } from '../hooks/usePlatformInfo';
 
 type ImageAsset = {
   uri: string;
@@ -51,42 +51,36 @@ type Props = {
 };
 
 const MAX_IMAGES = 2;
-const INPUT_NATIVE_ID = "campaignMessageInput";
+const INPUT_NATIVE_ID = 'campaignMessageInput';
 
 export default function ImageUploadForm({
   onAddImage,
   uploading = false,
   setShowAddView,
   imageToEdit,
-  setImageToEdit,
+  setImageToEdit
 }: Props) {
   const { t } = useTranslation();
   const { isWeb, isMobileWeb } = usePlatformInfo();
   const theme = useTheme();
   const { colors } = theme as any;
   const styles = createStyles(theme, { isWeb, isMobileWeb });
-  const screenWidth = Dimensions.get("window").width;
+  const screenWidth = Dimensions.get('window').width;
 
-  const [campaign, setCampaign] = useState(
-    imageToEdit ? imageToEdit.campaignName : ""
-  );
-  const [message, setMessage] = useState(
-    imageToEdit ? imageToEdit.message ?? "" : ""
-  );
+  const [campaign, setCampaign] = useState(imageToEdit ? imageToEdit.campaignName : '');
+  const [message, setMessage] = useState(imageToEdit ? (imageToEdit.message ?? '') : '');
   const [messageEditorVisible, setMessageEditorVisible] = useState(false);
 
   const [images, setImages] = useState<ImageAsset[]>(() => {
     return imageToEdit
       ? imageToEdit.images.map((img) => ({
           uri: img,
-          locked: true,
+          locked: true
         }))
       : [];
   });
 
-  const [errors, setErrors] = useState<{ campaign?: string; images?: string }>(
-    {}
-  );
+  const [errors, setErrors] = useState<{ campaign?: string; images?: string }>({});
   const [viewerVisible, setViewerVisible] = useState(false);
   const [viewerIndex, setViewerIndex] = useState<number>(0);
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
@@ -104,28 +98,26 @@ export default function ImageUploadForm({
 
   // normalize pasted text (preserve markdown, emojis, internal whitespace)
   const normalizePastedText = (txt: string) => {
-    let normalized = txt.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+    let normalized = txt.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
     // trim only overall leading/trailing whitespace/newlines, preserve internal spacing
-    normalized = normalized.replace(/^\s+/, "").replace(/\s+$/, "");
+    normalized = normalized.replace(/^\s+/, '').replace(/\s+$/, '');
     return normalized;
   };
 
   // Web paste handling: capture text/plain when our input is focused
   useEffect(() => {
-    if (Platform.OS !== "web") return;
+    if (Platform.OS !== 'web') return;
 
     const handlePaste = (e: any) => {
       try {
         const clipboard = (e.clipboardData ??
           (window as any).clipboardData) as DataTransfer;
         if (!clipboard) return;
-        const plain = clipboard.getData("text/plain");
-        if (plain == null || plain === "") return;
+        const plain = clipboard.getData('text/plain');
+        if (plain == null || plain === '') return;
 
         const activeId =
-          (document.activeElement &&
-            (document.activeElement as HTMLElement).id) ||
-          "";
+          (document.activeElement && (document.activeElement as HTMLElement).id) || '';
         if (activeId === INPUT_NATIVE_ID) {
           e.preventDefault();
           setMessage(normalizePastedText(plain));
@@ -136,8 +128,8 @@ export default function ImageUploadForm({
       }
     };
 
-    document.addEventListener("paste", handlePaste);
-    return () => document.removeEventListener("paste", handlePaste);
+    document.addEventListener('paste', handlePaste);
+    return () => document.removeEventListener('paste', handlePaste);
   }, []);
 
   useEffect(() => {
@@ -152,11 +144,11 @@ export default function ImageUploadForm({
   const pickImageWeb = () => {
     let input = fileInputRef.current;
     if (!input) {
-      input = document.createElement("input");
-      input.type = "file";
-      input.accept = "image/*";
+      input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
       input.multiple = false;
-      input.style.display = "none";
+      input.style.display = 'none';
       input.onchange = () => {
         const file = input!.files && input!.files[0];
         if (!file) return;
@@ -170,8 +162,8 @@ export default function ImageUploadForm({
               size: file.size,
               type: file.type,
               file,
-              locked: false, // new user-selected image
-            },
+              locked: false // new user-selected image
+            }
           ];
           return next;
         });
@@ -181,7 +173,7 @@ export default function ImageUploadForm({
       fileInputRef.current = input;
     }
 
-    input.value = "";
+    input.value = '';
     input.click();
   };
 
@@ -194,12 +186,12 @@ export default function ImageUploadForm({
         return;
       }
 
-      let ImagePickerModule: typeof import("expo-image-picker") | null = null;
+      let ImagePickerModule: typeof import('expo-image-picker') | null = null;
       try {
-        ImagePickerModule = await import("expo-image-picker");
+        ImagePickerModule = await import('expo-image-picker');
       } catch (impErr) {
         console.warn(
-          "[pickImageNative] expo-image-picker dynamic import failed:",
+          '[pickImageNative] expo-image-picker dynamic import failed:',
           impErr
         );
       }
@@ -207,8 +199,8 @@ export default function ImageUploadForm({
       const ImagePicker = ImagePickerModule as any;
 
       const perm = await ImagePicker.requestMediaLibraryPermissionsAsync?.();
-      if (perm && perm.status !== "granted") {
-        const message = "Permission to access photos was denied.";
+      if (perm && perm.status !== 'granted') {
+        const message = 'Permission to access photos was denied.';
         setErrors((e) => ({ ...e, images: message }));
         return;
       }
@@ -217,7 +209,7 @@ export default function ImageUploadForm({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsMultipleSelection: false,
         quality: 0.8,
-        base64: false,
+        base64: false
       });
 
       const cancelled = (result as any).cancelled ?? false;
@@ -226,44 +218,38 @@ export default function ImageUploadForm({
 
       let assetUri: string | null = null;
       if ((result as any).uri) assetUri = (result as any).uri;
-      else if (
-        Array.isArray((result as any).assets) &&
-        (result as any).assets.length
-      )
+      else if (Array.isArray((result as any).assets) && (result as any).assets.length)
         assetUri = (result as any).assets[0].uri;
 
       if (!assetUri) {
-        setErrors((e) => ({ ...e, images: "No image URI returned" }));
+        setErrors((e) => ({ ...e, images: 'No image URI returned' }));
         return;
       }
 
-      if (assetUri.startsWith("content://")) {
+      if (assetUri.startsWith('content://')) {
         try {
           await FileSystem.getInfoAsync(assetUri);
         } catch (err) {
-          console.warn("[pickImageNative] getInfoAsync(content) failed:", err);
+          console.warn('[pickImageNative] getInfoAsync(content) failed:', err);
         }
 
         try {
           const filename = `img_${Date.now()}.jpg`;
-          const dest = `${FileSystem.cacheDirectory || ""}${filename}`;
+          const dest = `${FileSystem.cacheDirectory || ''}${filename}`;
           const copyResult = await FileSystem.copyAsync({
             from: assetUri,
-            to: dest,
+            to: dest
           });
           assetUri = (copyResult?.uri as string) || dest;
         } catch (copyErr) {
-          console.warn("[pickImageNative] copyAsync failed:", copyErr);
+          console.warn('[pickImageNative] copyAsync failed:', copyErr);
           try {
             const filename = `img_${Date.now()}.jpg`;
-            const dest = `${FileSystem.cacheDirectory || ""}${filename}`;
-            const downloadResult = await FileSystem.downloadAsync(
-              assetUri,
-              dest
-            );
+            const dest = `${FileSystem.cacheDirectory || ''}${filename}`;
+            const downloadResult = await FileSystem.downloadAsync(assetUri, dest);
             assetUri = downloadResult.uri;
           } catch (dlErr) {
-            console.warn("[pickImageNative] downloadAsync failed:", dlErr);
+            console.warn('[pickImageNative] downloadAsync failed:', dlErr);
           }
         }
       }
@@ -272,23 +258,23 @@ export default function ImageUploadForm({
       try {
         info = await FileSystem.getInfoAsync(assetUri, { size: true });
       } catch (infoErr) {
-        console.warn("[pickImageNative] getInfoAsync failed:", infoErr);
+        console.warn('[pickImageNative] getInfoAsync failed:', infoErr);
       }
 
-      const filename = assetUri.split("/").pop() || `img_${Date.now()}.jpg`;
+      const filename = assetUri.split('/').pop() || `img_${Date.now()}.jpg`;
       const newImage: ImageAsset = {
         uri: assetUri,
         name: filename,
         size: info?.size ?? null,
         type: null,
-        locked: false,
+        locked: false
       };
 
       setImages((prev) => [...prev, newImage]);
       setErrors((e) => ({ ...e, images: undefined }));
     } catch (err) {
-      console.error("[pickImageNative] unexpected error:", err);
-      setErrors((e) => ({ ...e, images: "Image pick failed (see logs)" }));
+      console.error('[pickImageNative] unexpected error:', err);
+      setErrors((e) => ({ ...e, images: 'Image pick failed (see logs)' }));
     }
   };
 
@@ -330,7 +316,7 @@ export default function ImageUploadForm({
       try {
         URL.revokeObjectURL(img.uri);
       } catch (e) {
-        console.warn("[confirmDeleteImage] revokeObjectURL failed:", e);
+        console.warn('[confirmDeleteImage] revokeObjectURL failed:', e);
       }
     }
 
@@ -348,9 +334,8 @@ export default function ImageUploadForm({
   /* ---------- submit ---------- */
   const validateAndSubmit = () => {
     const errs: typeof errors = {};
-    if (!campaign.trim())
-      errs.campaign = t("fieldRequired", { field: t("campaign") });
-    if (images.length === 0) errs.images = t("image.imageRequired");
+    if (!campaign.trim()) errs.campaign = t('fieldRequired', { field: t('campaign') });
+    if (images.length === 0) errs.images = t('image.imageRequired');
 
     if (Object.keys(errs).length) {
       setErrors(errs);
@@ -363,7 +348,7 @@ export default function ImageUploadForm({
       onAddImage({
         campaignName: campaign.trim(),
         caption: payloadMessage,
-        images,
+        images
       });
   };
 
@@ -372,14 +357,14 @@ export default function ImageUploadForm({
       <KeyboardAwareScrollView
         contentContainerStyle={{ padding: 10, paddingBottom: 160 }}
         enableOnAndroid
-        extraScrollHeight={Platform.OS === "ios" ? 100 : 120}
+        extraScrollHeight={Platform.OS === 'ios' ? 100 : 120}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={{ flexDirection: isWide ? "row" : "column", gap: isWeb ? 12 : 0 }}>
+        <View style={{ flexDirection: isWide ? 'row' : 'column', gap: isWeb ? 12 : 0 }}>
           <View style={{ flex: 1 }}>
-            <FixedLabel label={t("campaign")} required />
+            <FixedLabel label={t('campaign')} required />
             <TextInput
-              placeholder={t("placeholder.enterCampaign")}
+              placeholder={t('placeholder.enterCampaign')}
               placeholderTextColor={theme.colors.placeholder}
               value={campaign}
               onChangeText={(text) => {
@@ -403,9 +388,9 @@ export default function ImageUploadForm({
               activeOpacity={0.7}
               onPress={() => setMessageEditorVisible(true)}
             >
-              <FixedLabel label={t("campaignMessage")} />
+              <FixedLabel label={t('campaignMessage')} />
               <TextInput
-                placeholder={t("placeholder.enterCampaignMessage")}
+                placeholder={t('placeholder.enterCampaignMessage')}
                 placeholderTextColor={theme.colors.placeholder}
                 value={message}
                 mode="outlined"
@@ -432,21 +417,21 @@ export default function ImageUploadForm({
           style={{
             marginBottom: imageToEdit ? 14 : 6,
             color: colors.primary,
-            fontWeight: "600",
-            fontSize: 20,
+            fontWeight: '600',
+            fontSize: 20
           }}
         >
-          {t(imageToEdit ? "image.view" : "image.upload")}
+          {t(imageToEdit ? 'image.view' : 'image.upload')}
         </Text>
         {!imageToEdit && (
           <Text
             style={{
               marginBottom: 14,
               color: colors.textSecondary,
-              fontSize: 14,
+              fontSize: 14
             }}
           >
-            {t("image.uploadMax", { max: MAX_IMAGES })}
+            {t('image.uploadMax', { max: MAX_IMAGES })}
           </Text>
         )}
 
@@ -462,7 +447,7 @@ export default function ImageUploadForm({
               <View
                 style={[
                   styles.previewWrapper,
-                  { width: previewSize, height: previewSize },
+                  { width: previewSize, height: previewSize }
                 ]}
               >
                 <Image
@@ -470,14 +455,10 @@ export default function ImageUploadForm({
                   style={styles.preview}
                   resizeMode="contain"
                   onError={(e) => {
-                    console.warn(
-                      "[Image] onError for uri:",
-                      img.uri,
-                      e.nativeEvent
-                    );
+                    console.warn('[Image] onError for uri:', img.uri, e.nativeEvent);
                     setErrors((err) => ({
                       ...err,
-                      images: "Failed to render image (see logs)",
+                      images: 'Failed to render image (see logs)'
                     }));
                   }}
                 />
@@ -488,10 +469,10 @@ export default function ImageUploadForm({
                     style={styles.cancelOverlay}
                     onPress={() => promptDeleteImage(idx)}
                     hitSlop={{ top: 10, left: 10, right: 10, bottom: 10 }}
-                    accessibilityLabel={t("image.remove")}
+                    accessibilityLabel={t('image.remove')}
                   >
                     <Ionicons name="close" size={18} color="#fff" />
-                    <Text style={styles.cancelText}>{t("cancel")}</Text>
+                    <Text style={styles.cancelText}>{t('cancel')}</Text>
                   </TouchableOpacity>
                 )}
               </View>
@@ -503,29 +484,26 @@ export default function ImageUploadForm({
             <TouchableOpacity
               onPress={pickImage}
               activeOpacity={0.75}
-              accessibilityLabel={t("image.add")}
-              style={[
-                styles.addPreview,
-                { width: previewSize, height: previewSize },
-              ]}
+              accessibilityLabel={t('image.add')}
+              style={[styles.addPreview, { width: previewSize, height: previewSize }]}
             >
               <Ionicons name="add" size={40} color={colors.primary} />
               <Text style={{ marginTop: 8, color: colors.primary }}>
-                {t("image.addSingular")}
+                {t('image.addSingular')}
               </Text>
             </TouchableOpacity>
           )}
         </View>
 
         {errors.images && (
-          <View style={{ width: "100%", alignItems: "center", marginTop: 8 }}>
+          <View style={{ width: '100%', alignItems: 'center', marginTop: 8 }}>
             <HelperText
               type="error"
               visible
               style={{
                 paddingLeft: 0,
-                textAlign: "center",
-                color: colors.error,
+                textAlign: 'center',
+                color: colors.error
               }}
             >
               {errors.images}
@@ -541,15 +519,11 @@ export default function ImageUploadForm({
           onDismiss={() => setViewerVisible(false)}
           contentContainerStyle={[
             styles.modalContainer,
-            { height: isSmall ? "70%" : "80%" },
+            { height: isSmall ? '70%' : '80%' }
           ]}
         >
           <View style={styles.modalHeader}>
-            <IconButton
-              icon="close"
-              size={24}
-              onPress={() => setViewerVisible(false)}
-            />
+            <IconButton icon="close" size={24} onPress={() => setViewerVisible(false)} />
           </View>
 
           <View style={styles.modalBody}>
@@ -560,7 +534,7 @@ export default function ImageUploadForm({
                 resizeMode="contain"
                 onError={(e) => {
                   console.warn(
-                    "[Modal Image] onError:",
+                    '[Modal Image] onError:',
                     images[viewerIndex].uri,
                     e.nativeEvent
                   );
@@ -573,8 +547,8 @@ export default function ImageUploadForm({
 
       <DeleteConfirmationDialog
         visible={deleteDialogVisible}
-        title={t("image.delete")}
-        message={t("image.confirmDelete")}
+        title={t('image.delete')}
+        message={t('image.confirmDelete')}
         onCancel={() => {
           setDeleteDialogVisible(false);
           setIndexToDelete(null);
@@ -591,7 +565,7 @@ export default function ImageUploadForm({
           <Surface style={styles.messageModalCard} elevation={4}>
             {/* Header */}
             <View style={styles.messageHeader}>
-              <Text style={styles.messageTitle}>{t("campaignMessage")}</Text>
+              <Text style={styles.messageTitle}>{t('campaignMessage')}</Text>
 
               <IconButton
                 icon="close"
@@ -623,7 +597,7 @@ export default function ImageUploadForm({
                 style={styles.secondaryButton}
                 textColor={colors.darkGrayText}
               >
-                {t("cancel")}
+                {t('cancel')}
               </Button>
 
               <Button
@@ -633,7 +607,7 @@ export default function ImageUploadForm({
                 buttonColor={colors.primary}
                 textColor={colors.white}
               >
-                {t("save")}
+                {t('save')}
               </Button>
             </View>
           </Surface>
@@ -650,7 +624,7 @@ export default function ImageUploadForm({
           }}
           style={styles.actionButton}
         >
-          {t("cancel")}
+          {t('cancel')}
         </Button>
 
         <Button
@@ -661,117 +635,114 @@ export default function ImageUploadForm({
           loading={uploading}
           style={styles.actionButton}
         >
-          {imageToEdit ? t("update") : t("image.upload")}
+          {imageToEdit ? t('update') : t('image.upload')}
         </Button>
       </View>
     </View>
   );
 }
 
-const createStyles = (
-  theme: any,
-  platform: { isWeb: boolean; isMobileWeb: boolean }
-) =>
+const createStyles = (theme: any, platform: { isWeb: boolean; isMobileWeb: boolean }) =>
   StyleSheet.create({
     input: {
       backgroundColor: theme.colors.white,
       marginBottom: 0,
-      height: 44,
+      height: 44
     },
     previewRow: {
-      flexDirection: "row",
-      flexWrap: "wrap",
+      flexDirection: 'row',
+      flexWrap: 'wrap',
       gap: 30,
-      alignItems: "center",
-      justifyContent: "center",
+      alignItems: 'center',
+      justifyContent: 'center',
       margin: 0,
-      width: "100%",
+      width: '100%'
     },
     previewWrapper: {
       borderRadius: 12,
-      overflow: "hidden",
+      overflow: 'hidden',
       backgroundColor: theme.colors.paperBackground,
       borderWidth: 1,
       borderColor: theme.colors.subtleBorder,
-      position: "relative",
+      position: 'relative',
       elevation: 4,
-      shadowColor: "#000",
+      shadowColor: '#000',
       shadowOpacity: 0.12,
       shadowRadius: 8,
-      alignItems: "center",
-      justifyContent: "center",
+      alignItems: 'center',
+      justifyContent: 'center'
     },
     preview: {
-      width: "100%",
-      height: "100%",
+      width: '100%',
+      height: '100%'
     },
     cancelOverlay: {
-      position: "absolute",
+      position: 'absolute',
       top: 10,
       right: 10,
-      backgroundColor: "rgba(0,0,0,0.45)",
+      backgroundColor: 'rgba(0,0,0,0.45)',
       paddingHorizontal: 10,
       paddingVertical: 6,
       borderRadius: 20,
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 6,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6
     },
     cancelText: {
-      color: "#fff",
+      color: '#fff',
       marginLeft: 6,
-      fontSize: 13,
+      fontSize: 13
     },
     addPreview: {
       borderRadius: 12,
       borderWidth: 1,
       borderColor: theme.colors.outline,
-      alignItems: "center",
-      justifyContent: "center",
-      backgroundColor: theme.colors.background,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.background
     },
     footer: {
-      position: "absolute",
+      position: 'absolute',
       bottom: 0,
       left: 0,
       right: 0,
       padding: 16,
       borderTopWidth: 1,
-      borderTopColor: theme.colors.elevation?.level2 || "#eee",
-      flexDirection: "row",
+      borderTopColor: theme.colors.elevation?.level2 || '#eee',
+      flexDirection: 'row',
       gap: 12,
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.white
     },
     actionButton: {
       flex: 1,
-      borderRadius: 6,
+      borderRadius: 6
     },
     modalContainer: {
       backgroundColor: theme.colors.background,
       margin: 20,
       borderRadius: 10,
-      overflow: "hidden",
-      height: "80%",
+      overflow: 'hidden',
+      height: '80%'
     },
     modalHeader: {
-      flexDirection: "row",
-      justifyContent: "flex-end",
+      flexDirection: 'row',
+      justifyContent: 'flex-end'
     },
     modalBody: {
       flex: 1,
-      alignItems: "center",
-      justifyContent: "center",
+      alignItems: 'center',
+      justifyContent: 'center',
       padding: 8,
-      backgroundColor: theme.colors.background,
+      backgroundColor: theme.colors.background
     },
     modalImage: {
-      width: "100%",
-      height: "100%",
+      width: '100%',
+      height: '100%'
     },
     messageModalCard: {
-      width: "92%",
+      width: '92%',
       maxWidth: 520,
-      maxHeight: "75%",
+      maxHeight: '75%',
       backgroundColor: theme.colors.white,
       borderRadius: 18,
       padding: 20,
@@ -781,57 +752,57 @@ const createStyles = (
       shadowOpacity: 0.12,
       shadowRadius: 12,
       shadowOffset: { width: 0, height: 6 },
-      elevation: 6,
+      elevation: 6
     },
     messageHeader: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
-      marginBottom: 10,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 10
     },
     dialogContainer: {
       flex: 1,
-      justifyContent: "center",
-      alignItems: "center",
+      justifyContent: 'center',
+      alignItems: 'center',
       paddingHorizontal: 16,
-      paddingVertical: 24,
+      paddingVertical: 24
     },
     messageTitle: {
       fontSize: 18,
-      fontWeight: "700",
-      color: theme.colors.primary,
+      fontWeight: '700',
+      color: theme.colors.primary
     },
     closeIcon: {
-      margin: 0,
+      margin: 0
     },
     messageSubtitle: {
       fontSize: 13,
       color: theme.colors.textSecondary,
-      marginBottom: 14,
+      marginBottom: 14
     },
     messageInput: {
       minHeight: 180,
       maxHeight: 260,
       backgroundColor: theme.colors.paperBackground,
       fontSize: 15,
-      paddingTop: platform.isWeb ? 0 : 8,
+      paddingTop: platform.isWeb ? 0 : 8
     },
     modalActions: {
-      flexDirection: "row",
+      flexDirection: 'row',
       gap: 12,
       marginTop: 16,
       paddingTop: 8,
       borderTopWidth: 1,
       borderTopColor: theme.colors.lightGray,
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.white
     },
     secondaryButton: {
       flex: 1,
       borderRadius: 10,
-      borderColor: theme.colors.borderGray,
+      borderColor: theme.colors.borderGray
     },
     primaryButton: {
       flex: 1,
-      borderRadius: 10,
-    },
+      borderRadius: 10
+    }
   });

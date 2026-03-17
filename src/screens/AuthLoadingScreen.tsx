@@ -1,7 +1,7 @@
-import React, { useEffect } from "react";
-import { View, ActivityIndicator } from "react-native";
-import { useNavigation } from "@react-navigation/native";
-import { getAuthData } from "../utils/storage";
+import React, { useEffect } from 'react';
+import { View, ActivityIndicator } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { getAuthData } from '../utils/storage';
 
 export default function AuthLoadingScreen() {
   const navigation = useNavigation<any>();
@@ -12,20 +12,20 @@ export default function AuthLoadingScreen() {
         const authData = await getAuthData();
 
         if (authData?.accessToken) {
-          navigation.replace("App");
+          navigation.replace('App');
         } else {
-          navigation.replace("Login");
+          navigation.replace('Login');
         }
       } catch (e) {
-        console.error("Token check failed", e);
-        navigation.replace("Login");
+        console.error('Token check failed', e);
+        navigation.replace('Login');
       }
     };
     checkToken();
   }, []);
 
   return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       <ActivityIndicator size="large" />
     </View>
   );

@@ -1,16 +1,13 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { View, Image, StyleSheet, SafeAreaView, Platform } from "react-native";
-import { useFocusEffect } from "@react-navigation/native";
-import {
-  DrawerContentScrollView,
-  DrawerItemList,
-} from "@react-navigation/drawer";
-import { LinearGradient } from "expo-linear-gradient";
-import { useTheme } from "react-native-paper";
-import { getBrandAssets } from "../utils/brandAssets";
-import { getAuthData } from "../utils/storage";
-import { eventBus } from "../utils/eventBus";
-import { AppTheme } from "../theme";
+import React, { useCallback, useEffect, useState } from 'react';
+import { View, Image, StyleSheet, SafeAreaView, Platform } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+import { DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useTheme } from 'react-native-paper';
+import { getBrandAssets } from '../utils/brandAssets';
+import { getAuthData } from '../utils/storage';
+import { eventBus } from '../utils/eventBus';
+import { AppTheme } from '../theme';
 
 export default function CustomDrawer(props: any) {
   const { icon } = getBrandAssets();
@@ -18,23 +15,21 @@ export default function CustomDrawer(props: any) {
   const styles = createStyles(theme);
   const { colors } = theme;
 
-  const [candidatePhotoPath, setCandidatePhotoPath] = useState<string | null>(
-    null,
-  );
+  const [candidatePhotoPath, setCandidatePhotoPath] = useState<string | null>(null);
 
   const loadAuthPhoto = async () => {
     try {
       const data = await getAuthData();
       setCandidatePhotoPath(data?.candidatePhotoPath || null);
     } catch (e) {
-      console.error("Failed to load auth data", e);
+      console.error('Failed to load auth data', e);
     }
   };
 
   useFocusEffect(
     useCallback(() => {
       loadAuthPhoto();
-    }, []),
+    }, [])
   );
 
   useEffect(() => {
@@ -42,7 +37,7 @@ export default function CustomDrawer(props: any) {
       setCandidatePhotoPath((prev) => {
         if (!prev) return newPath;
 
-        const cleanPrev = prev.split("?")[0];
+        const cleanPrev = prev.split('?')[0];
 
         if (cleanPrev === newPath) {
           return `${newPath}?t=${Date.now()}`;
@@ -52,8 +47,8 @@ export default function CustomDrawer(props: any) {
       });
     };
 
-    eventBus.on("CANDIDATE_PHOTO_UPDATED", updatePhoto);
-    return () => eventBus.off("CANDIDATE_PHOTO_UPDATED", updatePhoto);
+    eventBus.on('CANDIDATE_PHOTO_UPDATED', updatePhoto);
+    return () => eventBus.off('CANDIDATE_PHOTO_UPDATED', updatePhoto);
   }, []);
 
   return (
@@ -63,7 +58,7 @@ export default function CustomDrawer(props: any) {
         colors.softOrange,
         colors.primaryLight,
         colors.primaryLight,
-        colors.primary,
+        colors.primary
       ]}
       style={styles.gradient}
     >
@@ -103,45 +98,45 @@ export default function CustomDrawer(props: any) {
 const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
     gradient: {
-      flex: 1,
+      flex: 1
     },
     safeArea: {
       flex: 1,
-      paddingTop: Platform.OS === "android" ? 32 : 0,
+      paddingTop: Platform.OS === 'android' ? 32 : 0
     },
     logoContainer: {
-      alignItems: "center",
+      alignItems: 'center',
       paddingTop: 24,
-      marginHorizontal: 16,
+      marginHorizontal: 16
     },
     logo: {
       width: 220,
-      height: 200,
+      height: 200
     },
     photoWrapper: {
       width: 130,
       height: 130,
       borderRadius: 65,
-      overflow: "hidden",
+      overflow: 'hidden',
       borderWidth: 3,
-      borderColor: "rgba(255,255,255,0.85)",
-      backgroundColor: "rgba(255,255,255,0.15)",
-      justifyContent: "center",
-      alignItems: "center",
+      borderColor: 'rgba(255,255,255,0.85)',
+      backgroundColor: 'rgba(255,255,255,0.15)',
+      justifyContent: 'center',
+      alignItems: 'center'
     },
     candidatePhoto: {
-      width: "100%",
-      height: "100%",
+      width: '100%',
+      height: '100%'
     },
     scrollContainer: {
-      paddingTop: 0,
+      paddingTop: 0
     },
     drawerItemsContainer: {
       marginTop: 24,
-      paddingHorizontal: 12,
+      paddingHorizontal: 12
     },
     drawerLabel: {
       fontSize: 16,
-      fontWeight: "500",
-    },
+      fontWeight: '500'
+    }
   });

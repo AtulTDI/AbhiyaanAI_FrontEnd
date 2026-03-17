@@ -1,8 +1,8 @@
-import React from "react";
-import { useTranslation } from "react-i18next";
-import { FieldConfig } from "../types";
-import { CreateRecipientPayload } from "../types/Recipient";
-import DynamicForm from "./DynamicForm";
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { FieldConfig } from '../types';
+import { CreateRecipientPayload } from '../types/Recipient';
+import DynamicForm from './DynamicForm';
 
 type Voter = {
   fullName: string;
@@ -10,7 +10,7 @@ type Voter = {
 };
 
 type Props = {
-  mode: "create" | "edit";
+  mode: 'create' | 'edit';
   onCreate: (data: CreateRecipientPayload) => void;
   voterToEdit: Voter;
   setVoterToEdit: (voter: Voter | null) => void;
@@ -22,20 +22,20 @@ export default function VoterForm({
   onCreate,
   voterToEdit,
   setVoterToEdit,
-  setShowAddVoterView,
+  setShowAddVoterView
 }: Props) {
   const { t } = useTranslation();
   const voterFields: FieldConfig[] = [
-    { name: "fullName", label: t("fullName"), type: "text", required: true },
-    { name: "phoneNumber", label: t("mobile"), type: "number", required: true },
+    { name: 'fullName', label: t('fullName'), type: 'text', required: true },
+    { name: 'phoneNumber', label: t('mobile'), type: 'number', required: true }
   ];
 
   return (
     <DynamicForm
       fields={voterFields}
       initialValues={{
-        fullName: voterToEdit?.fullName || "",
-        phoneNumber: voterToEdit?.phoneNumber || "",
+        fullName: voterToEdit?.fullName || '',
+        phoneNumber: voterToEdit?.phoneNumber || ''
       }}
       mode={mode}
       onSubmit={onCreate}

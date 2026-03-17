@@ -1,4 +1,4 @@
-import { format } from "date-fns";
+import { format } from 'date-fns';
 
 export const base64ToBlob = (base64Data: string, contentType: string): Blob => {
   const byteCharacters = atob(base64Data);
@@ -19,10 +19,7 @@ export const base64ToBlob = (base64Data: string, contentType: string): Blob => {
   return new Blob(byteArrays, { type: contentType });
 };
 
-export const extractErrorMessage = (
-  error: any,
-  fallback = "Something went wrong"
-) => {
+export const extractErrorMessage = (error: any, fallback = 'Something went wrong') => {
   const status = error?.response?.status;
 
   if (status === 500) {
@@ -31,47 +28,37 @@ export const extractErrorMessage = (
 
   const data = error?.response?.data;
 
-  if (typeof data === "string") {
+  if (typeof data === 'string') {
     return data;
   }
 
   if (Array.isArray(data) && data.length > 0) {
     const first = data[0];
-    if (first && typeof first === "object" && "description" in first) {
+    if (first && typeof first === 'object' && 'description' in first) {
       return first.description || fallback;
     }
   }
 
-  return (
-    data?.title ||
-    data?.message ||
-    fallback
-  );
+  return data?.title || data?.message || fallback;
 };
-
 
 export const getFileNameWithoutExtension = (fullName: string): string => {
-  return fullName.replace(/\.[^/.]+$/, "");
+  return fullName.replace(/\.[^/.]+$/, '');
 };
-
 
 export const sortByDateDesc = (data, key) => {
   return [...data].sort(
     (a, b) => new Date(b[key]).getTime() - new Date(a[key]).getTime()
   );
-}
+};
 
 export const toUtcIsoDate = (date: Date) => {
   return new Date(
-    Date.UTC(
-      date.getFullYear(),
-      date.getMonth(),
-      date.getDate()
-    )
+    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
   ).toISOString();
 };
 
 export const formatForDisplay = (iso?: string) => {
-  if (!iso) return "";
-  return format(new Date(iso), "dd-MM-yyyy");
+  if (!iso) return '';
+  return format(new Date(iso), 'dd-MM-yyyy');
 };
