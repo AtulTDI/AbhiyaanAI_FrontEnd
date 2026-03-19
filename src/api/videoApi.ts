@@ -1,3 +1,7 @@
+import { Platform } from 'react-native';
+
+import * as FileSystem from 'expo-file-system';
+
 import { NativeFormDataFile } from '../types/Upload';
 import {
   GenerateVideo,
@@ -9,8 +13,6 @@ import {
 import { getVideoThumbnail } from '../utils/getVideoThumbnail';
 import { getAuthData } from '../utils/storage';
 import axios from './axiosInstance';
-import * as FileSystem from 'expo-file-system';
-import { Platform } from 'react-native';
 
 /**
  * Get paginated videos with optional search

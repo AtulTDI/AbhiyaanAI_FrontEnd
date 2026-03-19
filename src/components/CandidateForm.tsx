@@ -1,13 +1,15 @@
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { Button, HelperText, Surface, TextInput, useTheme } from 'react-native-paper';
+
+import { useTranslation } from 'react-i18next';
+
 import { usePlatformInfo } from '../hooks/usePlatformInfo';
 import { AppTheme } from '../theme';
 import { Candidate, CandidateCreateUpdate } from '../types/Candidate';
 import { FixedLabel } from './FixedLabel';
 import SingleImageUpload, { ImageAsset } from './SingleImageUpload';
-import React, { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { StyleSheet, View } from 'react-native';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { Button, HelperText, Surface, TextInput, useTheme } from 'react-native-paper';
 
 type Props = {
   mode: 'create' | 'edit';

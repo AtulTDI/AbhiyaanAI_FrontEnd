@@ -1,10 +1,12 @@
-import { usePlatformInfo } from '../hooks/usePlatformInfo';
-import { registerToastTrigger } from '../services/toastService';
-import { AppTheme } from '../theme';
-import { FontAwesome, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import React, { createContext, useCallback, useContext, useRef, useState } from 'react';
 import { Animated, Dimensions, StyleSheet, View } from 'react-native';
 import { Text, useTheme } from 'react-native-paper';
+
+import { FontAwesome, Ionicons, MaterialIcons } from '@expo/vector-icons';
+
+import { usePlatformInfo } from '../hooks/usePlatformInfo';
+import { registerToastTrigger } from '../services/toastService';
+import { AppTheme } from '../theme';
 
 type ToastType = 'success' | 'error' | 'warning' | 'info';
 

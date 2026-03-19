@@ -1,3 +1,12 @@
+import React, { useCallback, useRef, useState } from 'react';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { Button, Text, useTheme } from 'react-native-paper';
+
+import { useFocusEffect } from '@react-navigation/native';
+
+import { useTranslation } from 'react-i18next';
+
 import {
   createSender,
   deleteSenderById,
@@ -14,12 +23,6 @@ import { encryptWithBackendKey } from '../services/rsaEncryptor';
 import { AppTheme } from '../theme';
 import { CreateSenderPayload, EditSenderPayload, Sender } from '../types/Sender';
 import { extractErrorMessage } from '../utils/common';
-import { useFocusEffect } from '@react-navigation/native';
-import React, { useCallback, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { ScrollView, StyleSheet, View } from 'react-native';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { Button, Text, useTheme } from 'react-native-paper';
 
 const keyboardContentStyle = { flexGrow: 1 };
 

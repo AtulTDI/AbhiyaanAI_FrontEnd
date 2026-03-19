@@ -1,13 +1,3 @@
-import { resetPassword } from '../api/authApi';
-import { useToast } from '../components/ToastProvider';
-import { usePlatformInfo } from '../hooks/usePlatformInfo';
-import { navigate } from '../navigation/NavigationService';
-import { encryptWithBackendKey } from '../services/rsaEncryptor';
-import { AppTheme } from '../theme';
-import { getBrandAssets } from '../utils/brandAssets';
-import { extractErrorMessage } from '../utils/common';
-import { useRoute } from '@react-navigation/native';
-import { LinearGradient } from 'expo-linear-gradient';
 import React, { useState } from 'react';
 import {
   Image,
@@ -18,6 +8,18 @@ import {
   View
 } from 'react-native';
 import { Button, Card, Text, TextInput, useTheme } from 'react-native-paper';
+
+import { LinearGradient } from 'expo-linear-gradient';
+import { useRoute } from '@react-navigation/native';
+
+import { resetPassword } from '../api/authApi';
+import { useToast } from '../components/ToastProvider';
+import { usePlatformInfo } from '../hooks/usePlatformInfo';
+import { navigate } from '../navigation/NavigationService';
+import { encryptWithBackendKey } from '../services/rsaEncryptor';
+import { AppTheme } from '../theme';
+import { getBrandAssets } from '../utils/brandAssets';
+import { extractErrorMessage } from '../utils/common';
 
 type RouteParams = {
   token: string;

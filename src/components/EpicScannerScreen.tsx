@@ -1,12 +1,14 @@
-import { RootStackParamList } from '../types';
-import { triggerEpicScan } from '../utils/epicScannerListener';
-import { logger } from '../utils/logger';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import MlkitOcr from 'react-native-mlkit-ocr';
 import { Camera, useCameraDevice } from 'react-native-vision-camera';
+
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
+import { RootStackParamList } from '../types';
+import { triggerEpicScan } from '../utils/epicScannerListener';
+import { logger } from '../utils/logger';
 
 type Navigation = NativeStackNavigationProp<RootStackParamList>;
 

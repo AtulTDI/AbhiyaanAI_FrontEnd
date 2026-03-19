@@ -1,4 +1,3 @@
-import { AppTheme } from '../theme';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   Platform,
@@ -11,6 +10,8 @@ import {
 } from 'react-native';
 import { useTheme } from 'react-native-paper';
 import Tooltip from 'react-native-walkthrough-tooltip';
+
+import { AppTheme } from '../theme';
 
 type EllipsisCellProps = {
   cellKey: string;

@@ -1,5 +1,6 @@
-import axios from './axiosInstance';
 import { Platform } from 'react-native';
+
+import axios from './axiosInstance';
 
 /**
  * Export voters list as PDF

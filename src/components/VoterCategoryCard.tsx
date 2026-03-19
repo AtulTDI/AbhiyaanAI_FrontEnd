@@ -1,8 +1,10 @@
-import { AppTheme } from '../theme';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Text, useTheme } from 'react-native-paper';
+
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+
+import { AppTheme } from '../theme';
 
 type Props = {
   title: string;

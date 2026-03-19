@@ -1,7 +1,9 @@
+import { ImageSourcePropType } from 'react-native';
+
+import Constants from 'expo-constants';
+
 import abhiyanIcon from '../../assets/abhiyan/icon.png';
 import rajyogIcon from '../../assets/rajyog/icon.png';
-import Constants from 'expo-constants';
-import { ImageSourcePropType } from 'react-native';
 
 const BRAND = Constants.expoConfig?.extra?.BRAND ?? 'default';
 

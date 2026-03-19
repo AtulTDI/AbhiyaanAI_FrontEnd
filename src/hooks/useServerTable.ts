@@ -1,5 +1,6 @@
-import { logger } from '../utils/logger';
 import { useCallback, useEffect, useRef, useState } from 'react';
+
+import { logger } from '../utils/logger';
 
 type TableResponse<T> = {
   items: T[];

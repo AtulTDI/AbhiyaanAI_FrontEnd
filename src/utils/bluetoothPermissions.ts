@@ -1,5 +1,6 @@
-import { logger } from './logger';
 import { PermissionsAndroid, Platform } from 'react-native';
+
+import { logger } from './logger';
 
 export const requestBluetoothPermissions = async () => {
   if (Platform.OS !== 'android') return true;

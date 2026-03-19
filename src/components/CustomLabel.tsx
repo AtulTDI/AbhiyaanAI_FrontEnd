@@ -1,8 +1,9 @@
-import { AppTheme } from '../theme';
-import { CustomLabelProps } from '../types';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTheme } from 'react-native-paper';
+
+import { AppTheme } from '../theme';
+import { CustomLabelProps } from '../types';
 
 type IconElementProps = {
   color?: string;

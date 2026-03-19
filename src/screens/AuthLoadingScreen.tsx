@@ -1,10 +1,12 @@
+import React, { useEffect } from 'react';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
+
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
 import { RootStackParamList } from '../types';
 import { logger } from '../utils/logger';
 import { getAuthData } from '../utils/storage';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import React, { useEffect } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 export default function AuthLoadingScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();

@@ -1,5 +1,3 @@
-import { AppTheme } from '../theme';
-import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect } from 'react';
 import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import {
@@ -10,6 +8,10 @@ import {
   TextInput,
   useTheme
 } from 'react-native-paper';
+
+import { Ionicons } from '@expo/vector-icons';
+
+import { AppTheme } from '../theme';
 
 type Props = {
   visible: boolean;

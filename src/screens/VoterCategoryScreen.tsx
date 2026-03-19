@@ -1,11 +1,13 @@
+import React from 'react';
+import { FlatList, StyleSheet, View } from 'react-native';
+import { Text, useTheme } from 'react-native-paper';
+
+import { useTranslation } from 'react-i18next';
+
 import VoterCategoryCard from '../components/VoterCategoryCard';
 import { VOTER_CATEGORIES } from '../constants/voterCategories';
 import { usePlatformInfo } from '../hooks/usePlatformInfo';
 import { AppTheme } from '../theme';
-import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { FlatList, StyleSheet, View } from 'react-native';
-import { Text, useTheme } from 'react-native-paper';
 
 type Props = {
   onSelectCategory: (id: number) => void;

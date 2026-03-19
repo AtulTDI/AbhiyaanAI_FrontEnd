@@ -1,3 +1,21 @@
+import React, { useCallback, useMemo, useState } from 'react';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  useWindowDimensions,
+  View
+} from 'react-native';
+import { Button, Surface, Text, useTheme } from 'react-native-paper';
+import { SceneRendererProps, TabBar, TabBarItem, TabView } from 'react-native-tab-view';
+
+import { Asset } from 'expo-asset';
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
+import { useFocusEffect } from '@react-navigation/native';
+
+import { useTranslation } from 'react-i18next';
+
 import {
   createRecipient,
   deleteRecipientById,
@@ -21,21 +39,6 @@ import {
 } from '../types/Recipient';
 import { extractErrorMessage } from '../utils/common';
 import { logger } from '../utils/logger';
-import { useFocusEffect } from '@react-navigation/native';
-import { Asset } from 'expo-asset';
-import * as FileSystem from 'expo-file-system';
-import * as Sharing from 'expo-sharing';
-import React, { useCallback, useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import {
-  KeyboardAvoidingView,
-  Platform,
-  StyleSheet,
-  useWindowDimensions,
-  View
-} from 'react-native';
-import { Button, Surface, Text, useTheme } from 'react-native-paper';
-import { SceneRendererProps, TabBar, TabBarItem, TabView } from 'react-native-tab-view';
 
 type TabRoute = {
   key: string;

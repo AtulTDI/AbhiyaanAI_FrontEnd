@@ -1,27 +1,4 @@
-import { generateSampleVideo } from '../api/videoApi';
-import sampleVideoAsset from '../assets/sample-video.mp4';
-import { usePlatformInfo } from '../hooks/usePlatformInfo';
-import {
-  joinGroups,
-  leaveGroups,
-  onEvent,
-  startConnection,
-  stopConnection
-} from '../services/signalrService';
-import { AppTheme } from '../theme';
-import { extractErrorMessage } from '../utils/common';
-import { logger } from '../utils/logger';
-import { AuthData, getAuthData } from '../utils/storage';
-import CommonUpload from './CommonUpload';
-import { FixedLabel } from './FixedLabel';
-import { useToast } from './ToastProvider';
-import { Asset } from 'expo-asset';
-import { AVPlaybackStatusSuccess, ResizeMode, Video as ExpoVideo } from 'expo-av';
-import * as DocumentPicker from 'expo-document-picker';
-import * as FileSystem from 'expo-file-system';
-import * as Sharing from 'expo-sharing';
 import React, { useEffect, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import {
   Platform,
   StyleSheet,
@@ -43,6 +20,32 @@ import {
   TextInput,
   useTheme
 } from 'react-native-paper';
+
+import { Asset } from 'expo-asset';
+import { AVPlaybackStatusSuccess, ResizeMode, Video as ExpoVideo } from 'expo-av';
+import * as DocumentPicker from 'expo-document-picker';
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
+
+import { useTranslation } from 'react-i18next';
+
+import { generateSampleVideo } from '../api/videoApi';
+import sampleVideoAsset from '../assets/sample-video.mp4';
+import { usePlatformInfo } from '../hooks/usePlatformInfo';
+import {
+  joinGroups,
+  leaveGroups,
+  onEvent,
+  startConnection,
+  stopConnection
+} from '../services/signalrService';
+import { AppTheme } from '../theme';
+import { extractErrorMessage } from '../utils/common';
+import { logger } from '../utils/logger';
+import { AuthData, getAuthData } from '../utils/storage';
+import CommonUpload from './CommonUpload';
+import { FixedLabel } from './FixedLabel';
+import { useToast } from './ToastProvider';
 
 interface FormData {
   campaign: string;

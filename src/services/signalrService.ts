@@ -1,6 +1,8 @@
-import { logger } from '../utils/logger';
-import * as signalR from '@microsoft/signalr';
 import Constants from 'expo-constants';
+
+import * as signalR from '@microsoft/signalr';
+
+import { logger } from '../utils/logger';
 
 let connection: signalR.HubConnection | null = null;
 const joinedGroups: Set<string> = new Set();

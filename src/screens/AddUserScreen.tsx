@@ -1,3 +1,11 @@
+import React, { useCallback, useRef, useState } from 'react';
+import { KeyboardAvoidingView, ScrollView, StyleSheet, View } from 'react-native';
+import { Button, Text, useTheme } from 'react-native-paper';
+
+import { useFocusEffect } from '@react-navigation/native';
+
+import { useTranslation } from 'react-i18next';
+
 import {
   createDistributor,
   deleteDistributor,
@@ -23,11 +31,6 @@ import { AppTheme } from '../theme';
 import { CreateUserPayload, EditUserPayload, User } from '../types/User';
 import { extractErrorMessage } from '../utils/common';
 import { getAuthData } from '../utils/storage';
-import { useFocusEffect } from '@react-navigation/native';
-import React, { useCallback, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { KeyboardAvoidingView, ScrollView, StyleSheet, View } from 'react-native';
-import { Button, Text, useTheme } from 'react-native-paper';
 
 type Props = {
   role: string;

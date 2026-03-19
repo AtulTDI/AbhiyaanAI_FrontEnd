@@ -1,3 +1,11 @@
+import React, { useCallback, useEffect, useState } from 'react';
+import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { ActivityIndicator, Chip, Text, TextInput, useTheme } from 'react-native-paper';
+import { DatePickerModal } from 'react-native-paper-dates';
+
+import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
+
 import {
   addVoterDemands,
   deleteVoterDemand,
@@ -28,12 +36,6 @@ import { extractErrorMessage, formatForDisplay, toUtcIsoDate } from '../utils/co
 import { FixedLabel } from './FixedLabel';
 import FormDropdown from './FormDropdown';
 import { useToast } from './ToastProvider';
-import { Ionicons } from '@expo/vector-icons';
-import React, { useCallback, useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
-import { ActivityIndicator, Chip, Text, TextInput, useTheme } from 'react-native-paper';
-import { DatePickerModal } from 'react-native-paper-dates';
 
 /* ================= TYPES ================= */
 

@@ -1,11 +1,3 @@
-import { login } from '../api/authApi';
-import { navigate } from '../navigation/NavigationService';
-import { fetchAccounts } from '../services/accountsService';
-import { encryptWithBackendKey } from '../services/rsaEncryptor';
-import { AppTheme } from '../theme';
-import { extractErrorMessage } from '../utils/common';
-import { logger } from '../utils/logger';
-import { saveAuthData } from '../utils/storage';
 import React, { useEffect, useState } from 'react';
 import { FlatList, Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
@@ -20,6 +12,15 @@ import {
   TextInput,
   useTheme
 } from 'react-native-paper';
+
+import { login } from '../api/authApi';
+import { navigate } from '../navigation/NavigationService';
+import { fetchAccounts } from '../services/accountsService';
+import { encryptWithBackendKey } from '../services/rsaEncryptor';
+import { AppTheme } from '../theme';
+import { extractErrorMessage } from '../utils/common';
+import { logger } from '../utils/logger';
+import { saveAuthData } from '../utils/storage';
 
 type SignInProps = {
   authError: string;

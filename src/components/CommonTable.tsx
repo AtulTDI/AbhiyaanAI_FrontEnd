@@ -1,9 +1,4 @@
-import { usePlatformInfo } from '../hooks/usePlatformInfo';
-import { AppTheme } from '../theme';
-import { EllipsisCell } from './EllipsisCell';
-import { MaterialIcons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import {
   Animated,
   Keyboard,
@@ -19,6 +14,13 @@ import {
 } from 'react-native';
 import { ActivityIndicator, Menu, TextInput, useTheme } from 'react-native-paper';
 import { Row } from 'react-native-table-component';
+
+import { MaterialIcons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
+
+import { usePlatformInfo } from '../hooks/usePlatformInfo';
+import { AppTheme } from '../theme';
+import { EllipsisCell } from './EllipsisCell';
 
 type Column<T> = {
   label: string | React.ReactNode;

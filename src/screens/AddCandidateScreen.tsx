@@ -1,3 +1,11 @@
+import React, { useCallback, useRef, useState } from 'react';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { Button, Text, useTheme } from 'react-native-paper';
+
+import { useFocusEffect } from '@react-navigation/native';
+
+import { useTranslation } from 'react-i18next';
+
 import {
   addCandidate,
   deleteCandidate,
@@ -15,11 +23,6 @@ import { Candidate, CandidateCreateUpdate } from '../types/Candidate';
 import { extractErrorMessage } from '../utils/common';
 import { eventBus } from '../utils/eventBus';
 import { getAuthData, saveAuthData } from '../utils/storage';
-import { useFocusEffect } from '@react-navigation/native';
-import React, { useCallback, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { ScrollView, StyleSheet, View } from 'react-native';
-import { Button, Text, useTheme } from 'react-native-paper';
 
 export default function AddCandidateScreen() {
   const { t } = useTranslation();

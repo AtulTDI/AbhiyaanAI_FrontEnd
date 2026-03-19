@@ -1,9 +1,11 @@
-import { AppTheme } from '../theme';
-import { MaterialIcons } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { TouchableOpacity, View } from 'react-native';
 import { Avatar, Divider, Menu, Text, useTheme } from 'react-native-paper';
+
+import { MaterialIcons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
+
+import { AppTheme } from '../theme';
 
 interface Props {
   userName: string;

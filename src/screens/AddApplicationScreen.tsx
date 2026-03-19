@@ -1,3 +1,11 @@
+import React, { useCallback, useRef, useState } from 'react';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { Button, Text, useTheme } from 'react-native-paper';
+
+import { useFocusEffect } from '@react-navigation/native';
+
+import { useTranslation } from 'react-i18next';
+
 import {
   createApplication,
   editApplicationById,
@@ -18,11 +26,6 @@ import {
 } from '../types/Application';
 import { UploadableFile } from '../types/Upload';
 import { extractErrorMessage, sortByDateDesc } from '../utils/common';
-import { useFocusEffect } from '@react-navigation/native';
-import React, { useCallback, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { ScrollView, StyleSheet, View } from 'react-native';
-import { Button, Text, useTheme } from 'react-native-paper';
 
 type ApplicationFormValues = CreateApplicationPayload & {
   appName: string;

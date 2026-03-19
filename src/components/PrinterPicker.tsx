@@ -1,5 +1,3 @@
-import { AppTheme } from '../theme';
-import { logger } from '../utils/logger';
 import React, { useEffect, useState } from 'react';
 import {
   FlatList,
@@ -16,6 +14,9 @@ import {
   TouchableRipple,
   useTheme
 } from 'react-native-paper';
+
+import { AppTheme } from '../theme';
+import { logger } from '../utils/logger';
 
 const { ThermalPrinter } = NativeModules;
 

@@ -1,20 +1,23 @@
-import { AppTheme } from '../theme';
-import { Video } from '../types/Video';
-import { logger } from '../utils/logger';
-import ApprovalToggle from './ApprovalToggle';
-import CommonTable from './CommonTable';
-import { Ionicons } from '@expo/vector-icons';
-import dayjs from 'dayjs';
+import React, { useRef } from 'react';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Text, useTheme } from 'react-native-paper';
+
 import {
   ResizeMode,
   Video as ExpoVideo,
   VideoFullscreenUpdate,
   VideoFullscreenUpdateEvent
 } from 'expo-av';
-import React, { useRef } from 'react';
+
+import { Ionicons } from '@expo/vector-icons';
+import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
-import { Text, useTheme } from 'react-native-paper';
+
+import { AppTheme } from '../theme';
+import { Video } from '../types/Video';
+import { logger } from '../utils/logger';
+import ApprovalToggle from './ApprovalToggle';
+import CommonTable from './CommonTable';
 
 type Props = {
   data: Video[];

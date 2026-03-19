@@ -1,3 +1,24 @@
+import React, { useCallback, useEffect, useState } from 'react';
+import { FlatList, Pressable, StyleSheet, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Chip,
+  Divider,
+  IconButton,
+  Text,
+  TextInput,
+  useTheme
+} from 'react-native-paper';
+
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
+import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
+import { Buffer } from 'buffer';
+import { useTranslation } from 'react-i18next';
+
 import { exportVotersPdf } from '../api/exportVotersApi';
 import {
   getAgeStats,
@@ -32,24 +53,6 @@ import {
 import { setEpicScanHandler } from '../utils/epicScannerListener';
 import { logger } from '../utils/logger';
 import VoterCategoryScreen from './VoterCategoryScreen';
-import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
-import { useIsFocused, useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Buffer } from 'buffer';
-import * as FileSystem from 'expo-file-system';
-import * as Sharing from 'expo-sharing';
-import React, { useCallback, useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { FlatList, Pressable, StyleSheet, View } from 'react-native';
-import {
-  ActivityIndicator,
-  Chip,
-  Divider,
-  IconButton,
-  Text,
-  TextInput,
-  useTheme
-} from 'react-native-paper';
 
 type AgeMode = 'none' | 'lt' | 'gt' | 'between';
 type GenderFilter = 'All' | 'Male' | 'Female';

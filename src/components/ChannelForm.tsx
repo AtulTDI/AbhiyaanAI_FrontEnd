@@ -1,9 +1,10 @@
+import React, { useEffect, useState } from 'react';
+
 import { getActiveApplications } from '../api/applicationApi';
 import { FieldConfig, FieldType } from '../types';
 import { Application } from '../types/Application';
 import { logger } from '../utils/logger';
 import DynamicForm from './DynamicForm';
-import React, { useEffect, useState } from 'react';
 
 type ApplicationOption = {
   label: string;

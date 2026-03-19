@@ -1,5 +1,3 @@
-import i18n from '../../i18n';
-import { AppTheme } from '../theme';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   Animated,
@@ -13,6 +11,9 @@ import {
   View
 } from 'react-native';
 import { useTheme } from 'react-native-paper';
+
+import i18n from '../../i18n';
+import { AppTheme } from '../theme';
 
 type WebMeasurableNode = View & {
   getBoundingClientRect?: () => {

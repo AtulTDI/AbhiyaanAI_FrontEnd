@@ -1,6 +1,7 @@
-import { logger } from '../utils/logger';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, StyleSheet, Text, View } from 'react-native';
+
+import { logger } from '../utils/logger';
 
 export default function RegisterWhatsapp() {
   const [qrCode, setQrCode] = useState(null);

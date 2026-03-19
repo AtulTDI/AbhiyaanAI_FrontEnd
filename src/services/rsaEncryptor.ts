@@ -1,5 +1,6 @@
-import { getPublicKey } from '../api/authApi';
 import JSEncrypt from 'jsencrypt';
+
+import { getPublicKey } from '../api/authApi';
 
 /**
  * Fetch and cache backend public key

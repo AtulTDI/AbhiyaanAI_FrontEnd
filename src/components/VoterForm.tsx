@@ -1,8 +1,10 @@
+import React from 'react';
+
+import { useTranslation } from 'react-i18next';
+
 import { FieldConfig } from '../types';
 import { CreateRecipientPayload } from '../types/Recipient';
 import DynamicForm from './DynamicForm';
-import React from 'react';
-import { useTranslation } from 'react-i18next';
 
 type Voter = {
   fullName: string;

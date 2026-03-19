@@ -1,3 +1,13 @@
+import React, { useCallback, useState } from 'react';
+import { StyleSheet, View } from 'react-native';
+import { Surface, Text, useTheme } from 'react-native-paper';
+
+import { useFocusEffect } from '@react-navigation/native';
+
+import { Ionicons } from '@expo/vector-icons';
+import dayjs from 'dayjs';
+import { useTranslation } from 'react-i18next';
+
 import { activateSender, getSenderByUserId } from '../api/senderApi';
 import { getUsers } from '../api/userApi';
 import ApprovalToggle from '../components/ApprovalToggle';
@@ -8,13 +18,6 @@ import { useServerTable } from '../hooks/useServerTable';
 import { AppTheme } from '../theme';
 import { Sender } from '../types/Sender';
 import { extractErrorMessage } from '../utils/common';
-import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect } from '@react-navigation/native';
-import dayjs from 'dayjs';
-import React, { useCallback, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { StyleSheet, View } from 'react-native';
-import { Surface, Text, useTheme } from 'react-native-paper';
 
 export default function ActivateSenderScreen() {
   const { t } = useTranslation();

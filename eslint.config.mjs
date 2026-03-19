@@ -41,11 +41,16 @@ export default [
     },
 
     rules: {
-      // ✅ Import sorting
       'simple-import-sort/imports': [
         'error',
         {
-          groups: [['^']] // 👈 no blank lines at all
+          groups: [
+            ['^react$', '^react-native'],
+            ['^expo', '^@react-navigation'],
+            ['^@?\\w'],
+            ['^@/'],
+            ['^\\.']
+          ]
         }
       ],
       'simple-import-sort/exports': 'error',

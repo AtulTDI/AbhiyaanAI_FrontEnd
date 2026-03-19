@@ -1,9 +1,3 @@
-import ForgotPassword from '../components/ForgotPassword';
-import SignIn from '../components/SignIn';
-import { usePlatformInfo } from '../hooks/usePlatformInfo';
-import { AppTheme } from '../theme';
-import { getBrandAssets } from '../utils/brandAssets';
-import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useState } from 'react';
 import {
   Image,
@@ -15,6 +9,14 @@ import {
 } from 'react-native';
 import { useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { LinearGradient } from 'expo-linear-gradient';
+
+import ForgotPassword from '../components/ForgotPassword';
+import SignIn from '../components/SignIn';
+import { usePlatformInfo } from '../hooks/usePlatformInfo';
+import { AppTheme } from '../theme';
+import { getBrandAssets } from '../utils/brandAssets';
 
 const Wrapper = Platform.OS === 'web' ? View : KeyboardAvoidingView;
 

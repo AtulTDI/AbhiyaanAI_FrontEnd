@@ -1,10 +1,4 @@
-import { getEligibleFamilyMembers } from '../api/voterApi';
-import { useDebounce } from '../hooks/useDebounce';
-import { AppTheme } from '../theme';
-import { Voter } from '../types/Voter';
-import { getAuthData } from '../utils/storage';
 import React, { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import {
   FlatList,
   KeyboardAvoidingView,
@@ -26,6 +20,14 @@ import {
   Text,
   useTheme
 } from 'react-native-paper';
+
+import { useTranslation } from 'react-i18next';
+
+import { getEligibleFamilyMembers } from '../api/voterApi';
+import { useDebounce } from '../hooks/useDebounce';
+import { AppTheme } from '../theme';
+import { Voter } from '../types/Voter';
+import { getAuthData } from '../utils/storage';
 
 type Props = {
   visible: boolean;

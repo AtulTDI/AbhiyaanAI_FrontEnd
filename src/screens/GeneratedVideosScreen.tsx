@@ -1,3 +1,13 @@
+import React, { useCallback, useEffect, useState } from 'react';
+import { Platform, StyleSheet, View } from 'react-native';
+import { IconButton, ProgressBar, Surface, Text, useTheme } from 'react-native-paper';
+
+import { useFocusEffect } from '@react-navigation/native';
+
+import { FontAwesome, Ionicons } from '@expo/vector-icons';
+import dayjs from 'dayjs';
+import { useTranslation } from 'react-i18next';
+
 import { getRecipientsWithCompletedVideoId } from '../api/recipientApi';
 import { getVideos } from '../api/videoApi';
 import { sendVideo } from '../api/whatsappApi';
@@ -13,13 +23,6 @@ import { Recipient } from '../types/Recipient';
 import { Video } from '../types/Video';
 import { extractErrorMessage } from '../utils/common';
 import { getAuthData } from '../utils/storage';
-import { FontAwesome, Ionicons } from '@expo/vector-icons';
-import { useFocusEffect } from '@react-navigation/native';
-import dayjs from 'dayjs';
-import React, { useCallback, useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Platform, StyleSheet, View } from 'react-native';
-import { IconButton, ProgressBar, Surface, Text, useTheme } from 'react-native-paper';
 
 type VideoOption = {
   label: string;

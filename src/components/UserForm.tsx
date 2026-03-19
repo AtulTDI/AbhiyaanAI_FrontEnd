@@ -1,12 +1,14 @@
+import React, { useEffect, useState } from 'react';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+
+import { useTranslation } from 'react-i18next';
+
 import { getActiveApplications } from '../api/applicationApi';
 import { FieldConfig } from '../types';
 import { CreateUserPayload, User } from '../types/User';
 import { logger } from '../utils/logger';
 import { getAuthData } from '../utils/storage';
 import DynamicForm from './DynamicForm';
-import React, { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 type ApplicationOption = {
   label: string;

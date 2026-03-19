@@ -1,13 +1,4 @@
-import { usePlatformInfo } from '../hooks/usePlatformInfo';
-import { AppTheme } from '../theme';
-import { Image as ImageType } from '../types/Image';
-import { logger } from '../utils/logger';
-import DeleteConfirmationDialog from './DeleteConfirmationDialog';
-import { FixedLabel } from './FixedLabel';
-import { Ionicons } from '@expo/vector-icons';
-import * as FileSystem from 'expo-file-system';
 import React, { useEffect, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import {
   Dimensions,
   Image,
@@ -30,6 +21,18 @@ import {
   TextInput,
   useTheme
 } from 'react-native-paper';
+
+import * as FileSystem from 'expo-file-system';
+
+import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
+
+import { usePlatformInfo } from '../hooks/usePlatformInfo';
+import { AppTheme } from '../theme';
+import { Image as ImageType } from '../types/Image';
+import { logger } from '../utils/logger';
+import DeleteConfirmationDialog from './DeleteConfirmationDialog';
+import { FixedLabel } from './FixedLabel';
 
 type ImageAsset = {
   uri: string;

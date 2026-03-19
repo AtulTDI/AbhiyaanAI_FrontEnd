@@ -1,3 +1,13 @@
+import React, { useCallback, useEffect, useState } from 'react';
+import { Dimensions, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Card } from 'react-native-paper';
+
+import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
+import { useFocusEffect } from '@react-navigation/native';
+
+import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
+
 import {
   getCampaignStats,
   getDashboard,
@@ -11,13 +21,6 @@ import colors from '../constants/colors';
 import { usePlatformInfo } from '../hooks/usePlatformInfo';
 import { extractErrorMessage } from '../utils/common';
 import { getAuthData } from '../utils/storage';
-import { Ionicons } from '@expo/vector-icons';
-import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-import { useFocusEffect } from '@react-navigation/native';
-import React, { useCallback, useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Dimensions, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Card } from 'react-native-paper';
 
 const { width } = Dimensions.get('window');
 const isSmallScreen = width < 600;

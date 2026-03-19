@@ -1,5 +1,6 @@
-import { logger } from './logger';
 import { Platform } from 'react-native';
+
+import { logger } from './logger';
 
 const SUPPRESSED_WARNINGS = [
   'pointerEvents',

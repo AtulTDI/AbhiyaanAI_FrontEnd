@@ -1,3 +1,7 @@
+import { Platform } from 'react-native';
+
+import * as FileSystem from 'expo-file-system';
+
 import {
   CreateRecipientPayload,
   EditRecipientPayload,
@@ -7,8 +11,6 @@ import {
 import { NativeFormDataFile, UploadableFile } from '../types/Upload';
 import { base64ToBlob } from '../utils/common';
 import axios from './axiosInstance';
-import * as FileSystem from 'expo-file-system';
-import { Platform } from 'react-native';
 
 /**
  * Get paginated recipients with optional search

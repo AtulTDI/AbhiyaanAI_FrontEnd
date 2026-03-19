@@ -1,22 +1,4 @@
-import { generateVoterSlip, getVoterSlip } from '../api/candidateApi';
-import { updateMobileNumber, updateStarVoter, verifyVoter } from '../api/voterApi';
-import FamilyMembersCard from '../components/FamilyMembersCard';
-import Tabs from '../components/Tabs';
-import { usePlatformInfo } from '../hooks/usePlatformInfo';
-import { AppTheme } from '../theme';
-import { Voter } from '../types/Voter';
-import { requestBluetoothPermissions } from '../utils/bluetoothPermissions';
-import { extractErrorMessage } from '../utils/common';
-import { logger } from '../utils/logger';
-import { getSavedPrinterMac, removePrinterMac, savePrinterMac } from '../utils/storage';
-import EnableBluetoothDialog from './EnableBluetoothDialog';
-import PrinterPicker from './PrinterPicker';
-import SlipPreview from './SlipPreview';
-import SurveyTab from './SurveyTab';
-import { useToast } from './ToastProvider';
-import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import {
   AppState,
   Linking,
@@ -40,6 +22,26 @@ import {
 } from 'react-native-paper';
 import Share, { ShareSingleOptions } from 'react-native-share';
 import ViewShot from 'react-native-view-shot';
+
+import { FontAwesome, Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
+
+import { generateVoterSlip, getVoterSlip } from '../api/candidateApi';
+import { updateMobileNumber, updateStarVoter, verifyVoter } from '../api/voterApi';
+import FamilyMembersCard from '../components/FamilyMembersCard';
+import Tabs from '../components/Tabs';
+import { usePlatformInfo } from '../hooks/usePlatformInfo';
+import { AppTheme } from '../theme';
+import { Voter } from '../types/Voter';
+import { requestBluetoothPermissions } from '../utils/bluetoothPermissions';
+import { extractErrorMessage } from '../utils/common';
+import { logger } from '../utils/logger';
+import { getSavedPrinterMac, removePrinterMac, savePrinterMac } from '../utils/storage';
+import EnableBluetoothDialog from './EnableBluetoothDialog';
+import PrinterPicker from './PrinterPicker';
+import SlipPreview from './SlipPreview';
+import SurveyTab from './SurveyTab';
+import { useToast } from './ToastProvider';
 
 type SlipPreviewData = {
   candidate: {

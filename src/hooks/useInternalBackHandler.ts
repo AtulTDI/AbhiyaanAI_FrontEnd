@@ -1,6 +1,7 @@
-import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { BackHandler } from 'react-native';
+
+import { useFocusEffect } from '@react-navigation/native';
 
 export function useInternalBackHandler(canGoBack: boolean, onBack: () => void) {
   useFocusEffect(

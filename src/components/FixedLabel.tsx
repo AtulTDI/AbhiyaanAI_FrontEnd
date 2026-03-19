@@ -1,7 +1,8 @@
-import { AppTheme } from '../theme';
 import React from 'react';
 import { StyleSheet } from 'react-native';
 import { Text, useTheme } from 'react-native-paper';
+
+import { AppTheme } from '../theme';
 
 type Props = {
   label: string;

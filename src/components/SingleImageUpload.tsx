@@ -1,11 +1,14 @@
-import { usePlatformInfo } from '../hooks/usePlatformInfo';
-import { AppTheme } from '../theme';
-import { Ionicons } from '@expo/vector-icons';
-import * as FileSystem from 'expo-file-system';
 import React, { useRef } from 'react';
-import { useTranslation } from 'react-i18next';
 import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Text, useTheme } from 'react-native-paper';
+
+import * as FileSystem from 'expo-file-system';
+
+import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
+
+import { usePlatformInfo } from '../hooks/usePlatformInfo';
+import { AppTheme } from '../theme';
 
 export type ImageAsset = {
   uri: string;

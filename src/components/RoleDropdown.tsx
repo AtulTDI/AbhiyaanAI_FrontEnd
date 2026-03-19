@@ -1,9 +1,11 @@
-import { AppTheme } from '../theme';
 import React from 'react';
-import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 import { List, TextInput, useTheme } from 'react-native-paper';
 import { Dropdown } from 'react-native-paper-dropdown';
+
+import { useTranslation } from 'react-i18next';
+
+import { AppTheme } from '../theme';
 
 type Props = {
   selectedRole: string;

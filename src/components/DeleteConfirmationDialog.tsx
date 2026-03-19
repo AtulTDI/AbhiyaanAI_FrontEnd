@@ -1,9 +1,11 @@
-import { AppTheme } from '../theme';
-import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { useTranslation } from 'react-i18next';
 import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import { Button, Dialog, Portal, Text, useTheme } from 'react-native-paper';
+
+import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
+
+import { AppTheme } from '../theme';
 
 type Props = {
   visible: boolean;

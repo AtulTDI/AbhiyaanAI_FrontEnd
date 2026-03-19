@@ -1,8 +1,10 @@
+import { Platform } from 'react-native';
+
+import * as FileSystem from 'expo-file-system';
+
 import { Candidate, CandidateCreateUpdate } from '../types/Candidate';
 import { NativeFormDataFile, UploadableFile } from '../types/Upload';
 import axios from './axiosInstance';
-import * as FileSystem from 'expo-file-system';
-import { Platform } from 'react-native';
 
 const isWeb = Platform.OS === 'web';
 

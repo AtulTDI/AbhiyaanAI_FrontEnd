@@ -1,10 +1,4 @@
-import { usePlatformInfo } from '../hooks/usePlatformInfo';
-import { AppTheme } from '../theme';
-import { FieldConfig } from '../types';
-import { FixedLabel } from './FixedLabel';
-import FormDropdown from './FormDropdown';
 import React, { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { Platform, StyleSheet, View } from 'react-native';
 import {
   Button,
@@ -15,6 +9,14 @@ import {
   TextInput,
   useTheme
 } from 'react-native-paper';
+
+import { useTranslation } from 'react-i18next';
+
+import { usePlatformInfo } from '../hooks/usePlatformInfo';
+import { AppTheme } from '../theme';
+import { FieldConfig } from '../types';
+import { FixedLabel } from './FixedLabel';
+import FormDropdown from './FormDropdown';
 
 type Props = {
   fields: FieldConfig[];

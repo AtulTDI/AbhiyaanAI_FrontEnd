@@ -1,10 +1,12 @@
-import { AppTheme } from '../theme';
-import { Channel } from '../types/Channel';
-import CommonTable from './CommonTable';
-import { Ionicons } from '@expo/vector-icons';
 import React, { useRef, useState } from 'react';
 import { Animated, Easing, Platform, StyleSheet, TouchableOpacity } from 'react-native';
 import { useTheme } from 'react-native-paper';
+
+import { Ionicons } from '@expo/vector-icons';
+
+import { AppTheme } from '../theme';
+import { Channel } from '../types/Channel';
+import CommonTable from './CommonTable';
 
 export default function ChannelsTable({ channels, onDelete, onUpdateSettings }) {
   const theme = useTheme<AppTheme>();

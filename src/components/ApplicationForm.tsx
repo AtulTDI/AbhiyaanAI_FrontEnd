@@ -1,3 +1,8 @@
+import React, { useEffect, useState } from 'react';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+
+import { useTranslation } from 'react-i18next';
+
 import { getDistributors } from '../api/salesAgentApi';
 import { FieldConfig } from '../types';
 import { Application, CreateApplicationPayload } from '../types/Application';
@@ -5,9 +10,6 @@ import { UploadableFile } from '../types/Upload';
 import { logger } from '../utils/logger';
 import CommonUpload from './CommonUpload';
 import DynamicForm from './DynamicForm';
-import React, { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 type SalesAgentOption = {
   label: string;

@@ -1,3 +1,11 @@
+import React, { useCallback, useRef, useState } from 'react';
+import { KeyboardAvoidingView, StyleSheet, View } from 'react-native';
+import { Button, Surface, Text, useTheme } from 'react-native-paper';
+
+import { useFocusEffect } from '@react-navigation/native';
+
+import { useTranslation } from 'react-i18next';
+
 import { deleteVideoById, getVideos, shareVideoById, uploadVideo } from '../api/videoApi';
 import DeleteConfirmationDialog from '../components/DeleteConfirmationDialog';
 import { useToast } from '../components/ToastProvider';
@@ -9,11 +17,6 @@ import { useServerTable } from '../hooks/useServerTable';
 import { AppTheme } from '../theme';
 import { Video } from '../types/Video';
 import { extractErrorMessage, sortByDateDesc } from '../utils/common';
-import { useFocusEffect } from '@react-navigation/native';
-import React, { useCallback, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { KeyboardAvoidingView, StyleSheet, View } from 'react-native';
-import { Button, Surface, Text, useTheme } from 'react-native-paper';
 
 type VideoUploadPayload = {
   campaign: string;

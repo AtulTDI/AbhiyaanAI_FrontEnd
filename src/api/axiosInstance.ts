@@ -1,10 +1,13 @@
+import { Platform } from 'react-native';
+
+import Constants from 'expo-constants';
+
+import axios, { AxiosInstance } from 'axios';
+
 import { navigate } from '../navigation/NavigationService';
 import { triggerToast } from '../services/toastService';
 import { logger } from '../utils/logger';
 import { clearAuthData, getAuthData } from '../utils/storage';
-import axios, { AxiosInstance } from 'axios';
-import Constants from 'expo-constants';
-import { Platform } from 'react-native';
 
 declare module 'axios' {
   export interface AxiosRequestConfig {

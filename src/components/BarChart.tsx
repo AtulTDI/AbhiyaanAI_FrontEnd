@@ -1,7 +1,8 @@
 import React, { memo, useRef } from 'react';
-import { useTranslation } from 'react-i18next';
 import { Dimensions, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Svg, { G, Line, Rect, Text as SvgText } from 'react-native-svg';
+
+import { useTranslation } from 'react-i18next';
 
 type BarProps = {
   x: number;

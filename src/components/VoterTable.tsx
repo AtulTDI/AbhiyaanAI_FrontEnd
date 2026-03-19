@@ -1,13 +1,15 @@
+import React from 'react';
+import { StyleSheet, View } from 'react-native';
+import { useTheme } from 'react-native-paper';
+
+import { Ionicons } from '@expo/vector-icons';
+import dayjs from 'dayjs';
+import { useTranslation } from 'react-i18next';
+
 import { AppTheme } from '../theme';
 import { Recipient } from '../types/Recipient';
 import CommonTable from './CommonTable';
 import ResponsiveKeyboardView from './ResponsiveKeyboardView';
-import { Ionicons } from '@expo/vector-icons';
-import dayjs from 'dayjs';
-import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { StyleSheet, View } from 'react-native';
-import { useTheme } from 'react-native-paper';
 
 type Props = {
   data: Recipient[];
