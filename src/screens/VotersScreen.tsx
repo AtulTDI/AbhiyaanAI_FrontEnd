@@ -19,11 +19,22 @@ import { useDebounce } from '../hooks/useDebounce';
 import { useInternalBackHandler } from '../hooks/useInternalBackHandler';
 import { usePlatformInfo } from '../hooks/usePlatformInfo';
 import { AppTheme } from '../theme';
-import { AgeGroupStats, ColorCodeStats, Voter } from '../types/Voter';
+import { RootStackParamList } from '../types';
+import {
+  AgeGroupStats,
+  BoothStats,
+  CasteStats,
+  ColorCodeStats,
+  GenderGroupStats,
+  PaginatedSurnameStats,
+  Voter
+} from '../types/Voter';
 import { setEpicScanHandler } from '../utils/epicScannerListener';
+import { logger } from '../utils/logger';
 import VoterCategoryScreen from './VoterCategoryScreen';
-import { MaterialIcons } from '@expo/vector-icons';
+import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import { useIsFocused, useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Buffer } from 'buffer';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
@@ -35,17 +46,44 @@ import {
   Chip,
   Divider,
   IconButton,
-  Searchbar,
   Text,
   TextInput,
   useTheme
 } from 'react-native-paper';
 
 type AgeMode = 'none' | 'lt' | 'gt' | 'between';
+type GenderFilter = 'All' | 'Male' | 'Female';
+type SearchField = 'fullname' | 'epicid' | 'address';
 type ScreenView = 'categories' | 'subcategories' | 'list' | 'detail';
 type SubFilterType = 'color' | 'age' | 'gender' | 'caste' | 'surname' | 'booth';
+type Navigation = NativeStackNavigationProp<RootStackParamList>;
+
+type SubFilterItem = {
+  boothAddress?: string | null;
+  boothNumber?: string;
+  color?: string;
+  count: number;
+  description?: string | null;
+  icon: string;
+  label: string;
+  metaKey?: string;
+  value: string;
+};
+
+type SubcategoryItem = {
+  value: string;
+  label: string;
+  count: string | number;
+  description?: string;
+  color?: string;
+  icon?: React.ComponentProps<typeof MaterialCommunityIcons>['name'];
+};
+
+type PdfFileData = ArrayBuffer | Blob | string | Uint8Array;
 
 const PAGE_SIZE = 50;
+const SUB_PAGE_SIZE = 20;
+const GENDER_OPTIONS: GenderFilter[] = ['All', 'Male', 'Female'];
 
 /* ---------------- SCREEN ---------------- */
 export default function VotersScreen() {
@@ -63,7 +101,7 @@ export default function VotersScreen() {
 
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [gender, setGender] = useState<'All' | 'Male' | 'Female'>('All');
+  const [gender, setGender] = useState<GenderFilter>('All');
 
   const [ageMode, setAgeMode] = useState<AgeMode>('none');
   const [ageValue, setAgeValue] = useState('');
@@ -77,10 +115,10 @@ export default function VotersScreen() {
 
   const [voters, setVoters] = useState<Voter[]>([]);
   const [voterCount, setVoterCount] = useState(0);
-  const [voterStack, setVoterStack] = useState<Voter[]>([]);
+  const voterStackRef = React.useRef<Voter[]>([]);
   const [transitionLoading, setTransitionLoading] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
-  const [searchBy, setSearchBy] = useState<'fullname' | 'epicid' | 'address'>('fullname');
+  const [searchBy, setSearchBy] = useState<SearchField>('fullname');
   const [selectedSubFilter, setSelectedSubFilter] = useState<{
     type: SubFilterType | null;
     value: string | null;
@@ -90,21 +128,20 @@ export default function VotersScreen() {
     value: null,
     boothAddress: null
   });
-  const [subFilterItems, setSubFilterItems] = useState<any[]>([]);
+  const [subFilterItems, setSubFilterItems] = useState<SubFilterItem[]>([]);
   const [subFilterLoading, setSubFilterLoading] = useState(false);
   const [subPage, setSubPage] = useState(1);
   const [subTotalPages, setSubTotalPages] = useState(1);
   const [subTotalRecords, setSubTotalRecords] = useState(0);
   const [footerVertical, setFooterVertical] = useState(false);
   const [downloading, setDownloading] = useState(false);
-  const SUB_PAGE_SIZE = 20;
   const subStartRecord = subTotalRecords === 0 ? 0 : (subPage - 1) * SUB_PAGE_SIZE + 1;
   const subEndRecord = Math.min(subPage * SUB_PAGE_SIZE, subTotalRecords);
   const isFocused = useIsFocused();
   const wasFocused = React.useRef(true);
   const skipResetRef = React.useRef(false);
 
-  const SEARCH_OPTIONS = [
+  const SEARCH_OPTIONS: Array<{ label: string; value: SearchField }> = [
     { label: t('name'), value: 'fullname' },
     { label: t('voter.labelEpicId'), value: 'epicid' },
     { label: t('voter.labelAddress'), value: 'address' }
@@ -155,7 +192,7 @@ export default function VotersScreen() {
   const debouncedAgeValue = useDebounce(ageValue, 500);
   const debouncedMinAge = useDebounce(minAge, 500);
   const debouncedMaxAge = useDebounce(maxAge, 500);
-  const navigation = useNavigation<any>();
+  const navigation = useNavigation<Navigation>();
 
   const delay = (ms: number): Promise<void> =>
     new Promise<void>((resolve) => {
@@ -186,7 +223,7 @@ export default function VotersScreen() {
         setSelectedCategory(null);
         setSelectedSubFilter({ type: null, value: null, boothAddress: null });
         setSelectedVoter(null);
-        setVoterStack([]);
+        voterStackRef.current = [];
 
         setSearch('');
         setGender('All');
@@ -251,7 +288,7 @@ export default function VotersScreen() {
               ? (selectedSubFilter.value ?? undefined)
               : undefined,
             selectedSubFilter.type === 'booth'
-              ? (selectedSubFilter.value ?? undefined)
+              ? Number(selectedSubFilter.value ?? undefined)
               : undefined,
             selectedSubFilter.type === 'booth'
               ? (selectedSubFilter.boothAddress ?? undefined)
@@ -262,11 +299,13 @@ export default function VotersScreen() {
         setVoterCount(res?.data?.totalRecords ?? 0);
         setVoters(res?.data?.data ?? []);
       } catch {
+        return;
       } finally {
         setPageLoading(false);
       }
     }
   }, [
+    ageMode,
     page,
     debouncedSearch,
     debouncedAgeValue,
@@ -275,134 +314,141 @@ export default function VotersScreen() {
     gender,
     searchBy,
     selectedCategory,
-    selectedSubFilter.value
+    selectedSubFilter.boothAddress,
+    selectedSubFilter.type,
+    selectedSubFilter.value,
+    view
   ]);
 
-  const fetchSubFilters = async (type: SubFilterType) => {
-    setSubFilterLoading(true);
-    try {
-      let data: any[] = [];
+  const fetchSubFilters = useCallback(
+    async (type: SubFilterType) => {
+      setSubFilterLoading(true);
+      try {
+        let data: SubFilterItem[] = [];
 
-      if (type === 'color') {
-        const res = await getColorCodes();
-        const stats: ColorCodeStats = res.data;
+        if (type === 'color') {
+          const res = await getColorCodes();
+          const stats: ColorCodeStats = res.data;
 
-        data = Object.entries(stats).map(([key, value]) => ({
-          label: t(`dashboard.voter.support.${key}`),
-          value: value.color,
-          color: value.color,
-          count: value.count,
-          metaKey: key
-        }));
+          data = Object.entries(stats).map(([key, value]) => ({
+            label: t(`dashboard.voter.support.${key}`),
+            value: value.color,
+            color: value.color,
+            count: value.count,
+            metaKey: key,
+            icon: 'circle'
+          }));
+        }
+
+        if (type === 'gender') {
+          const res = await getGenderStats();
+          const result: GenderGroupStats = res.data;
+
+          data = Object.entries(result).map(([key, count]) => ({
+            label: t(`dashboard.voter.${key}`),
+            value: key,
+            count: count as number,
+            icon:
+              key === 'male'
+                ? 'gender-male'
+                : key === 'female'
+                  ? 'gender-female'
+                  : 'gender-transgender'
+          }));
+        }
+
+        if (type === 'caste') {
+          const res = await getCasteStats();
+          const result = (res.data ?? []) as CasteStats[];
+
+          data = result.map((item) => ({
+            label: t(`survey.castes.${item.casteNameEn}`),
+            value: item.casteId,
+            count: item.count,
+            icon: 'account-group'
+          }));
+        }
+
+        if (type === 'booth') {
+          const res = await getBoothStats();
+          const result = (res.data ?? []) as BoothStats[];
+
+          data = result.map((item) => ({
+            label: item.listNumber,
+            value: `${item.listNumber}||${item.address ?? ''}`,
+            boothNumber: item.listNumber,
+            boothAddress: item.address ?? null,
+            description: item.address,
+            count: item.count,
+            icon: 'map-marker'
+          }));
+        }
+        if (type === 'age') {
+          const res = await getAgeStats();
+          const stats: AgeGroupStats = res.data;
+
+          data = [
+            {
+              label: t('dashboard.voter.ageGroups.18_25'),
+              value: '18-25',
+              count: stats.age18To25,
+              icon: 'calendar-range'
+            },
+            {
+              label: t('dashboard.voter.ageGroups.26_35'),
+              value: '26-35',
+              count: stats.age26To35,
+              icon: 'calendar-range'
+            },
+            {
+              label: t('dashboard.voter.ageGroups.36_45'),
+              value: '36-45',
+              count: stats.age36To45,
+              icon: 'calendar-range'
+            },
+            {
+              label: t('dashboard.voter.ageGroups.46_60'),
+              value: '46-60',
+              count: stats.age46To60,
+              icon: 'calendar-range'
+            },
+            {
+              label: t('dashboard.voter.ageGroups.60_plus'),
+              value: '>60',
+              count: stats.age60Plus,
+              icon: 'calendar-range'
+            }
+          ];
+        }
+
+        if (type === 'surname') {
+          const res = await getSurnames(subPage, SUB_PAGE_SIZE);
+          const result: PaginatedSurnameStats = res.data;
+
+          setSubTotalPages(result.totalPages);
+          setSubTotalRecords(result.totalRecords);
+
+          data = result.data.map((s) => ({
+            label: s.surname,
+            value: s.surname,
+            count: s.count,
+            icon: 'account'
+          }));
+        }
+
+        setSubFilterItems(data);
+      } finally {
+        setSubFilterLoading(false);
       }
-
-      if (type === 'gender') {
-        const res = await getGenderStats();
-        const result = res.data;
-
-        data = Object.entries(result).map(([key, count]) => ({
-          label: t(`dashboard.voter.${key}`),
-          value: key,
-          count: count as number,
-          icon:
-            key === 'male'
-              ? 'gender-male'
-              : key === 'female'
-                ? 'gender-female'
-                : 'gender-transgender'
-        }));
-      }
-
-      if (type === 'caste') {
-        const res = await getCasteStats();
-        const result = res.data;
-
-        data = result.map((item: any) => ({
-          label: t(`survey.castes.${item.casteNameEn}`),
-          value: item.casteId,
-          count: item.count,
-          icon: 'account-group'
-        }));
-      }
-
-      if (type === 'booth') {
-        const res = await getBoothStats();
-        const result = res.data;
-
-        data = result.map((item: any, index: number) => ({
-          label: item.listArea,
-          value: `${item.listArea}||${item.address ?? ''}`,
-          boothNumber: item.listArea,
-          boothAddress: item.address ?? null,
-          description: item.address,
-          count: item.count,
-          icon: 'map-marker'
-        }));
-      }
-      if (type === 'age') {
-        const res = await getAgeStats();
-        const stats: AgeGroupStats = res.data;
-
-        data = [
-          {
-            label: t('dashboard.voter.ageGroups.18_25'),
-            value: '18-25',
-            count: stats.age18To25,
-            icon: 'calendar-range'
-          },
-          {
-            label: t('dashboard.voter.ageGroups.26_35'),
-            value: '26-35',
-            count: stats.age26To35,
-            icon: 'calendar-range'
-          },
-          {
-            label: t('dashboard.voter.ageGroups.36_45'),
-            value: '36-45',
-            count: stats.age36To45,
-            icon: 'calendar-range'
-          },
-          {
-            label: t('dashboard.voter.ageGroups.46_60'),
-            value: '46-60',
-            count: stats.age46To60,
-            icon: 'calendar-range'
-          },
-          {
-            label: t('dashboard.voter.ageGroups.60_plus'),
-            value: '>60',
-            count: stats.age60Plus,
-            icon: 'calendar-range'
-          }
-        ];
-      }
-
-      if (type === 'surname') {
-        const res = await getSurnames(subPage, SUB_PAGE_SIZE);
-        const result = res.data;
-
-        setSubTotalPages(result.totalPages);
-        setSubTotalRecords(result.totalRecords);
-
-        data = result.data.map((s) => ({
-          label: s.surname,
-          value: s.surname,
-          count: s.count,
-          icon: 'account'
-        }));
-      }
-
-      setSubFilterItems(data);
-    } finally {
-      setSubFilterLoading(false);
-    }
-  };
+    },
+    [subPage, t]
+  );
 
   useEffect(() => {
     if (view === 'subcategories' && selectedSubFilter.type) {
-      fetchSubFilters(selectedSubFilter.type);
+      void fetchSubFilters(selectedSubFilter.type);
     }
-  }, [view, selectedSubFilter.type, subPage, i18n.language]);
+  }, [fetchSubFilters, i18n.language, selectedSubFilter.type, subPage, view]);
 
   useEffect(() => {
     if (view === 'list') {
@@ -441,7 +487,9 @@ export default function VotersScreen() {
         delay(500)
       ]);
 
-      setVoterStack((prev) => (selectedVoter ? [...prev, selectedVoter] : prev));
+      if (selectedVoter) {
+        voterStackRef.current = [...voterStackRef.current, selectedVoter];
+      }
 
       setSelectedVoter(voter);
       setView('detail');
@@ -504,18 +552,16 @@ export default function VotersScreen() {
 
       await delay(500);
 
-      setVoterStack((prev) => {
-        if (prev.length === 0) {
-          setSelectedVoter(null);
-          setView('list');
-          return [];
-        }
+      if (voterStackRef.current.length === 0) {
+        setSelectedVoter(null);
+        setView('list');
+        return;
+      }
 
-        const copy = [...prev];
-        const last = copy.pop();
-        setSelectedVoter(last!);
-        return copy;
-      });
+      const copy = [...voterStackRef.current];
+      const last = copy.pop() ?? null;
+      voterStackRef.current = copy;
+      setSelectedVoter(last);
     } finally {
       setTransitionLoading(false);
     }
@@ -565,7 +611,7 @@ export default function VotersScreen() {
     return (
       <Subcategory
         title={titleMap[selectedSubFilter.type]}
-        items={subFilterItems}
+        items={subFilterItems as unknown as SubcategoryItem[]}
         loading={subFilterLoading}
         type={selectedSubFilter.type}
         page={subPage}
@@ -602,10 +648,10 @@ export default function VotersScreen() {
     );
   }
 
-  const downloadPdf = async (fileData: any, fileName: string) => {
+  const downloadPdf = async (fileData: PdfFileData, fileName: string) => {
     try {
       if (isWeb && !isMobileWeb) {
-        const blob = new Blob([fileData], { type: 'application/pdf' });
+        const blob = new Blob([fileData as BlobPart], { type: 'application/pdf' });
         const url = window.URL.createObjectURL(blob);
 
         const link = document.createElement('a');
@@ -623,8 +669,11 @@ export default function VotersScreen() {
       let base64: string;
       if (typeof fileData === 'string') {
         base64 = fileData;
+      } else if (fileData instanceof Blob) {
+        const arrayBuffer = await fileData.arrayBuffer();
+        base64 = Buffer.from(arrayBuffer).toString('base64');
       } else {
-        base64 = Buffer.from(fileData).toString('base64');
+        base64 = Buffer.from(fileData as ArrayBuffer).toString('base64');
       }
 
       await FileSystem.writeAsStringAsync(fileUri, base64, {
@@ -636,7 +685,7 @@ export default function VotersScreen() {
         dialogTitle: 'Open voter list'
       });
     } catch (err) {
-      console.error('PDF download/open failed', err);
+      logger.error('PDF download/open failed', err);
       showToast(t('voter.downloadFailed'), 'error');
     }
   };
@@ -783,7 +832,7 @@ export default function VotersScreen() {
       await downloadPdf(response.data, fileName);
       showToast(t('voter.downloadSuccess'), 'success');
     } catch (err) {
-      console.error('PDF export failed', err);
+      logger.error('PDF export failed', err);
       showToast(t('voter.downloadFailed'), 'error');
     } finally {
       setDownloading(false);
@@ -792,21 +841,9 @@ export default function VotersScreen() {
 
   return (
     <View style={styles.screenContainer}>
-      <View style={{ position: 'relative', flex: 1 }}>
+      <View style={styles.screenContentWrapper}>
         {pageLoading && (
-          <View
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: 'rgba(255,255,255,0.6)',
-              justifyContent: 'center',
-              alignItems: 'center',
-              zIndex: 10
-            }}
-          >
+          <View style={styles.pageLoadingOverlay}>
             <ActivityIndicator size="large" color={theme.colors.primary} />
           </View>
         )}
@@ -819,11 +856,11 @@ export default function VotersScreen() {
           keyExtractor={(item) => item.id}
           columnWrapperStyle={numColumns > 1 ? styles.row : undefined}
           contentContainerStyle={styles.container}
-          style={{ flex: 1 }}
+          style={styles.listViewport}
           ListHeaderComponent={
             <>
               <View style={styles.headerRow}>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <View style={styles.headerTitleRow}>
                   <IconButton
                     icon="arrow-left"
                     iconColor={theme.colors.primary}
@@ -875,7 +912,7 @@ export default function VotersScreen() {
                       setPage(1);
                     }}
                     style={styles.mergedSearchInput}
-                    contentStyle={{ paddingRight: 180 }}
+                    contentStyle={styles.mergedSearchInputContent}
                   />
 
                   {/* 🔳 QR SCAN BUTTON */}
@@ -883,7 +920,7 @@ export default function VotersScreen() {
                     <IconButton
                       icon="qrcode-scan"
                       size={22}
-                      style={{ position: 'absolute', right: 140, top: 6 }}
+                      style={styles.qrScanButton}
                       iconColor={theme.colors.primary}
                       onPress={() => {
                         skipResetRef.current = true;
@@ -896,7 +933,7 @@ export default function VotersScreen() {
                     <FormDropdown
                       value={searchBy}
                       options={SEARCH_OPTIONS}
-                      onSelect={(val) => setSearchBy(val as any)}
+                      onSelect={(val) => setSearchBy(val as SearchField)}
                       noMargin
                       customOutline
                       showSearch={false}
@@ -930,13 +967,13 @@ export default function VotersScreen() {
                             {t('voter.gender')}
                           </Text>
 
-                          {['All', 'Male', 'Female'].map((g) => (
+                          {GENDER_OPTIONS.map((g) => (
                             <Chip
                               key={g}
                               selected={gender === g}
                               showSelectedCheck={false}
                               onPress={() => {
-                                setGender(g as any);
+                                setGender(g);
                                 setPage(1);
                               }}
                               style={[
@@ -956,7 +993,7 @@ export default function VotersScreen() {
                             { key: 'lt', label: t('voter.ageLt') },
                             { key: 'gt', label: t('voter.ageGt') },
                             { key: 'between', label: t('voter.ageBetween') }
-                          ].map((m) => (
+                          ].map((m: { key: AgeMode; label: string }) => (
                             <Chip
                               key={m.key}
                               selected={ageMode === m.key}
@@ -1027,13 +1064,13 @@ export default function VotersScreen() {
                               {t('voter.gender')}
                             </Text>
 
-                            {['All', 'Male', 'Female'].map((g) => (
+                            {GENDER_OPTIONS.map((g) => (
                               <Chip
                                 key={g}
                                 selected={gender === g}
                                 showSelectedCheck={false}
                                 onPress={() => {
-                                  setGender(g as any);
+                                  setGender(g);
                                   setPage(1);
                                 }}
                                 style={[
@@ -1046,7 +1083,7 @@ export default function VotersScreen() {
                             ))}
                           </View>
 
-                          <View style={[styles.filterRow, { marginTop: 8 }]}>
+                          <View style={[styles.filterRow, styles.filterRowSpacingTop]}>
                             <Text style={styles.filterSectionLabel}>
                               {t('voter.age')}
                             </Text>
@@ -1055,7 +1092,7 @@ export default function VotersScreen() {
                               { key: 'lt', label: t('voter.ageLt') },
                               { key: 'gt', label: t('voter.ageGt') },
                               { key: 'between', label: t('voter.ageBetween') }
-                            ].map((m) => (
+                            ].map((m: { key: AgeMode; label: string }) => (
                               <Chip
                                 key={m.key}
                                 selected={ageMode === m.key}
@@ -1099,7 +1136,7 @@ export default function VotersScreen() {
                                 value={minAge}
                                 onChangeText={setMinAge}
                                 keyboardType="numeric"
-                                style={[styles.compactAgeInput, { flex: 1 }]}
+                                style={[styles.compactAgeInput, styles.fullWidthInput]}
                                 dense
                               />
                               <TextInput
@@ -1108,7 +1145,7 @@ export default function VotersScreen() {
                                 value={maxAge}
                                 onChangeText={setMaxAge}
                                 keyboardType="numeric"
-                                style={[styles.compactAgeInput, { flex: 1 }]}
+                                style={[styles.compactAgeInput, styles.fullWidthInput]}
                                 dense
                               />
                             </View>
@@ -1138,7 +1175,7 @@ export default function VotersScreen() {
                   name="info-outline"
                   size={36}
                   color={theme.colors.borderGray}
-                  style={{ marginBottom: 8 }}
+                  style={styles.emptyIcon}
                 />
                 <Text style={styles.emptyText}>{t('voter.noData')}</Text>
               </View>
@@ -1222,8 +1259,8 @@ export default function VotersScreen() {
               icon="chevron-left"
               disabled={page === 1}
               onPress={() => setPage((p) => Math.max(1, p - 1))}
-              style={{ margin: 0 }}
-              contentStyle={{ margin: 0 }}
+              style={styles.pagerButton}
+              contentStyle={styles.pagerContent}
             />
 
             <Text style={styles.pageText}>
@@ -1235,8 +1272,8 @@ export default function VotersScreen() {
               icon="chevron-right"
               disabled={page === totalPages}
               onPress={() => setPage((p) => Math.min(totalPages, p + 1))}
-              style={{ margin: 0 }}
-              contentStyle={{ margin: 0 }}
+              style={styles.pagerButton}
+              contentStyle={styles.pagerContent}
             />
           </View>
         </View>
@@ -1252,9 +1289,31 @@ const createStyles = (theme: AppTheme, platform: { isWeb: boolean }) =>
       flex: 1,
       backgroundColor: theme.colors.white
     },
+    screenContentWrapper: {
+      position: 'relative',
+      flex: 1
+    },
+    pageLoadingOverlay: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(255,255,255,0.6)',
+      justifyContent: 'center',
+      alignItems: 'center',
+      zIndex: 10
+    },
+    listViewport: {
+      flex: 1
+    },
     headerRow: {
       flexDirection: 'row',
       justifyContent: 'space-between',
+      alignItems: 'center'
+    },
+    headerTitleRow: {
+      flexDirection: 'row',
       alignItems: 'center'
     },
     iconBackground: {
@@ -1509,22 +1568,45 @@ const createStyles = (theme: AppTheme, platform: { isWeb: boolean }) =>
       backgroundColor: theme.colors.white,
       borderRadius: 12
     },
+    mergedSearchInputContent: {
+      paddingRight: 180
+    },
     dropdownInsideInput: {
       position: 'absolute',
       right: 8,
-      top: 6,
+      top: 3,
       width: 130,
       height: 36
+    },
+    qrScanButton: {
+      position: 'absolute',
+      right: 140,
+      top: 6
+    },
+    filterRowSpacingTop: {
+      marginTop: 8
+    },
+    fullWidthInput: {
+      flex: 1
     },
     emptyContainer: {
       alignItems: 'center',
       justifyContent: 'center',
       paddingVertical: 30
     },
+    emptyIcon: {
+      marginBottom: 8
+    },
     emptyText: {
       marginTop: 6,
       fontSize: 14,
       color: theme.colors.textSecondary,
       textAlign: 'center'
+    },
+    pagerButton: {
+      margin: 0
+    },
+    pagerContent: {
+      margin: 0
     }
   });

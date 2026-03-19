@@ -1,6 +1,6 @@
 import { usePlatformInfo } from '../hooks/usePlatformInfo';
 import { AppTheme } from '../theme';
-import { Candidate } from '../types/Candidate';
+import { Candidate, CandidateCreateUpdate } from '../types/Candidate';
 import { FixedLabel } from './FixedLabel';
 import SingleImageUpload, { ImageAsset } from './SingleImageUpload';
 import React, { useEffect, useState } from 'react';
@@ -13,14 +13,7 @@ type Props = {
   mode: 'create' | 'edit';
   candidate?: Candidate | null;
   loading?: boolean;
-  onSubmit: (data: {
-    name: string;
-    nameMr: string;
-    partyName: string;
-    partyNameMr: string;
-    candidatePhoto?: ImageAsset | null;
-    symbolImage?: ImageAsset | null;
-  }) => void;
+  onSubmit: (data: CandidateCreateUpdate) => void;
   onCancel: () => void;
 };
 
@@ -122,7 +115,7 @@ export default function CandidateForm({
   const handleSubmit = () => {
     if (!validate()) return;
 
-    const payload: any = {
+    const payload: CandidateCreateUpdate = {
       name: name.trim(),
       nameMr: nameMr.trim(),
       partyName: partyName.trim(),
@@ -169,7 +162,7 @@ export default function CandidateForm({
               mode="outlined"
               style={styles.input}
             />
-            <HelperText type="error" visible={!!errors.name} style={{ paddingLeft: 0 }}>
+            <HelperText type="error" visible={!!errors.name} style={styles.helperText}>
               {errors.name}
             </HelperText>
           </View>
@@ -187,7 +180,7 @@ export default function CandidateForm({
               mode="outlined"
               style={styles.input}
             />
-            <HelperText type="error" visible={!!errors.nameMr} style={{ paddingLeft: 0 }}>
+            <HelperText type="error" visible={!!errors.nameMr} style={styles.helperText}>
               {errors.nameMr}
             </HelperText>
           </View>
@@ -208,7 +201,7 @@ export default function CandidateForm({
               mode="outlined"
               style={styles.input}
             />
-            <HelperText type="error" visible={!!errors.party} style={{ paddingLeft: 0 }}>
+            <HelperText type="error" visible={!!errors.party} style={styles.helperText}>
               {errors.party}
             </HelperText>
           </View>
@@ -226,11 +219,7 @@ export default function CandidateForm({
               mode="outlined"
               style={styles.input}
             />
-            <HelperText
-              type="error"
-              visible={!!errors.partyMr}
-              style={{ paddingLeft: 0 }}
-            >
+            <HelperText type="error" visible={!!errors.partyMr} style={styles.helperText}>
               {errors.partyMr}
             </HelperText>
           </View>
@@ -254,7 +243,7 @@ export default function CandidateForm({
             <HelperText
               type="error"
               visible={!!errors.symbolMr}
-              style={{ paddingLeft: 0 }}
+              style={styles.helperText}
             >
               {errors.symbolMr}
             </HelperText>
@@ -273,7 +262,7 @@ export default function CandidateForm({
                 setErrors((e) => ({ ...e, photo: undefined }));
               }}
             />
-            <HelperText type="error" visible={!!errors.photo} style={{ paddingLeft: 0 }}>
+            <HelperText type="error" visible={!!errors.photo} style={styles.helperText}>
               {errors.photo}
             </HelperText>
           </View>
@@ -288,7 +277,7 @@ export default function CandidateForm({
                 setErrors((e) => ({ ...e, symbol: undefined }));
               }}
             />
-            <HelperText type="error" visible={!!errors.symbol} style={{ paddingLeft: 0 }}>
+            <HelperText type="error" visible={!!errors.symbol} style={styles.helperText}>
               {errors.symbol}
             </HelperText>
           </View>
@@ -336,6 +325,9 @@ const styles = StyleSheet.create({
   },
   col: {
     flex: 1
+  },
+  helperText: {
+    paddingLeft: 0
   },
   input: {
     height: 44,

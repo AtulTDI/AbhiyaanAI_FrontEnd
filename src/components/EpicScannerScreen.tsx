@@ -1,22 +1,19 @@
+import { RootStackParamList } from '../types';
 import { triggerEpicScan } from '../utils/epicScannerListener';
+import { logger } from '../utils/logger';
 import { useNavigation } from '@react-navigation/native';
-import React, { useEffect, useRef, useState } from 'react';
-import { Platform, StyleSheet, Text, View } from 'react-native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 import MlkitOcr from 'react-native-mlkit-ocr';
+import { Camera, useCameraDevice } from 'react-native-vision-camera';
 
-let Camera: any = null;
-let useCameraDevice: any = null;
-
-if (Platform.OS !== 'web') {
-  const VisionCamera = require('react-native-vision-camera');
-  Camera = VisionCamera.Camera;
-  useCameraDevice = VisionCamera.useCameraDevice;
-}
+type Navigation = NativeStackNavigationProp<RootStackParamList>;
 
 export default function EpicScannerScreen() {
-  const navigation = useNavigation<any>();
+  const navigation = useNavigation<Navigation>();
   const device = useCameraDevice('back');
-  const cameraRef = useRef(null);
+  const cameraRef = useRef<Camera | null>(null);
 
   const [hasPermission, setHasPermission] = useState(false);
   const [cameraReady, setCameraReady] = useState(false);
@@ -35,7 +32,7 @@ export default function EpicScannerScreen() {
     };
   }, []);
 
-  const scanOnce = async () => {
+  const scanOnce = useCallback(async () => {
     if (!scanningRef.current) return;
 
     try {
@@ -44,16 +41,14 @@ export default function EpicScannerScreen() {
         return;
       }
 
-      console.log('📸 Capturing...');
-      const photo = await cameraRef.current.takeSnapshot({
-        quality: 80
-      });
+      logger.log('📸 Capturing...');
+      const photo = await cameraRef.current.takeSnapshot({ quality: 80 });
 
       const uri = 'file://' + photo.path;
-      console.log('📷 Path:', uri);
+      logger.log('📷 Path:', uri);
 
       const result = await MlkitOcr.detectFromFile(uri);
-      console.log('🧠 OCR:', result);
+      logger.log('🧠 OCR:', result);
 
       if (!result || result.length === 0) {
         setTimeout(scanOnce, 300);
@@ -68,12 +63,12 @@ export default function EpicScannerScreen() {
         .replace(/Z/g, '2')
         .replace(/[^A-Z0-9]/g, '');
 
-      console.log('🔎 CLEAN:', text);
+      logger.log('🔎 CLEAN:', text);
 
       const match = text.match(/[A-Z]{3}[0-9]{7}/);
 
       if (match) {
-        console.log('✅ EPIC:', match[0]);
+        logger.log('✅ EPIC:', match[0]);
         scanningRef.current = false;
         triggerEpicScan(match[0]);
         navigation.goBack();
@@ -82,17 +77,17 @@ export default function EpicScannerScreen() {
 
       setTimeout(scanOnce, 300);
     } catch (e) {
-      console.log('🔥 Scan error:', e);
+      logger.log('🔥 Scan error:', e);
       setTimeout(scanOnce, 1000);
     }
-  };
+  }, [cameraReady, navigation]);
 
   useEffect(() => {
     if (cameraReady && hasPermission) {
-      console.log('🚀 Start scanning');
+      logger.log('🚀 Start scanning');
       scanOnce();
     }
-  }, [cameraReady, hasPermission]);
+  }, [cameraReady, hasPermission, scanOnce]);
 
   if (!device || !hasPermission) {
     return (
@@ -103,7 +98,7 @@ export default function EpicScannerScreen() {
   }
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={styles.container}>
       <Camera
         ref={cameraRef}
         style={StyleSheet.absoluteFill}
@@ -113,7 +108,7 @@ export default function EpicScannerScreen() {
         video={false}
         preview={true}
         onInitialized={() => {
-          console.log('📷 Camera ready');
+          logger.log('📷 Camera ready');
           setCameraReady(true);
         }}
       />
@@ -122,5 +117,12 @@ export default function EpicScannerScreen() {
 }
 
 const styles = StyleSheet.create({
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center' }
+  container: {
+    flex: 1
+  },
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center'
+  }
 });

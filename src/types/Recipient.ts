@@ -9,6 +9,7 @@ export type Recipient = {
 };
 
 export type GetPaginatedRecipients = {
+  id?: string;
   items: Recipient[];
   pageNumber: number;
   pageSize: number;

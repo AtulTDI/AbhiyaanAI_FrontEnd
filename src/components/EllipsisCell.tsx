@@ -1,6 +1,14 @@
 import { AppTheme } from '../theme';
 import React, { useEffect, useRef, useState } from 'react';
-import { Platform, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import {
+  Platform,
+  Pressable,
+  StyleProp,
+  StyleSheet,
+  Text,
+  TextStyle,
+  TouchableOpacity
+} from 'react-native';
 import { useTheme } from 'react-native-paper';
 import Tooltip from 'react-native-walkthrough-tooltip';
 
@@ -10,7 +18,7 @@ type EllipsisCellProps = {
   value: string | React.ReactNode;
   visibleTooltip: string | null;
   setVisibleTooltip: (key: string | null) => void;
-  textStyle: any;
+  textStyle: StyleProp<TextStyle>;
   tableWithSelection: boolean;
 };
 
@@ -25,12 +33,12 @@ export function EllipsisCell({
 }: EllipsisCellProps) {
   const theme = useTheme<AppTheme>();
   const styles = createStyles(theme);
-  const textRef = useRef<any>(null);
+  const textRef = useRef<Text | null>(null);
   const [isTruncated, setIsTruncated] = useState(false);
 
   useEffect(() => {
     if (Platform.OS === 'web' && textRef.current) {
-      const el = textRef.current as HTMLElement;
+      const el = textRef.current as unknown as HTMLElement;
       setIsTruncated(el.scrollWidth > el.clientWidth);
     }
   }, [value, width]);
@@ -41,7 +49,7 @@ export function EllipsisCell({
     }
   };
 
-  return (
+  const Ellipsis = () => (
     <Tooltip
       isVisible={visibleTooltip === cellKey}
       content={<Text style={styles.tooltipText}>{value}</Text>}
@@ -52,21 +60,18 @@ export function EllipsisCell({
       disableShadow={true}
     >
       <TouchableOpacity
-        style={{ width }}
+        style={[styles.touchable, { width }]}
         activeOpacity={0.8}
         onLongPress={() => Platform.OS !== 'web' && setVisibleTooltip(cellKey)}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={() => setVisibleTooltip(null)}
       >
         <Text
           ref={textRef}
           style={[
             textStyle,
-            {
-              maxWidth: width,
-              overflow: !tableWithSelection ? 'hidden' : 'visible !important',
-              cursor: isTruncated ? 'pointer' : 'default'
-            }
+            styles.cellText,
+            { maxWidth: width },
+            !tableWithSelection ? styles.cellTextHidden : styles.cellTextVisible,
+            isTruncated ? styles.cursorPointer : styles.cursorDefault
           ]}
           numberOfLines={1}
           ellipsizeMode="tail"
@@ -76,10 +81,38 @@ export function EllipsisCell({
       </TouchableOpacity>
     </Tooltip>
   );
+
+  if (Platform.OS === 'web') {
+    return (
+      <Pressable onHoverIn={handleMouseEnter} onHoverOut={() => setVisibleTooltip(null)}>
+        <Ellipsis />
+      </Pressable>
+    );
+  }
+
+  return <Ellipsis />;
 }
 
 const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
+    touchable: {
+      // width is dynamic, set inline
+    },
+    cellText: {
+      // maxWidth is dynamic, set inline
+    },
+    cellTextHidden: {
+      overflow: 'hidden'
+    },
+    cellTextVisible: {
+      overflow: 'visible' as 'hidden' | 'visible' | 'scroll' | undefined
+    },
+    cursorPointer: {
+      cursor: 'pointer'
+    },
+    cursorDefault: {
+      cursor: 'auto'
+    },
     tooltipContent: {
       backgroundColor: theme.colors.primary,
       borderRadius: 8,

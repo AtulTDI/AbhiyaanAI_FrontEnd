@@ -11,12 +11,12 @@ import { useToast } from '../components/ToastProvider';
 import { useInternalBackHandler } from '../hooks/useInternalBackHandler';
 import { useServerTable } from '../hooks/useServerTable';
 import { AppTheme } from '../theme';
-import { Candidate } from '../types/Candidate';
+import { Candidate, CandidateCreateUpdate } from '../types/Candidate';
 import { extractErrorMessage } from '../utils/common';
 import { eventBus } from '../utils/eventBus';
 import { getAuthData, saveAuthData } from '../utils/storage';
 import { useFocusEffect } from '@react-navigation/native';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Text, useTheme } from 'react-native-paper';
@@ -51,25 +51,27 @@ export default function AddCandidateScreen() {
         items: response.data || [],
         totalCount: response.data?.length || 0
       };
-    } catch (error: any) {
+    } catch (error) {
       showToast(extractErrorMessage(error, t('candidate.loadFailed')), 'error');
     }
-  }, []);
+  }, [showToast, t]);
 
   const table = useServerTable(fetchCandidates, {
     initialPage: 0,
     initialRowsPerPage: 10
   });
+  const tableRef = useRef(table);
+  tableRef.current = table;
 
   useFocusEffect(
     useCallback(() => {
       setShowForm(false);
       setCandidateToEdit(null);
-      table.fetchData(0, table.rowsPerPage);
+      void tableRef.current.fetchData(0, tableRef.current.rowsPerPage);
     }, [])
   );
 
-  const handleAdd = async (data: any) => {
+  const handleAdd = async (data: CandidateCreateUpdate) => {
     try {
       setLoading(true);
       const response = await addCandidate(data);
@@ -84,14 +86,14 @@ export default function AddCandidateScreen() {
       await table.fetchData(0, table.rowsPerPage);
       setShowForm(false);
       showToast(t('candidate.addSuccess'), 'success');
-    } catch (error: any) {
+    } catch (error) {
       showToast(extractErrorMessage(error, t('candidate.addFailed')), 'error');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleEditSave = async (data: any) => {
+  const handleEditSave = async (data: CandidateCreateUpdate) => {
     try {
       setLoading(true);
 
@@ -112,7 +114,7 @@ export default function AddCandidateScreen() {
       setShowForm(false);
       setCandidateToEdit(null);
       showToast(t('candidate.editSuccess'), 'success');
-    } catch (error: any) {
+    } catch (error) {
       showToast(extractErrorMessage(error, t('candidate.editFailed')), 'error');
     } finally {
       setLoading(false);
@@ -130,7 +132,7 @@ export default function AddCandidateScreen() {
         await deleteCandidate(selectedCandidateId);
         await table.fetchData(table.page, table.rowsPerPage);
         showToast(t('candidate.deleteSuccess'), 'success');
-      } catch (error: any) {
+      } catch (error) {
         showToast(extractErrorMessage(error, t('candidate.deleteFail')), 'error');
       }
       setSelectedCandidateId(null);
@@ -141,10 +143,7 @@ export default function AddCandidateScreen() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.header}>
-        <Text
-          variant="titleLarge"
-          style={[styles.heading, { color: theme.colors.primary }]}
-        >
+        <Text variant="titleLarge" style={styles.heading}>
           {showForm
             ? t(candidateToEdit ? 'candidate.edit' : 'candidate.add')
             : t('candidate.plural')}
@@ -155,13 +154,9 @@ export default function AddCandidateScreen() {
             mode="contained"
             onPress={() => setShowForm(true)}
             icon="plus"
-            labelStyle={{
-              fontWeight: 'bold',
-              fontSize: 14,
-              color: theme.colors.onPrimary
-            }}
+            labelStyle={styles.addButtonLabel}
             buttonColor={theme.colors.primary}
-            style={{ borderRadius: 5 }}
+            style={styles.addButton}
           >
             {t('candidate.add')}
           </Button>
@@ -218,12 +213,21 @@ const createStyles = (theme: AppTheme) =>
       flexGrow: 1
     },
     heading: {
-      fontWeight: 'bold'
+      fontWeight: 'bold',
+      color: theme.colors.primary
     },
     header: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
       marginBottom: 16
+    },
+    addButtonLabel: {
+      fontWeight: 'bold',
+      fontSize: 14,
+      color: theme.colors.onPrimary
+    },
+    addButton: {
+      borderRadius: 5
     }
   });

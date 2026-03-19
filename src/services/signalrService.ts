@@ -1,16 +1,17 @@
+import { logger } from '../utils/logger';
 import * as signalR from '@microsoft/signalr';
 import Constants from 'expo-constants';
 
 let connection: signalR.HubConnection | null = null;
 const joinedGroups: Set<string> = new Set();
-const subscribers: Record<string, Set<(...args: any[]) => void>> = {};
+const subscribers: Record<string, Set<(...args: unknown[]) => void>> = {};
 
 /**
  * Start SignalR connection (idempotent)
  */
 export const startConnection = async (accessToken: string) => {
   if (connection && connection.state !== signalR.HubConnectionState.Disconnected) {
-    console.log('⚠️ SignalR already connected');
+    logger.log('⚠️ SignalR already connected');
     return;
   }
 
@@ -25,7 +26,7 @@ export const startConnection = async (accessToken: string) => {
 
   // Rejoin groups after reconnect
   connection.onreconnected(async () => {
-    console.log('🔁 SignalR reconnected. Rejoining groups...');
+    logger.log('🔁 SignalR reconnected. Rejoining groups...');
     await joinGroups(Array.from(joinedGroups));
   });
 
@@ -36,9 +37,9 @@ export const startConnection = async (accessToken: string) => {
 
   try {
     await connection.start();
-    console.log('✅ SignalR connected');
+    logger.log('✅ SignalR connected');
   } catch (error) {
-    console.error('❌ SignalR connection error:', error);
+    logger.error('❌ SignalR connection error:', error);
   }
 };
 
@@ -47,7 +48,7 @@ export const startConnection = async (accessToken: string) => {
  */
 export const joinGroups = async (groups: string | string[]) => {
   if (!connection || connection.state !== signalR.HubConnectionState.Connected) {
-    console.warn('⚠️ Cannot join groups: SignalR not connected');
+    logger.warn('⚠️ Cannot join groups: SignalR not connected');
     return;
   }
 
@@ -58,9 +59,9 @@ export const joinGroups = async (groups: string | string[]) => {
       try {
         await connection.invoke('JoinGroup', g);
         joinedGroups.add(g);
-        console.log(`✅ Joined group: ${g}`);
+        logger.log(`✅ Joined group: ${g}`);
       } catch (err) {
-        console.error(`❌ Failed to join group ${g}:`, err);
+        logger.error(`❌ Failed to join group ${g}:`, err);
       }
     }
   }
@@ -71,7 +72,7 @@ export const joinGroups = async (groups: string | string[]) => {
  */
 export const leaveGroups = async (groups: string | string[]) => {
   if (!connection || connection.state !== signalR.HubConnectionState.Connected) {
-    console.warn('⚠️ Cannot leave groups: SignalR not connected');
+    logger.warn('⚠️ Cannot leave groups: SignalR not connected');
     return;
   }
 
@@ -82,9 +83,9 @@ export const leaveGroups = async (groups: string | string[]) => {
       try {
         await connection.invoke('LeaveGroup', g);
         joinedGroups.delete(g);
-        console.log(`✅ Left group: ${g}`);
+        logger.log(`✅ Left group: ${g}`);
       } catch (err) {
-        console.error(`❌ Failed to leave group ${g}:`, err);
+        logger.error(`❌ Failed to leave group ${g}:`, err);
       }
     }
   }
@@ -93,11 +94,11 @@ export const leaveGroups = async (groups: string | string[]) => {
 /**
  * Register event (idempotent)
  */
-export const onEvent = (event: string, callback: (...args: any[]) => void) => {
+export const onEvent = (event: string, callback: (...args: unknown[]) => void) => {
   if (!subscribers[event]) subscribers[event] = new Set();
   if (!subscribers[event].has(callback)) {
     subscribers[event].add(callback);
-    if (connection) connection.on(event, callback);
+    if (connection) connection.on(event, (...args: unknown[]) => callback(...args));
   }
 };
 
@@ -107,7 +108,7 @@ export const onEvent = (event: string, callback: (...args: any[]) => void) => {
 export const stopConnection = async () => {
   if (connection && connection.state !== signalR.HubConnectionState.Disconnected) {
     await connection.stop();
-    console.log('🛑 SignalR stopped');
+    logger.log('🛑 SignalR stopped');
   }
   connection = null;
   joinedGroups.clear();

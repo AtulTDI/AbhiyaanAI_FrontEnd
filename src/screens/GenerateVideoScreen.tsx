@@ -49,7 +49,7 @@ export default function GenerateVideoScreen() {
               setStepData({ 0: null, 1: [] });
             }
           }
-        } catch (error) {
+        } catch {
           if (active) {
             setShowOverlay(false);
             setActiveStep(0);
@@ -77,7 +77,7 @@ export default function GenerateVideoScreen() {
       await generateCustomisedVideo(payload);
       showToast(t('video.generateVideoStart'), 'success');
       navigate('Processing');
-    } catch (error: any) {
+    } catch (error: unknown) {
       showToast(extractErrorMessage(error, t('video.generateVideoFail')), 'error');
     } finally {
       setIsLoading(false);
@@ -169,23 +169,19 @@ export default function GenerateVideoScreen() {
                     <Ionicons name="checkmark" size={18} color={colors.white} />
                   ) : (
                     <Text
-                      style={{
-                        color: isActive ? colors.white : colors.outline,
-                        fontWeight: 'bold'
-                      }}
+                      style={
+                        isActive ? styles.stepNumberActive : styles.stepNumberInactive
+                      }
                     >
                       {index + 1}
                     </Text>
                   )}
                 </View>
                 <Text
-                  style={{
-                    marginTop: 6,
-                    fontSize: 14,
-                    textAlign: 'center',
-                    color: isActive ? colors.primary : colors.outline,
-                    fontWeight: isActive ? 'bold' : 'normal'
-                  }}
+                  style={[
+                    styles.stepLabel,
+                    isActive ? styles.stepLabelActive : styles.stepLabelInactive
+                  ]}
                 >
                   {label}
                 </Text>
@@ -198,37 +194,23 @@ export default function GenerateVideoScreen() {
 
         {/* Count Section */}
         {activeStep === 1 && (
-          <Surface
-            style={[
-              styles.countContainer,
-              { marginTop: isWeb && !isMobileWeb ? -15 : 10 }
-            ]}
-          >
+          <Surface style={styles.countContainer}>
             <Ionicons
               name="people-circle-outline"
-              size={isWeb && !isMobileWeb ? 28 : 20}
+              size={styles.peopleIcon.fontSize}
               color={colors.primary}
-              style={{ marginRight: isWeb && !isMobileWeb ? 10 : 6 }}
+              style={styles.peopleIcon}
             />
-            <Text
-              style={[styles.countText, { fontSize: isWeb && !isMobileWeb ? 16 : 12 }]}
-            >
+            <Text style={styles.countText}>
               {t('selected')}:{' '}
-              <Text
-                style={[
-                  styles.countHighlight,
-                  { fontSize: isWeb && !isMobileWeb ? 16 : 12 }
-                ]}
-              >
-                {selectedVoterCount} /{' '}
-              </Text>
+              <Text style={styles.countHighlight}>{selectedVoterCount} / </Text>
               {totalVoterCount}
             </Text>
           </Surface>
         )}
 
         {/* Step Content */}
-        <View style={[styles.content, { marginTop: activeStep === 1 ? 0 : 10 }]}>
+        <View style={[styles.content, activeStep !== 1 && styles.contentWithTopSpacing]}>
           {renderStepContent()}
         </View>
 
@@ -292,7 +274,7 @@ export default function GenerateVideoScreen() {
                 name="time-outline"
                 size={50}
                 color={colors.primary}
-                style={{ marginBottom: 20, opacity: 0.85 }}
+                style={styles.overlayIcon}
               />
               <Text style={styles.overlayMessageTitle}>
                 {t('video.processingProgress')}
@@ -350,6 +332,9 @@ const createStyles = (
     },
     content: {
       flex: 1
+    },
+    contentWithTopSpacing: {
+      marginTop: 10
     },
     buttons: {
       flexDirection: 'row',
@@ -409,17 +394,48 @@ const createStyles = (
       flexDirection: 'row',
       alignItems: 'center',
       alignSelf: 'center',
+      marginTop: platform.isWeb && !platform.isMobileWeb ? -15 : 10,
       paddingVertical: 8,
       paddingHorizontal: 14,
       borderRadius: 12,
       backgroundColor: theme.colors.background
     },
-    countText: {
+    peopleIcon: {
+      fontSize: platform.isWeb && !platform.isMobileWeb ? 28 : 20,
+      marginRight: platform.isWeb && !platform.isMobileWeb ? 10 : 6
+    },
+    stepNumberActive: {
+      color: theme.colors.white,
+      fontWeight: 'bold'
+    },
+    stepNumberInactive: {
+      color: theme.colors.outline,
+      fontWeight: 'bold'
+    },
+    stepLabel: {
+      marginTop: 6,
       fontSize: 14,
+      textAlign: 'center'
+    },
+    stepLabelActive: {
+      color: theme.colors.primary,
+      fontWeight: 'bold'
+    },
+    stepLabelInactive: {
+      color: theme.colors.outline,
+      fontWeight: 'normal'
+    },
+    countText: {
+      fontSize: platform.isWeb && !platform.isMobileWeb ? 16 : 12,
       color: theme.colors.textPrimary
     },
     countHighlight: {
+      fontSize: platform.isWeb && !platform.isMobileWeb ? 16 : 12,
       fontWeight: '700',
       color: theme.colors.textPrimary
+    },
+    overlayIcon: {
+      marginBottom: 20,
+      opacity: 0.85
     }
   });

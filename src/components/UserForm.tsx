@@ -1,27 +1,33 @@
 import { getActiveApplications } from '../api/applicationApi';
-import { FieldConfig, FieldType } from '../types';
-import { User } from '../types/User';
+import { FieldConfig } from '../types';
+import { CreateUserPayload, User } from '../types/User';
+import { logger } from '../utils/logger';
 import { getAuthData } from '../utils/storage';
 import DynamicForm from './DynamicForm';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
+type ApplicationOption = {
+  label: string;
+  value: string;
+};
+
 type Props = {
   role: string;
   mode: 'create' | 'edit';
-  onCreate: (data: {
-    firstName: string;
-    lastName: string;
-    email: string;
-    password?: string;
-    phoneNumber: string;
-    role: string;
-  }) => void;
+  onCreate: (data: CreateUserPayload) => void;
   userToEdit: User;
   setUserToEdit: (user: User | null) => void;
   setShowAddUserView: (visible: boolean) => void;
 };
+
+type UserFormValues = CreateUserPayload & {
+  applicationId?: string;
+};
+
+const scrollViewStyle = { flex: 1 };
+const scrollContentStyle = { flexGrow: 1, padding: 16 };
 
 export default function UserForm({
   role,
@@ -32,11 +38,10 @@ export default function UserForm({
   setShowAddUserView
 }: Props) {
   const { t } = useTranslation();
-  const [applicationOptions, setApplicationOptions] = useState<any[]>([]);
+  const [applicationOptions, setApplicationOptions] = useState<ApplicationOption[]>([]);
   const [loggedInUserRole, setLoggedInUserRole] = useState<
     'Admin' | 'User' | 'SuperAdmin' | null
   >(null);
-  const [formRole, setFormRole] = useState('');
 
   useEffect(() => {
     (async () => {
@@ -65,14 +70,14 @@ export default function UserForm({
         }));
         setApplicationOptions(formatted);
       } catch (error) {
-        console.error('Failed to fetch applications', error);
+        logger.error('Failed to fetch applications', error);
       }
     };
 
     if (loggedInUserRole === 'SuperAdmin' && role === 'Admin') {
-      fetchApplications();
+      void fetchApplications();
     }
-  }, [loggedInUserRole]);
+  }, [loggedInUserRole, role]);
 
   const getUserFields = (): FieldConfig[] => {
     const fields: FieldConfig[] = [
@@ -123,7 +128,7 @@ export default function UserForm({
         name: 'applicationId',
         label: t('application.singular'),
         placeholder: t('placeholder.selectApplicationPlaceholder'),
-        type: 'dropdown' as FieldType,
+        type: 'dropdown',
         options: applicationOptions,
         required: true,
         disabled: mode === 'edit'
@@ -135,8 +140,8 @@ export default function UserForm({
 
   return (
     <KeyboardAwareScrollView
-      style={{ flex: 1 }}
-      contentContainerStyle={{ flexGrow: 1, padding: 16 }}
+      style={scrollViewStyle}
+      contentContainerStyle={scrollContentStyle}
       enableOnAndroid
       extraScrollHeight={20}
       keyboardShouldPersistTaps="handled"
@@ -152,12 +157,7 @@ export default function UserForm({
           phoneNumber: userToEdit?.phoneNumber || ''
         }}
         mode={mode}
-        onChange={(field, value) => {
-          if (field.name === 'role') {
-            setFormRole(value);
-          }
-        }}
-        onSubmit={(data: any) =>
+        onSubmit={(data: UserFormValues) =>
           onCreate({
             ...data,
             role: role ? role : 'User'

@@ -7,19 +7,28 @@ import { useInternalBackHandler } from '../hooks/useInternalBackHandler';
 import { usePlatformInfo } from '../hooks/usePlatformInfo';
 import { useServerTable } from '../hooks/useServerTable';
 import { AppTheme } from '../theme';
-import { GetPaginatedVideos } from '../types/Video';
+import { Video } from '../types/Video';
 import { extractErrorMessage, sortByDateDesc } from '../utils/common';
 import { useFocusEffect } from '@react-navigation/native';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { KeyboardAvoidingView, StyleSheet, View } from 'react-native';
 import { Button, Surface, Text, useTheme } from 'react-native-paper';
+
+type VideoUploadPayload = {
+  campaign: string;
+  cloningSpeed?: number;
+  file: { uri?: string; name?: string } | null;
+  message: string;
+  voiceCloneId: string | null;
+};
 
 export default function UploadVideoScreen() {
   const { isIOS } = usePlatformInfo();
   const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
   const { colors } = theme;
+  const styles = createStyles(theme);
   const { showToast } = useToast();
 
   const [showAddView, setShowAddView] = useState(false);
@@ -39,44 +48,49 @@ export default function UploadVideoScreen() {
 
   useInternalBackHandler(canHandleInternalBack, handleInternalBack);
 
-  const fetchVideos = useCallback(async (page: number, pageSize: number) => {
-    setLoading(true);
-    try {
-      const response = await getVideos(page, pageSize);
-      const sortedVideos = sortByDateDesc(
-        response?.data && Array.isArray(response.data.items) ? response.data.items : [],
-        'createdAt'
-      );
+  const fetchVideos = useCallback(
+    async (page: number, pageSize: number) => {
+      setLoading(true);
+      try {
+        const response = await getVideos(page, pageSize);
+        const sortedVideos = sortByDateDesc(
+          response?.data && Array.isArray(response.data.items) ? response.data.items : [],
+          'createdAt'
+        );
+        return {
+          items: sortedVideos ?? [],
+          totalCount: response?.data?.totalRecords ?? 0
+        };
+      } catch (error) {
+        showToast(extractErrorMessage(error, t('video.loadVideoFailMessage')), 'error');
+        return { items: [], totalCount: 0 }; // ← add this
+      } finally {
+        setLoading(false);
+      }
+    },
+    [showToast, t]
+  );
 
-      return {
-        items: sortedVideos ?? [],
-        totalCount: response?.data?.totalRecords ?? 0
-      };
-    } catch (error: any) {
-      showToast(extractErrorMessage(error, t('video.loadVideoFailMessage')), 'error');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const table = useServerTable<GetPaginatedVideos>(fetchVideos, {
+  const table = useServerTable<Video>(fetchVideos, {
     initialPage: 0,
     initialRowsPerPage: 10
   });
+  const tableRef = useRef(table);
+  tableRef.current = table;
 
   useFocusEffect(
     useCallback(() => {
       setShowAddView(false);
-      table.setPage(0);
-      table.setRowsPerPage(10);
-      table.fetchData(0, 10);
+      tableRef.current.setPage(0);
+      tableRef.current.setRowsPerPage(10);
+      void tableRef.current.fetchData(0, 10);
     }, [])
   );
 
-  const handleAddVideo = async (videoData: any) => {
+  const handleAddVideo = async (videoData: VideoUploadPayload) => {
     try {
       setUploading(true);
-      await uploadVideo(videoData);
+      await uploadVideo(videoData as unknown as Video);
       setUploading(false);
       await table.fetchData(0, table.rowsPerPage);
       setShowAddView(false);
@@ -115,8 +129,8 @@ export default function UploadVideoScreen() {
       try {
         await deleteVideoById(selectedVideoId);
         await table.fetchData(table.page, table.rowsPerPage);
-        showToast(t('video.deleteSucessMessage'), 'success');
-      } catch (error: any) {
+        showToast(t('video.deleteSuccessMessage'), 'success');
+      } catch (error) {
         showToast(extractErrorMessage(error, t('video.deleteFailMessage')), 'error');
       }
       setSelectedVideoId(null);
@@ -129,23 +143,20 @@ export default function UploadVideoScreen() {
       <Surface style={styles.container} elevation={1}>
         <KeyboardAvoidingView
           behavior={isIOS ? 'padding' : undefined}
-          style={{ flex: 1 }}
+          style={styles.formWrapper}
         >
           {!showAddView ? (
             <>
               {/* Heading Row */}
               <View style={styles.headerRow}>
-                <Text
-                  variant="titleLarge"
-                  style={[styles.heading, { color: colors.primary }]}
-                >
+                <Text variant="titleLarge" style={styles.heading}>
                   {t('video.plural')}
                 </Text>
                 <Button
                   mode="contained"
                   icon="plus"
                   onPress={() => setShowAddView(true)}
-                  style={{ borderRadius: 6 }}
+                  style={styles.addButton}
                   buttonColor={colors.primary}
                   textColor={colors.onPrimary}
                 >
@@ -173,10 +184,7 @@ export default function UploadVideoScreen() {
           ) : (
             <>
               <View style={styles.headerRow}>
-                <Text
-                  variant="titleLarge"
-                  style={[styles.heading, { color: colors.primary }]}
-                >
+                <Text variant="titleLarge" style={styles.heading}>
                   {t('video.add')}
                 </Text>
               </View>
@@ -202,18 +210,26 @@ export default function UploadVideoScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    padding: 16,
-    flex: 1
-  },
-  headerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16
-  },
-  heading: {
-    fontWeight: 'bold'
-  }
-});
+const createStyles = (theme: AppTheme) =>
+  StyleSheet.create({
+    container: {
+      padding: 16,
+      flex: 1
+    },
+    headerRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 16
+    },
+    heading: {
+      fontWeight: 'bold',
+      color: theme.colors.primary
+    },
+    addButton: {
+      borderRadius: 6
+    },
+    formWrapper: {
+      flex: 1
+    }
+  });

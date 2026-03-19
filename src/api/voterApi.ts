@@ -1,3 +1,4 @@
+import { NativeFormDataFile, UploadableFile } from '../types/Upload';
 import {
   AgeGroupStats,
   BoothStats,
@@ -77,7 +78,7 @@ export const getVotersByCategory = (
 /**
  * Get voter by id
  */
-export const getVoterById = (id) =>
+export const getVoterById = (id: string) =>
   axios.get<Voter>(`/Voters/get-voters-by-id/${id}`, {
     useApiPrefix: true,
     useVoterBase: true
@@ -86,7 +87,7 @@ export const getVoterById = (id) =>
 /**
  * Add multiple voters
  */
-export const uploadVoters = async (file: any, applicationId: string) => {
+export const uploadVoters = async (file: UploadableFile, applicationId: string) => {
   const formData = new FormData();
   const fileName = file.name || 'upload.xlsx';
   const mimeType =
@@ -106,22 +107,26 @@ export const uploadVoters = async (file: any, applicationId: string) => {
         encoding: FileSystem.EncodingType.Base64
       });
 
-      formData.append('file', {
+      const nativeFile: NativeFormDataFile = {
         uri: tempPath,
         name: fileName,
         type: mimeType
-      } as any);
+      };
+
+      formData.append('file', nativeFile);
     }
   } else if (file instanceof File) {
     // Web File
     formData.append('file', file);
   } else if (file?.uri?.startsWith('file://')) {
     // RN Picker or native uri
-    formData.append('file', {
+    const nativeFile: NativeFormDataFile = {
       uri: file.uri,
       name: fileName,
       type: mimeType
-    } as any);
+    };
+
+    formData.append('file', nativeFile);
   } else {
     throw new Error('Unsupported file format');
   }
@@ -145,7 +150,7 @@ export const uploadVoters = async (file: any, applicationId: string) => {
 /**
  * Update voter mobile number
  */
-export const updateMobileNumber = (id, number) =>
+export const updateMobileNumber = (id: string, number: string) =>
   axios.put<Voter>(
     `/Voters/update-mobile-number/${id}?mobileNumber=${number}`,
     {},
@@ -155,7 +160,7 @@ export const updateMobileNumber = (id, number) =>
 /**
  * Verify voter
  */
-export const verifyVoter = (id, type) =>
+export const verifyVoter = (id: string, type: boolean) =>
   axios.put<Voter>(
     `/Voters/verify-voter/${id}?isVerify=${type}`,
     {},
@@ -165,7 +170,7 @@ export const verifyVoter = (id, type) =>
 /**
  * Star voter
  */
-export const updateStarVoter = (id, type) =>
+export const updateStarVoter = (id: string, type: boolean) =>
   axios.put<Voter>(
     `/Voters/update-star-voter/${id}?isStarVoter=${type}`,
     {},
@@ -175,7 +180,7 @@ export const updateStarVoter = (id, type) =>
 /**
  * Get family members
  */
-export const getFamilyMembers = (id) =>
+export const getFamilyMembers = (id: string) =>
   axios.get<GetFamilyMembers>(`/Voters/get-family-members/${id}`, {
     useApiPrefix: true,
     useVoterBase: true
@@ -185,11 +190,11 @@ export const getFamilyMembers = (id) =>
  * Get eligible family members
  */
 export const getEligibleFamilyMembers = (
-  applicationId,
-  pageNumber,
-  pageSize,
-  voterId,
-  searchText
+  applicationId: string,
+  pageNumber: number,
+  pageSize: number,
+  voterId: string,
+  searchText: string
 ) =>
   axios.get<GetFamilyMembers>(
     `/Voters/getvoters-eligible-for-family/${applicationId}?voterId=${voterId}&page=${pageNumber}&pageSize=${pageSize}&searchText=${searchText}`,
@@ -199,7 +204,10 @@ export const getEligibleFamilyMembers = (
 /**
  * Add family member
  */
-export const addFamilyMember = (data) =>
+export const addFamilyMember = (data: {
+  sourceVoterId: string;
+  targetVoterIds: string[];
+}) =>
   axios.post<Voter>('/Voters/addvoter-to-family', data, {
     useApiPrefix: true,
     useVoterBase: true
@@ -255,7 +263,7 @@ export const getGenderStats = () =>
  * Get caste stats
  */
 export const getCasteStats = () =>
-  axios.get<CasteStats>('/Voters/get-caste-stats', {
+  axios.get<CasteStats[]>('/Voters/get-caste-stats', {
     useApiPrefix: true,
     useVoterBase: true
   });
@@ -264,7 +272,7 @@ export const getCasteStats = () =>
  * Get booth
  */
 export const getBoothStats = () =>
-  axios.get<BoothStats>('/Voters/get-list-area-stats', {
+  axios.get<BoothStats[]>('/Voters/get-list-area-stats', {
     useApiPrefix: true,
     useVoterBase: true
   });

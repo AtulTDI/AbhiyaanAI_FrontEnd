@@ -1,4 +1,5 @@
 import { AppTheme } from '../theme';
+import { logger } from '../utils/logger';
 import { useToast } from './ToastProvider';
 import * as DocumentPicker from 'expo-document-picker';
 import React, { useState } from 'react';
@@ -37,6 +38,7 @@ const hasValidExtension = (name: string, extensions: string[]) => {
 export default function CommonUpload({ fileType, onUpload, label, directUpload }: Props) {
   const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
+  const styles = createStyles(theme);
   const { showToast } = useToast();
   const { colors } = theme;
   const [file, setFile] = useState<DocumentPicker.DocumentPickerAsset | null>(null);
@@ -106,7 +108,7 @@ export default function CommonUpload({ fileType, onUpload, label, directUpload }
         onUpload(selectedFile);
       }
     } catch (err) {
-      console.error('File upload error:', err);
+      logger.error('File upload error:', err);
       showToast('Something went wrong while selecting the file', 'error');
     }
   };
@@ -136,7 +138,7 @@ export default function CommonUpload({ fileType, onUpload, label, directUpload }
           </Text>
 
           {file && (
-            <Text variant="bodySmall" style={{ marginTop: 10, color: colors.primary }}>
+            <Text variant="bodySmall" style={styles.fileNameText}>
               ✅ {file.name}
             </Text>
           )}
@@ -165,36 +167,41 @@ export default function CommonUpload({ fileType, onUpload, label, directUpload }
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    alignItems: 'center',
-    marginTop: 16
-  },
-  uploadBox: {
-    borderStyle: 'dashed',
-    borderWidth: 2,
-    borderRadius: 12,
-    height: 170,
-    width: '100%',
-    justifyContent: 'center',
-    alignItems: 'center'
-  },
-  touchArea: {
-    alignItems: 'center'
-  },
-  label: {
-    fontWeight: '600',
-    marginTop: 8
-  },
-  buttonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 12,
-    marginTop: 16,
-    width: '100%'
-  },
-  actionButton: {
-    flex: 1,
-    borderRadius: 6
-  }
-});
+const createStyles = (theme: AppTheme) =>
+  StyleSheet.create({
+    container: {
+      alignItems: 'center',
+      marginTop: 16
+    },
+    uploadBox: {
+      borderStyle: 'dashed',
+      borderWidth: 2,
+      borderRadius: 12,
+      height: 170,
+      width: '100%',
+      justifyContent: 'center',
+      alignItems: 'center'
+    },
+    touchArea: {
+      alignItems: 'center'
+    },
+    label: {
+      fontWeight: '600',
+      marginTop: 8
+    },
+    buttonRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      gap: 12,
+      marginTop: 16,
+      width: '100%'
+    },
+    actionButton: {
+      flex: 1,
+      borderRadius: 6
+    },
+    fileNameText: {
+      marginTop: 10,
+      color: theme.colors.primary
+    }
+  });

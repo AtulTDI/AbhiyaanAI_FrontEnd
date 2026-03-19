@@ -1,10 +1,11 @@
 import { GetPaginatedImages, Image } from '../types/Image';
+import { NativeFormDataFile } from '../types/Upload';
 import axios from './axiosInstance';
 
 /**
  * Get paginated images with optional search
  */
-export const getImages = (pageNumber, pageSize) =>
+export const getImages = (pageNumber: number, pageSize: number) =>
   axios.get<GetPaginatedImages>(
     `/ImageCampaign/get-image-campaigns?page=${pageNumber + 1}&pageSize=${pageSize}`,
     { useApiPrefix: true }
@@ -13,7 +14,7 @@ export const getImages = (pageNumber, pageSize) =>
 /**
  * Get paginated campaigns with optional search
  */
-export const getCampaigns = (pageNumber, pageSize) =>
+export const getCampaigns = (pageNumber: number, pageSize: number) =>
   axios.get(
     `/ImageCampaign/get-shared-image-campaigns?page=${pageNumber + 1}&pageSize=${pageSize}`,
     { useApiPrefix: true }
@@ -22,7 +23,7 @@ export const getCampaigns = (pageNumber, pageSize) =>
 /**
  * Upload Images
  */
-export const uploadImages = async (data: any) => {
+export const uploadImages = async (data: FormData) => {
   const response = await axios.post('/ImageCampaign/upload-images', data, {
     headers: { 'Content-Type': 'multipart/form-data' },
     useApiPrefix: true,
@@ -43,8 +44,10 @@ export const shareImageById = (id: string, payload: boolean) =>
 /**
  * Update image by ID
  */
-export const updateImageById = (id: string, payload) =>
-  axios.put(`/ImageCampaign/${id}/update-campaign`, payload, { useApiPrefix: true });
+export const updateImageById = (
+  id: string,
+  payload: FormData | NativeFormDataFile | Blob
+) => axios.put(`/ImageCampaign/${id}/update-campaign`, payload, { useApiPrefix: true });
 
 /**
  * Delete image by ID

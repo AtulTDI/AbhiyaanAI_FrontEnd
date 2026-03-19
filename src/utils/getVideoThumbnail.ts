@@ -1,5 +1,6 @@
 import { Thumbnail } from '../types';
 import { getFileNameWithoutExtension } from './common';
+import { logger } from './logger';
 import { Platform } from 'react-native';
 
 export const getVideoThumbnail = async (
@@ -78,7 +79,7 @@ const getMobileThumbnail = async (
       name: `${baseName}_thumbnail.jpg`
     };
   } catch (error) {
-    console.error('❌ Thumbnail generation error:', error);
+    logger.error('❌ Thumbnail generation error:', error);
     return null;
   }
 };

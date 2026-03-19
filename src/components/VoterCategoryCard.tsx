@@ -21,7 +21,7 @@ export default function VoterCategoryCard({ title, description, icon, onPress }:
         <MaterialCommunityIcons name={icon} size={26} color={theme.colors.primary} />
       </View>
 
-      <View style={{ flex: 1 }}>
+      <View style={styles.textWrap}>
         <Text style={styles.title}>{title}</Text>
         <Text style={styles.desc}>{description}</Text>
       </View>
@@ -49,6 +49,9 @@ const createStyles = (theme: AppTheme) =>
       justifyContent: 'center',
       alignItems: 'center',
       backgroundColor: theme.colors.primarySurface
+    },
+    textWrap: {
+      flex: 1
     },
     title: {
       fontWeight: '700',

@@ -1,21 +1,31 @@
 import { getDistributors } from '../api/salesAgentApi';
 import { FieldConfig } from '../types';
-import { Application } from '../types/Application';
+import { Application, CreateApplicationPayload } from '../types/Application';
+import { UploadableFile } from '../types/Upload';
+import { logger } from '../utils/logger';
 import CommonUpload from './CommonUpload';
 import DynamicForm from './DynamicForm';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
+type SalesAgentOption = {
+  label: string;
+  value: string;
+};
+
 type Props = {
   mode: 'create' | 'edit';
   loading: boolean;
-  onCreate: (data: { appName: string; videoCount: number }) => void;
-  onVoterFileUpload: (data: any) => void;
+  onCreate: (data: CreateApplicationPayload) => void;
+  onVoterFileUpload: (data: UploadableFile) => void;
   applicationToEdit: Application;
   setApplicationToEdit: (user: Application | null) => void;
   setShowAddApplicationView: (visible: boolean) => void;
 };
+
+const scrollViewStyle = { flex: 1 };
+const scrollContentStyle = { flexGrow: 1, padding: 16 };
 
 export default function ApplicationForm({
   mode,
@@ -27,7 +37,7 @@ export default function ApplicationForm({
   setShowAddApplicationView
 }: Props) {
   const { t } = useTranslation();
-  const [salesAgentOptions, setSalesAgentOptions] = useState<any[]>([]);
+  const [salesAgentOptions, setSalesAgentOptions] = useState<SalesAgentOption[]>([]);
   const [showVoterUpload, setShowVoterUpload] = useState<string | boolean>(false);
 
   useEffect(() => {
@@ -43,7 +53,7 @@ export default function ApplicationForm({
         }));
         setSalesAgentOptions(formatted);
       } catch (error) {
-        console.error('Failed to fetch sales agents', error);
+        logger.error('Failed to fetch sales agents', error);
       }
     };
 
@@ -157,8 +167,8 @@ export default function ApplicationForm({
 
   return (
     <KeyboardAwareScrollView
-      style={{ flex: 1 }}
-      contentContainerStyle={{ flexGrow: 1, padding: 16 }}
+      style={scrollViewStyle}
+      contentContainerStyle={scrollContentStyle}
       enableOnAndroid
       extraScrollHeight={20}
       keyboardShouldPersistTaps="handled"
@@ -185,7 +195,7 @@ export default function ApplicationForm({
             setShowVoterUpload(value);
           }
         }}
-        onSubmit={(data) => onCreate(data as any)}
+        onSubmit={(data) => onCreate(data as CreateApplicationPayload)}
         onCancel={() => {
           setApplicationToEdit(null);
           setShowAddApplicationView(false);

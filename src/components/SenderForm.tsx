@@ -4,16 +4,18 @@ import DynamicForm from './DynamicForm';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
+type SenderFormData = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password?: string;
+  phoneNumber: string;
+};
+
 type Props = {
   mode: 'create' | 'edit';
-  onCreate: (data: {
-    firstName: string;
-    lastName: string;
-    email: string;
-    password?: string;
-    phoneNumber: string;
-  }) => void;
-  senderToEdit: Sender;
+  onCreate: (data: SenderFormData) => void;
+  senderToEdit: Sender | null;
   setSenderToEdit: (sender: Sender | null) => void;
   setShowAddSenderView: (visible: boolean) => void;
 };

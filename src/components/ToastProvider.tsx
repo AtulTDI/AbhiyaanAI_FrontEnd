@@ -3,7 +3,7 @@ import { registerToastTrigger } from '../services/toastService';
 import { AppTheme } from '../theme';
 import { FontAwesome, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import React, { createContext, useCallback, useContext, useRef, useState } from 'react';
-import { Animated, Dimensions, Platform, StyleSheet, View } from 'react-native';
+import { Animated, Dimensions, StyleSheet, View } from 'react-native';
 import { Text, useTheme } from 'react-native-paper';
 
 type ToastType = 'success' | 'error' | 'warning' | 'info';
@@ -51,7 +51,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setMessage('');
       });
     },
-    []
+    [isWeb, translateY]
   );
 
   registerToastTrigger(showToast);

@@ -4,13 +4,18 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTheme } from 'react-native-paper';
 
+type IconElementProps = {
+  color?: string;
+  size?: number;
+};
+
 const CustomLabel = ({ label, icon, focused }: CustomLabelProps) => {
   const theme = useTheme<AppTheme>();
   const styles = createStyles(theme);
   const { colors } = theme;
   const iconWithColor =
     React.isValidElement(icon) && typeof icon.type !== 'string'
-      ? React.cloneElement(icon as React.ReactElement<any>, {
+      ? React.cloneElement(icon as React.ReactElement<IconElementProps>, {
           color: colors.white,
           size: 20
         })

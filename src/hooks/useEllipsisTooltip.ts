@@ -3,7 +3,7 @@ import { useCallback, useRef, useState } from 'react';
 
 export function useEllipsisTooltip(cellKey: string) {
   const { isWeb, isMobileWeb } = usePlatformInfo();
-  const textRef = useRef<any>(null);
+  const textRef = useRef<HTMLElement | null>(null);
   const [visibleTooltip, setVisibleTooltip] = useState<string | null>(null);
 
   const handleMouseEnter = useCallback(() => {
@@ -13,7 +13,7 @@ export function useEllipsisTooltip(cellKey: string) {
         setVisibleTooltip(cellKey);
       }
     }
-  }, [cellKey]);
+  }, [cellKey, isMobileWeb, isWeb]);
 
   const handleMouseLeave = useCallback(() => {
     setVisibleTooltip(null);
@@ -23,7 +23,7 @@ export function useEllipsisTooltip(cellKey: string) {
     if (!isWeb || isMobileWeb) {
       setVisibleTooltip(cellKey);
     }
-  }, [cellKey]);
+  }, [cellKey, isMobileWeb, isWeb]);
 
   return {
     textRef,

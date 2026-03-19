@@ -4,6 +4,7 @@ import {
   editRecipientById,
   getRecipients
 } from '../api/recipientApi';
+import sampleVoterUploadAsset from '../assets/sample-voter-upload.xlsx';
 import DeleteConfirmationDialog from '../components/DeleteConfirmationDialog';
 import { useToast } from '../components/ToastProvider';
 import VoterForm from '../components/VoterForm';
@@ -19,6 +20,7 @@ import {
   Recipient
 } from '../types/Recipient';
 import { extractErrorMessage } from '../utils/common';
+import { logger } from '../utils/logger';
 import { useFocusEffect } from '@react-navigation/native';
 import { Asset } from 'expo-asset';
 import * as FileSystem from 'expo-file-system';
@@ -44,6 +46,7 @@ export default function AddVoterScreen() {
   const { isIOS } = usePlatformInfo();
   const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
+  const styles = createStyles(theme);
   const { colors } = theme;
   const layout = useWindowDimensions();
   const { showToast } = useToast();
@@ -53,7 +56,6 @@ export default function AddVoterScreen() {
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
   const [selectedVoterId, setSelectedVoterId] = useState<string | null>(null);
   const [voterToEdit, setVoterToEdit] = useState<Recipient | null>(null);
-  const [searchText, setSearchText] = useState('');
   const [tableParams, setTableParams] = useState<{ searchText?: string }>({
     searchText: ''
   });
@@ -111,13 +113,12 @@ export default function AddVoterScreen() {
       setVoterToEdit(null);
       table.setPage(0);
       table.setRowsPerPage(10);
-      table.fetchData(0, 10);
-    }, [])
+      void table.fetchData(0, 10);
+    }, [table])
   );
 
   const handleVoterSearch = useCallback(
     (text: string) => {
-      setSearchText(text);
       setTableParams({ searchText: text });
       table.setPage(0);
     },
@@ -127,12 +128,11 @@ export default function AddVoterScreen() {
   const addVoter = async (voterData: CreateRecipientPayload) => {
     try {
       await createRecipient(voterData);
-      table.fetchData(0, table.rowsPerPage, { searchText: '' });
-      setSearchText('');
+      void table.fetchData(0, table.rowsPerPage, { searchText: '' });
       showToast(t('voter.addSuccess'), 'success');
       setShowAddVoterView(false);
       setVoterToEdit(null);
-    } catch (error: any) {
+    } catch (error: unknown) {
       showToast(extractErrorMessage(error, t('voter.addFailed')), 'error');
     }
   };
@@ -142,11 +142,10 @@ export default function AddVoterScreen() {
     try {
       await editRecipientById(voterToEdit.id, voterData);
       await table.fetchData(table.page, table.rowsPerPage, { searchText: '' });
-      setSearchText('');
       showToast(t('voter.editSuccess'), 'success');
       setShowAddVoterView(false);
       setVoterToEdit(null);
-    } catch (error: any) {
+    } catch (error: unknown) {
       showToast(extractErrorMessage(error, t('voter.editFailed')), 'error');
     }
   };
@@ -165,10 +164,9 @@ export default function AddVoterScreen() {
     if (selectedVoterId) {
       try {
         await deleteRecipientById(selectedVoterId);
-        setSearchText('');
-        table.fetchData(table.page, table.rowsPerPage, { searchText: '' });
-        showToast(t('voter.deleteSucess'), 'success');
-      } catch (error: any) {
+        void table.fetchData(table.page, table.rowsPerPage, { searchText: '' });
+        showToast(t('voter.deleteSuccess'), 'success');
+      } catch (error: unknown) {
         showToast(extractErrorMessage(error, t('voter.deleteFail')), 'error');
       }
       setSelectedVoterId(null);
@@ -186,7 +184,7 @@ export default function AddVoterScreen() {
         link.click();
         document.body.removeChild(link);
       } else {
-        const asset = Asset.fromModule(require('../assets/sample-voter-upload.xlsx'));
+        const asset = Asset.fromModule(sampleVoterUploadAsset);
         await asset.downloadAsync();
         const dest = `${FileSystem.cacheDirectory}sample-voter-upload.xlsx`;
         await FileSystem.copyAsync({
@@ -196,7 +194,7 @@ export default function AddVoterScreen() {
         await Sharing.shareAsync(dest);
       }
     } catch (error) {
-      console.error(t('voter.excelDownloadFail'), error);
+      logger.error(t('voter.excelDownloadFail'), error);
     }
   };
 
@@ -214,22 +212,21 @@ export default function AddVoterScreen() {
         );
       case 'excel':
         return (
-          <View style={{ flex: 1 }}>
+          <View style={styles.flex}>
             <View style={styles.downloadBtnWrapper}>
               <Button
                 mode="outlined"
                 icon="download"
                 onPress={downloadSampleExcel}
                 textColor={colors.greenAccent}
-                style={{ borderRadius: 8, borderColor: colors.greenAccent }}
+                style={styles.downloadButton}
               >
                 {t('voter.downloadSample')}
               </Button>
             </View>
             <VoterUpload
               fetchVoters={() => {
-                table.fetchData(0, table.rowsPerPage, { searchText: '' });
-                setSearchText('');
+                void table.fetchData(0, table.rowsPerPage, { searchText: '' });
               }}
               setShowAddVoterView={setShowAddVoterView}
             />
@@ -247,8 +244,8 @@ export default function AddVoterScreen() {
   ) => (
     <TabBar
       {...props}
-      indicatorStyle={{ backgroundColor: colors.warning, height: 3 }}
-      style={{ backgroundColor: colors.white, elevation: 2 }}
+      indicatorStyle={styles.tabIndicator}
+      style={styles.tabBar}
       renderTabBarItem={({ route, key, ...rest }) => {
         const focused =
           props.navigationState.index ===
@@ -259,13 +256,10 @@ export default function AddVoterScreen() {
             key={key}
             route={route}
             labelText={route.title}
-            labelStyle={{
-              color: focused ? colors.warning : colors.darkGrayText,
-              fontWeight: focused ? '600' : '500',
-              fontSize: 14,
-              textTransform: 'capitalize',
-              marginVertical: 8
-            }}
+            labelStyle={[
+              styles.tabLabel,
+              focused ? styles.tabLabelFocused : styles.tabLabelDefault
+            ]}
           />
         );
       }}
@@ -276,10 +270,7 @@ export default function AddVoterScreen() {
     <>
       <Surface style={styles.container} elevation={1}>
         <View style={styles.header}>
-          <Text
-            variant="titleLarge"
-            style={[styles.heading, { color: theme.colors.primary }]}
-          >
+          <Text variant="titleLarge" style={styles.heading}>
             {showAddVoterView
               ? voterToEdit
                 ? t('voter.edit')
@@ -292,13 +283,9 @@ export default function AddVoterScreen() {
               mode="contained"
               onPress={() => setShowAddVoterView(true)}
               icon="plus"
-              labelStyle={{
-                fontWeight: 'bold',
-                fontSize: 14,
-                color: theme.colors.onPrimary
-              }}
+              labelStyle={styles.addButtonLabel}
               buttonColor={theme.colors.primary}
-              style={{ borderRadius: 5 }}
+              style={styles.addButton}
             >
               {t('voter.add')}
             </Button>
@@ -308,7 +295,7 @@ export default function AddVoterScreen() {
         {showAddVoterView ? (
           <KeyboardAvoidingView
             behavior={isIOS ? 'padding' : undefined}
-            style={{ flex: 1 }}
+            style={styles.flex}
           >
             {voterToEdit ? (
               <VoterForm
@@ -360,24 +347,62 @@ export default function AddVoterScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    padding: 16,
-    flex: 1
-  },
-  heading: {
-    fontWeight: 'bold'
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16
-  },
-  downloadBtnWrapper: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    paddingTop: 15,
-    paddingBottom: 8
-  }
-});
+const createStyles = (theme: AppTheme) =>
+  StyleSheet.create({
+    container: {
+      padding: 16,
+      flex: 1
+    },
+    heading: {
+      fontWeight: 'bold',
+      color: theme.colors.primary
+    },
+    header: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 16
+    },
+    addButtonLabel: {
+      fontWeight: 'bold',
+      fontSize: 14,
+      color: theme.colors.onPrimary
+    },
+    addButton: {
+      borderRadius: 5
+    },
+    downloadBtnWrapper: {
+      flexDirection: 'row',
+      justifyContent: 'flex-end',
+      paddingTop: 15,
+      paddingBottom: 8
+    },
+    downloadButton: {
+      borderRadius: 8,
+      borderColor: theme.colors.greenAccent
+    },
+    tabIndicator: {
+      backgroundColor: theme.colors.warning,
+      height: 3
+    },
+    tabBar: {
+      backgroundColor: theme.colors.white,
+      elevation: 2
+    },
+    tabLabel: {
+      fontSize: 14,
+      textTransform: 'capitalize',
+      marginVertical: 8
+    },
+    tabLabelFocused: {
+      color: theme.colors.warning,
+      fontWeight: '600'
+    },
+    tabLabelDefault: {
+      color: theme.colors.darkGrayText,
+      fontWeight: '500'
+    },
+    flex: {
+      flex: 1
+    }
+  });

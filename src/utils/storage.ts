@@ -17,7 +17,7 @@ const decrypt = (text: string) => {
   }
 };
 
-const toStringSafe = (value: any): string =>
+const toStringSafe = (value: unknown): string =>
   value === null || value === undefined ? '' : String(value);
 
 /* ================= TYPES ================= */
@@ -32,7 +32,7 @@ export type AuthData = {
   applicationName: string;
   videoCount: string;
   channelId: string;
-  isProfessionalVoiceCloning: boolean;
+  isProfessionalVoiceCloning: boolean | string;
   showVideoCampaign: boolean;
   showImageCampaign: boolean;
   iselectionRelatedapp: boolean;
@@ -90,19 +90,24 @@ export const saveAuthData = async (data: Partial<AuthData>) => {
 
 export const getAuthData = async (): Promise<AuthData> => {
   if (isWeb) {
-    const raw: any = {};
+    const raw = { ...DEFAULT_AUTH };
+
     Object.keys(DEFAULT_AUTH).forEach((key) => {
+      const typedKey = key as keyof AuthData;
       const value = localStorage.getItem(key);
-      raw[key] = value ? decrypt(value) : DEFAULT_AUTH[key as keyof AuthData];
+      (raw as Record<string, unknown>)[typedKey] = value
+        ? decrypt(value)
+        : DEFAULT_AUTH[typedKey];
     });
 
-    raw.isProfessionalVoiceCloning = raw.isProfessionalVoiceCloning === 'true';
+    raw.isProfessionalVoiceCloning =
+      raw.isProfessionalVoiceCloning === ('true' as unknown);
     raw.videoCount = raw.videoCount || '0';
-    raw.iselectionRelatedapp = raw.iselectionRelatedapp === 'true';
-    raw.showVideoCampaign = raw.showVideoCampaign === 'true';
-    raw.showImageCampaign = raw.showImageCampaign === 'true';
+    raw.iselectionRelatedapp = raw.iselectionRelatedapp === ('true' as unknown);
+    raw.showVideoCampaign = raw.showVideoCampaign === ('true' as unknown);
+    raw.showImageCampaign = raw.showImageCampaign === ('true' as unknown);
 
-    return raw as AuthData;
+    return raw;
   } else {
     const accessToken = (await SecureStore.getItemAsync('accessToken')) ?? '';
 
@@ -110,18 +115,21 @@ export const getAuthData = async (): Promise<AuthData> => {
       Object.keys(DEFAULT_AUTH).filter((k) => k !== 'accessToken')
     );
 
-    const data: any = { accessToken };
+    const data = { ...DEFAULT_AUTH, accessToken };
+
     items.forEach(([key, value]) => {
-      data[key] = value ?? DEFAULT_AUTH[key as keyof AuthData];
+      const typedKey = key as keyof AuthData;
+      (data as Record<string, unknown>)[typedKey] = value ?? DEFAULT_AUTH[typedKey];
     });
 
-    data.isProfessionalVoiceCloning = data.isProfessionalVoiceCloning === 'true';
+    data.isProfessionalVoiceCloning =
+      data.isProfessionalVoiceCloning === ('true' as unknown);
     data.videoCount = data.videoCount || '0';
-    data.iselectionRelatedapp = data.iselectionRelatedapp === 'true';
-    data.showVideoCampaign = data.showVideoCampaign === 'true';
-    data.showImageCampaign = data.showImageCampaign === 'true';
+    data.iselectionRelatedapp = data.iselectionRelatedapp === ('true' as unknown);
+    data.showVideoCampaign = data.showVideoCampaign === ('true' as unknown);
+    data.showImageCampaign = data.showImageCampaign === ('true' as unknown);
 
-    return data as AuthData;
+    return data;
   }
 };
 

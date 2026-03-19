@@ -1,9 +1,11 @@
 import axios from './axiosInstance';
 
+type WhatsAppPayload = Record<string, unknown>;
+
 /**
  * Send video
  */
-export const sendVideo = (data: any, userId) =>
+export const sendVideo = (data: WhatsAppPayload, userId: string) =>
   axios.post(`/WhatsApp/sendvideobywhbusiness/${userId}`, data, {
     useApiPrefix: true,
     useAltBase: true
@@ -12,7 +14,7 @@ export const sendVideo = (data: any, userId) =>
 /**
  * Send Image
  */
-export const sendImage = (data: any, userId) =>
+export const sendImage = (data: WhatsAppPayload, userId: string) =>
   axios.post(`/WhatsApp/sendbusinesstemplate/${userId}`, data, {
     useApiPrefix: true,
     useAltBase: true
@@ -21,7 +23,7 @@ export const sendImage = (data: any, userId) =>
 /**
  * Send Voter Slip
  */
-export const sendVoterSlip = (data: any, userId) =>
+export const sendVoterSlip = (data: WhatsAppPayload, userId: string) =>
   axios.post(`/WhatsApp/send-voter-slip/${userId}`, data, {
     useApiPrefix: true,
     useAltBase: true

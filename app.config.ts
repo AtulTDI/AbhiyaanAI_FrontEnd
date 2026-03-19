@@ -1,9 +1,9 @@
 import fs from 'fs';
+import process from 'node:process';
 
 const APP_ENV = process.env.APP_ENV || 'development';
 const BRAND = process.env.BRAND || 'abhiyan';
 
-// ---------- 1️⃣  API RESOLVERS ----------
 const resolveApi = () => {
   switch (APP_ENV) {
     case 'uat':
@@ -43,7 +43,6 @@ const resolveVoterApi = () => {
   }
 };
 
-// ---------- 2️⃣  LOAD BRAND CONFIG ----------
 const brandFile = `./branding/${BRAND}.json`;
 const brandConfig = fs.existsSync(brandFile)
   ? JSON.parse(fs.readFileSync(brandFile, 'utf-8'))
@@ -57,8 +56,7 @@ const brandConfig = fs.existsSync(brandFile)
       backgroundColor: '#ffffff'
     };
 
-// ---------- 3️⃣  EXPORT FINAL CONFIG ----------
-export default ({ config }) => ({
+export default ({ config }: { config: { expo?: Record<string, unknown> } }) => ({
   ...config,
   expo: {
     ...config.expo,
@@ -70,18 +68,15 @@ export default ({ config }) => ({
     userInterfaceStyle: 'light',
     newArchEnabled: true,
     assetBundlePatterns: ['**/*'],
-
     splash: {
       image: brandConfig.splash,
       resizeMode: 'contain',
       backgroundColor: brandConfig.backgroundColor || '#ffffff'
     },
-
     ios: {
       supportsTablet: true,
       bundleIdentifier: brandConfig.package
     },
-
     android: {
       adaptiveIcon: {
         foregroundImage: brandConfig.adaptiveIcon,
@@ -91,7 +86,6 @@ export default ({ config }) => ({
       package: brandConfig.package,
       usesCleartextTraffic: true
     },
-
     web: {
       favicon: brandConfig.favIcon,
       themeColor: brandConfig.backgroundColor || '#FFFFFF',
@@ -114,7 +108,6 @@ export default ({ config }) => ({
         ]
       }
     },
-
     extra: {
       ENV: APP_ENV,
       BRAND,

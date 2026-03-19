@@ -1,3 +1,5 @@
+import { UploadableFile } from './Upload';
+
 export interface Candidate {
   id: string;
   name: string;
@@ -17,7 +19,7 @@ export interface CandidateCreateUpdate {
   partyName?: string;
   partyNameMr?: string;
   symbolName?: string;
-  candidatePhoto?: any;
-  symbolImage?: any;
+  candidatePhoto?: UploadableFile | null;
+  symbolImage?: UploadableFile | null;
   candidatePhotoPath?: string;
 }

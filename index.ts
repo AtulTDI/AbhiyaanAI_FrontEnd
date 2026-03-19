@@ -1,3 +1,4 @@
+import './src/utils/webWarningFilter';
 import App from './App';
 import { registerRootComponent } from 'expo';
 

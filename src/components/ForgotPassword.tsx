@@ -2,7 +2,7 @@ import { forgotPasswordLink } from '../api/authApi';
 import { AppTheme } from '../theme';
 import { extractErrorMessage } from '../utils/common';
 import { useToast } from './ToastProvider';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Platform, StyleSheet } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { Button, Card, Text, TextInput, useTheme } from 'react-native-paper';
@@ -20,6 +20,20 @@ export default function ForgotPassword({ setShowSignInPage }: ForgotPasswordProp
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  const handleReset = useCallback(async () => {
+    if (!email) return showToast('Please enter your email', 'info');
+
+    try {
+      setIsLoading(true);
+      await forgotPasswordLink(email);
+      showToast(`Password reset link sent to ${email}`, 'success');
+    } catch (error: unknown) {
+      showToast(extractErrorMessage(error));
+    } finally {
+      setIsLoading(false);
+    }
+  }, [email, showToast]);
+
   useEffect(() => {
     if (Platform.OS === 'web') {
       const handleKeyDown = (e: KeyboardEvent) => {
@@ -31,25 +45,11 @@ export default function ForgotPassword({ setShowSignInPage }: ForgotPasswordProp
       window.addEventListener('keydown', handleKeyDown);
       return () => window.removeEventListener('keydown', handleKeyDown);
     }
-  }, [email]);
-
-  const handleReset = async () => {
-    if (!email) return showToast('Please enter your email', 'info');
-
-    try {
-      setIsLoading(true);
-      await forgotPasswordLink(email);
-      showToast(`Password reset link sent to ${email}`, 'success');
-    } catch (error: any) {
-      showToast(extractErrorMessage(error));
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [handleReset]);
 
   return (
     <KeyboardAwareScrollView
-      contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}
+      contentContainerStyle={styles.scrollContainer}
       extraScrollHeight={50}
       enableOnAndroid
       keyboardShouldPersistTaps="handled"
@@ -90,7 +90,7 @@ export default function ForgotPassword({ setShowSignInPage }: ForgotPasswordProp
             loading={isLoading}
             disabled={isLoading}
             style={styles.button}
-            contentStyle={{ paddingVertical: 8 }}
+            contentStyle={styles.resetBtn}
           >
             Send Reset Link
           </Button>
@@ -127,5 +127,12 @@ const styles = StyleSheet.create({
   button: {
     borderRadius: 8,
     marginBottom: 16
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    justifyContent: 'center'
+  },
+  resetBtn: {
+    paddingVertical: 8
   }
 });

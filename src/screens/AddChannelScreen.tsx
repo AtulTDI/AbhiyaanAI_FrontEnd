@@ -21,7 +21,7 @@ export default function AddChannelScreen() {
   const styles = createStyles(theme);
   const { showToast } = useToast();
 
-  const [channels, setChannels] = useState([]);
+  const [channels, setChannels] = useState<Channel[]>([]);
   const [showAddChannelView, setShowAddChannelView] = useState(false);
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
   const [selectedChannelId, setSelectedChannelId] = useState<string | null>(null);
@@ -32,22 +32,25 @@ export default function AddChannelScreen() {
   const fetchChannels = useCallback(async () => {
     try {
       const response = await getAllChannels();
-      const sortedChannels = sortByDateDesc(response?.data || [], 'createdAt');
+      const sortedChannels = sortByDateDesc(
+        response?.data || [],
+        'createdAt' as keyof Channel
+      );
       setChannels(sortedChannels);
-    } catch (error) {
+    } catch {
       showToast('Failed to load channels', 'error');
     }
-  }, []);
+  }, [showToast]);
 
   useFocusEffect(
     useCallback(() => {
       setShowAddChannelView(false);
       setChannelToEdit(null);
-      fetchChannels();
+      void fetchChannels();
     }, [fetchChannels])
   );
 
-  const addChannel = async (data: Channel) => {
+  const addChannel = async (data: { channelName: string; applicationId: string }) => {
     try {
       setFormSubmitLoading(true);
       await createChannel(data);
@@ -67,7 +70,7 @@ export default function AddChannelScreen() {
       await updateChannelSetting(id);
       await fetchChannels();
       showToast('Channel updated', 'success');
-    } catch (error: any) {
+    } catch (error) {
       showToast(extractErrorMessage(error, 'Failed to update channel'), 'error');
     }
   };
@@ -84,7 +87,7 @@ export default function AddChannelScreen() {
         await deleteChannelById(selectedChannelId);
         await fetchChannels();
         showToast('Channel deleted successfully!', 'success');
-      } catch (error: any) {
+      } catch (error) {
         showToast(extractErrorMessage(error, 'Failed to delete channel'), 'error');
       } finally {
         setDeleteLoading(false);
@@ -98,10 +101,7 @@ export default function AddChannelScreen() {
     <>
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.header}>
-          <Text
-            variant="titleLarge"
-            style={[styles.heading, { color: theme.colors.primary }]}
-          >
+          <Text variant="titleLarge" style={styles.heading}>
             {showAddChannelView
               ? `${channelToEdit ? 'Edit' : 'Add'} Channel`
               : 'Channels'}
@@ -111,13 +111,9 @@ export default function AddChannelScreen() {
               mode="contained"
               onPress={() => setShowAddChannelView(true)}
               icon="plus"
-              labelStyle={{
-                fontWeight: 'bold',
-                fontSize: 14,
-                color: theme.colors.onPrimary
-              }}
+              labelStyle={styles.addButtonLabel}
               buttonColor={theme.colors.primary}
-              style={{ borderRadius: 5 }}
+              style={styles.addButton}
             >
               Add Channel
             </Button>
@@ -129,7 +125,6 @@ export default function AddChannelScreen() {
             onCreate={addChannel}
             setShowAddChannelView={setShowAddChannelView}
             formSubmitLoading={formSubmitLoading}
-            setFormSubmitLoading={setFormSubmitLoading}
           />
         ) : (
           <ChannelsTable
@@ -160,12 +155,21 @@ const createStyles = (theme: AppTheme) =>
       flexGrow: 1
     },
     heading: {
-      fontWeight: 'bold'
+      fontWeight: 'bold',
+      color: theme.colors.primary
     },
     header: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
       marginBottom: 16
+    },
+    addButtonLabel: {
+      fontWeight: 'bold',
+      fontSize: 14,
+      color: theme.colors.onPrimary
+    },
+    addButton: {
+      borderRadius: 5
     }
   });

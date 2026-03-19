@@ -1,4 +1,6 @@
-const dotenv = require('dotenv');
+import process from 'node:process';
+import dotenv from 'dotenv';
+
 dotenv.config();
 
 const env = process.env.APP_ENV || 'development';
@@ -18,4 +20,4 @@ switch (env) {
     apiUrl = process.env.DEV_API;
 }
 
-console.log(apiUrl);
+process.stdout.write(`${apiUrl ?? ''}\n`);

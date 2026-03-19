@@ -13,20 +13,36 @@ import { useInternalBackHandler } from '../hooks/useInternalBackHandler';
 import { usePlatformInfo } from '../hooks/usePlatformInfo';
 import { useServerTable } from '../hooks/useServerTable';
 import { AppTheme } from '../theme';
-import { GetPaginatedImages, Image } from '../types/Image';
+import { Image } from '../types/Image';
+import { NativeFormDataFile } from '../types/Upload';
 import { extractErrorMessage, sortByDateDesc } from '../utils/common';
 import { getAuthData } from '../utils/storage';
 import { useFocusEffect } from '@react-navigation/native';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { KeyboardAvoidingView, StyleSheet, View } from 'react-native';
 import { Button, Surface, Text, useTheme } from 'react-native-paper';
+
+type ImageUploadAsset = {
+  file?: File | null;
+  locked?: boolean;
+  name?: string;
+  type?: string | null;
+  uri: string;
+};
+
+type ImageUploadPayload = {
+  campaignName: string;
+  caption: string;
+  images: ImageUploadAsset[];
+};
 
 export default function UploadImageScreen() {
   const { isWeb, isIOS } = usePlatformInfo();
   const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
   const { colors } = theme;
+  const styles = createStyles(theme);
   const { showToast } = useToast();
 
   const [showAddView, setShowAddView] = useState(false);
@@ -47,37 +63,42 @@ export default function UploadImageScreen() {
 
   useInternalBackHandler(canHandleInternalBack, handleInternalBack);
 
-  const fetchImages = useCallback(async (page: number, pageSize: number) => {
-    setLoading(true);
-    try {
-      const response = await getImages(page, pageSize);
-      const sortedImages = sortByDateDesc(
-        response?.data && Array.isArray(response.data.items) ? response.data.items : [],
-        'createdAt'
-      );
+  const fetchImages = useCallback(
+    async (page: number, pageSize: number) => {
+      setLoading(true);
+      try {
+        const response = await getImages(page, pageSize);
+        const sortedImages = sortByDateDesc(
+          response?.data && Array.isArray(response.data.items) ? response.data.items : [],
+          'createdAt'
+        );
 
-      return {
-        items: sortedImages ?? [],
-        totalCount: response?.data?.totalRecords ?? 0
-      };
-    } catch (error: any) {
-      showToast(extractErrorMessage(error, t('image.loadImageFailMessage')), 'error');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+        return {
+          items: sortedImages ?? [],
+          totalCount: response?.data?.totalRecords ?? 0
+        };
+      } catch (error) {
+        showToast(extractErrorMessage(error, t('image.loadImageFailMessage')), 'error');
+      } finally {
+        setLoading(false);
+      }
+    },
+    [showToast, t]
+  );
 
-  const table = useServerTable<GetPaginatedImages>(fetchImages, {
+  const table = useServerTable<Image>(fetchImages, {
     initialPage: 0,
     initialRowsPerPage: 10
   });
+  const tableRef = useRef(table);
+  tableRef.current = table;
 
   useFocusEffect(
     useCallback(() => {
       setShowAddView(false);
-      table.setPage(0);
-      table.setRowsPerPage(10);
-      table.fetchData(0, 10);
+      tableRef.current.setPage(0);
+      tableRef.current.setRowsPerPage(10);
+      void tableRef.current.fetchData(0, 10);
     }, [])
   );
 
@@ -101,7 +122,7 @@ export default function UploadImageScreen() {
     }
   };
 
-  const handleAddImage = async (imageData: any) => {
+  const handleAddImage = async (imageData: ImageUploadPayload) => {
     const { userId } = await getAuthData();
     const formData = new FormData();
     const { campaignName, caption, images } = imageData;
@@ -113,8 +134,8 @@ export default function UploadImageScreen() {
     formData.append('campaignName', campaignName);
     formData.append(imageToEdit ? 'message' : 'caption', caption || '');
 
-    !imageToEdit &&
-      images.forEach((img: any, index: number) => {
+    if (!imageToEdit) {
+      images.forEach((img, index) => {
         if (img.locked) {
           if (img.uri) formData.append('existingImages[]', img.uri);
           return;
@@ -127,19 +148,23 @@ export default function UploadImageScreen() {
 
         const name = img.name || `photo_${Date.now()}_${index}.jpg`;
         const type = img.type || guessMimeType(name);
-
-        formData.append('Images', {
+        const nativeFile: NativeFormDataFile = {
           uri: img.uri,
           name,
           type
-        } as any);
+        };
+
+        formData.append('Images', nativeFile as unknown as Blob);
       });
+    }
 
     try {
       setUploading(true);
-      imageToEdit
-        ? await updateImageById(imageToEdit.id, formData)
-        : await uploadImages(formData);
+      if (imageToEdit) {
+        await updateImageById(imageToEdit.id, formData);
+      } else {
+        await uploadImages(formData);
+      }
       setUploading(false);
       await table.fetchData(0, table.rowsPerPage);
       setShowAddView(false);
@@ -183,8 +208,8 @@ export default function UploadImageScreen() {
       try {
         await deleteImageById(selectedImageId);
         await table.fetchData(table.page, table.rowsPerPage);
-        showToast(t('image.deleteSucessMessage'), 'success');
-      } catch (error: any) {
+        showToast(t('image.deleteSuccessMessage'), 'success');
+      } catch (error) {
         showToast(extractErrorMessage(error, t('image.deleteFailMessage')), 'error');
       }
       setSelectedImageId(null);
@@ -197,23 +222,20 @@ export default function UploadImageScreen() {
       <Surface style={styles.container} elevation={1}>
         <KeyboardAvoidingView
           behavior={isIOS ? 'padding' : undefined}
-          style={{ flex: 1 }}
+          style={styles.formWrapper}
         >
           {!showAddView ? (
             <>
               {/* Heading Row */}
               <View style={styles.headerRow}>
-                <Text
-                  variant="titleLarge"
-                  style={[styles.heading, { color: colors.primary }]}
-                >
+                <Text variant="titleLarge" style={styles.heading}>
                   {t('image.plural')}
                 </Text>
                 <Button
                   mode="contained"
                   icon="plus"
                   onPress={() => setShowAddView(true)}
-                  style={{ borderRadius: 6 }}
+                  style={styles.addButton}
                   buttonColor={colors.primary}
                   textColor={colors.onPrimary}
                 >
@@ -242,10 +264,7 @@ export default function UploadImageScreen() {
           ) : (
             <>
               <View style={styles.headerRow}>
-                <Text
-                  variant="titleLarge"
-                  style={[styles.heading, { color: colors.primary }]}
-                >
+                <Text variant="titleLarge" style={styles.heading}>
                   {t(imageToEdit ? 'image.edit' : 'image.add')}
                 </Text>
               </View>
@@ -273,18 +292,26 @@ export default function UploadImageScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    padding: 16,
-    flex: 1
-  },
-  headerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16
-  },
-  heading: {
-    fontWeight: 'bold'
-  }
-});
+const createStyles = (theme: AppTheme) =>
+  StyleSheet.create({
+    container: {
+      padding: 16,
+      flex: 1
+    },
+    headerRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 16
+    },
+    heading: {
+      fontWeight: 'bold',
+      color: theme.colors.primary
+    },
+    addButton: {
+      borderRadius: 6
+    },
+    formWrapper: {
+      flex: 1
+    }
+  });

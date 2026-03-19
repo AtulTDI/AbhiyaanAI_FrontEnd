@@ -14,6 +14,15 @@ import {
 } from 'react-native';
 import { useTheme } from 'react-native-paper';
 
+type WebMeasurableNode = View & {
+  getBoundingClientRect?: () => {
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+  };
+};
+
 const languages = [
   { code: 'en', label: 'English' },
   { code: 'hi', label: 'हिन्दी' },
@@ -51,7 +60,7 @@ export default function LanguageSelector() {
   useEffect(() => {
     if (dropdownOpen && selectBoxRef.current) {
       if (Platform.OS === 'web') {
-        const domNode = selectBoxRef.current as any;
+        const domNode = selectBoxRef.current as WebMeasurableNode;
         if (domNode?.getBoundingClientRect) {
           const rect = domNode.getBoundingClientRect();
           setPosition({
@@ -82,7 +91,7 @@ export default function LanguageSelector() {
         useNativeDriver: true
       })
     ]).start();
-  }, [dropdownOpen]);
+  }, [dropdownOpen, fadeAnim, slideAnim]);
 
   const switchLanguage = (code: string) => {
     i18n.changeLanguage(code);

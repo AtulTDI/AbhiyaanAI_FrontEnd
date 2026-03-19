@@ -16,13 +16,20 @@ import {
 } from '../api/voterSurveyApi';
 import { usePlatformInfo } from '../hooks/usePlatformInfo';
 import { AppTheme } from '../theme';
-import { VoterDemandItem, VoterSurveyRequest } from '../types/Voter';
+import {
+  Caste,
+  Demand,
+  DemandCategory,
+  SupportTypeColor,
+  VoterDemandItem,
+  VoterSurveyRequest
+} from '../types/Voter';
 import { extractErrorMessage, formatForDisplay, toUtcIsoDate } from '../utils/common';
 import { FixedLabel } from './FixedLabel';
 import FormDropdown from './FormDropdown';
 import { useToast } from './ToastProvider';
 import { Ionicons } from '@expo/vector-icons';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { ActivityIndicator, Chip, Text, TextInput, useTheme } from 'react-native-paper';
@@ -61,6 +68,46 @@ const SUPPORT_STRENGTH_OPTIONS = [
   { label: 'Weak', value: 3 }
 ];
 
+type GridItemProps = {
+  children: React.ReactNode;
+  isWide: boolean;
+};
+
+type FullGridItemProps = {
+  children: React.ReactNode;
+};
+
+type CardProps = {
+  children: React.ReactNode;
+  title: string;
+};
+
+type RowProps = {
+  children: React.ReactNode;
+  label: string;
+  noDivider?: boolean;
+};
+
+type InputRowProps = Omit<
+  React.ComponentProps<typeof TextInput>,
+  'onChangeText' | 'outlineColor' | 'value' | 'onChange'
+> & {
+  label?: string;
+  maxLength?: number;
+  multiline?: boolean;
+  noDivider?: boolean;
+  onChange: (value: string) => void;
+  outlineColor?: string;
+  value?: string | null;
+};
+
+type BooleanRowProps = {
+  label: string;
+  noDivider?: boolean;
+  onChange: (value: boolean) => void;
+  value: boolean;
+};
+
 /* ================= COMPONENT ================= */
 
 export default function SurveyTab({ voterId }: Props) {
@@ -77,22 +124,36 @@ export default function SurveyTab({ voterId }: Props) {
   const [loading, setLoading] = useState(true);
   const [dobOpen, setDobOpen] = useState(false);
   const [specialVisitOpen, setSpecialVisitOpen] = useState(false);
-  const [saving, setSaving] = useState(false);
 
-  const [supportTypes, setSupportTypes] = useState<any[]>([]);
-  const [castes, setCastes] = useState<any[]>([]);
-  const [demandCategories, setDemandCategories] = useState<any[]>([]);
-  const [demandsByCategory, setDemandsByCategory] = useState<Record<string, any[]>>({});
+  const [supportTypes, setSupportTypes] = useState<SupportTypeColor[]>([]);
+  const [castes, setCastes] = useState<Caste[]>([]);
+  const [demandCategories, setDemandCategories] = useState<DemandCategory[]>([]);
+  const [demandsByCategory, setDemandsByCategory] = useState<Record<string, Demand[]>>(
+    {}
+  );
   const [openDemands, setOpenDemands] = useState<Record<number, boolean>>({});
 
-  useEffect(() => {
-    loadSurvey();
-    loadSupportTypes();
-    loadCastes();
-    loadDemandCategories();
-  }, [voterId]);
+  const loadDemandsForExisting = useCallback(async (demands: VoterDemandItem[]) => {
+    const uniqueCategoryIds = [
+      ...new Set(demands.map((d) => d.categoryId).filter(Boolean))
+    ];
 
-  const loadSurvey = async () => {
+    await Promise.all(
+      uniqueCategoryIds.map(async (categoryId) => {
+        const res = await getDemandsByCategory(categoryId);
+        setDemandsByCategory((prev) =>
+          prev[categoryId]
+            ? prev
+            : {
+                ...prev,
+                [categoryId]: res.data ?? []
+              }
+        );
+      })
+    );
+  }, []);
+
+  const loadSurvey = useCallback(async () => {
     try {
       const res = await getSurveyByVoterId(voterId);
 
@@ -124,18 +185,18 @@ export default function SurveyTab({ voterId }: Props) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [loadDemandsForExisting, showToast, voterId]);
 
-  const loadSupportTypes = async () => {
+  const loadSupportTypes = useCallback(async () => {
     try {
       const res = await getSupportTypes();
       setSupportTypes(res.data ?? []);
     } catch (e) {
       showToast(extractErrorMessage(e), 'error');
     }
-  };
+  }, [showToast]);
 
-  const loadCastes = async () => {
+  const loadCastes = useCallback(async () => {
     try {
       const res = await getCastes();
       const unique = Object.values(
@@ -144,7 +205,7 @@ export default function SurveyTab({ voterId }: Props) {
             acc[item.nameEn] = item;
             return acc;
           },
-          {} as Record<string, any>
+          {} as Record<string, Caste>
         )
       );
 
@@ -152,40 +213,29 @@ export default function SurveyTab({ voterId }: Props) {
     } catch (e) {
       showToast(extractErrorMessage(e), 'error');
     }
-  };
+  }, [showToast]);
 
-  const loadDemandsForExisting = async (demands: VoterDemandItem[]) => {
-    const uniqueCategoryIds = [
-      ...new Set(demands.map((d) => d.categoryId).filter(Boolean))
-    ];
-
-    await Promise.all(
-      uniqueCategoryIds.map(async (categoryId) => {
-        if (!demandsByCategory[categoryId]) {
-          const res = await getDemandsByCategory(categoryId);
-          setDemandsByCategory((prev) => ({
-            ...prev,
-            [categoryId]: res.data ?? []
-          }));
-        }
-      })
-    );
-  };
-
-  const loadDemandCategories = async () => {
+  const loadDemandCategories = useCallback(async () => {
     try {
       const res = await getDemandCategories();
       setDemandCategories(res.data ?? []);
     } catch (e) {
       showToast(extractErrorMessage(e), 'error');
     }
-  };
+  }, [showToast]);
 
   const loadDemands = async (categoryId: string) => {
     if (demandsByCategory[categoryId]) return;
     const res = await getDemandsByCategory(categoryId);
     setDemandsByCategory((p) => ({ ...p, [categoryId]: res.data ?? [] }));
   };
+
+  useEffect(() => {
+    void loadSurvey();
+    void loadSupportTypes();
+    void loadCastes();
+    void loadDemandCategories();
+  }, [loadCastes, loadDemandCategories, loadSupportTypes, loadSurvey]);
 
   const update = <K extends keyof VoterSurveyRequest>(k: K, v: VoterSurveyRequest[K]) =>
     setData((d) => ({ ...d, [k]: v }));
@@ -289,19 +339,20 @@ export default function SurveyTab({ voterId }: Props) {
         return;
       }
 
-      setSaving(true);
       const { demands, ...surveyPayload } = data;
-      data?.id
-        ? await updateSurvey(data.id, {
-            voterId,
-            ...surveyPayload,
-            casteId: data.casteId === 'other' ? null : data.casteId
-          })
-        : await addSurvey({
-            voterId,
-            ...surveyPayload,
-            casteId: data.casteId === 'other' ? null : data.casteId
-          });
+      if (data.id) {
+        await updateSurvey(data.id, {
+          voterId,
+          ...surveyPayload,
+          casteId: data.casteId === 'other' ? null : data.casteId
+        });
+      } else {
+        await addSurvey({
+          voterId,
+          ...surveyPayload,
+          casteId: data.casteId === 'other' ? null : data.casteId
+        });
+      }
 
       const existingDemandsPayload = demands
         .filter((d) => d.id)
@@ -324,8 +375,6 @@ export default function SurveyTab({ voterId }: Props) {
       showToast(t(data?.id ? 'survey.updateSuccess' : 'survey.addSuccess'), 'success');
     } catch (e) {
       showToast(extractErrorMessage(e), 'error');
-    } finally {
-      setSaving(false);
     }
   };
 
@@ -336,7 +385,7 @@ export default function SurveyTab({ voterId }: Props) {
 
   if (loading) {
     return (
-      <View style={{ padding: 24 }}>
+      <View style={styles.loadingContainer}>
         <ActivityIndicator color={theme.colors.primary} />
       </View>
     );
@@ -582,12 +631,8 @@ export default function SurveyTab({ voterId }: Props) {
                       {d.id && d.isResolved && (
                         <Chip
                           compact
-                          style={{
-                            backgroundColor: d.isResolved
-                              ? theme.colors.successBackground
-                              : theme.colors.warningBackground
-                          }}
-                          textStyle={{ fontSize: 12 }}
+                          style={styles.resolvedChip}
+                          textStyle={styles.resolvedChipText}
                         >
                           {t('survey.resolved')}
                         </Chip>
@@ -596,24 +641,14 @@ export default function SurveyTab({ voterId }: Props) {
                       {!d.isResolved && d.id && (
                         <Pressable
                           onPress={() => toggleResolved(i)}
-                          style={[
-                            styles.resolveButton,
-                            {
-                              borderColor: theme.colors.primary,
-                              backgroundColor: theme.colors.primary
-                            }
-                          ]}
+                          style={styles.resolveButton}
                         >
                           <Ionicons
                             name="checkmark-done-outline"
                             size={14}
                             color={theme.colors.white}
                           />
-                          <Text
-                            style={[styles.resolveText, { color: theme.colors.white }]}
-                          >
-                            {t('survey.resolve')}
-                          </Text>
+                          <Text style={styles.resolveText}>{t('survey.resolve')}</Text>
                         </Pressable>
                       )}
 
@@ -696,11 +731,10 @@ export default function SurveyTab({ voterId }: Props) {
                         placeholderTextColor={theme.colors.placeholder}
                         value={d.description}
                         disabled={d.isResolved}
-                        style={{
-                          fontSize: 14,
-                          backgroundColor: theme.colors.white,
-                          paddingVertical: isAndroid ? 8 : 0
-                        }}
+                        style={[
+                          styles.demandDescriptionInput,
+                          isAndroid && styles.demandDescriptionInputAndroid
+                        ]}
                         onChangeText={(v) => updateDemand(i, { description: v })}
                       />
                     </>
@@ -743,25 +777,24 @@ export default function SurveyTab({ voterId }: Props) {
 
 /* ================= HELPERS ================= */
 
-function GridItem({ isWide, children }: any) {
+function GridItem({ isWide, children }: GridItemProps) {
   return (
     <View
-      style={{
-        flexBasis: isWide ? '50%' : '100%',
-        padding: 8,
-        alignSelf: 'stretch'
-      }}
+      style={[
+        rowStyles.gridItem,
+        isWide ? rowStyles.gridItemWide : rowStyles.gridItemFull
+      ]}
     >
       {children}
     </View>
   );
 }
 
-function FullGridItem({ children }: any) {
-  return <View style={{ flexBasis: '100%', padding: 8 }}>{children}</View>;
+function FullGridItem({ children }: FullGridItemProps) {
+  return <View style={rowStyles.gridItemFull}>{children}</View>;
 }
 
-function Card({ title, children }: any) {
+function Card({ title, children }: CardProps) {
   const theme = useTheme<AppTheme>();
   const styles = createStyles(theme);
   return (
@@ -772,17 +805,11 @@ function Card({ title, children }: any) {
   );
 }
 
-function Row({ label, children, noDivider }: any) {
+function Row({ label, children, noDivider }: RowProps) {
   const theme = useTheme<AppTheme>();
+  const styles = createStyles(theme);
   return (
-    <View
-      style={[
-        rowStyles.row,
-        noDivider
-          ? { borderBottomWidth: 0 }
-          : { borderBottomWidth: 1, borderBottomColor: theme.colors.divider }
-      ]}
-    >
+    <View style={[rowStyles.row, noDivider ? styles.rowNoDivider : styles.rowDivider]}>
       <Text style={rowStyles.label}>{label}</Text>
       <View style={rowStyles.value}>{children}</View>
     </View>
@@ -799,6 +826,7 @@ function DropdownRow({
   noDivider?: boolean;
 }) {
   const theme = useTheme<AppTheme>();
+  const styles = createStyles(theme);
   const { isWeb, isMobileWeb } = usePlatformInfo();
 
   if (isWeb && !isMobileWeb) {
@@ -810,15 +838,8 @@ function DropdownRow({
   }
 
   return (
-    <View
-      style={{
-        paddingVertical: 12,
-        borderBottomWidth: noDivider ? 0 : 1,
-        borderBottomColor: theme.colors.divider,
-        gap: 6
-      }}
-    >
-      <Text style={{ fontSize: 14, color: '#888' }}>{label}</Text>
+    <View style={[styles.mobileRowContainer, noDivider && styles.rowNoDivider]}>
+      <Text style={styles.mobileRowLabel}>{label}</Text>
       {children}
     </View>
   );
@@ -834,8 +855,9 @@ function InputRow({
   maxLength,
   outlineColor,
   ...props
-}: any) {
+}: InputRowProps) {
   const theme = useTheme<AppTheme>();
+  const styles = createStyles(theme);
   const { isWeb, isMobileWeb } = usePlatformInfo();
   const [selection, setSelection] = useState<{ start: number; end: number }>();
 
@@ -858,30 +880,17 @@ function InputRow({
           onFocus={() => {
             setSelection(undefined);
           }}
-          outlineColor={outlineColor ? outlineColor : theme.colors.subtleBorder}
+          outlineColor={outlineColor ?? theme.colors.subtleBorder}
           activeOutlineColor={theme.colors.primary}
-          style={{
-            minHeight: multiline ? 80 : 44,
-            maxHeight: 160,
-            fontSize: 15,
-            backgroundColor: theme.colors.white,
-            textAlignVertical: 'top'
-          }}
+          style={[styles.webInput, multiline && styles.webInputMultiline]}
         />
       </Row>
     );
   }
 
   return (
-    <View
-      style={{
-        paddingVertical: 12,
-        borderBottomWidth: noDivider ? 0 : 1,
-        borderBottomColor: theme.colors.divider,
-        gap: 6
-      }}
-    >
-      <Text style={{ fontSize: 14, color: '#888' }}>{label}</Text>
+    <View style={[styles.mobileRowContainer, noDivider && styles.rowNoDivider]}>
+      <Text style={styles.mobileRowLabel}>{label}</Text>
 
       <TextInput
         {...props}
@@ -899,24 +908,17 @@ function InputRow({
         onFocus={() => {
           setSelection(undefined);
         }}
-        outlineColor={outlineColor ? outlineColor : theme.colors.subtleBorder}
+        outlineColor={outlineColor ?? theme.colors.subtleBorder}
         activeOutlineColor={theme.colors.primary}
-        style={{
-          minHeight: multiline ? 90 : 44,
-          maxHeight: 180,
-          fontSize: 14,
-          backgroundColor: theme.colors.white,
-          textAlignVertical: 'top',
-          paddingTop: multiline ? 8 : 0,
-          borderColor: theme.colors.subtleBorder
-        }}
+        style={[styles.mobileInput, multiline && styles.mobileInputMultiline]}
       />
     </View>
   );
 }
 
-function BooleanRow({ label, value, noDivider, onChange }: any) {
+function BooleanRow({ label, value, noDivider, onChange }: BooleanRowProps) {
   const theme = useTheme<AppTheme>();
+  const styles = createStyles(theme);
   const { t } = useTranslation();
   return (
     <Row label={label} noDivider={noDivider}>
@@ -927,10 +929,7 @@ function BooleanRow({ label, value, noDivider, onChange }: any) {
             compact
             selected={value === v}
             onPress={() => onChange(v)}
-            style={{
-              backgroundColor:
-                value === v ? theme.colors.softOrange : theme.colors.paperBackground
-            }}
+            style={value === v ? styles.booleanChipSelected : styles.booleanChip}
           >
             {v ? t('yes') : t('no')}
           </Chip>
@@ -954,11 +953,25 @@ const rowStyles = StyleSheet.create({
     color: '#888'
   },
   value: { flex: 1 },
-  inlineWrap: { flexDirection: 'row', gap: 8 }
+  inlineWrap: { flexDirection: 'row', gap: 8 },
+  gridItem: {
+    padding: 8,
+    alignSelf: 'stretch'
+  },
+  gridItemWide: {
+    flexBasis: '50%'
+  },
+  gridItemFull: {
+    flexBasis: '100%',
+    padding: 8
+  }
 });
 
 const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
+    loadingContainer: {
+      padding: 24
+    },
     grid: {
       flexDirection: 'row',
       flexWrap: 'wrap',
@@ -980,6 +993,51 @@ const createStyles = (theme: AppTheme) =>
       fontWeight: '700',
       marginBottom: 10,
       color: theme.colors.textTertiary
+    },
+    rowDivider: {
+      borderBottomWidth: 1,
+      borderBottomColor: theme.colors.divider
+    },
+    rowNoDivider: {
+      borderBottomWidth: 0
+    },
+    mobileRowContainer: {
+      paddingVertical: 12,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.colors.divider,
+      gap: 6
+    },
+    mobileRowLabel: {
+      fontSize: 14,
+      color: '#888'
+    },
+    webInput: {
+      minHeight: 44,
+      maxHeight: 160,
+      fontSize: 15,
+      backgroundColor: theme.colors.white,
+      textAlignVertical: 'top'
+    },
+    webInputMultiline: {
+      minHeight: 80
+    },
+    mobileInput: {
+      minHeight: 44,
+      maxHeight: 180,
+      fontSize: 14,
+      backgroundColor: theme.colors.white,
+      textAlignVertical: 'top',
+      borderColor: theme.colors.subtleBorder
+    },
+    mobileInputMultiline: {
+      minHeight: 90,
+      paddingTop: 8
+    },
+    booleanChip: {
+      backgroundColor: theme.colors.paperBackground
+    },
+    booleanChipSelected: {
+      backgroundColor: theme.colors.softOrange
     },
 
     dateField: {
@@ -1115,13 +1173,27 @@ const createStyles = (theme: AppTheme) =>
       paddingVertical: 8,
       borderRadius: 6,
       borderWidth: 1,
-      borderColor: theme.colors.success,
-      backgroundColor: theme.colors.successBackground
+      borderColor: theme.colors.primary,
+      backgroundColor: theme.colors.primary
     },
 
     resolveText: {
       fontSize: 12,
       fontWeight: '600',
-      color: theme.colors.success
+      color: theme.colors.white
+    },
+    resolvedChip: {
+      backgroundColor: theme.colors.successBackground
+    },
+    resolvedChipText: {
+      fontSize: 12
+    },
+    demandDescriptionInput: {
+      fontSize: 14,
+      backgroundColor: theme.colors.white,
+      paddingVertical: 0
+    },
+    demandDescriptionInputAndroid: {
+      paddingVertical: 8
     }
   });

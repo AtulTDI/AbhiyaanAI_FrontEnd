@@ -1,3 +1,5 @@
+import { UploadableFile } from './Upload';
+
 export type Video = {
   id: string;
   name: string;
@@ -7,10 +9,14 @@ export type Video = {
   cloningSpeed?: number;
   voiceCloneId?: string;
   status: string;
-  file: any;
+  file: UploadableFile;
+  createdAt?: string;
+  isShared: boolean;
+  s3Url?: string;
 };
 
 export type GetPaginatedVideos = {
+  id?: string;
   videos: { items: Video[] };
   items: Video[];
   pageNumber: number;
@@ -32,7 +38,8 @@ export type GetVideoLink = {
 };
 
 export type SampleVideo = {
-  file: any;
+  file: UploadableFile;
   recipientName: string;
   cloningSpeed?: number;
+  voiceCloneId?: string;
 };

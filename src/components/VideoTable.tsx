@@ -1,4 +1,6 @@
 import { AppTheme } from '../theme';
+import { Video } from '../types/Video';
+import { logger } from '../utils/logger';
 import ApprovalToggle from './ApprovalToggle';
 import CommonTable from './CommonTable';
 import { Ionicons } from '@expo/vector-icons';
@@ -13,14 +15,6 @@ import React, { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Text, useTheme } from 'react-native-paper';
-
-type Video = {
-  id: string;
-  campaignName: string;
-  createdAt: string;
-  isShared: boolean;
-  s3Url?: string;
-};
 
 type Props = {
   data: Video[];
@@ -49,7 +43,7 @@ export default function VideoTable({
 }: Props) {
   const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
-  const styles = createStyles(theme);
+  const styles = createStyles();
   const { colors } = theme;
 
   const videoRef = useRef<ExpoVideo>(null);
@@ -65,7 +59,7 @@ export default function VideoTable({
       await videoRef.current.presentFullscreenPlayer();
       await videoRef.current.playAsync();
     } catch (e) {
-      console.warn('Failed to play video', e);
+      logger.warn('Failed to play video', e);
     }
   };
 
@@ -104,7 +98,7 @@ export default function VideoTable({
           isApproved={item.isShared}
           onToggle={() => (item.isShared ? onUnshare(item.id) : onShare(item.id))}
           iconSize={20}
-          labelStyle={{ fontWeight: 'bold' }}
+          labelStyle={styles.approvalLabel}
         />
       )
     },
@@ -159,7 +153,7 @@ export default function VideoTable({
   );
 }
 
-const createStyles = (theme: AppTheme) =>
+const createStyles = () =>
   StyleSheet.create({
     actions: {
       flexDirection: 'row',
@@ -178,5 +172,8 @@ const createStyles = (theme: AppTheme) =>
       right: 12,
       backgroundColor: 'rgba(0,0,0,0.6)',
       zIndex: 1000
+    },
+    approvalLabel: {
+      fontWeight: 'bold'
     }
   });

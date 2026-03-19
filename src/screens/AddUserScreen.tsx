@@ -20,16 +20,20 @@ import { usePlatformInfo } from '../hooks/usePlatformInfo';
 import { useServerTable } from '../hooks/useServerTable';
 import { encryptWithBackendKey } from '../services/rsaEncryptor';
 import { AppTheme } from '../theme';
-import { User } from '../types/User';
+import { CreateUserPayload, EditUserPayload, User } from '../types/User';
 import { extractErrorMessage } from '../utils/common';
 import { getAuthData } from '../utils/storage';
 import { useFocusEffect } from '@react-navigation/native';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { KeyboardAvoidingView, ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Text, useTheme } from 'react-native-paper';
 
-export default function AddUserScreen({ role }) {
+type Props = {
+  role: string;
+};
+
+export default function AddUserScreen({ role }: Props) {
   const { t } = useTranslation();
   const { isWeb, isMobileWeb, isIOS } = usePlatformInfo();
   const theme = useTheme<AppTheme>();
@@ -51,67 +55,78 @@ export default function AddUserScreen({ role }) {
 
   useInternalBackHandler(canHandleInternalBack, handleInternalBack);
 
-  const fetchUsers = useCallback(async (page: number, pageSize: number) => {
-    try {
-      let response;
+  const fetchUsers = useCallback(
+    async (page: number, pageSize: number) => {
+      try {
+        let response;
 
-      if (role === 'Distributor') {
-        response = await getDistributors(page, pageSize);
-      } else if (role === 'Admin') {
-        response = await getCustomerAdmins(page, pageSize);
-      } else {
-        response = await getUsers(page, pageSize);
+        if (role === 'Distributor') {
+          response = await getDistributors(page, pageSize);
+        } else if (role === 'Admin') {
+          response = await getCustomerAdmins(page, pageSize);
+        } else {
+          response = await getUsers(page, pageSize);
+        }
+
+        return {
+          items: Array.isArray(response?.data?.items) ? response.data.items : [],
+          totalCount: response?.data?.totalRecords ?? 0
+        };
+      } catch (error) {
+        const loadTarget =
+          role === 'Distributor'
+            ? t('distributorPageLabel')
+            : role === 'Admin'
+              ? t('customerAdminPageLabel')
+              : t('userPageLabel');
+
+        showToast(extractErrorMessage(error, `Failed to load ${loadTarget}`), 'error');
       }
-
-      return {
-        items: Array.isArray(response?.data?.items) ? response.data.items : [],
-        totalCount: response?.data?.totalRecords ?? 0
-      };
-    } catch (error: any) {
-      showToast(
-        extractErrorMessage(error, `Failed to load ${getHeaderTitle()}`),
-        'error'
-      );
-    }
-  }, []);
+    },
+    [role, showToast, t]
+  );
 
   const table = useServerTable<User>(fetchUsers, {
     initialPage: 0,
     initialRowsPerPage: 10
   });
+  const tableRef = useRef(table);
+  tableRef.current = table;
 
   useFocusEffect(
     useCallback(() => {
       setShowAddUserView(false);
       setUserToEdit(null);
-      table.setPage(0);
-      table.setRowsPerPage(10);
-      table.fetchData(0, 10);
+      tableRef.current.setPage(0);
+      tableRef.current.setRowsPerPage(10);
+      void tableRef.current.fetchData(0, 10);
     }, [])
   );
 
-  const addUser = async (userData: any) => {
+  const addUser = async (userData: CreateUserPayload) => {
     try {
       const { applicationId: loggedInUserApplicationId } = await getAuthData();
       const encryptedPassword = await encryptWithBackendKey(userData?.password);
 
-      userData?.role === 'Distributor'
-        ? await createDistributor({
-            ...userData,
-            password: encryptedPassword
-          })
-        : await createUser({
-            ...userData,
-            password: encryptedPassword,
-            applicationId: userData?.applicationId
-              ? userData?.applicationId
-              : loggedInUserApplicationId
-          });
+      if (userData?.role === 'Distributor') {
+        await createDistributor({
+          ...userData,
+          password: encryptedPassword
+        });
+      } else {
+        await createUser({
+          ...userData,
+          password: encryptedPassword,
+          applicationId: userData?.applicationId
+            ? userData?.applicationId
+            : loggedInUserApplicationId
+        });
+      }
       await table.fetchData(0, table.rowsPerPage);
       setShowAddUserView(false);
       setUserToEdit(null);
       showToast(`${getRoleLabel()} registered successfully!`, 'success');
-    } catch (error: any) {
+    } catch (error) {
       showToast(
         extractErrorMessage(error, `Failed to create ${getRoleLabel().toLowerCase()}`),
         'error'
@@ -119,23 +134,18 @@ export default function AddUserScreen({ role }) {
     }
   };
 
-  const editUser = async (userData: {
-    firstName: string;
-    lastName: string;
-    email: string;
-    phoneNumber: string;
-    role: string;
-    password: string;
-  }) => {
+  const editUser = async (userData: EditUserPayload) => {
     try {
-      userData?.role === 'Distributor'
-        ? await editDistributorById(userToEdit.id, userData)
-        : await editUserById(userToEdit.id, userData);
+      if (userData?.role === 'Distributor') {
+        await editDistributorById(userToEdit.id, userData);
+      } else {
+        await editUserById(userToEdit.id, userData);
+      }
       await table.fetchData(table.page, table.rowsPerPage);
       setShowAddUserView(false);
       setUserToEdit(null);
       showToast(`${getRoleLabel()} updated successfully!`, 'success');
-    } catch (error: any) {
+    } catch (error) {
       showToast(
         extractErrorMessage(error, `Failed to update ${getRoleLabel().toLowerCase()}`),
         'error'
@@ -156,12 +166,14 @@ export default function AddUserScreen({ role }) {
   const confirmDeleteUser = async () => {
     if (selectedUserId) {
       try {
-        role === 'Distributor'
-          ? await deleteDistributor(selectedUserId)
-          : await deleteUserById(selectedUserId);
+        if (role === 'Distributor') {
+          await deleteDistributor(selectedUserId);
+        } else {
+          await deleteUserById(selectedUserId);
+        }
         table.fetchData(table.page, table.rowsPerPage);
         showToast(`${getRoleLabel()} deleted successfully!`, 'success');
-      } catch (error: any) {
+      } catch (error) {
         showToast(
           extractErrorMessage(error, `Failed to delete ${getRoleLabel().toLowerCase()}`),
           'error'
@@ -212,10 +224,7 @@ export default function AddUserScreen({ role }) {
     <>
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.header}>
-          <Text
-            variant="titleLarge"
-            style={[styles.heading, { color: theme.colors.primary }]}
-          >
+          <Text variant="titleLarge" style={styles.heading}>
             {getHeaderTitle()}
           </Text>
           {!showAddUserView && (
@@ -223,13 +232,9 @@ export default function AddUserScreen({ role }) {
               mode="contained"
               onPress={() => setShowAddUserView(true)}
               icon="plus"
-              labelStyle={{
-                fontWeight: 'bold',
-                fontSize: 14,
-                color: theme.colors.onPrimary
-              }}
+              labelStyle={styles.addButtonLabel}
               buttonColor={theme.colors.primary}
-              style={{ borderRadius: 5 }}
+              style={styles.addButton}
             >
               {getAddRoleLabel()}
             </Button>
@@ -239,7 +244,7 @@ export default function AddUserScreen({ role }) {
         {showAddUserView ? (
           <KeyboardAvoidingView
             behavior={isIOS ? 'padding' : undefined}
-            style={{ flex: 1 }}
+            style={styles.formWrapper}
           >
             <UserForm
               role={role}
@@ -289,12 +294,24 @@ const createStyles = (theme: AppTheme) =>
       flex: 1
     },
     heading: {
-      fontWeight: 'bold'
+      fontWeight: 'bold',
+      color: theme.colors.primary
     },
     header: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
       marginBottom: 16
+    },
+    addButtonLabel: {
+      fontWeight: 'bold',
+      fontSize: 14,
+      color: theme.colors.onPrimary
+    },
+    addButton: {
+      borderRadius: 5
+    },
+    formWrapper: {
+      flex: 1
     }
   });

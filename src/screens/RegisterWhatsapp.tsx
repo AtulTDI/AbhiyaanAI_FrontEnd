@@ -1,3 +1,4 @@
+import { logger } from '../utils/logger';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, StyleSheet, Text, View } from 'react-native';
 
@@ -14,13 +15,13 @@ export default function RegisterWhatsapp() {
           if (data.base64) {
             setQrCode(data.base64);
           } else {
-            console.warn('QR code not found in response:');
+            logger.warn('QR code not found in response:');
           }
         } catch (err) {
-          console.error('Error parsing QR code:', err);
+          logger.error('Error parsing QR code:', err);
         }
       })
-      .catch((err) => console.error('API error:', err))
+      .catch((err) => logger.error('API error:', err))
       .finally(() => setLoading(false));
   }, []);
 
@@ -44,11 +45,7 @@ export default function RegisterWhatsapp() {
   return (
     <View style={styles.center}>
       <Text style={styles.title}>Scan this QR code with WhatsApp</Text>
-      <Image
-        source={{ uri: qrCode }}
-        style={{ width: 250, height: 250 }}
-        resizeMode="contain"
-      />
+      <Image source={{ uri: qrCode }} style={styles.qrCodeImage} resizeMode="contain" />
     </View>
   );
 }
@@ -64,5 +61,9 @@ const styles = StyleSheet.create({
     fontSize: 18,
     marginBottom: 10,
     fontWeight: 'bold'
+  },
+  qrCodeImage: {
+    width: 200,
+    height: 200
   }
 });

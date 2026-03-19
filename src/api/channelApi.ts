@@ -48,5 +48,5 @@ export const deleteChannelById = (id: string) =>
 /**
  * Generate QR code for a WhatsApp channel by ID.
  */
-export const generateChannelQr = (id: string, userId: string) =>
+export const generateChannelQr = () =>
   axios.get(`/WhtaspApp/getqr`, { useApiPrefix: true, useAltBase: true });

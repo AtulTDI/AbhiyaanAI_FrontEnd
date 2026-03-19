@@ -14,15 +14,19 @@ import { AppTheme } from '../theme';
 import {
   Application,
   CreateApplicationPayload,
-  EditApplicationPayload,
-  GetPaginatedApplications
+  EditApplicationPayload
 } from '../types/Application';
+import { UploadableFile } from '../types/Upload';
 import { extractErrorMessage, sortByDateDesc } from '../utils/common';
 import { useFocusEffect } from '@react-navigation/native';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { Button, Text, useTheme } from 'react-native-paper';
+
+type ApplicationFormValues = CreateApplicationPayload & {
+  appName: string;
+};
 
 export default function AddApplicationScreen() {
   const { t } = useTranslation();
@@ -32,7 +36,7 @@ export default function AddApplicationScreen() {
 
   const [showAddApplicationView, setShowAddApplicationView] = useState(false);
   const [applicationToEdit, setApplicationToEdit] = useState<Application | null>(null);
-  const [voterFile, setVoterFile] = useState<any>(null);
+  const [voterFile, setVoterFile] = useState<UploadableFile | null>(null);
   const [loading, setLoading] = useState(false);
   const canHandleInternalBack = showAddApplicationView;
 
@@ -48,31 +52,36 @@ export default function AddApplicationScreen() {
 
   useInternalBackHandler(canHandleInternalBack, handleInternalBack);
 
-  const fetchApplications = useCallback(async (page: number, pageSize: number) => {
-    try {
-      const response = await getApplications(page, pageSize);
-      const sortedApps = sortByDateDesc(response?.data?.items || [], 'createdAt');
-      return {
-        items: sortedApps ?? [],
-        totalCount: response?.data?.totalRecords ?? 0
-      };
-    } catch (error: any) {
-      showToast(extractErrorMessage(error, t('application.loadFailed')), 'error');
-    }
-  }, []);
+  const fetchApplications = useCallback(
+    async (page: number, pageSize: number) => {
+      try {
+        const response = await getApplications(page, pageSize);
+        const sortedApps = sortByDateDesc(response?.data?.items || [], 'createdAt');
+        return {
+          items: sortedApps ?? [],
+          totalCount: response?.data?.totalRecords ?? 0
+        };
+      } catch (error) {
+        showToast(extractErrorMessage(error, t('application.loadFailed')), 'error');
+      }
+    },
+    [showToast, t]
+  );
 
-  const table = useServerTable<GetPaginatedApplications>(fetchApplications, {
+  const table = useServerTable<Application>(fetchApplications, {
     initialPage: 0,
     initialRowsPerPage: 10
   });
+  const tableRef = useRef(table);
+  tableRef.current = table;
 
   useFocusEffect(
     useCallback(() => {
       setShowAddApplicationView(false);
       setApplicationToEdit(null);
-      table.setPage(0);
-      table.setRowsPerPage(10);
-      table.fetchData(0, 10);
+      tableRef.current.setPage(0);
+      tableRef.current.setRowsPerPage(10);
+      void tableRef.current.fetchData(0, 10);
     }, [])
   );
 
@@ -95,14 +104,14 @@ export default function AddApplicationScreen() {
       setShowAddApplicationView(false);
       setApplicationToEdit(null);
       showToast(t('application.addSuccess'), 'success');
-    } catch (error: any) {
+    } catch (error) {
       showToast(extractErrorMessage(error, t('application.addFailed')), 'error');
     } finally {
       setLoading(false);
     }
   };
 
-  const editApplication = async (data) => {
+  const editApplication = async (data: ApplicationFormValues) => {
     setShowAddApplicationView(true);
     try {
       setLoading(true);
@@ -118,7 +127,7 @@ export default function AddApplicationScreen() {
       setShowAddApplicationView(false);
       setApplicationToEdit(null);
       showToast(t('application.editSuccess'), 'success');
-    } catch (error: any) {
+    } catch (error) {
       showToast(extractErrorMessage(error, t('application.editFailed')), 'error');
     } finally {
       setLoading(false);
@@ -135,7 +144,7 @@ export default function AddApplicationScreen() {
       await toggleApplication(item.id, !item.isActive);
       await table.fetchData(table.page, table.rowsPerPage);
       showToast(t('application.editSuccess'), 'success');
-    } catch (error: any) {
+    } catch (error) {
       showToast(extractErrorMessage(error, t('application.editFailed')), 'error');
     }
   };
@@ -143,10 +152,7 @@ export default function AddApplicationScreen() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.header}>
-        <Text
-          variant="titleLarge"
-          style={[styles.heading, { color: theme.colors.primary }]}
-        >
+        <Text variant="titleLarge" style={styles.heading}>
           {showAddApplicationView
             ? t(applicationToEdit ? 'application.edit' : 'application.add')
             : t('application.plural')}
@@ -156,13 +162,9 @@ export default function AddApplicationScreen() {
             mode="contained"
             onPress={() => setShowAddApplicationView(true)}
             icon="plus"
-            labelStyle={{
-              fontWeight: 'bold',
-              fontSize: 14,
-              color: theme.colors.onPrimary
-            }}
+            labelStyle={styles.addButtonLabel}
             buttonColor={theme.colors.primary}
-            style={{ borderRadius: 5 }}
+            style={styles.addButton}
           >
             {t('application.add')}
           </Button>
@@ -207,12 +209,21 @@ const createStyles = (theme: AppTheme) =>
       flexGrow: 1
     },
     heading: {
-      fontWeight: 'bold'
+      fontWeight: 'bold',
+      color: theme.colors.primary
     },
     header: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
       marginBottom: 16
+    },
+    addButtonLabel: {
+      fontWeight: 'bold',
+      fontSize: 14,
+      color: theme.colors.onPrimary
+    },
+    addButton: {
+      borderRadius: 5
     }
   });

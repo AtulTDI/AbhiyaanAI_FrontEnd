@@ -41,7 +41,7 @@ export default function ActivateSenderScreen() {
       if (transformedUsers.length) {
         setSelectedUserId(transformedUsers[0].value);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       showToast(extractErrorMessage(error, 'Failed to load users'), 'error');
     } finally {
       setLoadingUsers(false);
@@ -83,6 +83,7 @@ export default function ActivateSenderScreen() {
       table.fetchData(table.page, table.rowsPerPage, selectedUserId);
     } catch (error) {
       showToast(t('sender.activationFailed'), 'error');
+      void error;
     }
   };
 
@@ -123,21 +124,17 @@ export default function ActivateSenderScreen() {
   return (
     <Surface style={styles.container} elevation={2}>
       <View style={styles.content}>
-        <Text
-          variant="titleLarge"
-          style={[styles.heading, { color: theme.colors.primary, marginBottom: 15 }]}
-        >
+        <Text variant="titleLarge" style={styles.heading}>
           {t('activateSenderPageLabel')}
         </Text>
 
         <FormDropdown
-          label={t('selectUser')}
           value={selectedUserId}
           options={users}
           onSelect={setSelectedUserId}
         />
 
-        <View style={{ flex: 1 }}>
+        <View style={styles.tableWrapper}>
           <CommonTable
             data={table.data}
             columns={columns}
@@ -164,17 +161,20 @@ export default function ActivateSenderScreen() {
 
 const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
-    content: {
-      flex: 1,
-      display: 'flex'
-    },
     container: {
       padding: 16,
       flex: 1,
       backgroundColor: theme.colors.white
     },
+    content: {
+      flex: 1
+    },
     heading: {
       fontWeight: 'bold',
-      marginBottom: 16
+      color: theme.colors.primary,
+      marginBottom: 15
+    },
+    tableWrapper: {
+      flex: 1
     }
   });

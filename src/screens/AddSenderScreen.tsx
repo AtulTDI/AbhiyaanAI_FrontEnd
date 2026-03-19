@@ -12,14 +12,16 @@ import { useInternalBackHandler } from '../hooks/useInternalBackHandler';
 import { useServerTable } from '../hooks/useServerTable';
 import { encryptWithBackendKey } from '../services/rsaEncryptor';
 import { AppTheme } from '../theme';
-import { Sender } from '../types/Sender';
+import { CreateSenderPayload, EditSenderPayload, Sender } from '../types/Sender';
 import { extractErrorMessage } from '../utils/common';
 import { useFocusEffect } from '@react-navigation/native';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { Button, Text, useTheme } from 'react-native-paper';
+
+const keyboardContentStyle = { flexGrow: 1 };
 
 export default function AddSenderScreen() {
   const { t } = useTranslation();
@@ -53,24 +55,20 @@ export default function AddSenderScreen() {
     initialPage: 0,
     initialRowsPerPage: 10
   });
+  const tableRef = useRef(table);
+  tableRef.current = table;
 
   useFocusEffect(
     useCallback(() => {
       setShowAddSenderView(false);
       setSenderToEdit(null);
-      table.setPage(0);
-      table.setRowsPerPage(10);
-      table.fetchData(0, 10);
+      tableRef.current.setPage(0);
+      tableRef.current.setRowsPerPage(10);
+      void tableRef.current.fetchData(0, 10);
     }, [])
   );
 
-  const addSender = async (senderData: {
-    firstName: string;
-    lastName: string;
-    email: string;
-    phoneNumber: string;
-    password: string;
-  }) => {
+  const addSender = async (senderData: CreateSenderPayload) => {
     try {
       const encryptedPassword = await encryptWithBackendKey(senderData?.password);
       await createSender({
@@ -82,16 +80,12 @@ export default function AddSenderScreen() {
       setShowAddSenderView(false);
       setSenderToEdit(null);
       showToast(t('sender.addSuccess'), 'success');
-    } catch (error: any) {
+    } catch (error) {
       showToast(extractErrorMessage(error, t('sender.addFailed')), 'error');
     }
   };
 
-  const editSender = async (senderData: {
-    firstName: string;
-    lastName: string;
-    email: string;
-  }) => {
+  const editSender = async (senderData: EditSenderPayload) => {
     try {
       await editSenderById(senderToEdit.id, {
         ...senderData,
@@ -102,7 +96,7 @@ export default function AddSenderScreen() {
       setShowAddSenderView(false);
       setSenderToEdit(null);
       showToast(t('sender.editSuccess'), 'success');
-    } catch (error: any) {
+    } catch (error) {
       showToast(extractErrorMessage(error, t('sender.editFailed')), 'error');
     }
   };
@@ -122,8 +116,8 @@ export default function AddSenderScreen() {
       try {
         await deleteSenderById(selectedSenderId);
         await table.fetchData(table.page, table.rowsPerPage);
-        showToast(t('sender.deleteSucess'), 'success');
-      } catch (error: any) {
+        showToast(t('sender.deleteSuccess'), 'success');
+      } catch (error) {
         showToast(extractErrorMessage(error, t('sender.deleteFail')), 'error');
       }
       setSelectedSenderId(null);
@@ -135,10 +129,7 @@ export default function AddSenderScreen() {
     <>
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.header}>
-          <Text
-            variant="titleLarge"
-            style={[styles.heading, { color: theme.colors.primary }]}
-          >
+          <Text variant="titleLarge" style={styles.heading}>
             {showAddSenderView
               ? senderToEdit
                 ? t('sender.edit')
@@ -150,13 +141,9 @@ export default function AddSenderScreen() {
               mode="contained"
               onPress={() => setShowAddSenderView(true)}
               icon="plus"
-              labelStyle={{
-                fontWeight: 'bold',
-                fontSize: 14,
-                color: theme.colors.onPrimary
-              }}
+              labelStyle={styles.addButtonLabel}
               buttonColor={theme.colors.primary}
-              style={{ borderRadius: 5 }}
+              style={styles.addButton}
             >
               {t('sender.add')}
             </Button>
@@ -165,9 +152,7 @@ export default function AddSenderScreen() {
 
         {showAddSenderView ? (
           <KeyboardAwareScrollView
-            contentContainerStyle={{
-              flexGrow: 1
-            }}
+            contentContainerStyle={keyboardContentStyle}
             extraScrollHeight={50}
             enableOnAndroid={true}
             keyboardShouldPersistTaps="handled"
@@ -217,12 +202,21 @@ const createStyles = (theme: AppTheme) =>
       flex: 1
     },
     heading: {
-      fontWeight: 'bold'
+      fontWeight: 'bold',
+      color: theme.colors.primary
     },
     header: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
       marginBottom: 16
+    },
+    addButtonLabel: {
+      fontWeight: 'bold',
+      fontSize: 14,
+      color: theme.colors.onPrimary
+    },
+    addButton: {
+      borderRadius: 5
     }
   });

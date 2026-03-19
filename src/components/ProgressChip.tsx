@@ -3,7 +3,7 @@ import { usePlatformInfo } from '../hooks/usePlatformInfo';
 import { Feather } from '@expo/vector-icons';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Chip } from 'react-native-paper';
 
 type ProgressChipProps = {
@@ -14,6 +14,7 @@ type ProgressChipProps = {
 export default function ProgressChip({ completedCount, totalCount }: ProgressChipProps) {
   const { isWeb, isMobileWeb } = usePlatformInfo();
   const { t } = useTranslation();
+
   const progress = totalCount > 0 ? completedCount / totalCount : 0;
 
   let bgColor = colors.errorBackground;
@@ -34,16 +35,22 @@ export default function ProgressChip({ completedCount, totalCount }: ProgressChi
     <View>
       <Chip
         icon={() => <Feather name="check-circle" size={16} color={iconColor} />}
-        style={{
-          backgroundColor: bgColor,
-          alignSelf: 'flex-start',
-          borderRadius: 6,
-          paddingHorizontal: 8
-        }}
-        textStyle={{ fontWeight: '600', color: textColor }}
+        style={[styles.chip, { backgroundColor: bgColor }]}
+        textStyle={[styles.text, { color: textColor }]}
       >
         {completedCount} / {totalCount} {isWeb && !isMobileWeb ? t('completed') : ''}
       </Chip>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  chip: {
+    alignSelf: 'flex-start',
+    borderRadius: 6,
+    paddingHorizontal: 8
+  },
+  text: {
+    fontWeight: '600'
+  }
+});

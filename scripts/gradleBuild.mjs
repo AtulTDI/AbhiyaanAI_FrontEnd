@@ -1,11 +1,20 @@
-const { execSync } = require('child_process');
-const fs = require('fs');
-const path = require('path');
+import { execSync } from 'node:child_process';
+import fs from 'node:fs';
+import path from 'node:path';
+import process from 'node:process';
+
+const writeStdout = (message) => {
+  process.stdout.write(`${message}\n`);
+};
+
+const writeStderr = (message) => {
+  process.stderr.write(`${message}\n`);
+};
 
 const [platform, gradleTask] = process.argv.slice(2);
 
 if (!platform || !gradleTask) {
-  console.error('Usage: node gradleBuild.js <platform> <gradleTask>');
+  writeStderr('Usage: node gradleBuild.mjs <platform> <gradleTask>');
   process.exit(1);
 }
 
@@ -28,9 +37,9 @@ const formatBrandName = (str) => {
 const BrandFormatted = formatBrandName(BRAND);
 
 try {
-  console.log(`\n🚀 Starting ${BrandFormatted} (${APP_ENV}) build...`);
+  writeStdout(`\n🚀 Starting ${BrandFormatted} (${APP_ENV}) build...`);
 
-  console.log('\n🧩 Running Expo prebuild (dynamic config)...');
+  writeStdout('\n🧩 Running Expo prebuild (dynamic config)...');
   execSync(`npx expo prebuild --platform ${platform} --no-install`, {
     stdio: 'inherit'
   });
@@ -38,13 +47,13 @@ try {
   // RUN PREBUILD FIRST, THEN GENERATE ICONS
   const brandIcon = `./assets/${BRAND}/icon.png`;
   if (fs.existsSync(brandIcon)) {
-    console.log(`\n🎨 Generating launcher icons for ${BrandFormatted}...`);
+    writeStdout(`\n🎨 Generating launcher icons for ${BrandFormatted}...`);
     try {
-      execSync(`node generate-icons.js ${brandIcon}`, {
+      execSync(`node generate-icons.mjs ${brandIcon}`, {
         stdio: 'inherit'
       });
     } catch {
-      console.warn('⚠️ Icon generation failed or skipped.');
+      writeStderr('⚠️ Icon generation failed or skipped.');
     }
   }
 
@@ -54,19 +63,19 @@ try {
     if (manifestContent.includes('package=')) {
       manifestContent = manifestContent.replace(/\s*package="[^"]*"/, '');
       fs.writeFileSync(manifestPath, manifestContent, 'utf8');
-      console.log("🧹 Removed deprecated 'package' attribute from AndroidManifest.xml");
+      writeStdout("🧹 Removed deprecated 'package' attribute from AndroidManifest.xml");
     } else {
-      console.log("✅ Manifest already clean (no 'package' attribute).");
+      writeStdout("✅ Manifest already clean (no 'package' attribute).");
     }
   }
 
-  console.log(`\n🏗️ Running ${gradleCmd} ${gradleTask} ...`);
+  writeStdout(`\n🏗️ Running ${gradleCmd} ${gradleTask} ...`);
   execSync(`${gradleCmd} ${gradleTask}`, { cwd: 'android', stdio: 'inherit' });
 
-  console.log('\n🔍 Searching for generated APK...');
+  writeStdout('\n🔍 Searching for generated APK...');
   const apkBaseDir = path.join('android', 'app', 'build', 'outputs', 'apk');
   if (!fs.existsSync(apkBaseDir)) {
-    console.error('❌ APK output directory not found!');
+    writeStderr('❌ APK output directory not found!');
     process.exit(1);
   }
 
@@ -78,7 +87,7 @@ try {
   const debugOrRelease = gradleTask.toLowerCase().includes('debug') ? 'debug' : 'release';
   const releaseDir = path.join(apkBaseDir, variantFolder, debugOrRelease);
   if (!fs.existsSync(releaseDir)) {
-    console.error(`❌ No APK release folder found at ${releaseDir}`);
+    writeStderr(`❌ No APK release folder found at ${releaseDir}`);
     process.exit(1);
   }
 
@@ -88,7 +97,7 @@ try {
     .map((f) => path.join(releaseDir, f));
 
   if (apkFiles.length === 0) {
-    console.error('❌ No APK found in release folder!');
+    writeStderr('❌ No APK found in release folder!');
     process.exit(1);
   }
 
@@ -98,9 +107,10 @@ try {
 
   fs.renameSync(finalApk, newFilePath);
 
-  console.log(`\n✅ Build completed successfully!`);
-  console.log(`📁 Output: ${newFilePath}\n`);
+  writeStdout('\n✅ Build completed successfully!');
+  writeStdout(`📁 Output: ${newFilePath}\n`);
 } catch (err) {
-  console.error(`\n❌ Build failed: ${err.message}`);
+  const errorMessage = err instanceof Error ? err.message : String(err);
+  writeStderr(`\n❌ Build failed: ${errorMessage}`);
   process.exit(1);
 }

@@ -20,21 +20,18 @@ import { Dimensions, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Card } from 'react-native-paper';
 
 const { width } = Dimensions.get('window');
-const chartWidth = width - 64;
 const isSmallScreen = width < 600;
 
 const Tab = createMaterialTopTabNavigator();
 
 const AdminDashboardScreen = () => {
   const { t } = useTranslation();
-  const [showVideoCampaign, setShowVideoCampaignn] = useState<boolean | string>(false);
+  const [showVideoCampaign, setShowVideoCampaign] = useState<boolean>(false);
 
   useEffect(() => {
     (async () => {
-      const { showVideoCampaign: videoCampign, showImageCampaign: imageCampaign } =
-        await getAuthData();
-
-      setShowVideoCampaignn(videoCampign === true || videoCampign === 'true');
+      const { showVideoCampaign: videoCampaign } = await getAuthData();
+      setShowVideoCampaign(String(videoCampaign) === 'true');
     })();
   }, []);
 
@@ -45,26 +42,10 @@ const AdminDashboardScreen = () => {
         swipeEnabled: false,
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.primaryLight,
-        tabBarIndicatorStyle: {
-          backgroundColor: colors.primary,
-          height: 4,
-          borderRadius: 2
-        },
-        tabBarLabelStyle: {
-          fontSize: 14,
-          fontWeight: '700',
-          textTransform: 'none'
-        },
-        tabBarItemStyle: {
-          paddingVertical: 8
-        },
-        tabBarStyle: {
-          backgroundColor: colors.white,
-          elevation: 4,
-          shadowColor: '#000',
-          shadowOpacity: 0.08,
-          shadowRadius: 6
-        }
+        tabBarIndicatorStyle: styles.tabIndicator,
+        tabBarLabelStyle: styles.tabLabel,
+        tabBarItemStyle: styles.tabItem,
+        tabBarStyle: styles.tabBar
       }}
     >
       <Tab.Screen
@@ -72,14 +53,9 @@ const AdminDashboardScreen = () => {
         component={VoterDashboardContent}
         options={{
           tabBarLabel: ({ color }) => (
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Ionicons
-                name="people"
-                size={16}
-                color={color}
-                style={{ marginRight: 6 }}
-              />
-              <Text style={{ fontWeight: '700', color }}>
+            <View style={styles.tabLabelRow}>
+              <Ionicons name="people" size={16} color={color} style={styles.tabIcon} />
+              <Text style={[styles.tabLabelText, { color }]}>
                 {t('dashboard.voter.totalVoters')}
               </Text>
             </View>
@@ -93,14 +69,14 @@ const AdminDashboardScreen = () => {
           component={VideoDashboardContent}
           options={{
             tabBarLabel: ({ color }) => (
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <View style={styles.tabLabelRow}>
                 <Ionicons
                   name="videocam"
                   size={16}
                   color={color}
-                  style={{ marginRight: 6 }}
+                  style={styles.tabIcon}
                 />
-                <Text style={{ fontWeight: '700', color }}>
+                <Text style={[styles.tabLabelText, { color }]}>
                   {t('dashboard.videosByUser')}
                 </Text>
               </View>
@@ -163,7 +139,7 @@ const VideoDashboardContent = () => {
       }
 
       fetchDashboardData();
-    }, [])
+    }, [showToast, t])
   );
 
   const kpis = [
@@ -171,14 +147,8 @@ const VideoDashboardContent = () => {
       title: t('dashboard.status.generated'),
       value: aggregateTotals.totalGeneratedVideos
     },
-    {
-      title: t('dashboard.status.sent'),
-      value: aggregateTotals.totalSentVideos
-    },
-    {
-      title: t('dashboard.status.failed'),
-      value: aggregateTotals.totalFailedVideos
-    }
+    { title: t('dashboard.status.sent'), value: aggregateTotals.totalSentVideos },
+    { title: t('dashboard.status.failed'), value: aggregateTotals.totalFailedVideos }
   ];
 
   const noData = aggregateTotals.totalGeneratedVideos === 0;
@@ -186,7 +156,7 @@ const VideoDashboardContent = () => {
   return (
     <ScrollView style={styles.container}>
       {isWeb ? (
-        <View style={[styles.kpiRow, { justifyContent: 'space-between' }]}>
+        <View style={styles.kpiRowSpaced}>
           {kpis.map((item, idx) => (
             <KPICard key={idx} item={item} idx={idx} />
           ))}
@@ -195,10 +165,10 @@ const VideoDashboardContent = () => {
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          style={{ marginBottom: 20 }}
+          style={styles.kpiScrollView}
         >
           {kpis.map((item, idx) => (
-            <Card key={idx} style={[styles.kpiCard, { width: 140, marginRight: 12 }]}>
+            <Card key={idx} style={styles.kpiCardSmall}>
               <Text style={styles.kpiTitle}>{item.title}</Text>
               <Text style={styles.kpiValue}>{item.value}</Text>
             </Card>
@@ -220,7 +190,6 @@ const VideoDashboardContent = () => {
         {userStats.length > 0 && (
           <BarChart
             data={userStats}
-            width={chartWidth}
             height={220}
             barColor={colors.primary}
             titleColor={colors.primaryDark}
@@ -256,14 +225,12 @@ const VoterDashboardContent = () => {
         }
       }
       fetchVoterDashboard();
-    }, [])
+    }, [showToast])
   );
 
   if (!voterData) {
     return (
-      <View
-        style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}
-      >
+      <View style={styles.loadingContainer}>
         <Text>{t('dashboard.voter.loading')}</Text>
       </View>
     );
@@ -272,78 +239,33 @@ const VoterDashboardContent = () => {
   const noData = voterData.totalVoters === 0;
 
   const kpis = [
-    {
-      title: t('dashboard.voter.totalVoters'),
-      value: voterData.totalVoters
-    },
-    {
-      title: t('dashboard.voter.verified'),
-      value: voterData.verification.verified
-    },
-    {
-      title: t('dashboard.voter.surveyed'),
-      value: voterData.survey.surveyed
-    },
-    {
-      title: t('dashboard.voter.starVoters'),
-      value: voterData.starVoters.count
-    }
+    { title: t('dashboard.voter.totalVoters'), value: voterData.totalVoters },
+    { title: t('dashboard.voter.verified'), value: voterData.verification.verified },
+    { title: t('dashboard.voter.surveyed'), value: voterData.survey.surveyed },
+    { title: t('dashboard.voter.starVoters'), value: voterData.starVoters.count }
   ];
 
   const genderData = [
-    {
-      label: t('dashboard.voter.male'),
-      value: voterData.genderStats.male
-    },
-    {
-      label: t('dashboard.voter.female'),
-      value: voterData.genderStats.female
-    },
-    {
-      label: t('dashboard.voter.other'),
-      value: voterData.genderStats.other
-    }
+    { label: t('dashboard.voter.male'), value: voterData.genderStats.male },
+    { label: t('dashboard.voter.female'), value: voterData.genderStats.female },
+    { label: t('dashboard.voter.other'), value: voterData.genderStats.other }
   ];
 
   const verificationData = [
-    {
-      label: t('dashboard.voter.verified'),
-      value: voterData.verification.verified
-    },
-    {
-      label: t('dashboard.voter.pending'),
-      value: voterData.verification.unverified
-    }
+    { label: t('dashboard.voter.verified'), value: voterData.verification.verified },
+    { label: t('dashboard.voter.pending'), value: voterData.verification.unverified }
   ];
 
   const surveyData = [
-    {
-      label: t('dashboard.voter.surveyed'),
-      value: voterData.survey.surveyed
-    },
-    {
-      label: t('dashboard.voter.pending'),
-      value: voterData.survey.pending
-    }
+    { label: t('dashboard.voter.surveyed'), value: voterData.survey.surveyed },
+    { label: t('dashboard.voter.pending'), value: voterData.survey.pending }
   ];
 
   const ageGroupData = [
-    {
-      label: t('dashboard.voter.ageGroups.18_25'),
-      value: voterData.ageGroups.age18To25
-    },
-    {
-      label: t('dashboard.voter.ageGroups.26_35'),
-      value: voterData.ageGroups.age26To35
-    },
-    {
-      label: t('dashboard.voter.ageGroups.36_45'),
-      value: voterData.ageGroups.age36To45
-    },
-    {
-      label: t('dashboard.voter.ageGroups.46_60'),
-      value: voterData.ageGroups.age46To60
-    },
+    { label: t('dashboard.voter.ageGroups.18_25'), value: voterData.ageGroups.age18To25 },
+    { label: t('dashboard.voter.ageGroups.26_35'), value: voterData.ageGroups.age26To35 },
+    { label: t('dashboard.voter.ageGroups.36_45'), value: voterData.ageGroups.age36To45 },
+    { label: t('dashboard.voter.ageGroups.46_60'), value: voterData.ageGroups.age46To60 },
     {
       label: t('dashboard.voter.ageGroups.60_plus'),
       value: voterData.ageGroups.age60Plus
@@ -396,7 +318,7 @@ const VoterDashboardContent = () => {
   return (
     <ScrollView style={styles.container}>
       {isWeb ? (
-        <View style={[styles.kpiRow, { justifyContent: 'space-between' }]}>
+        <View style={styles.kpiRowSpaced}>
           {kpis.map((item, idx) => (
             <KPICard key={idx} item={item} idx={idx} />
           ))}
@@ -405,10 +327,10 @@ const VoterDashboardContent = () => {
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          style={{ marginBottom: 20 }}
+          style={styles.kpiScrollView}
         >
           {kpis.map((item, idx) => (
-            <Card key={idx} style={[styles.kpiCard, { width: 160, marginRight: 12 }]}>
+            <Card key={idx} style={styles.kpiCardVoter}>
               <Text style={styles.kpiTitle}>{item.title}</Text>
               <Text style={styles.kpiValue}>{item.value}</Text>
             </Card>
@@ -416,19 +338,13 @@ const VoterDashboardContent = () => {
         </ScrollView>
       )}
 
-      <View
-        style={{
-          flexDirection: isWeb ? 'row' : 'column',
-          justifyContent: 'space-between',
-          gap: 16
-        }}
-      >
-        <Card style={[styles.chartCard, { flex: 1 }]}>
+      <View style={isWeb ? styles.chartsRowWeb : styles.chartsRowMobile}>
+        <Card style={[styles.chartCard, styles.chartCardFlex]}>
           <Text style={styles.chartTitle}>{t('dashboard.voter.votersByGender')}</Text>
           <DonutChart data={genderData} radius={110} holeRadius={55} noData={noData} />
         </Card>
 
-        <Card style={[styles.chartCard, { flex: 1 }]}>
+        <Card style={[styles.chartCard, styles.chartCardFlex]}>
           <Text style={styles.chartTitle}>{t('dashboard.voter.verificationStatus')}</Text>
           <DonutChart
             data={verificationData}
@@ -438,7 +354,7 @@ const VoterDashboardContent = () => {
           />
         </Card>
 
-        <Card style={[styles.chartCard, { flex: 1 }]}>
+        <Card style={[styles.chartCard, styles.chartCardFlex]}>
           <Text style={styles.chartTitle}>{t('dashboard.voter.surveyStatus')}</Text>
           <DonutChart data={surveyData} radius={110} holeRadius={55} noData={noData} />
         </Card>
@@ -448,7 +364,6 @@ const VoterDashboardContent = () => {
         <Text style={styles.chartTitle}>{t('dashboard.voter.votersByAgeGroup')}</Text>
         <BarChart
           data={ageGroupData}
-          width={chartWidth}
           height={220}
           barColor={colors.primary}
           titleColor={colors.primaryDark}
@@ -460,7 +375,6 @@ const VoterDashboardContent = () => {
         <Text style={styles.chartTitle}>{t('dashboard.voter.votersBySupportType')}</Text>
         <BarChart
           data={supportData}
-          width={chartWidth}
           height={220}
           barColor={colors.primary}
           titleColor={colors.primaryDark}
@@ -472,7 +386,6 @@ const VoterDashboardContent = () => {
         <Text style={styles.chartTitle}>{t('dashboard.voter.votersByCaste')}</Text>
         <BarChart
           data={casteData}
-          width={chartWidth}
           height={220}
           barColor={colors.primary}
           titleColor={colors.primaryDark}
@@ -483,15 +396,64 @@ const VoterDashboardContent = () => {
   );
 };
 
-/* -------- STYLES (UNCHANGED) -------- */
+/* -------- STYLES -------- */
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
     backgroundColor: colors.white
   },
+  loadingContainer: {
+    flex: 1,
+    padding: 16,
+    backgroundColor: colors.white,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+
+  // Tab bar
+  tabBar: {
+    backgroundColor: colors.white,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 6
+  },
+  tabIndicator: {
+    backgroundColor: colors.primary,
+    height: 4,
+    borderRadius: 2
+  },
+  tabLabel: {
+    fontSize: 14,
+    fontWeight: '700',
+    textTransform: 'none'
+  },
+  tabItem: {
+    paddingVertical: 8
+  },
+  tabLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
+  tabIcon: {
+    marginRight: 6
+  },
+  tabLabelText: {
+    fontWeight: '700'
+  },
+
+  // KPI
   kpiRow: {
     flexDirection: 'row',
+    marginBottom: 20
+  },
+  kpiRowSpaced: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 20
+  },
+  kpiScrollView: {
     marginBottom: 20
   },
   kpiGrid: {
@@ -502,6 +464,24 @@ const styles = StyleSheet.create({
   },
   kpiCard: {
     flexBasis: '48%',
+    padding: 18,
+    borderRadius: 14,
+    backgroundColor: colors.white,
+    elevation: 8,
+    marginBottom: 12
+  },
+  kpiCardSmall: {
+    width: 140,
+    marginRight: 12,
+    padding: 18,
+    borderRadius: 14,
+    backgroundColor: colors.white,
+    elevation: 8,
+    marginBottom: 12
+  },
+  kpiCardVoter: {
+    width: 160,
+    marginRight: 12,
     padding: 18,
     borderRadius: 14,
     backgroundColor: colors.white,
@@ -519,6 +499,8 @@ const styles = StyleSheet.create({
     marginTop: 6,
     color: colors.primaryDark
   },
+
+  // Charts
   chartCard: {
     marginBottom: 20,
     borderRadius: 14,
@@ -526,12 +508,24 @@ const styles = StyleSheet.create({
     elevation: 10,
     padding: 12
   },
+  chartCardFlex: {
+    flex: 1
+  },
   chartTitle: {
     fontSize: 20,
     fontWeight: '700',
     color: colors.primary,
     textAlign: 'left',
     marginBottom: 12
+  },
+  chartsRowWeb: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 16
+  },
+  chartsRowMobile: {
+    flexDirection: 'column',
+    gap: 16
   }
 });
 

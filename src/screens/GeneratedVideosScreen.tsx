@@ -10,6 +10,7 @@ import { usePlatformInfo } from '../hooks/usePlatformInfo';
 import { useServerTable } from '../hooks/useServerTable';
 import { AppTheme } from '../theme';
 import { Recipient } from '../types/Recipient';
+import { Video } from '../types/Video';
 import { extractErrorMessage } from '../utils/common';
 import { getAuthData } from '../utils/storage';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
@@ -20,6 +21,11 @@ import { useTranslation } from 'react-i18next';
 import { Platform, StyleSheet, View } from 'react-native';
 import { IconButton, ProgressBar, Surface, Text, useTheme } from 'react-native-paper';
 
+type VideoOption = {
+  label: string;
+  value: string;
+};
+
 export default function GeneratedVideoScreen() {
   const { isWeb, isMobileWeb } = usePlatformInfo();
   const { t } = useTranslation();
@@ -27,12 +33,11 @@ export default function GeneratedVideoScreen() {
   const styles = createStyles(theme);
   const { colors } = theme;
   const { showToast } = useToast();
-  const [baseVideos, setBaseVideos] = useState<any[]>([]);
+  const [baseVideos, setBaseVideos] = useState<VideoOption[]>([]);
   const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [sendingId, setSendingId] = useState<string | null>(null);
   const [progressMap, setProgressMap] = useState<Record<string, number>>({});
-  const [searchText, setSearchText] = useState('');
   const [tableParams, setTableParams] = useState<{
     videoId: string | null;
     searchText: string;
@@ -44,10 +49,8 @@ export default function GeneratedVideoScreen() {
   const fetchVideos = useCallback(async () => {
     try {
       const response = await getVideos(0, 100000);
-      const videosData =
-        response?.data && Array.isArray(response.data.videos.items)
-          ? response.data.videos.items
-          : [];
+      const rawVideos = response?.data?.videos?.items;
+      const videosData: Video[] = Array.isArray(rawVideos) ? rawVideos : [];
 
       const transformedVideos = videosData.map((video) => ({
         label: video.campaignName,
@@ -58,10 +61,10 @@ export default function GeneratedVideoScreen() {
       if (transformedVideos?.length) {
         setSelectedVideoId((prev) => prev ?? transformedVideos[0]?.value);
       }
-    } catch (error: any) {
+    } catch (error) {
       showToast(extractErrorMessage(error, t('video.loadVideoFailMessage')), 'error');
     }
-  }, []);
+  }, [showToast, t]);
 
   const fetchVoters = useCallback(
     async (
@@ -84,14 +87,14 @@ export default function GeneratedVideoScreen() {
           items: Array.isArray(response?.data?.items) ? response.data.items : [],
           totalCount: response?.data?.totalRecords ?? 0
         };
-      } catch (error: any) {
+      } catch (error) {
         showToast(extractErrorMessage(error, t('voter.loadVoterFailMessage')), 'error');
         return { items: [], totalCount: 0 };
       } finally {
         setLoading(false);
       }
     },
-    []
+    [showToast, t]
   );
 
   const table = useServerTable<Recipient, { videoId: string | null; searchText: string }>(
@@ -104,7 +107,7 @@ export default function GeneratedVideoScreen() {
     return (
       <>
         <FixedLabel label={t('campaign')} />
-        <View style={{ width: 300 }}>
+        <View style={styles.dropdownWrapper}>
           <FormDropdown
             placeholder={t('selectCampaign')}
             value={selectedVideoId}
@@ -115,7 +118,7 @@ export default function GeneratedVideoScreen() {
         </View>
       </>
     );
-  }, [selectedVideoId, baseVideos, t]);
+  }, [baseVideos, selectedVideoId, styles.dropdownWrapper, t]);
 
   useEffect(() => {
     setTableParams((prev) => ({
@@ -123,7 +126,7 @@ export default function GeneratedVideoScreen() {
       videoId: selectedVideoId
     }));
     table.setPage(0);
-  }, [selectedVideoId]);
+  }, [selectedVideoId, table]);
 
   useFocusEffect(
     useCallback(() => {
@@ -160,8 +163,9 @@ export default function GeneratedVideoScreen() {
     } finally {
       setSendingId(null);
       setProgressMap((prev) => {
-        const { [item.id]: _, ...rest } = prev;
-        return rest;
+        const next = { ...prev };
+        delete next[item.id];
+        return next;
       });
     }
   };
@@ -187,27 +191,14 @@ export default function GeneratedVideoScreen() {
         const progress = progressMap[item.id];
 
         return (
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-          >
+          <View style={styles.actionCell}>
             {sendingId === item.id && progress !== undefined ? (
-              <View style={{ width: 40, alignItems: 'center' }}>
-                <Text style={{ fontSize: 12, color: colors.primary }}>
-                  {Math.floor(progress * 100)}%
-                </Text>
+              <View style={styles.progressContainer}>
+                <Text style={styles.progressText}>{Math.floor(progress * 100)}%</Text>
                 <ProgressBar
                   progress={progress}
                   color={colors.primary}
-                  style={{
-                    width: 36,
-                    height: 4,
-                    borderRadius: 2,
-                    marginTop: 2
-                  }}
+                  style={styles.progressBar}
                 />
               </View>
             ) : sendStatus === 'pending' ? (
@@ -220,7 +211,7 @@ export default function GeneratedVideoScreen() {
                   />
                 )}
                 onPress={() => handleSendVideo(item)}
-                style={{ margin: 0 }}
+                style={styles.iconButton}
                 disabled={disableRowActions}
               />
             ) : (
@@ -229,7 +220,7 @@ export default function GeneratedVideoScreen() {
                   <FontAwesome name="check-circle" size={22} color={colors.success} />
                 )}
                 disabled
-                style={{ margin: 0 }}
+                style={styles.iconButton}
               />
             )}
           </View>
@@ -240,7 +231,6 @@ export default function GeneratedVideoScreen() {
 
   const handleVoterSearch = useCallback(
     (text: string) => {
-      setSearchText(text);
       setTableParams((prev) => ({
         ...prev,
         searchText: text
@@ -268,7 +258,7 @@ export default function GeneratedVideoScreen() {
 
       {/* Table */}
       <ResponsiveKeyboardView>
-        <View style={{ flex: 1 }}>
+        <View style={styles.tableWrapper}>
           <CommonTable
             data={table.data}
             columns={columns}
@@ -312,6 +302,9 @@ const createStyles = (theme: AppTheme) =>
     headerRow: {
       marginBottom: 12
     },
+    dropdownWrapper: {
+      width: 300
+    },
     toolbar: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -327,6 +320,31 @@ const createStyles = (theme: AppTheme) =>
       paddingVertical: 6,
       paddingHorizontal: 2,
       marginBottom: 6
+    },
+    actionCell: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center'
+    },
+    progressContainer: {
+      width: 40,
+      alignItems: 'center'
+    },
+    progressText: {
+      fontSize: 12,
+      color: theme.colors.primary
+    },
+    progressBar: {
+      width: 36,
+      height: 4,
+      borderRadius: 2,
+      marginTop: 2
+    },
+    iconButton: {
+      margin: 0
+    },
+    tableWrapper: {
+      flex: 1
     },
     waChip: {
       flexDirection: 'row',

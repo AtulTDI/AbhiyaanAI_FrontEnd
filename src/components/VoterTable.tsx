@@ -4,7 +4,7 @@ import CommonTable from './CommonTable';
 import ResponsiveKeyboardView from './ResponsiveKeyboardView';
 import { Ionicons } from '@expo/vector-icons';
 import dayjs from 'dayjs';
-import React, { useCallback } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
 import { useTheme } from 'react-native-paper';

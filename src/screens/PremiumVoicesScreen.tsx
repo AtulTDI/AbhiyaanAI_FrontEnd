@@ -4,10 +4,10 @@ import PremiumVoicesTable from '../components/PremiumVoicesTable';
 import { useToast } from '../components/ToastProvider';
 import { useServerTable } from '../hooks/useServerTable';
 import { AppTheme } from '../theme';
-import { GetPaginatedVoices } from '../types/Voice';
+import { Voice } from '../types/Voice';
 import { extractErrorMessage, sortByDateDesc } from '../utils/common';
 import { useFocusEffect } from '@react-navigation/native';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { Text, useTheme } from 'react-native-paper';
@@ -21,29 +21,37 @@ export default function PremiumVoicesScreen() {
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
   const [selectedVoiceId, setSelectedVoiceId] = useState<string | null>(null);
 
-  const fetchVoices = useCallback(async (page: number, pageSize: number) => {
-    try {
-      const response = await getVoices(page, pageSize);
-      const sortedVoices = sortByDateDesc(response?.data?.items || [], 'createdAt');
-      return {
-        items: sortedVoices ?? [],
-        totalCount: response?.data?.totalRecords ?? 0
-      };
-    } catch (error: any) {
-      showToast(extractErrorMessage(error, t('voice.loadFailed')), 'error');
-    }
-  }, []);
+  const fetchVoices = useCallback(
+    async (page: number, pageSize: number) => {
+      try {
+        const response = await getVoices(page, pageSize);
+        const sortedVoices = sortByDateDesc(
+          response?.data?.items || [],
+          'createdAt' as keyof Voice
+        );
+        return {
+          items: sortedVoices ?? [],
+          totalCount: response?.data?.totalRecords ?? 0
+        };
+      } catch (error) {
+        showToast(extractErrorMessage(error, t('voice.loadFailed')), 'error');
+      }
+    },
+    [showToast, t]
+  );
 
-  const table = useServerTable<GetPaginatedVoices>(fetchVoices, {
+  const table = useServerTable<Voice>(fetchVoices, {
     initialPage: 0,
     initialRowsPerPage: 10
   });
+  const tableRef = useRef(table);
+  tableRef.current = table;
 
   useFocusEffect(
     useCallback(() => {
-      table.setPage(0);
-      table.setRowsPerPage(10);
-      table.fetchData(0, 10);
+      tableRef.current.setPage(0);
+      tableRef.current.setRowsPerPage(10);
+      void tableRef.current.fetchData(0, 10);
     }, [])
   );
 
@@ -56,9 +64,9 @@ export default function PremiumVoicesScreen() {
     if (selectedVoiceId) {
       try {
         await deleteVoiceById(selectedVoiceId);
-        table.fetchData(table.page, table.rowsPerPage);
-        showToast(t('voice.deleteSucessMessage'), 'success');
-      } catch (error: any) {
+        void table.fetchData(table.page, table.rowsPerPage);
+        showToast(t('voice.deleteSuccessMessage'), 'success');
+      } catch (error) {
         showToast(extractErrorMessage(error, t('voice.deleteFailMessage')), 'error');
       }
       setSelectedVoiceId(null);
@@ -70,10 +78,7 @@ export default function PremiumVoicesScreen() {
     <>
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.header}>
-          <Text
-            variant="titleLarge"
-            style={[styles.heading, { color: theme.colors.primary }]}
-          >
+          <Text variant="titleLarge" style={styles.heading}>
             {t('premiumVoicesTabLabel')}
           </Text>
         </View>
@@ -112,7 +117,8 @@ const createStyles = (theme: AppTheme) =>
       flexGrow: 1
     },
     heading: {
-      fontWeight: 'bold'
+      fontWeight: 'bold',
+      color: theme.colors.primary
     },
     header: {
       flexDirection: 'row',

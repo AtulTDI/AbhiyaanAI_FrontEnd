@@ -59,7 +59,7 @@ export default function ResetPasswordScreen() {
       setTimeout(() => {
         navigate('Login');
       }, 1000);
-    } catch (error: any) {
+    } catch (error: unknown) {
       showToast(extractErrorMessage(error), 'error');
     } finally {
       setIsSubmitting(false);
@@ -151,7 +151,7 @@ export default function ResetPasswordScreen() {
                     loading={isSubmitting}
                     disabled={isSubmitting}
                     style={styles.button}
-                    contentStyle={{ paddingVertical: 8 }}
+                    contentStyle={styles.resetPasswordBtn}
                   >
                     Reset Password
                   </Button>
@@ -215,5 +215,8 @@ const styles = StyleSheet.create({
   button: {
     borderRadius: 8,
     marginTop: 8
+  },
+  resetPasswordBtn: {
+    paddingVertical: 8
   }
 });

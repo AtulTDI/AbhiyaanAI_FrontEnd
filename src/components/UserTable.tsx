@@ -17,7 +17,7 @@ type Props = {
   loading: boolean;
   onPageChange: (page: number) => void;
   onRowsPerPageChange: (size: number) => void;
-  onEdit: (item: any) => void;
+  onEdit: (item: User) => void;
   onDelete: (id: string) => void;
   getHeaderTitle: () => string;
 };
@@ -42,7 +42,7 @@ export default function UserTable({
     {
       label: t('name'),
       key: 'fullName',
-      flex: role === 'Admin' ? 0.4 : 0.5,
+      flex: 0.4,
       render: (item) => item.firstName + ' ' + item.lastName
     },
     { label: t('mobile'), key: 'phoneNumber', flex: 0.2 },

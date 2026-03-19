@@ -1,3 +1,4 @@
+import { logger } from '../utils/logger';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 type TableResponse<T> = {
@@ -10,14 +11,14 @@ type UseServerTableOptions = {
   initialRowsPerPage?: number;
 };
 
-export function useServerTable<T, P = any>(
+export function useServerTable<T, P = unknown>(
   fetchFn: (page: number, rowsPerPage: number, params?: P) => Promise<TableResponse<T>>,
   options: UseServerTableOptions = {},
   params?: P
 ) {
   const { initialPage = 0, initialRowsPerPage = 10 } = options;
 
-  const [data, setData] = useState<any[]>([]);
+  const [data, setData] = useState<T[]>([]);
   const [page, setPage] = useState(initialPage);
   const [rowsPerPage, setRowsPerPage] = useState(initialRowsPerPage);
   const [loading, setLoading] = useState(false);
@@ -37,7 +38,7 @@ export function useServerTable<T, P = any>(
         setData(response.items ?? []);
         setTotal(response.totalCount ?? 0);
       } catch (error) {
-        console.error('Error fetching table data:', error);
+        logger.error('Error fetching table data:', error);
       } finally {
         setLoading(false);
         isFetching.current = false;

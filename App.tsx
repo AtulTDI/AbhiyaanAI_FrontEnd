@@ -1,3 +1,4 @@
+import './src/styles/global.css';
 import i18n from './i18n';
 import EpicScannerScreen from './src/components/EpicScannerScreen';
 import { ToastProvider } from './src/components/ToastProvider';
@@ -13,15 +14,11 @@ import prefixes from './src/utils/deeplinks';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { I18nextProvider } from 'react-i18next';
-import { Platform } from 'react-native';
 import { Provider as PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
-
-if (Platform.OS === 'web') {
-  require('./src/styles/global.css');
-}
+const rootSafeAreaStyle = { flex: 1, backgroundColor: 'white' };
 
 const linking = {
   prefixes,
@@ -49,7 +46,7 @@ export default function App() {
           <ToastProvider>
             <VideoPreviewProvider>
               <NavigationContainer ref={navigationRef} linking={linking}>
-                <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
+                <SafeAreaView style={rootSafeAreaStyle}>
                   <Stack.Navigator
                     id={undefined}
                     initialRouteName="AuthLoading"

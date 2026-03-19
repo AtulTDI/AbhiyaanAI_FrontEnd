@@ -1,3 +1,4 @@
+import { NativeFormDataFile } from '../types/Upload';
 import {
   GenerateVideo,
   GetPaginatedVideos,
@@ -67,11 +68,13 @@ export const uploadVideo = async (payload: Video) => {
   if (Platform.OS === 'web' && payload.file.file instanceof File) {
     formData.append('file', payload.file.file);
   } else {
-    formData.append('file', {
+    const nativeFile: NativeFormDataFile = {
       uri: fileUri,
       name: fileName,
       type: mimeType
-    } as any);
+    };
+
+    formData.append('file', nativeFile);
   }
 
   // --- Generate Thumbnail (optional) ---
@@ -81,15 +84,17 @@ export const uploadVideo = async (payload: Video) => {
       if (Platform.OS === 'web' && thumbnail.file) {
         formData.append('thumbnail', thumbnail.file);
       } else if (thumbnail.uri) {
-        formData.append('thumbnail', {
+        const nativeThumbnail: NativeFormDataFile = {
           uri: thumbnail.uri,
           name: thumbnail.name,
           type: thumbnail.mimeType
-        } as any);
+        };
+
+        formData.append('thumbnail', nativeThumbnail);
       }
     }
-  } catch (err) {
-    console.warn('Thumbnail generation failed:', err);
+  } catch {
+    return null;
   }
 
   // --- Other Form Fields ---
@@ -175,11 +180,13 @@ export const generateSampleVideo = async (payload: SampleVideo) => {
       encoding: FileSystem.EncodingType.Base64
     });
 
-    formData.append('file', {
+    const nativeFile: NativeFormDataFile = {
       uri: tempPath,
       name: fileName,
       type: mimeType
-    } as any);
+    };
+
+    formData.append('file', nativeFile);
   }
 
   // ---------- FILE URI (MOBILE) ----------
@@ -190,11 +197,13 @@ export const generateSampleVideo = async (payload: SampleVideo) => {
       const file = new File([blob], fileName, { type: mimeType });
       formData.append('file', file);
     } else {
-      formData.append('file', {
+      const nativeFile: NativeFormDataFile = {
         uri: payload.file.uri,
         name: fileName,
         type: mimeType
-      } as any);
+      };
+
+      formData.append('file', nativeFile);
     }
   }
 
@@ -211,8 +220,8 @@ export const generateSampleVideo = async (payload: SampleVideo) => {
   formData.append('RecipientName', String(payload.recipientName));
   formData.append('CloningSpeed', String(payload.cloningSpeed));
 
-  if ((payload as any).voiceCloneId) {
-    formData.append('VoiceCloneId', String((payload as any).voiceCloneId));
+  if (payload.voiceCloneId) {
+    formData.append('VoiceCloneId', String(payload.voiceCloneId));
   }
 
   // ---------- AXIOS CALL (MOBILE-SAFE) ----------

@@ -8,6 +8,8 @@ export function navigate<Name extends keyof RootStackParamList>(
   params?: RootStackParamList[Name]
 ) {
   if (navigationRef.isReady()) {
-    navigationRef.navigate(name, params);
+    navigationRef.navigate(
+      ...([name, params] as unknown as Parameters<typeof navigationRef.navigate>)
+    );
   }
 }

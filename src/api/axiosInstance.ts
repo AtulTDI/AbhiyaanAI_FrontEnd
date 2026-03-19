@@ -1,5 +1,6 @@
 import { navigate } from '../navigation/NavigationService';
 import { triggerToast } from '../services/toastService';
+import { logger } from '../utils/logger';
 import { clearAuthData, getAuthData } from '../utils/storage';
 import axios, { AxiosInstance } from 'axios';
 import Constants from 'expo-constants';
@@ -60,7 +61,7 @@ const createAxiosInstance = (baseURL: string): AxiosInstance => {
       config.headers['Accept'] = 'application/json';
 
       if (Platform.OS !== 'web') {
-        console.debug(`[API][REQ] ${method} ${config.baseURL}${config.url}`);
+        logger.debug(`[API][REQ] ${method} ${config.baseURL}${config.url}`);
       }
 
       return config;
@@ -72,7 +73,7 @@ const createAxiosInstance = (baseURL: string): AxiosInstance => {
   instance.interceptors.response.use(
     (response) => {
       if (Platform.OS !== 'web') {
-        console.debug(
+        logger.debug(
           `[API][RES] ${response.config.method?.toUpperCase()} ${response.config.baseURL}${response.config.url}` +
             ` | Status=${response.status}`
         );
@@ -84,7 +85,7 @@ const createAxiosInstance = (baseURL: string): AxiosInstance => {
       const message = error?.response?.data;
 
       if (Platform.OS !== 'web') {
-        console.debug(
+        logger.debug(
           `[API][ERR] ${error.config?.method?.toUpperCase()} ${error.config?.baseURL}${error.config?.url}` +
             (status ? ` | Status=${status}` : '') +
             (message ? ` | Message=${JSON.stringify(message)}` : '')
@@ -97,7 +98,7 @@ const createAxiosInstance = (baseURL: string): AxiosInstance => {
           triggerToast('Session expired. Please log in again.', 'error');
           navigate('Login');
         } catch (e) {
-          console.error('Failed to clear auth data or navigate:', e);
+          logger.error('Failed to clear auth data or navigate:', e);
         }
       }
 

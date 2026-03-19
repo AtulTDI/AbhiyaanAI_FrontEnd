@@ -1,7 +1,14 @@
 import { getActiveApplications } from '../api/applicationApi';
 import { FieldConfig, FieldType } from '../types';
+import { Application } from '../types/Application';
+import { logger } from '../utils/logger';
 import DynamicForm from './DynamicForm';
 import React, { useEffect, useState } from 'react';
+
+type ApplicationOption = {
+  label: string;
+  value: string;
+};
 
 type Props = {
   onCreate: (data: { channelName: string; applicationId: string }) => void;
@@ -14,7 +21,7 @@ export default function CreateChannelForm({
   setShowAddChannelView,
   formSubmitLoading
 }: Props) {
-  const [applicationOptions, setApplicationOptions] = useState<any[]>([]);
+  const [applicationOptions, setApplicationOptions] = useState<ApplicationOption[]>([]);
 
   useEffect(() => {
     const fetchApplications = async () => {
@@ -23,13 +30,13 @@ export default function CreateChannelForm({
         const apps = response.data.items || [];
         const appArray = Array.isArray(apps) ? apps : [apps];
 
-        const formatted = appArray.map((app) => ({
+        const formatted = appArray.map((app: Application) => ({
           label: app.name,
-          value: app.id
+          value: app.id ?? ''
         }));
         setApplicationOptions(formatted);
       } catch (error) {
-        console.error('Failed to fetch applications', error);
+        logger.error('Failed to fetch applications', error);
       }
     };
 

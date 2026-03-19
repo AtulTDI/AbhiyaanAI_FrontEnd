@@ -1,4 +1,5 @@
 import { Candidate, CandidateCreateUpdate } from '../types/Candidate';
+import { NativeFormDataFile, UploadableFile } from '../types/Upload';
 import axios from './axiosInstance';
 import * as FileSystem from 'expo-file-system';
 import { Platform } from 'react-native';
@@ -111,7 +112,11 @@ export const getVoterSlip = (voterId: string) =>
     useVoterBase: true
   });
 
-const appendFile = async (formData: FormData, uploadedFile: any, key: string) => {
+const appendFile = async (
+  formData: FormData,
+  uploadedFile: UploadableFile,
+  key: string
+) => {
   if (!uploadedFile) return;
 
   if (isWeb && uploadedFile.file instanceof File) {
@@ -131,9 +136,11 @@ const appendFile = async (formData: FormData, uploadedFile: any, key: string) =>
     uri = dest;
   }
 
-  formData.append(key, {
+  const nativeFile: NativeFormDataFile = {
     uri,
     name,
     type
-  } as any);
+  };
+
+  formData.append(key, nativeFile);
 };

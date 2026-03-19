@@ -11,7 +11,8 @@ import {
   Platform,
   StyleSheet,
   useWindowDimensions,
-  View
+  View,
+  ViewStyle
 } from 'react-native';
 import {
   ActivityIndicator,
@@ -49,6 +50,10 @@ export default function AddFamilyMembersDialog({
   const { width } = useWindowDimensions();
 
   const isTablet = width >= 900;
+  const dialogSizeStyle: ViewStyle = {
+    width: isTablet ? 520 : '92%',
+    height: isTablet ? 620 : 520
+  };
 
   const [search, setSearch] = useState('');
   const debounced = useDebounce(search, 400);
@@ -70,8 +75,40 @@ export default function AddFamilyMembersDialog({
     setList([]);
     setTotalCount(0);
     setLoadedCount(0);
-    fetchVoters(true);
-  }, [debounced, visible]);
+
+    const loadInitialVoters = async () => {
+      setLoading(true);
+
+      try {
+        const { applicationId } = await getAuthData();
+        const res = await getEligibleFamilyMembers(
+          applicationId,
+          1,
+          PAGE_SIZE,
+          voter.id,
+          debounced
+        );
+
+        const filtered = res.data.data.filter(
+          (candidate: Voter) =>
+            candidate.id !== voter.id && !existingIds.includes(candidate.id)
+        );
+
+        const total = res.data.totalRecords ?? 0;
+        const newlyLoaded = res.data.data.length;
+
+        setTotalCount(total);
+        setLoadedCount(newlyLoaded);
+        setList(filtered);
+        setHasMore(newlyLoaded > 0 && newlyLoaded < total);
+        setPage(2);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void loadInitialVoters();
+  }, [debounced, existingIds, visible, voter.id]);
 
   const fetchVoters = async (reset = false) => {
     if (loading) return;
@@ -108,8 +145,6 @@ export default function AddFamilyMembersDialog({
 
       setList((prev) => (reset ? filtered : [...prev, ...filtered]));
 
-      const newFilteredLength = reset ? filtered.length : list.length + filtered.length;
-
       const noMoreFromServer = res.data.data.length === 0;
       const reachedTotal = loadedCount + newlyLoaded >= total;
 
@@ -124,7 +159,11 @@ export default function AddFamilyMembersDialog({
   const toggle = (v: Voter) => {
     setSelected((prev) => {
       const copy = { ...prev };
-      copy[v.id] ? delete copy[v.id] : (copy[v.id] = v);
+      if (copy[v.id]) {
+        delete copy[v.id];
+      } else {
+        copy[v.id] = v;
+      }
       return copy;
     });
   };
@@ -140,18 +179,12 @@ export default function AddFamilyMembersDialog({
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 0}
-        style={{ flex: 1, justifyContent: 'center' }}
+        style={styles.keyboardAvoidingView}
       >
         <Dialog
           visible={visible}
           onDismiss={onClose}
-          style={[
-            styles.dialog,
-            {
-              width: isTablet ? 520 : '92%',
-              height: isTablet ? 620 : 520
-            }
-          ]}
+          style={[styles.dialog, dialogSizeStyle]}
         >
           <View style={styles.header}>
             <Text style={styles.title}>{t('voter.addFamilyMembers')}</Text>
@@ -166,11 +199,7 @@ export default function AddFamilyMembersDialog({
               value={search}
               onChangeText={setSearch}
               style={styles.search}
-              inputStyle={{
-                fontSize: 14,
-                minHeight: 44,
-                height: 44
-              }}
+              inputStyle={styles.searchInput}
             />
           </View>
 
@@ -183,7 +212,7 @@ export default function AddFamilyMembersDialog({
             </Text>
           </View>
 
-          <Dialog.Content style={{ flex: 1, paddingHorizontal: 0 }}>
+          <Dialog.Content style={styles.dialogContent}>
             {loading && list.length === 0 && (
               <View style={styles.overlayLoader}>
                 <ActivityIndicator size="large" color={theme.colors.primary} />
@@ -196,12 +225,10 @@ export default function AddFamilyMembersDialog({
               keyboardShouldPersistTaps="handled"
               keyboardDismissMode="none"
               showsVerticalScrollIndicator={false}
-              contentContainerStyle={{
-                paddingHorizontal: 12
-              }}
+              contentContainerStyle={styles.listContentContainer}
               ListFooterComponent={
                 hasMore ? (
-                  <View style={{ padding: 8, alignItems: 'center' }}>
+                  <View style={styles.listFooter}>
                     {loading ? (
                       <ActivityIndicator size="small" />
                     ) : (
@@ -209,16 +236,8 @@ export default function AddFamilyMembersDialog({
                         mode="outlined"
                         onPress={() => fetchVoters(false)}
                         compact
-                        style={{
-                          borderRadius: 8,
-                          minWidth: 100,
-                          height: 32,
-                          justifyContent: 'center'
-                        }}
-                        labelStyle={{
-                          fontSize: 12,
-                          lineHeight: 14
-                        }}
+                        style={styles.loadMoreButton}
+                        labelStyle={styles.loadMoreButtonLabel}
                       >
                         {t('survey.loadMore', { defaultValue: 'Load More' })}
                       </Button>
@@ -260,7 +279,7 @@ export default function AddFamilyMembersDialog({
           <View style={styles.actions}>
             <Button
               onPress={onClose}
-              style={{ borderRadius: 10 }}
+              style={styles.actionButton}
               textColor={theme.colors.textSecondary}
             >
               {t('cancel')}
@@ -268,7 +287,7 @@ export default function AddFamilyMembersDialog({
             <Button
               mode="contained"
               disabled={Object.keys(selected).length === 0}
-              style={{ borderRadius: 10 }}
+              style={styles.actionButton}
               onPress={confirm}
             >
               {t('voter.addWithCount', {
@@ -286,6 +305,10 @@ export default function AddFamilyMembersDialog({
 
 const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
+    keyboardAvoidingView: {
+      flex: 1,
+      justifyContent: 'center'
+    },
     dialog: {
       borderRadius: 16,
       backgroundColor: theme.colors.white,
@@ -327,6 +350,11 @@ const createStyles = (theme: AppTheme) =>
       height: 44,
       minHeight: 44
     },
+    searchInput: {
+      fontSize: 14,
+      minHeight: 44,
+      height: 44
+    },
     counterBar: {
       paddingHorizontal: 16,
       paddingVertical: 6,
@@ -342,10 +370,31 @@ const createStyles = (theme: AppTheme) =>
       fontWeight: '700',
       color: theme.colors.primary
     },
+    dialogContent: {
+      flex: 1,
+      paddingHorizontal: 0
+    },
+    listContentContainer: {
+      paddingHorizontal: 12
+    },
+    listFooter: {
+      padding: 8,
+      alignItems: 'center'
+    },
     listItem: {
       paddingVertical: 4,
       paddingRight: 8,
       backgroundColor: theme.colors.white
+    },
+    loadMoreButton: {
+      borderRadius: 8,
+      minWidth: 100,
+      height: 32,
+      justifyContent: 'center'
+    },
+    loadMoreButtonLabel: {
+      fontSize: 12,
+      lineHeight: 14
     },
     listItemSelected: {
       backgroundColor: theme.colors.softOrange,
@@ -372,6 +421,9 @@ const createStyles = (theme: AppTheme) =>
       paddingHorizontal: 16,
       paddingVertical: 16,
       justifyContent: 'space-between'
+    },
+    actionButton: {
+      borderRadius: 10
     },
     overlayLoader: {
       position: 'absolute',

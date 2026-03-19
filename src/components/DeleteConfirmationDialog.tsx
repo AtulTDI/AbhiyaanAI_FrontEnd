@@ -25,7 +25,6 @@ const DeleteConfirmationDialog = ({
   const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
   const styles = createStyles(theme);
-  const { colors } = theme;
   const { width } = useWindowDimensions();
   const dialogWidth = width < 500 ? width - 32 : 400;
 
@@ -34,36 +33,18 @@ const DeleteConfirmationDialog = ({
       <Dialog
         visible={visible}
         onDismiss={onCancel}
-        style={[
-          styles.dialog,
-          {
-            backgroundColor: colors.background,
-            width: dialogWidth,
-            alignSelf: 'center'
-          }
-        ]}
+        style={[styles.dialog, { width: dialogWidth }]}
       >
         <View style={styles.iconWrapper}>
           <View style={styles.iconContainer}>
-            <Ionicons name="warning-outline" size={30} color={colors.warning} />
+            <Ionicons name="warning-outline" size={30} color={theme.colors.warning} />
           </View>
         </View>
 
-        <Dialog.Title
-          style={[styles.title, { color: colors.warning, textAlign: 'center' }]}
-        >
-          {title}
-        </Dialog.Title>
+        <Dialog.Title style={styles.title}>{title}</Dialog.Title>
 
         <Dialog.Content>
-          <Text
-            variant="bodyMedium"
-            style={{
-              textAlign: 'center',
-              color: theme.colors.onSurface,
-              fontSize: 14
-            }}
-          >
+          <Text variant="bodyMedium" style={styles.message}>
             {message}
           </Text>
         </Dialog.Content>
@@ -72,7 +53,7 @@ const DeleteConfirmationDialog = ({
           <Button
             mode="outlined"
             onPress={onCancel}
-            textColor={colors.warning}
+            textColor={theme.colors.warning}
             style={styles.button}
             labelStyle={styles.label}
           >
@@ -81,8 +62,8 @@ const DeleteConfirmationDialog = ({
           <Button
             mode="contained"
             onPress={onConfirm}
-            buttonColor={colors.warning}
-            textColor={colors.white}
+            buttonColor={theme.colors.warning}
+            textColor={theme.colors.white}
             style={styles.button}
             labelStyle={styles.label}
             loading={deleteLoading}
@@ -99,7 +80,9 @@ const DeleteConfirmationDialog = ({
 const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
     dialog: {
-      borderRadius: 12
+      borderRadius: 12,
+      backgroundColor: theme.colors.background,
+      alignSelf: 'center'
     },
     iconWrapper: {
       alignItems: 'center',
@@ -113,7 +96,14 @@ const createStyles = (theme: AppTheme) =>
     title: {
       fontWeight: '600',
       fontSize: 18,
-      marginBottom: 4
+      marginBottom: 4,
+      color: theme.colors.warning,
+      textAlign: 'center'
+    },
+    message: {
+      textAlign: 'center',
+      color: theme.colors.onSurface,
+      fontSize: 14
     },
     actions: {
       justifyContent: 'center',

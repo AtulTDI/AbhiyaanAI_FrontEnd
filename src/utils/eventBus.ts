@@ -1,4 +1,4 @@
-type Listener = (data?: any) => void;
+type Listener = (data?: unknown) => void;
 
 class EventBus {
   private listeners: Record<string, Listener[]> = {};
@@ -15,7 +15,7 @@ class EventBus {
       this.listeners[event]?.filter((listener) => listener !== callback) || [];
   }
 
-  emit(event: string, data?: any) {
+  emit(event: string, data?: unknown) {
     this.listeners[event]?.forEach((listener) => listener(data));
   }
 }

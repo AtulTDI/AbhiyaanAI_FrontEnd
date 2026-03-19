@@ -1,5 +1,7 @@
 import { usePlatformInfo } from '../hooks/usePlatformInfo';
+import { AppTheme } from '../theme';
 import { Image as ImageType } from '../types/Image';
+import { logger } from '../utils/logger';
 import DeleteConfirmationDialog from './DeleteConfirmationDialog';
 import { FixedLabel } from './FixedLabel';
 import { Ionicons } from '@expo/vector-icons';
@@ -11,6 +13,7 @@ import {
   Image,
   Platform,
   StyleSheet,
+  TextInput as NativeTextInput,
   TouchableOpacity,
   View
 } from 'react-native';
@@ -53,6 +56,17 @@ type Props = {
 const MAX_IMAGES = 2;
 const INPUT_NATIVE_ID = 'campaignMessageInput';
 
+type PickerAssetLike = {
+  uri: string;
+};
+
+type PickerResultLike = {
+  assets?: PickerAssetLike[];
+  canceled?: boolean;
+  cancelled?: boolean;
+  uri?: string;
+};
+
 export default function ImageUploadForm({
   onAddImage,
   uploading = false,
@@ -62,8 +76,8 @@ export default function ImageUploadForm({
 }: Props) {
   const { t } = useTranslation();
   const { isWeb, isMobileWeb } = usePlatformInfo();
-  const theme = useTheme();
-  const { colors } = theme as any;
+  const theme = useTheme<AppTheme>();
+  const { colors } = theme;
   const styles = createStyles(theme, { isWeb, isMobileWeb });
   const screenWidth = Dimensions.get('window').width;
 
@@ -86,7 +100,7 @@ export default function ImageUploadForm({
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
   const [indexToDelete, setIndexToDelete] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const messageInputRef = useRef<any>(null);
+  const messageInputRef = useRef<NativeTextInput | null>(null);
 
   // responsive preview sizing
   const isSmall = screenWidth < 600;
@@ -95,6 +109,14 @@ export default function ImageUploadForm({
     : Math.min(Math.floor((screenWidth - 64) / 2), 420);
 
   const isWide = isWeb && screenWidth > 900;
+  const previewDimensionsStyle = { width: previewSize, height: previewSize };
+  const previewLayoutStyle = isWide
+    ? styles.previewFieldsWide
+    : styles.previewFieldsStacked;
+  const uploadTitleStyle = imageToEdit
+    ? styles.uploadTitleEdit
+    : styles.uploadTitleCreate;
+  const viewerModalStyle = isSmall ? styles.modalContainerSmall : styles.modalContainer;
 
   // normalize pasted text (preserve markdown, emojis, internal whitespace)
   const normalizePastedText = (txt: string) => {
@@ -108,10 +130,11 @@ export default function ImageUploadForm({
   useEffect(() => {
     if (Platform.OS !== 'web') return;
 
-    const handlePaste = (e: any) => {
+    const handlePaste = (event: ClipboardEvent) => {
       try {
-        const clipboard = (e.clipboardData ??
-          (window as any).clipboardData) as DataTransfer;
+        const clipboard =
+          event.clipboardData ??
+          (window as Window & { clipboardData?: DataTransfer }).clipboardData;
         if (!clipboard) return;
         const plain = clipboard.getData('text/plain');
         if (plain == null || plain === '') return;
@@ -119,11 +142,11 @@ export default function ImageUploadForm({
         const activeId =
           (document.activeElement && (document.activeElement as HTMLElement).id) || '';
         if (activeId === INPUT_NATIVE_ID) {
-          e.preventDefault();
+          event.preventDefault();
           setMessage(normalizePastedText(plain));
           setErrors((err) => ({ ...err, images: undefined }));
         }
-      } catch (err) {
+      } catch {
         // don't break app if browser behaves differently
       }
     };
@@ -190,36 +213,33 @@ export default function ImageUploadForm({
       try {
         ImagePickerModule = await import('expo-image-picker');
       } catch (impErr) {
-        console.warn(
-          '[pickImageNative] expo-image-picker dynamic import failed:',
-          impErr
-        );
+        logger.warn('[pickImageNative] expo-image-picker dynamic import failed:', impErr);
       }
 
-      const ImagePicker = ImagePickerModule as any;
+      if (!ImagePickerModule) {
+        setErrors((e) => ({ ...e, images: 'Image picker is unavailable' }));
+        return;
+      }
 
-      const perm = await ImagePicker.requestMediaLibraryPermissionsAsync?.();
+      const perm = await ImagePickerModule.requestMediaLibraryPermissionsAsync?.();
       if (perm && perm.status !== 'granted') {
         const message = 'Permission to access photos was denied.';
         setErrors((e) => ({ ...e, images: message }));
         return;
       }
 
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      const result: PickerResultLike = await ImagePickerModule.launchImageLibraryAsync({
+        mediaTypes: ImagePickerModule.MediaTypeOptions.Images,
         allowsMultipleSelection: false,
         quality: 0.8,
         base64: false
       });
 
-      const cancelled = (result as any).cancelled ?? false;
+      const cancelled = result.cancelled ?? result.canceled ?? false;
 
       if (cancelled) return;
 
-      let assetUri: string | null = null;
-      if ((result as any).uri) assetUri = (result as any).uri;
-      else if (Array.isArray((result as any).assets) && (result as any).assets.length)
-        assetUri = (result as any).assets[0].uri;
+      let assetUri = result.uri ?? result.assets?.[0]?.uri ?? null;
 
       if (!assetUri) {
         setErrors((e) => ({ ...e, images: 'No image URI returned' }));
@@ -230,42 +250,42 @@ export default function ImageUploadForm({
         try {
           await FileSystem.getInfoAsync(assetUri);
         } catch (err) {
-          console.warn('[pickImageNative] getInfoAsync(content) failed:', err);
+          logger.warn('[pickImageNative] getInfoAsync(content) failed:', err);
         }
 
         try {
           const filename = `img_${Date.now()}.jpg`;
           const dest = `${FileSystem.cacheDirectory || ''}${filename}`;
-          const copyResult = await FileSystem.copyAsync({
+          await FileSystem.copyAsync({
             from: assetUri,
             to: dest
           });
-          assetUri = (copyResult?.uri as string) || dest;
+          assetUri = dest;
         } catch (copyErr) {
-          console.warn('[pickImageNative] copyAsync failed:', copyErr);
+          logger.warn('[pickImageNative] copyAsync failed:', copyErr);
           try {
             const filename = `img_${Date.now()}.jpg`;
             const dest = `${FileSystem.cacheDirectory || ''}${filename}`;
             const downloadResult = await FileSystem.downloadAsync(assetUri, dest);
             assetUri = downloadResult.uri;
           } catch (dlErr) {
-            console.warn('[pickImageNative] downloadAsync failed:', dlErr);
+            logger.warn('[pickImageNative] downloadAsync failed:', dlErr);
           }
         }
       }
 
-      let info: FileSystem.FileInfoResult | null = null;
+      let info: Awaited<ReturnType<typeof FileSystem.getInfoAsync>> | null = null;
       try {
         info = await FileSystem.getInfoAsync(assetUri, { size: true });
       } catch (infoErr) {
-        console.warn('[pickImageNative] getInfoAsync failed:', infoErr);
+        logger.warn('[pickImageNative] getInfoAsync failed:', infoErr);
       }
 
       const filename = assetUri.split('/').pop() || `img_${Date.now()}.jpg`;
       const newImage: ImageAsset = {
         uri: assetUri,
         name: filename,
-        size: info?.size ?? null,
+        size: info?.exists ? (info.size ?? null) : null,
         type: null,
         locked: false
       };
@@ -273,7 +293,7 @@ export default function ImageUploadForm({
       setImages((prev) => [...prev, newImage]);
       setErrors((e) => ({ ...e, images: undefined }));
     } catch (err) {
-      console.error('[pickImageNative] unexpected error:', err);
+      logger.error('[pickImageNative] unexpected error:', err);
       setErrors((e) => ({ ...e, images: 'Image pick failed (see logs)' }));
     }
   };
@@ -316,7 +336,7 @@ export default function ImageUploadForm({
       try {
         URL.revokeObjectURL(img.uri);
       } catch (e) {
-        console.warn('[confirmDeleteImage] revokeObjectURL failed:', e);
+        logger.warn('[confirmDeleteImage] revokeObjectURL failed:', e);
       }
     }
 
@@ -344,24 +364,25 @@ export default function ImageUploadForm({
 
     const payloadMessage = normalizePastedText(message);
 
-    onAddImage &&
+    if (onAddImage) {
       onAddImage({
         campaignName: campaign.trim(),
         caption: payloadMessage,
         images
       });
+    }
   };
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={styles.root}>
       <KeyboardAwareScrollView
-        contentContainerStyle={{ padding: 10, paddingBottom: 160 }}
+        contentContainerStyle={styles.scrollContent}
         enableOnAndroid
         extraScrollHeight={Platform.OS === 'ios' ? 100 : 120}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={{ flexDirection: isWide ? 'row' : 'column', gap: isWeb ? 12 : 0 }}>
-          <View style={{ flex: 1 }}>
+        <View style={previewLayoutStyle}>
+          <View style={styles.fieldColumn}>
             <FixedLabel label={t('campaign')} required />
             <TextInput
               placeholder={t('placeholder.enterCampaign')}
@@ -377,13 +398,13 @@ export default function ImageUploadForm({
             <HelperText
               type="error"
               visible={!!errors.campaign}
-              style={{ paddingLeft: 0 }}
+              style={styles.helperText}
             >
               {errors.campaign}
             </HelperText>
           </View>
 
-          <View style={{ flex: 1 }}>
+          <View style={styles.fieldColumn}>
             <TouchableOpacity
               activeOpacity={0.7}
               onPress={() => setMessageEditorVisible(true)}
@@ -410,27 +431,13 @@ export default function ImageUploadForm({
           </View>
         </View>
 
-        <Divider style={{ marginVertical: 18 }} />
+        <Divider style={styles.sectionDivider} />
 
-        <Text
-          variant="titleMedium"
-          style={{
-            marginBottom: imageToEdit ? 14 : 6,
-            color: colors.primary,
-            fontWeight: '600',
-            fontSize: 20
-          }}
-        >
+        <Text variant="titleMedium" style={[styles.uploadTitle, uploadTitleStyle]}>
           {t(imageToEdit ? 'image.view' : 'image.upload')}
         </Text>
         {!imageToEdit && (
-          <Text
-            style={{
-              marginBottom: 14,
-              color: colors.textSecondary,
-              fontSize: 14
-            }}
-          >
+          <Text style={styles.uploadSubtitle}>
             {t('image.uploadMax', { max: MAX_IMAGES })}
           </Text>
         )}
@@ -444,18 +451,13 @@ export default function ImageUploadForm({
               onPress={() => openViewer(idx)}
               accessibilityLabel={`Preview image ${idx + 1}`}
             >
-              <View
-                style={[
-                  styles.previewWrapper,
-                  { width: previewSize, height: previewSize }
-                ]}
-              >
+              <View style={[styles.previewWrapper, previewDimensionsStyle]}>
                 <Image
                   source={{ uri: img.uri }}
                   style={styles.preview}
                   resizeMode="contain"
                   onError={(e) => {
-                    console.warn('[Image] onError for uri:', img.uri, e.nativeEvent);
+                    logger.warn('[Image] onError for uri:', img.uri, e.nativeEvent);
                     setErrors((err) => ({
                       ...err,
                       images: 'Failed to render image (see logs)'
@@ -485,27 +487,17 @@ export default function ImageUploadForm({
               onPress={pickImage}
               activeOpacity={0.75}
               accessibilityLabel={t('image.add')}
-              style={[styles.addPreview, { width: previewSize, height: previewSize }]}
+              style={[styles.addPreview, previewDimensionsStyle]}
             >
               <Ionicons name="add" size={40} color={colors.primary} />
-              <Text style={{ marginTop: 8, color: colors.primary }}>
-                {t('image.addSingular')}
-              </Text>
+              <Text style={styles.addPreviewText}>{t('image.addSingular')}</Text>
             </TouchableOpacity>
           )}
         </View>
 
         {errors.images && (
-          <View style={{ width: '100%', alignItems: 'center', marginTop: 8 }}>
-            <HelperText
-              type="error"
-              visible
-              style={{
-                paddingLeft: 0,
-                textAlign: 'center',
-                color: colors.error
-              }}
-            >
+          <View style={styles.errorContainer}>
+            <HelperText type="error" visible style={styles.centeredHelperText}>
               {errors.images}
             </HelperText>
           </View>
@@ -517,10 +509,7 @@ export default function ImageUploadForm({
         <Modal
           visible={viewerVisible}
           onDismiss={() => setViewerVisible(false)}
-          contentContainerStyle={[
-            styles.modalContainer,
-            { height: isSmall ? '70%' : '80%' }
-          ]}
+          contentContainerStyle={viewerModalStyle}
         >
           <View style={styles.modalHeader}>
             <IconButton icon="close" size={24} onPress={() => setViewerVisible(false)} />
@@ -533,7 +522,7 @@ export default function ImageUploadForm({
                 style={styles.modalImage}
                 resizeMode="contain"
                 onError={(e) => {
-                  console.warn(
+                  logger.warn(
                     '[Modal Image] onError:',
                     images[viewerIndex].uri,
                     e.nativeEvent
@@ -577,7 +566,7 @@ export default function ImageUploadForm({
 
             {/* Input */}
             <TextInput
-              ref={messageInputRef}
+              ref={messageInputRef as unknown as React.Ref<NativeTextInput>}
               autoFocus
               value={message}
               onChangeText={setMessage}
@@ -642,12 +631,55 @@ export default function ImageUploadForm({
   );
 }
 
-const createStyles = (theme: any, platform: { isWeb: boolean; isMobileWeb: boolean }) =>
+const createStyles = (
+  theme: AppTheme,
+  platform: { isWeb: boolean; isMobileWeb: boolean }
+) =>
   StyleSheet.create({
+    root: {
+      flex: 1
+    },
+    scrollContent: {
+      padding: 10,
+      paddingBottom: 160
+    },
+    previewFieldsWide: {
+      flexDirection: 'row',
+      gap: 12
+    },
+    previewFieldsStacked: {
+      flexDirection: 'column',
+      gap: 0
+    },
+    fieldColumn: {
+      flex: 1
+    },
     input: {
       backgroundColor: theme.colors.white,
       marginBottom: 0,
       height: 44
+    },
+    helperText: {
+      paddingLeft: 0
+    },
+    sectionDivider: {
+      marginVertical: 18
+    },
+    uploadTitle: {
+      color: theme.colors.primary,
+      fontWeight: '600',
+      fontSize: 20
+    },
+    uploadTitleCreate: {
+      marginBottom: 6
+    },
+    uploadTitleEdit: {
+      marginBottom: 14
+    },
+    uploadSubtitle: {
+      marginBottom: 14,
+      color: theme.colors.textSecondary,
+      fontSize: 14
     },
     previewRow: {
       flexDirection: 'row',
@@ -701,6 +733,20 @@ const createStyles = (theme: any, platform: { isWeb: boolean; isMobileWeb: boole
       justifyContent: 'center',
       backgroundColor: theme.colors.background
     },
+    addPreviewText: {
+      marginTop: 8,
+      color: theme.colors.primary
+    },
+    errorContainer: {
+      width: '100%',
+      alignItems: 'center',
+      marginTop: 8
+    },
+    centeredHelperText: {
+      paddingLeft: 0,
+      textAlign: 'center',
+      color: theme.colors.error
+    },
     footer: {
       position: 'absolute',
       bottom: 0,
@@ -723,6 +769,13 @@ const createStyles = (theme: any, platform: { isWeb: boolean; isMobileWeb: boole
       borderRadius: 10,
       overflow: 'hidden',
       height: '80%'
+    },
+    modalContainerSmall: {
+      backgroundColor: theme.colors.background,
+      margin: 20,
+      borderRadius: 10,
+      overflow: 'hidden',
+      height: '70%'
     },
     modalHeader: {
       flexDirection: 'row',

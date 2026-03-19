@@ -1,12 +1,7 @@
 import { AppTheme } from '../theme';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect } from 'react';
-import {
-  StyleSheet,
-  TextInput as RNTextInput,
-  useWindowDimensions,
-  View
-} from 'react-native';
+import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import {
   Button,
   Dialog,
@@ -24,9 +19,11 @@ type Props = {
 
 const GenerateVideoDialog = ({ visible, onGenerate, onCancel }: Props) => {
   const theme = useTheme<AppTheme>();
-  const styles = createStyles(theme);
   const { width } = useWindowDimensions();
+
   const dialogWidth = width < 500 ? width - 32 : 400;
+
+  const styles = createStyles(theme, dialogWidth);
 
   const [generateFor, setGenerateFor] = React.useState('');
   const [mobile, setMobile] = React.useState('');
@@ -43,10 +40,7 @@ const GenerateVideoDialog = ({ visible, onGenerate, onCancel }: Props) => {
   }, [visible]);
 
   const validate = () => {
-    const newErrors = {
-      generateFor: '',
-      mobile: ''
-    };
+    const newErrors = { generateFor: '', mobile: '' };
     let isValid = true;
 
     if (!generateFor.trim()) {
@@ -68,6 +62,7 @@ const GenerateVideoDialog = ({ visible, onGenerate, onCancel }: Props) => {
 
   const handleGenerate = () => {
     if (!validate()) return;
+
     onGenerate({ generateFor, mobile });
     setGenerateFor('');
     setMobile('');
@@ -76,27 +71,14 @@ const GenerateVideoDialog = ({ visible, onGenerate, onCancel }: Props) => {
 
   return (
     <Portal>
-      <Dialog
-        visible={visible}
-        onDismiss={onCancel}
-        style={[
-          styles.dialog,
-          {
-            backgroundColor: theme.colors.background,
-            width: dialogWidth,
-            alignSelf: 'center'
-          }
-        ]}
-      >
+      <Dialog visible={visible} onDismiss={onCancel} style={styles.dialog}>
         <View style={styles.iconWrapper}>
           <View style={styles.iconContainer}>
             <Ionicons name="sparkles-outline" size={30} color={theme.colors.primary} />
           </View>
         </View>
 
-        <Dialog.Title style={[styles.title, { textAlign: 'center' }]}>
-          Generate Video
-        </Dialog.Title>
+        <Dialog.Title style={styles.title}>Generate Video</Dialog.Title>
 
         <Dialog.Content>
           <TextInput
@@ -112,10 +94,11 @@ const GenerateVideoDialog = ({ visible, onGenerate, onCancel }: Props) => {
             error={!!errors.generateFor}
             style={styles.input}
           />
+
           <HelperText
             type="error"
             visible={!!errors.generateFor}
-            style={{ paddingLeft: 0 }}
+            style={styles.helperText}
           >
             {errors.generateFor}
           </HelperText>
@@ -135,7 +118,8 @@ const GenerateVideoDialog = ({ visible, onGenerate, onCancel }: Props) => {
             keyboardType="number-pad"
             style={styles.input}
           />
-          <HelperText type="error" visible={!!errors.mobile} style={{ paddingLeft: 0 }}>
+
+          <HelperText type="error" visible={!!errors.mobile} style={styles.helperText}>
             {errors.mobile}
           </HelperText>
         </Dialog.Content>
@@ -149,6 +133,7 @@ const GenerateVideoDialog = ({ visible, onGenerate, onCancel }: Props) => {
           >
             Cancel
           </Button>
+
           <Button
             mode="contained"
             onPress={handleGenerate}
@@ -163,10 +148,13 @@ const GenerateVideoDialog = ({ visible, onGenerate, onCancel }: Props) => {
   );
 };
 
-const createStyles = (theme: AppTheme) =>
+const createStyles = (theme: AppTheme, dialogWidth: number) =>
   StyleSheet.create({
     dialog: {
-      borderRadius: 12
+      borderRadius: 12,
+      backgroundColor: theme.colors.background,
+      width: dialogWidth,
+      alignSelf: 'center'
     },
     iconWrapper: {
       alignItems: 'center',
@@ -179,10 +167,14 @@ const createStyles = (theme: AppTheme) =>
     },
     title: {
       fontWeight: '600',
-      fontSize: 18
+      fontSize: 18,
+      textAlign: 'center'
     },
     input: {
       backgroundColor: 'transparent'
+    },
+    helperText: {
+      paddingLeft: 0
     },
     actions: {
       justifyContent: 'center',

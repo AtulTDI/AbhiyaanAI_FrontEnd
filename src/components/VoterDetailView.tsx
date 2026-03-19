@@ -7,6 +7,7 @@ import { AppTheme } from '../theme';
 import { Voter } from '../types/Voter';
 import { requestBluetoothPermissions } from '../utils/bluetoothPermissions';
 import { extractErrorMessage } from '../utils/common';
+import { logger } from '../utils/logger';
 import { getSavedPrinterMac, removePrinterMac, savePrinterMac } from '../utils/storage';
 import EnableBluetoothDialog from './EnableBluetoothDialog';
 import PrinterPicker from './PrinterPicker';
@@ -18,7 +19,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   AppState,
-  Image,
   Linking,
   NativeModules,
   PermissionsAndroid,
@@ -27,6 +27,8 @@ import {
   StyleSheet,
   View
 } from 'react-native';
+import Contacts, { Contact } from 'react-native-contacts';
+import RNFS from 'react-native-fs';
 import {
   ActivityIndicator,
   Avatar,
@@ -36,6 +38,35 @@ import {
   TextInput,
   useTheme
 } from 'react-native-paper';
+import Share, { ShareSingleOptions } from 'react-native-share';
+import ViewShot from 'react-native-view-shot';
+
+type SlipPreviewData = {
+  candidate: {
+    candidateName: string;
+    candidatePhotoPath?: string;
+    partyName: string;
+    symbolName?: string;
+    symbolImagePath?: string;
+  };
+  voter: {
+    voterName: string;
+    prabagNumber: number | string;
+    rank: number | string;
+    epicId: string;
+    assemblyNumber: string;
+    pollingBooth: string;
+    pollingBoothAddress: string;
+    electionDate: string;
+  };
+  slipText?: string;
+  imageUrl?: string;
+  candidatePhotoPath?: string;
+};
+
+type ExtendedShareOptions = ShareSingleOptions & {
+  whatsAppNumber?: string;
+};
 
 type Props = {
   voter: Voter;
@@ -45,22 +76,6 @@ type Props = {
 
 type TabKey = 'details' | 'family' | 'survey';
 const { ThermalPrinter } = NativeModules;
-let RNFS: any = null;
-let Share: any = null;
-let Contacts: any = null;
-
-if (Platform.OS !== 'web') {
-  RNFS = require('react-native-fs');
-  Share = require('react-native-share').default;
-  if (Platform.OS === 'android') {
-    Contacts =
-      require('react-native-contacts').default || require('react-native-contacts');
-  }
-}
-
-if (Platform.OS !== 'web') {
-  RNFS = require('react-native-fs');
-}
 
 export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
   const { t } = useTranslation();
@@ -74,13 +89,12 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
   const [isVerified, setIsVerified] = useState(voter.isVerified);
   const [isStarVoter, setIsStarVoter] = useState(voter.isStarVoter);
   const [printing, setPrinting] = useState(false);
-  const [tempContact, setTempContact] = useState(null);
-  const [imageBase64, setImageBase64] = useState('');
+  const [, setTempContact] = useState<Contact | null>(null);
   const [showPrinterPicker, setShowPrinterPicker] = useState(false);
   const [bluetoothDialogVisible, setBluetoothDialogVisible] = useState(false);
-  const [slipData, setSlipData] = useState<any>(null);
+  const [slipData, setSlipData] = useState<SlipPreviewData | null>(null);
   const [slipSending, setSlipSending] = useState(false);
-  const viewShotRef = useRef<any>(null);
+  const viewShotRef = useRef<ViewShot>(null);
 
   const tabs = [
     { key: 'details', label: t('voter.tabDetails') },
@@ -108,7 +122,7 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
   /* ================= EXISTING HANDLERS ================= */
   const convertSlipTextToImage = async () => {
     if (!viewShotRef.current) {
-      console.log('❌ ViewShot ref missing');
+      logger.log('❌ ViewShot ref missing');
       throw new Error('Slip preview not ready');
     }
 
@@ -116,7 +130,7 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
 
     const base64 = await viewShotRef.current.capture?.();
 
-    console.log('Captured length:', base64?.length);
+    logger.log('Captured length:', base64?.length);
 
     if (!base64 || base64.length < 500) {
       throw new Error('Slip image capture failed');
@@ -179,9 +193,10 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
       await new Promise((r) => setTimeout(r, 500));
 
       return true;
-    } catch (e) {
+    } catch (error) {
       await removePrinterMac();
       setShowPrinterPicker(true);
+      void error;
       return false;
     }
   };
@@ -194,7 +209,7 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
     await RNFS.writeFile(path, cleanBase64, 'base64');
 
     const exists = await RNFS.exists(path);
-    console.log('FILE EXISTS:', exists, path);
+    logger.log('FILE EXISTS:', exists, path);
 
     if (!exists) throw new Error('File write failed');
 
@@ -268,13 +283,13 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
       for (const contact of tempContacts) {
         try {
           await Contacts.deleteContact(contact);
-          console.log('Deleted all temp contact:', contact.givenName);
+          logger.log('Deleted all temp contact:', contact.givenName);
         } catch (err) {
-          console.warn('Failed to delete all temp contact', contact.givenName, err);
+          logger.warn('Failed to delete all temp contact', contact.givenName, err);
         }
       }
     } catch (err) {
-      console.error('Error clearing all temp contacts', err);
+      logger.error('Error clearing all temp contacts', err);
     }
   };
 
@@ -303,7 +318,7 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
         );
       }
     } catch (err) {
-      console.warn('Permissions request error', err);
+      logger.warn('Permissions request error', err);
       return false;
     }
   };
@@ -362,9 +377,9 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
       return;
     }
     setSlipSending(true);
-    let isWhatsAppAvailable = false;
+    let isWhatsAppAvailable: boolean;
     const response = await getVoterSlip(voter.id);
-    console.log('Response', response.data);
+    logger.log('Response', response.data);
 
     if (Platform.OS === 'android') {
       try {
@@ -411,7 +426,7 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
         );
 
         if (existing) {
-          console.log('Contact already exists:', existing.displayName);
+          logger.log('Contact already exists:', existing.displayName);
           contactExists = true;
         } else {
           const tempContact = {
@@ -422,7 +437,7 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
           };
           const savedContact = await Contacts.addContact(tempContact);
           setTempContact(savedContact);
-          console.log('Saved new temp contact:', savedContact);
+          logger.log('Saved new temp contact:', savedContact);
           contactExists = true;
         }
       }
@@ -447,7 +462,7 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
             social: Share.Social.WHATSAPP,
             whatsAppNumber: `91${mobile}`,
             message: response.data.slipText
-          });
+          } as ExtendedShareOptions);
         } else {
           await Share.shareSingle({
             title: 'Image',
@@ -456,13 +471,13 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
             social: Share.Social.WHATSAPP,
             whatsAppNumber: `91${mobile}`,
             message: response.data.slipText
-          });
+          } as ExtendedShareOptions);
         }
       } else {
-        console.log('Contact not found. Please check the number.', 'error');
+        logger.log('Contact not found. Please check the number.', 'error');
       }
     } catch (err) {
-      console.error('Error sending image:', err);
+      logger.error('Error sending image:', err);
       showToast(t('image.sendFail'), 'error');
     }
   };
@@ -479,19 +494,22 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
             await RNFS.unlink(file.path);
           }
         } catch (err) {
-          console.log('Skip delete:', file.path);
+          logger.log('Skip delete:', file.path);
+          void err;
         }
       }
     } catch (error) {
-      console.log('Cache cleanup skipped');
+      logger.log('Cache cleanup skipped');
+      void error;
     }
   };
 
   const handleEnableBluetooth = async () => {
     try {
       await ThermalPrinter.enableBluetooth();
-    } catch (e) {
+    } catch (error) {
       showToast('Unable to enable Bluetooth', 'error');
+      void error;
       return;
     }
 
@@ -525,7 +543,7 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
       <ScrollView contentContainerStyle={styles.container}>
         {/* ================= TOP BAR ================= */}
         <View style={styles.topBar}>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <View style={styles.topBarLeft}>
             <IconButton
               icon="arrow-left"
               iconColor={theme.colors.primary}
@@ -536,49 +554,18 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
               <Avatar.Text
                 size={40}
                 label={voter.fullName?.[0] ?? 'V'}
-                style={{ backgroundColor: theme.colors.primaryLight }}
+                style={styles.avatar}
               />
               <Text style={styles.topName}>{voter.fullName}</Text>
             </View>
           </View>
         </View>
+
         {/* ================= TABS ================= */}
         <View style={styles.tabsHeader}>
           <View style={styles.tabsLeft}>
             <Tabs value={tab} onChange={(v) => setTab(v as TabKey)} tabs={tabs} />
           </View>
-
-          {/* {isWeb && (
-            <View style={styles.actionIcons}>
-              {slipSending ? (
-                <ActivityIndicator size={20} color={theme.colors.primary} />
-              ) : (
-                <IconButton
-                  icon={() => (
-                    <FontAwesome
-                      name="whatsapp"
-                      size={23}
-                      color={theme.colors.whatsappGreen}
-                    />
-                  )}
-                  onPress={handleSendVoter}
-                  style={styles.iconBtn}
-                />
-              )}
-
-              {printing ? (
-                <ActivityIndicator size={20} color={theme.colors.primary} />
-              ) : (
-                <IconButton
-                  icon="printer"
-                  size={23}
-                  iconColor={theme.colors.primary}
-                  onPress={handlePrintVoterSlip}
-                  style={styles.iconBtn}
-                />
-              )}
-            </View>
-          )} */}
         </View>
 
         {(!isWeb || isMobileWeb) && (
@@ -674,7 +661,7 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
                   />
                   <InfoRow label={t('voter.labelRank')} value={`${voter.rank}`} />
 
-                  <View style={{ height: 12 }} />
+                  <View style={styles.spacerSmall} />
 
                   <Text style={styles.sectionTitle}>{t('voter.votingDetails')}</Text>
 
@@ -763,30 +750,8 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
         )}
         {tab === 'survey' && <SurveyTab voterId={voter.id} />}
       </ScrollView>
-      {/* {imageBase64 ? (
-        <View
-          style={{
-            position: "absolute",
-            bottom: 200,
-            left: 100,
-            backgroundColor: "#fff",
-          }}
-        >
-          <Image
-            source={{ uri: `data:image/png;base64,${imageBase64}` }}
-            style={{ width: 192, height: 300, borderWidth: 1 }}
-            resizeMode="contain"
-          />
-        </View>
-      ) : null} */}
-      <View
-        style={{
-          position: 'absolute',
-          left: -1000,
-          top: -1000,
-          opacity: 0
-        }}
-      >
+
+      <View style={styles.hiddenSlip}>
         {slipData && <SlipPreview ref={viewShotRef} {...slipData} />}
       </View>
 
@@ -828,19 +793,15 @@ function InfoRow({ label, value }: { label: string; value: string }) {
     <View
       style={[
         rowStyles.row,
-        {
-          borderBottomColor: theme.colors.divider,
-          flexDirection: isLongText ? 'column' : 'row',
-          alignItems: isLongText ? 'flex-start' : 'center',
-          gap: isLongText ? 4 : 8
-        }
+        { borderBottomColor: theme.colors.divider },
+        isLongText ? rowStyles.rowLong : rowStyles.rowShort
       ]}
     >
       <Text
         style={[
           rowStyles.label,
           { color: theme.colors.textSecondary },
-          isLongText && { width: '100%' }
+          isLongText && rowStyles.labelFullWidth
         ]}
         numberOfLines={1}
       >
@@ -850,11 +811,8 @@ function InfoRow({ label, value }: { label: string; value: string }) {
       <Text
         style={[
           rowStyles.value,
-          {
-            color: theme.colors.textPrimary,
-            textAlign: isLongText ? 'left' : 'right',
-            width: isLongText ? '100%' : 'auto'
-          }
+          { color: theme.colors.textPrimary },
+          isLongText ? rowStyles.valueTextLong : rowStyles.valueTextShort
         ]}
       >
         {value?.trim() || '-'}
@@ -863,7 +821,17 @@ function InfoRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-function EditableInfoRow({ label, value, keyboardType, onSave }: any) {
+function EditableInfoRow({
+  label,
+  value,
+  keyboardType,
+  onSave
+}: {
+  label: string;
+  value?: string | null;
+  keyboardType?: 'default' | 'numeric' | 'phone-pad';
+  onSave: (value: string) => Promise<void> | void;
+}) {
   const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
   const { isWeb, isMobileWeb } = usePlatformInfo();
@@ -880,11 +848,7 @@ function EditableInfoRow({ label, value, keyboardType, onSave }: any) {
       style={[
         rowStyles.row,
         { borderBottomColor: theme.colors.divider },
-        editing &&
-          (!isWeb || isMobileWeb) && {
-            flexDirection: 'column',
-            alignItems: 'stretch'
-          }
+        editing && (!isWeb || isMobileWeb) && rowStyles.editingMobileRow
       ]}
     >
       <Text style={[rowStyles.label, { color: theme.colors.textSecondary }]}>
@@ -906,14 +870,7 @@ function EditableInfoRow({ label, value, keyboardType, onSave }: any) {
       )}
 
       {editing && (
-        <View
-          style={{
-            marginTop: 6,
-            display: 'flex',
-            flexDirection: 'row',
-            gap: 6
-          }}
-        >
+        <View style={rowStyles.editingRow}>
           <TextInput
             mode="outlined"
             value={local}
@@ -933,13 +890,9 @@ function EditableInfoRow({ label, value, keyboardType, onSave }: any) {
                 ? theme.colors.error
                 : theme.colors.white
             }
-            style={{
-              flex: 1,
-              height: 44,
-              backgroundColor: theme.colors.white
-            }}
+            style={[rowStyles.editInput, { backgroundColor: theme.colors.white }]}
           />
-          <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+          <View style={rowStyles.editActions}>
             <IconButton
               icon="check"
               size={18}
@@ -983,6 +936,13 @@ const createStyles = (theme: AppTheme) =>
       justifyContent: 'space-between',
       gap: 12,
       marginBottom: 12
+    },
+    topBarLeft: {
+      flexDirection: 'row',
+      alignItems: 'center'
+    },
+    avatar: {
+      backgroundColor: theme.colors.primaryLight
     },
     tabsHeader: {
       flexDirection: 'row',
@@ -1030,6 +990,9 @@ const createStyles = (theme: AppTheme) =>
       color: theme.colors.textTertiary,
       letterSpacing: 0.8
     },
+    spacerSmall: {
+      height: 12
+    },
     verifyRow: {
       flexDirection: 'row',
       justifyContent: 'space-between',
@@ -1064,6 +1027,12 @@ const createStyles = (theme: AppTheme) =>
     },
     panelIcon: {
       margin: 0
+    },
+    hiddenSlip: {
+      position: 'absolute',
+      left: -1000,
+      top: -1000,
+      opacity: 0
     }
   });
 
@@ -1078,6 +1047,9 @@ const rowStyles = StyleSheet.create({
     fontSize: 14,
     flex: 1
   },
+  labelFullWidth: {
+    width: '100%'
+  },
   value: {
     fontSize: 14,
     fontWeight: '500',
@@ -1088,10 +1060,39 @@ const rowStyles = StyleSheet.create({
     alignItems: 'center',
     gap: 8
   },
-  editRow: {
+  editingMobileRow: {
+    flexDirection: 'column',
+    alignItems: 'stretch'
+  },
+  editingRow: {
+    marginTop: 6,
     flexDirection: 'row',
-    alignItems: 'center',
+    gap: 6
+  },
+  editInput: {
+    flex: 1,
+    height: 44
+  },
+  editActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end'
+  },
+  valueTextLong: {
+    textAlign: 'left',
+    width: '100%'
+  },
+  valueTextShort: {
+    textAlign: 'right',
+    width: 'auto'
+  },
+  rowLong: {
+    flexDirection: 'column',
+    alignItems: 'flex-start',
     gap: 4
   },
-  input: { height: 36, flex: 1 }
+  rowShort: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8
+  }
 });

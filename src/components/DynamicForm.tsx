@@ -22,7 +22,7 @@ type Props = {
   mode: 'create' | 'edit';
   formSubmitLoading?: boolean;
   onChange?: (data: FieldConfig, value: string | boolean) => void;
-  onSubmit?: (data: Record<string, string | boolean>) => void;
+  onSubmit?: (data: Record<string, string | boolean | number>) => void;
   onCancel?: () => void;
   children?: React.ReactNode;
 };
@@ -40,7 +40,6 @@ export default function DynamicForm({
   const { t } = useTranslation();
   const { isWeb, isMobileWeb } = usePlatformInfo();
   const theme = useTheme<AppTheme>();
-  const { colors } = theme;
   const styles = createStyles(theme, { isWeb, isMobileWeb });
 
   const [formData, setFormData] =
@@ -217,6 +216,24 @@ export default function DynamicForm({
     }
   };
 
+  const getDropdownOptions = (options?: FieldConfig['options']) => {
+    if (!Array.isArray(options) || options.length === 0) {
+      return [];
+    }
+
+    if (typeof options[0] === 'string') {
+      return options.map((option) => ({
+        label: option,
+        value: option
+      }));
+    }
+
+    return options.map((option) => ({
+      label: option.label,
+      value: String(option.value)
+    }));
+  };
+
   return (
     <Surface style={[styles.form, { backgroundColor: theme.colors.white }]} elevation={1}>
       <View style={styles.fieldsRowWrapper}>
@@ -228,31 +245,24 @@ export default function DynamicForm({
               field.name === 'address' || field.type === 'textarea' || field.fullWidth
                 ? styles.fullWidth
                 : index % 2 === 0
-                  ? { marginRight: '4%' }
-                  : { marginRight: 0 }
+                  ? styles.evenColumn
+                  : styles.oddColumn
             ]}
           >
             {field.type === 'checkbox' ? (
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  marginLeft: -8,
-                  marginBottom: !isWeb || isMobileWeb ? 8 : 0
-                }}
-              >
+              <View style={styles.checkboxRow}>
                 <Checkbox
                   status={formData[field.name] === true ? 'checked' : 'unchecked'}
                   onPress={() => handleChange(field, !(formData[field.name] === true))}
                   disabled={field.disabled}
                 />
-                <Text style={{ fontSize: 15 }}>
+                <Text style={styles.checkboxLabel}>
                   {field.label}
-                  {field.required && <Text style={{ color: colors.error }}> *</Text>}
+                  {field.required && <Text style={styles.requiredMark}> *</Text>}
                 </Text>
 
                 {formErrors[field.name] && (
-                  <HelperText type="error" visible={true} style={{ paddingLeft: 0 }}>
+                  <HelperText type="error" visible={true} style={styles.helperText}>
                     {formErrors[field.name]}
                   </HelperText>
                 )}
@@ -263,16 +273,7 @@ export default function DynamicForm({
                 <FormDropdown
                   placeholder={field.placeholder}
                   value={formData[field.name] as string}
-                  options={
-                    Array.isArray(field.options)
-                      ? typeof (field.options as any[])[0] === 'string'
-                        ? (field.options as string[]).map((opt) => ({
-                            label: opt,
-                            value: opt
-                          }))
-                        : (field.options as { label: string; value: string }[])
-                      : []
-                  }
+                  options={getDropdownOptions(field.options)}
                   disabled={field.disabled}
                   error={formErrors[field.name]}
                   onSelect={(val) => handleChange(field, val)}
@@ -321,12 +322,8 @@ export default function DynamicForm({
                   disabled={field.disabled}
                   numberOfLines={field.type === 'textarea' ? 4 : 1}
                   style={[
-                    {
-                      fontSize: isWeb ? 15 : 14,
-                      backgroundColor: theme.colors.white,
-                      height: 44
-                    },
-                    field.type === 'textarea' && { height: 100 }
+                    styles.input,
+                    field.type === 'textarea' && styles.textareaInput
                   ]}
                   right={
                     field.type === 'password' ? (
@@ -342,7 +339,7 @@ export default function DynamicForm({
                 <HelperText
                   type="error"
                   visible={!!formErrors[field.name]}
-                  style={{ paddingLeft: 0 }}
+                  style={styles.helperText}
                 >
                   {formErrors[field.name]}
                 </HelperText>
@@ -390,6 +387,35 @@ const createStyles = (
     inputWrapper: {
       width: platform.isWeb && !platform.isMobileWeb ? '48%' : '100%',
       marginBottom: platform.isWeb && !platform.isMobileWeb ? 8 : 0
+    },
+    evenColumn: {
+      marginRight: '4%'
+    },
+    oddColumn: {
+      marginRight: 0
+    },
+    checkboxRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginLeft: -8,
+      marginBottom: !platform.isWeb || platform.isMobileWeb ? 8 : 0
+    },
+    checkboxLabel: {
+      fontSize: 15
+    },
+    requiredMark: {
+      color: theme.colors.error
+    },
+    helperText: {
+      paddingLeft: 0
+    },
+    input: {
+      fontSize: platform.isWeb ? 15 : 14,
+      backgroundColor: theme.colors.white,
+      height: 44
+    },
+    textareaInput: {
+      height: 100
     },
     buttonRow: {
       flexDirection: 'row',

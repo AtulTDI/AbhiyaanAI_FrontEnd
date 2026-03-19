@@ -1,3 +1,4 @@
+import { logger } from './logger';
 import { PermissionsAndroid, Platform } from 'react-native';
 
 export const requestBluetoothPermissions = async () => {
@@ -17,7 +18,7 @@ export const requestBluetoothPermissions = async () => {
         PermissionsAndroid.RESULTS.GRANTED
     );
   } catch (err) {
-    console.error('Bluetooth permission error:', err);
+    logger.error('Bluetooth permission error:', err);
     return false;
   }
 };

@@ -1,40 +1,51 @@
 import React, { memo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Dimensions, ScrollView, Text, View } from 'react-native';
+import { Dimensions, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Svg, { G, Line, Rect, Text as SvgText } from 'react-native-svg';
 
-const Bar = memo(({ x, value, maxValue, chartHeight, width, color, titleColor }) => {
-  const scaledHeight = (value / maxValue) * chartHeight;
+type BarProps = {
+  x: number;
+  value: number;
+  maxValue: number;
+  chartHeight: number;
+  width: number;
+  color: string;
+  titleColor: string;
+};
 
-  return (
-    <G>
-      <Rect
-        x={x}
-        y={-scaledHeight}
-        width={width}
-        height={scaledHeight}
-        fill={color}
-        rx={4}
-      />
-      {value > 0 && (
-        <SvgText
-          x={x + width / 2}
-          y={-scaledHeight - 8}
-          fontSize="12"
-          fill={titleColor}
-          textAnchor="middle"
-          fontWeight="600"
-        >
-          {value}
-        </SvgText>
-      )}
-    </G>
-  );
-});
+const Bar = memo(
+  ({ x, value, maxValue, chartHeight, width, color, titleColor }: BarProps) => {
+    const scaledHeight = (value / maxValue) * chartHeight;
+
+    return (
+      <G>
+        <Rect
+          x={x}
+          y={-scaledHeight}
+          width={width}
+          height={scaledHeight}
+          fill={color}
+          rx={4}
+        />
+        {value > 0 && (
+          <SvgText
+            x={x + width / 2}
+            y={-scaledHeight - 8}
+            fontSize="12"
+            fill={titleColor}
+            textAnchor="middle"
+            fontWeight="600"
+          >
+            {value}
+          </SvgText>
+        )}
+      </G>
+    );
+  }
+);
 
 const BarChart = ({
   data = [],
-  width,
   height,
   barColor = '#3b82f6',
   titleColor = '#1f2937',
@@ -72,15 +83,10 @@ const BarChart = ({
     if (!label) return ['', ''];
 
     const words = label.split(' ');
-    if (words.length <= 2) {
-      return [words.join(' '), ''];
-    }
+    if (words.length <= 2) return [words.join(' '), ''];
 
     const mid = Math.ceil(words.length / 2);
-    const firstLine = words.slice(0, mid).join(' ');
-    const secondLine = words.slice(mid).join(' ');
-
-    return [firstLine, secondLine];
+    return [words.slice(0, mid).join(' '), words.slice(mid).join(' ')];
   };
 
   const renderChartContent = (svgW) => (
@@ -162,7 +168,7 @@ const BarChart = ({
                 {line1}
               </SvgText>
 
-              {line2 ? (
+              {line2 && (
                 <SvgText
                   x={x + barWidth / 2}
                   y={40}
@@ -173,7 +179,7 @@ const BarChart = ({
                 >
                   {line2}
                 </SvgText>
-              ) : null}
+              )}
             </G>
           );
         })}
@@ -182,21 +188,10 @@ const BarChart = ({
   );
 
   return (
-    <View
-      style={{
-        backgroundColor,
-        borderRadius: 12,
-        paddingVertical: 10,
-        overflow: 'hidden',
-        shadowColor: '#000',
-        shadowOpacity: 0.05,
-        shadowRadius: 10,
-        elevation: 2
-      }}
-    >
+    <View style={[styles.container, { backgroundColor }]}>
       {allZero ? (
-        <View style={{ height, justifyContent: 'center', alignItems: 'center' }}>
-          <Text style={{ color: titleColor, fontSize: 16, fontWeight: '600' }}>
+        <View style={[styles.noDataContainer, { height }]}>
+          <Text style={[styles.noDataText, { color: titleColor }]}>
             {t('dashboard.noData')}
           </Text>
         </View>
@@ -204,22 +199,47 @@ const BarChart = ({
         <ScrollView
           ref={scrollRef}
           horizontal
-          showsHorizontalScrollIndicator={true}
-          style={{ paddingHorizontal: 5 }}
-          contentContainerStyle={{
-            paddingBottom: 15,
-            width: svgWidth
-          }}
+          showsHorizontalScrollIndicator
+          style={styles.scroll}
+          contentContainerStyle={[styles.scrollContent, { width: svgWidth }]}
         >
           {renderChartContent(svgWidth)}
         </ScrollView>
       ) : (
-        <View style={{ paddingHorizontal: 5, paddingBottom: 15 }}>
-          {renderChartContent(screenWidth - 10)}
-        </View>
+        <View style={styles.chartWrapper}>{renderChartContent(screenWidth - 10)}</View>
       )}
     </View>
   );
 };
 
 export default BarChart;
+
+const styles = StyleSheet.create({
+  container: {
+    borderRadius: 12,
+    paddingVertical: 10,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 2
+  },
+  noDataContainer: {
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  noDataText: {
+    fontSize: 16,
+    fontWeight: '600'
+  },
+  scroll: {
+    paddingHorizontal: 5
+  },
+  scrollContent: {
+    paddingBottom: 15
+  },
+  chartWrapper: {
+    paddingHorizontal: 5,
+    paddingBottom: 15
+  }
+});

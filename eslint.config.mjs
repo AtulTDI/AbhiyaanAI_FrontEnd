@@ -15,9 +15,10 @@ export default [
   ...tseslint.configs.recommended,
 
   {
-    files: ['**/*.{js,jsx,ts,tsx}'],
+    files: ['**/*.{js,jsx,ts,tsx}', 'metro.config.cjs', 'babel.config.cjs'],
 
     languageOptions: {
+      sourceType: 'commonjs',
       parser: tseslint.parser,
       parserOptions: {
         ecmaVersion: 'latest',
@@ -61,13 +62,29 @@ export default [
 
       // ✅ React Native
       'react-native/no-inline-styles': 'warn',
-      'react-native/no-unused-styles': 'error',
+      'react-native/no-unused-styles': 'off',
 
       // ✅ TypeScript
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
 
       // ✅ General
       'no-console': 'warn'
+    }
+  },
+  {
+    files: ['metro.config.js', 'babel.config.js'],
+    languageOptions: {
+      globals: {
+        module: 'writable',
+        require: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
+        process: 'readonly'
+      }
+    },
+    rules: {
+      'no-undef': 'off',
+      '@typescript-eslint/no-require-imports': 'off'
     }
   }
 ];

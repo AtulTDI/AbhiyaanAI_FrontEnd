@@ -79,15 +79,14 @@ export default function ApplicationsTable({
       render: (item: Application) => (
         <View style={styles.statusToggle}>
           <Text
-            style={{
-              fontSize: 12,
-              marginRight: 8,
-              color: item.isActive ? colors.success : colors.error,
-              fontWeight: '600'
-            }}
+            style={[
+              styles.statusText,
+              { color: item.isActive ? colors.success : colors.error }
+            ]}
           >
             {item.isActive ? t('active') : t('inactive')}
           </Text>
+
           <Switch
             value={item.isActive}
             onValueChange={() => onToggleStatus(item)}
@@ -140,5 +139,10 @@ const styles = StyleSheet.create({
   statusToggle: {
     flexDirection: 'row',
     alignItems: 'center'
+  },
+  statusText: {
+    fontSize: 12,
+    marginRight: 8,
+    fontWeight: '600'
   }
 });

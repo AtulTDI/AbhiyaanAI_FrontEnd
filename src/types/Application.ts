@@ -28,12 +28,15 @@ export type GetPaginatedApplications = {
 };
 
 export type CreateApplicationPayload = {
+  id?: string;
   appName: string;
   totalVideoCount: number;
   salesAgent: string;
   videoGenerationRate?: string;
   premiumVoice?: boolean;
   isElection?: boolean;
+  showVideoCampaign?: boolean;
+  showImageCampaign?: boolean;
   whapiBaseUrl?: string;
   whapiVendorUid?: string;
   whapiBearerToken?: string;
@@ -46,6 +49,8 @@ export type EditApplicationPayload = {
   videoGenerationRate?: string;
   premiumVoice?: boolean;
   isElection?: boolean;
+  showVideoCampaign?: boolean;
+  showImageCampaign?: boolean;
   isActive: boolean;
   whapiBaseUrl?: string;
   whapiVendorUid?: string;

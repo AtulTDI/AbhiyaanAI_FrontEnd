@@ -11,13 +11,14 @@ import {
 import { AppTheme } from '../theme';
 import { Recipient } from '../types/Recipient';
 import { extractErrorMessage } from '../utils/common';
+import { logger } from '../utils/logger';
 import { getAuthData } from '../utils/storage';
 import { Feather, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import dayjs from 'dayjs';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 import { IconButton, ProgressBar, Surface, Text, useTheme } from 'react-native-paper';
 
 type VoterStatus = 'InQueue' | 'Pending' | 'Processing' | 'Completed' | 'Failed';
@@ -39,7 +40,7 @@ export default function ProcessingVideosScreen() {
 
   useEffect(() => {
     const handleProgressUpdate = (recipientId: string, status: VoterStatus) => {
-      console.log('📩 Update:', recipientId, status);
+      logger.log('ReceiveVideoUpdate', recipientId, status);
 
       setVoterStatuses((prev) => ({ ...prev, [recipientId]: status }));
 
@@ -52,7 +53,7 @@ export default function ProcessingVideosScreen() {
     onEvent('ReceiveVideoUpdate', handleProgressUpdate);
   }, []);
 
-  const fetchVoters = async () => {
+  const fetchVoters = useCallback(async () => {
     setLoading(true);
     try {
       const response = await getRecipientsWithInProgressVidoes();
@@ -64,64 +65,50 @@ export default function ProcessingVideosScreen() {
       const { accessToken } = await getAuthData();
       await startConnection(accessToken);
       await joinGroups(voterList.map((v) => v.id));
-    } catch (error: any) {
+    } catch (error: unknown) {
       showToast(extractErrorMessage(error, t('voter.loadVoterFailMessage')), 'error');
     } finally {
       setLoading(false);
     }
-  };
+  }, [showToast, t]);
 
   useFocusEffect(
     useCallback(() => {
-      fetchVoters();
-    }, [])
+      void fetchVoters();
+    }, [fetchVoters])
   );
 
-  const getStatusView = (status: VoterStatus, item: Recipient) => {
+  const getStatusView = (status: VoterStatus) => {
     switch (status) {
       case 'InQueue':
         return (
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 6
-            }}
-          >
+          <View style={styles.statusRow}>
             <MaterialCommunityIcons
               name="clock-time-four-outline"
               size={16}
               color={colors.warning}
             />
-            <Text style={{ fontSize: 12, color: colors.warning }}>{t('inQueue')}</Text>
+            <Text style={styles.inQueueText}>{t('inQueue')}</Text>
           </View>
         );
       case 'Pending':
         return (
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 6
-            }}
-          >
+          <View style={styles.statusRow}>
             <MaterialCommunityIcons
               name="clock-outline"
               size={16}
               color={colors.primaryLight}
             />
-            <Text style={{ fontSize: 12, color: colors.primaryLight }}>
-              {t('pending')}
-            </Text>
+            <Text style={styles.pendingText}>{t('pending')}</Text>
           </View>
         );
       case 'Processing':
         return (
-          <View style={{ justifyContent: 'flex-start' }}>
+          <View style={styles.progressContainer}>
             <ProgressBar
               indeterminate
               color={colors.primary}
-              style={{ width: 80, height: 8, borderRadius: 4 }}
+              style={styles.progressBar}
             />
           </View>
         );
@@ -129,7 +116,7 @@ export default function ProcessingVideosScreen() {
         return (
           <View>
             <IconButton
-              style={{ margin: 0 }}
+              style={styles.completedButton}
               icon={() => (
                 <Feather name="check-circle" size={20} color={colors.greenAccent} />
               )}
@@ -138,21 +125,13 @@ export default function ProcessingVideosScreen() {
         );
       case 'Failed':
         return (
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 6
-            }}
-          >
+          <View style={styles.statusRow}>
             <Ionicons
               name="close-circle-outline"
               size={18}
               color={colors.criticalError}
             />
-            <Text style={{ fontSize: 12, color: colors.criticalError }}>
-              {t('failed')}
-            </Text>
+            <Text style={styles.failedText}>{t('failed')}</Text>
           </View>
         );
       default:
@@ -174,21 +153,13 @@ export default function ProcessingVideosScreen() {
       label: t('status'),
       key: 'actions',
       flex: 1,
-      render: (item: Recipient) =>
-        getStatusView(voterStatuses[item.id] || 'InQueue', item)
+      render: (item: Recipient) => getStatusView(voterStatuses[item.id] || 'InQueue')
     }
   ];
 
   return (
     <Surface style={styles.container} elevation={1}>
-      <View
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: 16
-        }}
-      >
+      <View style={styles.headerRow}>
         <Text
           variant="titleLarge"
           style={[styles.heading, { color: theme.colors.primary }]}
@@ -214,8 +185,41 @@ export default function ProcessingVideosScreen() {
   );
 }
 
-const createStyles = (theme: AppTheme) =>
-  StyleSheet.create({
-    container: { padding: 16, flex: 1, backgroundColor: theme.colors.white },
-    heading: { fontWeight: 'bold' }
-  });
+const createStyles = (theme: AppTheme) => ({
+  container: { padding: 16, flex: 1, backgroundColor: theme.colors.white },
+  heading: { fontWeight: 'bold' as const },
+  headerRow: {
+    flexDirection: 'row' as const,
+    justifyContent: 'space-between' as const,
+    alignItems: 'center' as const,
+    marginBottom: 16
+  },
+  statusRow: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 6
+  },
+  inQueueText: {
+    fontSize: 12,
+    color: theme.colors.warning
+  },
+  pendingText: {
+    fontSize: 12,
+    color: theme.colors.primaryLight
+  },
+  failedText: {
+    fontSize: 12,
+    color: theme.colors.criticalError
+  },
+  progressContainer: {
+    justifyContent: 'flex-start' as const
+  },
+  progressBar: {
+    width: 80,
+    height: 8,
+    borderRadius: 4
+  },
+  completedButton: {
+    margin: 0
+  }
+});

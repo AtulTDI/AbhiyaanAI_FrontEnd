@@ -62,7 +62,7 @@ export default function ImageTable({
           isApproved={item.isShared}
           onToggle={() => (item.isShared ? onUnshare(item.id) : onShare(item.id))}
           iconSize={20}
-          labelStyle={{ fontWeight: 'bold' }}
+          labelStyle={styles.approvalLabel}
         />
       )
     },
@@ -72,24 +72,12 @@ export default function ImageTable({
       flex: 0.9,
       smallColumn: true,
       render: (item: Image) => (
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 5,
-            marginLeft: true
-          }}
-        >
-          {/* Edit */}
-          <TouchableOpacity onPress={() => onEdit(item)} style={{ alignItems: 'center' }}>
+        <View style={styles.actionsRow}>
+          <TouchableOpacity onPress={() => onEdit(item)} style={styles.actionButton}>
             <Ionicons name="pencil" size={20} color={colors.primary} />
           </TouchableOpacity>
 
-          {/* Delete */}
-          <TouchableOpacity
-            onPress={() => onDelete(item.id)}
-            style={{ alignItems: 'center' }}
-          >
+          <TouchableOpacity onPress={() => onDelete(item.id)} style={styles.actionButton}>
             <Ionicons name="trash-outline" size={24} color={colors.criticalError} />
           </TouchableOpacity>
         </View>
@@ -115,7 +103,6 @@ export default function ImageTable({
         onRowsPerPageChange={onRowsPerPageChange}
       />
 
-      {/* Video Player Modal */}
       <Modal visible={!!selectedVideoUri} animationType="slide" transparent={false}>
         <View style={styles.fullscreenContainer}>
           {selectedVideoUri && (
@@ -143,9 +130,16 @@ export default function ImageTable({
 
 const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
-    actions: {
+    actionsRow: {
       flexDirection: 'row',
+      alignItems: 'center',
+      gap: 5
+    },
+    actionButton: {
       alignItems: 'center'
+    },
+    approvalLabel: {
+      fontWeight: 'bold'
     },
     fullscreenContainer: {
       flex: 1,

@@ -1,4 +1,5 @@
 import { AppTheme } from '../theme';
+import { logger } from '../utils/logger';
 import React, { useEffect, useState } from 'react';
 import {
   FlatList,
@@ -41,10 +42,11 @@ export default function PrinterPicker({ visible, onSelect, onClose }) {
       const list = await ThermalPrinter.getBondedDevices();
       setDevices(list || []);
     } catch (e) {
-      console.log('Error loading devices', e);
+      logger.log('Error loading devices', e);
     }
     setLoading(false);
   };
+
   const handleSelect = async (item) => {
     if (connectingMac) return;
 
@@ -61,6 +63,7 @@ export default function PrinterPicker({ visible, onSelect, onClose }) {
       setTimeout(() => {
         setErrorMessage(null);
       }, 2000);
+      void e;
     } finally {
       setConnectingMac(null);
     }
@@ -80,17 +83,16 @@ export default function PrinterPicker({ visible, onSelect, onClose }) {
         style={[styles.deviceItem, (selected || connecting) && styles.deviceItemSelected]}
       >
         <View style={styles.row}>
-          <View style={{ flex: 1 }}>
+          <View style={styles.deviceInfo}>
             <Text style={styles.deviceName}>{item.name || 'Unknown Device'}</Text>
             <Text style={styles.deviceMac}>{item.mac}</Text>
           </View>
 
-          {/* Loader on right while connecting */}
           {connecting && (
             <ActivityIndicator
               size={18}
               color={theme.colors.primary}
-              style={{ marginLeft: 10 }}
+              style={styles.connectingIndicator}
             />
           )}
         </View>
@@ -105,7 +107,7 @@ export default function PrinterPicker({ visible, onSelect, onClose }) {
           <View style={styles.handle} />
 
           <View style={styles.headerRow}>
-            <View style={{ flex: 1 }}>
+            <View style={styles.headerContent}>
               <Text style={styles.title}>Select Printer</Text>
               <Text style={styles.subtitle}>
                 Choose a paired Bluetooth thermal printer
@@ -178,6 +180,9 @@ const createStyles = (theme: AppTheme) =>
       alignItems: 'center',
       marginBottom: 6
     },
+    headerContent: {
+      flex: 1
+    },
     title: {
       fontSize: 20,
       fontWeight: '700',
@@ -199,6 +204,12 @@ const createStyles = (theme: AppTheme) =>
     row: {
       flexDirection: 'row',
       alignItems: 'center'
+    },
+    deviceInfo: {
+      flex: 1
+    },
+    connectingIndicator: {
+      marginLeft: 10
     },
     deviceItem: {
       paddingVertical: 14,

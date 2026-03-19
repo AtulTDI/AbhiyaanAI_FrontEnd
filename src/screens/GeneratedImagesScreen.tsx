@@ -20,6 +20,16 @@ import { useTranslation } from 'react-i18next';
 import { Platform, StyleSheet, View } from 'react-native';
 import { IconButton, ProgressBar, Surface, Text, useTheme } from 'react-native-paper';
 
+type CampaignOption = {
+  label: string;
+  value: string;
+};
+
+type CampaignSummary = {
+  campaignName: string;
+  id: string;
+};
+
 export default function GeneratedImagesScreen() {
   const { isWeb, isMobileWeb } = usePlatformInfo();
   const { t } = useTranslation();
@@ -27,12 +37,11 @@ export default function GeneratedImagesScreen() {
   const styles = createStyles(theme);
   const { colors } = theme;
   const { showToast } = useToast();
-  const [campaigns, setCampaigns] = useState<any[]>([]);
+  const [campaigns, setCampaigns] = useState<CampaignOption[]>([]);
   const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [sendingId, setSendingId] = useState<string | null>(null);
   const [progressMap, setProgressMap] = useState<Record<string, number>>({});
-  const [searchText, setSearchText] = useState('');
   const [tableParams, setTableParams] = useState<{
     campaignId: string | null;
     searchText: string;
@@ -44,10 +53,10 @@ export default function GeneratedImagesScreen() {
   const fetchCampaigns = useCallback(async () => {
     try {
       const response = await getCampaigns(0, 100000);
-      const campaignsData =
-        response?.data && Array.isArray(response.data.imageCampaigns.items)
-          ? response.data.imageCampaigns.items
-          : [];
+      const rawCampaigns = response?.data?.imageCampaigns?.items;
+      const campaignsData: CampaignSummary[] = Array.isArray(rawCampaigns)
+        ? rawCampaigns
+        : [];
 
       const transformedCampaigns = campaignsData.map((campaign) => ({
         label: campaign.campaignName,
@@ -58,10 +67,10 @@ export default function GeneratedImagesScreen() {
       if (transformedCampaigns?.length) {
         setSelectedCampaignId((prev) => prev ?? transformedCampaigns[0]?.value);
       }
-    } catch (error: any) {
+    } catch (error) {
       showToast(extractErrorMessage(error, t('image.loadImageFailMessage')), 'error');
     }
-  }, []);
+  }, [showToast, t]);
 
   const fetchVoters = useCallback(
     async (
@@ -84,14 +93,14 @@ export default function GeneratedImagesScreen() {
           items: Array.isArray(response?.data?.items) ? response.data.items : [],
           totalCount: response?.data?.totalRecords ?? 0
         };
-      } catch (error: any) {
+      } catch (error) {
         showToast(extractErrorMessage(error, t('voter.loadVoterFailMessage')), 'error');
         return { items: [], totalCount: 0 };
       } finally {
         setLoading(false);
       }
     },
-    []
+    [showToast, t]
   );
 
   const table = useServerTable<
@@ -103,7 +112,7 @@ export default function GeneratedImagesScreen() {
     return (
       <>
         <FixedLabel label={t('campaign')} />
-        <View style={{ width: 300 }}>
+        <View style={styles.dropdownWrapper}>
           <FormDropdown
             placeholder={t('selectCampaign')}
             value={selectedCampaignId}
@@ -114,7 +123,7 @@ export default function GeneratedImagesScreen() {
         </View>
       </>
     );
-  }, [selectedCampaignId, campaigns, t]);
+  }, [campaigns, selectedCampaignId, styles.dropdownWrapper, t]);
 
   useEffect(() => {
     setTableParams((prev) => ({
@@ -122,7 +131,7 @@ export default function GeneratedImagesScreen() {
       campaignId: selectedCampaignId
     }));
     table.setPage(0);
-  }, [selectedCampaignId]);
+  }, [selectedCampaignId, table]);
 
   useFocusEffect(
     useCallback(() => {
@@ -159,8 +168,9 @@ export default function GeneratedImagesScreen() {
     } finally {
       setSendingId(null);
       setProgressMap((prev) => {
-        const { [item.id]: _, ...rest } = prev;
-        return rest;
+        const next = { ...prev };
+        delete next[item.id];
+        return next;
       });
     }
   };
@@ -186,27 +196,14 @@ export default function GeneratedImagesScreen() {
         const progress = progressMap[item.id];
 
         return (
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-          >
+          <View style={styles.actionCell}>
             {sendingId === item.id && progress !== undefined ? (
-              <View style={{ width: 40, alignItems: 'center' }}>
-                <Text style={{ fontSize: 12, color: colors.primary }}>
-                  {Math.floor(progress * 100)}%
-                </Text>
+              <View style={styles.progressContainer}>
+                <Text style={styles.progressText}>{Math.floor(progress * 100)}%</Text>
                 <ProgressBar
                   progress={progress}
                   color={colors.primary}
-                  style={{
-                    width: 36,
-                    height: 4,
-                    borderRadius: 2,
-                    marginTop: 2
-                  }}
+                  style={styles.progressBar}
                 />
               </View>
             ) : sendStatus === 'pending' ? (
@@ -219,7 +216,7 @@ export default function GeneratedImagesScreen() {
                   />
                 )}
                 onPress={() => handleSendImage(item)}
-                style={{ margin: 0 }}
+                style={styles.iconButton}
                 disabled={disableRowActions}
               />
             ) : (
@@ -228,7 +225,7 @@ export default function GeneratedImagesScreen() {
                   <FontAwesome name="check-circle" size={22} color={colors.success} />
                 )}
                 disabled
-                style={{ margin: 0 }}
+                style={styles.iconButton}
               />
             )}
           </View>
@@ -239,7 +236,6 @@ export default function GeneratedImagesScreen() {
 
   const handleVoterSearch = useCallback(
     (text: string) => {
-      setSearchText(text);
       setTableParams((prev) => ({
         ...prev,
         searchText: text
@@ -267,7 +263,7 @@ export default function GeneratedImagesScreen() {
 
       {/* Table */}
       <ResponsiveKeyboardView>
-        <View style={{ flex: 1 }}>
+        <View style={styles.tableWrapper}>
           <CommonTable
             data={table.data}
             columns={columns}
@@ -311,9 +307,37 @@ const createStyles = (theme: AppTheme) =>
     headerRow: {
       marginBottom: 12
     },
+    dropdownWrapper: {
+      width: 300
+    },
     mobileToolbar: {
       paddingVertical: 6,
       paddingHorizontal: 2,
       marginBottom: 6
+    },
+    actionCell: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center'
+    },
+    progressContainer: {
+      width: 40,
+      alignItems: 'center'
+    },
+    progressText: {
+      fontSize: 12,
+      color: theme.colors.primary
+    },
+    progressBar: {
+      width: 36,
+      height: 4,
+      borderRadius: 2,
+      marginTop: 2
+    },
+    iconButton: {
+      margin: 0
+    },
+    tableWrapper: {
+      flex: 1
     }
   });

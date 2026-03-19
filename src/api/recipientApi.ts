@@ -4,6 +4,7 @@ import {
   GetPaginatedRecipients,
   Recipient
 } from '../types/Recipient';
+import { NativeFormDataFile, UploadableFile } from '../types/Upload';
 import { base64ToBlob } from '../utils/common';
 import axios from './axiosInstance';
 import * as FileSystem from 'expo-file-system';
@@ -12,7 +13,7 @@ import { Platform } from 'react-native';
 /**
  * Get paginated recipients with optional search
  */
-export const getRecipients = (pageNumber, pageSize, searchText) =>
+export const getRecipients = (pageNumber: number, pageSize: number, searchText: string) =>
   axios.get<GetPaginatedRecipients>(
     `/Recipients/getrecipients?searchText=${searchText}&page=${pageNumber + 1}&pageSize=${pageSize}`,
     { useApiPrefix: true }
@@ -23,9 +24,9 @@ export const getRecipients = (pageNumber, pageSize, searchText) =>
  */
 export const getRecipientsForProcessing = (
   id: string,
-  pageNumber,
-  pageSize,
-  searchText
+  pageNumber: number,
+  pageSize: number,
+  searchText: string
 ) =>
   axios.get<GetPaginatedRecipients>(`/Recipients/getrecipientsforprocessing`, {
     params: {
@@ -50,9 +51,9 @@ export const getRecipientsWithInProgressVidoes = () =>
  */
 export const getRecipientsWithCompletedVideoId = (
   id: string,
-  pageNumber,
-  pageSize,
-  searchText
+  pageNumber: number,
+  pageSize: number,
+  searchText: string
 ) =>
   axios.get('/Recipients/getcompletedaivideoswithbaseid', {
     params: {
@@ -73,7 +74,7 @@ export const createRecipient = (payload: CreateRecipientPayload) =>
 /**
  * Add multiple recipients
  */
-export const uploadRecipients = async (file: any) => {
+export const uploadRecipients = async (file: UploadableFile) => {
   const formData = new FormData();
   const fileName = file.name || 'upload.xlsx';
   const mimeType =
@@ -93,22 +94,26 @@ export const uploadRecipients = async (file: any) => {
         encoding: FileSystem.EncodingType.Base64
       });
 
-      formData.append('file', {
+      const nativeFile: NativeFormDataFile = {
         uri: tempPath,
         name: fileName,
         type: mimeType
-      } as any);
+      };
+
+      formData.append('file', nativeFile);
     }
   } else if (file instanceof File) {
     // Web File
     formData.append('file', file);
   } else if (file?.uri?.startsWith('file://')) {
     // RN Picker or native uri
-    formData.append('file', {
+    const nativeFile: NativeFormDataFile = {
       uri: file.uri,
       name: fileName,
       type: mimeType
-    } as any);
+    };
+
+    formData.append('file', nativeFile);
   } else {
     throw new Error('Unsupported file format');
   }
@@ -127,7 +132,12 @@ export const uploadRecipients = async (file: any) => {
 /**
  * Get recipients by Campaign for images
  */
-export const getRecipientsByCampaignId = (id: string, pageNumber, pageSize, searchText) =>
+export const getRecipientsByCampaignId = (
+  id: string,
+  pageNumber: number,
+  pageSize: number,
+  searchText: string
+) =>
   axios.get('/Recipients/recipients-with-image-campaign', {
     params: {
       campaignId: id,

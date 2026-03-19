@@ -16,7 +16,7 @@ type Props = {
   loading: boolean;
   onPageChange: (page: number) => void;
   onRowsPerPageChange: (size: number) => void;
-  onEdit: (item: any) => void;
+  onEdit: (item: Sender) => void;
   onDelete: (id: string) => void;
 };
 

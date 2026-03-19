@@ -1,18 +1,23 @@
 import { AppTheme } from '../theme';
 import { getBrandAssets } from '../utils/brandAssets';
 import { eventBus } from '../utils/eventBus';
+import { logger } from '../utils/logger';
 import { getAuthData } from '../utils/storage';
-import { DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
+import {
+  DrawerContentComponentProps,
+  DrawerContentScrollView,
+  DrawerItemList
+} from '@react-navigation/drawer';
 import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Image, Platform, SafeAreaView, StyleSheet, View } from 'react-native';
 import { useTheme } from 'react-native-paper';
 
-export default function CustomDrawer(props: any) {
+export default function CustomDrawer(props: DrawerContentComponentProps) {
   const { icon } = getBrandAssets();
   const theme = useTheme<AppTheme>();
-  const styles = createStyles(theme);
+  const styles = createStyles();
   const { colors } = theme;
 
   const [candidatePhotoPath, setCandidatePhotoPath] = useState<string | null>(null);
@@ -22,7 +27,7 @@ export default function CustomDrawer(props: any) {
       const data = await getAuthData();
       setCandidatePhotoPath(data?.candidatePhotoPath || null);
     } catch (e) {
-      console.error('Failed to load auth data', e);
+      logger.error('Failed to load auth data', e);
     }
   };
 
@@ -82,12 +87,7 @@ export default function CustomDrawer(props: any) {
           contentContainerStyle={styles.scrollContainer}
         >
           <View style={styles.drawerItemsContainer}>
-            <DrawerItemList
-              {...props}
-              labelStyle={[styles.drawerLabel, { color: colors.onPrimary }]}
-              activeTintColor={colors.onPrimary}
-              inactiveTintColor={colors.onPrimary}
-            />
+            <DrawerItemList {...props} />
           </View>
         </DrawerContentScrollView>
       </SafeAreaView>
@@ -95,7 +95,7 @@ export default function CustomDrawer(props: any) {
   );
 }
 
-const createStyles = (theme: AppTheme) =>
+const createStyles = () =>
   StyleSheet.create({
     gradient: {
       flex: 1

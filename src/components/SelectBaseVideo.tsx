@@ -1,14 +1,14 @@
 import { getVideos } from '../api/videoApi';
 import { useServerTable } from '../hooks/useServerTable';
 import { AppTheme } from '../theme';
-import { GetPaginatedVideos } from '../types/Video';
+import { Video } from '../types/Video';
 import { extractErrorMessage, sortByDateDesc } from '../utils/common';
 import CommonTable from './CommonTable';
 import { useToast } from './ToastProvider';
 import { useVideoPreview } from './VideoPreviewContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View } from 'react-native';
 import { RadioButton, useTheme } from 'react-native-paper';
@@ -18,7 +18,17 @@ type BaseVideo = {
   campaign: string;
 };
 
-export default function SelectBaseVideo({ stepData, setStepData }) {
+type StepData = {
+  0: string | null;
+  1: string[];
+};
+
+type Props = {
+  stepData: StepData;
+  setStepData: React.Dispatch<React.SetStateAction<StepData>>;
+};
+
+export default function SelectBaseVideo({ stepData, setStepData }: Props) {
   const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
   const styles = createStyles(theme);
@@ -27,43 +37,48 @@ export default function SelectBaseVideo({ stepData, setStepData }) {
   const { showToast } = useToast();
   const [loading, showLoading] = useState(false);
 
-  const fetchVideos = useCallback(async (page: number, pageSize: number) => {
-    showLoading(true);
-    try {
-      const response = await getVideos(page, pageSize);
-      const sortedVideos = sortByDateDesc(
-        response?.data && Array.isArray(response.data.videos.items)
-          ? response.data.videos.items
-          : [],
-        'createdAt'
-      );
+  const fetchVideos = useCallback(
+    async (page: number, pageSize: number) => {
+      showLoading(true);
+      try {
+        const response = await getVideos(page, pageSize);
+        const sortedVideos = sortByDateDesc(
+          response?.data && Array.isArray(response.data.videos.items)
+            ? response.data.videos.items
+            : [],
+          'createdAt'
+        );
 
-      setStepData((prev) => ({
-        ...prev,
-        0: prev[0] ? prev[0] : sortedVideos.length > 0 ? sortedVideos[0].id : null
-      }));
+        setStepData((prev) => ({
+          ...prev,
+          0: prev[0] ? prev[0] : sortedVideos.length > 0 ? sortedVideos[0].id : null
+        }));
 
-      return {
-        items: sortedVideos ?? [],
-        totalCount: response?.data?.totalRecords ?? 0
-      };
-    } catch (error: any) {
-      showToast(extractErrorMessage(error, t('video.loadVideoFailMessage')), 'error');
-    } finally {
-      showLoading(false);
-    }
-  }, []);
+        return {
+          items: sortedVideos ?? [],
+          totalCount: response?.data?.totalRecords ?? 0
+        };
+      } catch (error: unknown) {
+        showToast(extractErrorMessage(error, t('video.loadVideoFailMessage')), 'error');
+      } finally {
+        showLoading(false);
+      }
+    },
+    [setStepData, showToast, t]
+  );
 
-  const table = useServerTable<GetPaginatedVideos>(fetchVideos, {
+  const table = useServerTable<Video>(fetchVideos, {
     initialPage: 0,
     initialRowsPerPage: 10
   });
+  const tableRef = useRef(table);
+  tableRef.current = table;
 
   useFocusEffect(
     useCallback(() => {
-      table.setPage(0);
-      table.setRowsPerPage(10);
-      table.fetchData(0, 10);
+      tableRef.current.setPage(0);
+      tableRef.current.setRowsPerPage(10);
+      tableRef.current.fetchData(0, 10);
     }, [])
   );
 
@@ -134,7 +149,7 @@ export default function SelectBaseVideo({ stepData, setStepData }) {
   });
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={styles.container}>
       <CommonTable
         data={table.data}
         columns={customColumns}
@@ -161,6 +176,9 @@ export default function SelectBaseVideo({ stepData, setStepData }) {
 
 const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
+    container: {
+      flex: 1
+    },
     actions: {
       flexDirection: 'row',
       alignItems: 'center',

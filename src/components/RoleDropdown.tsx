@@ -14,7 +14,6 @@ export default function RoleDropdown({ selectedRole, onSelect }: Props) {
   const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
   const styles = createStyles(theme);
-  const { colors } = theme;
 
   const roleOptions = [
     { label: 'User', value: 'User' },
@@ -34,7 +33,7 @@ export default function RoleDropdown({ selectedRole, onSelect }: Props) {
         CustomDropdownInput={(props) => (
           <TextInput
             {...props}
-            style={[styles.input, { backgroundColor: theme.colors.white }]}
+            style={styles.input}
             theme={{ roundness: 8 }}
             right={props.rightIcon}
             value={props.selectedLabel}
@@ -45,21 +44,16 @@ export default function RoleDropdown({ selectedRole, onSelect }: Props) {
             placeholder={props.placeholder}
           />
         )}
-        CustomDropdownItem={({ option, value, onSelect, toggleMenu, isLast }) => (
+        CustomDropdownItem={({ option, onSelect, toggleMenu, isLast }) => (
           <List.Item
             title={option.label}
             titleStyle={styles.optionText}
             style={[
               styles.optionItem,
-              {
-                backgroundColor: 'white'
-              },
-              !isLast && {
-                borderBottomWidth: 1,
-                borderColor: colors.lightGray
-              }
+              styles.optionBackground,
+              !isLast && styles.optionBorder
             ]}
-            rippleColor={'rgba(0,0,0,0.04)'}
+            rippleColor="rgba(0,0,0,0.04)"
             onPress={() => {
               onSelect?.(option.value);
               toggleMenu();
@@ -89,7 +83,8 @@ const createStyles = (theme: AppTheme) =>
       marginBottom: 16
     },
     input: {
-      fontSize: 16
+      fontSize: 16,
+      backgroundColor: theme.colors.white
     },
     optionText: {
       fontSize: 14
@@ -97,6 +92,13 @@ const createStyles = (theme: AppTheme) =>
     optionItem: {
       paddingVertical: 8,
       paddingHorizontal: 12
+    },
+    optionBackground: {
+      backgroundColor: theme.colors.white
+    },
+    optionBorder: {
+      borderBottomWidth: 1,
+      borderColor: theme.colors.lightGray
     },
     headerContainer: {
       paddingHorizontal: 12,

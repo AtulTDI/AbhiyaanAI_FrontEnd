@@ -4,6 +4,7 @@ import { fetchAccounts } from '../services/accountsService';
 import { encryptWithBackendKey } from '../services/rsaEncryptor';
 import { AppTheme } from '../theme';
 import { extractErrorMessage } from '../utils/common';
+import { logger } from '../utils/logger';
 import { saveAuthData } from '../utils/storage';
 import React, { useEffect, useState } from 'react';
 import { FlatList, Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
@@ -55,7 +56,7 @@ export default function SignIn({
           );
           setAccounts(uniqueGmailAccounts);
         } catch (e) {
-          console.warn('Failed to fetch accounts:', e);
+          logger.warn('Failed to fetch accounts', e);
         }
       }
       loadAccounts();
@@ -126,7 +127,7 @@ export default function SignIn({
       });
 
       navigate('App');
-    } catch (error: any) {
+    } catch (error: unknown) {
       setAuthError(extractErrorMessage(error));
     } finally {
       setIsLoading(false);
@@ -136,7 +137,7 @@ export default function SignIn({
   return (
     <>
       <KeyboardAwareScrollView
-        contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}
+        contentContainerStyle={styles.scrollContainer}
         extraScrollHeight={50}
         enableOnAndroid={true}
         keyboardShouldPersistTaps="handled"
@@ -174,10 +175,8 @@ export default function SignIn({
                   mode="outlined"
                   style={[
                     styles.emailInput,
-                    {
-                      backgroundColor: email && colors.surfaceVariant,
-                      opacity: email ? 0.6 : 1
-                    }
+                    email ? styles.selectedEmailInput : styles.unselectedEmailInput,
+                    email && { backgroundColor: colors.surfaceVariant }
                   ]}
                   outlineColor={colors.outline}
                   activeOutlineColor={colors.primary}
@@ -200,7 +199,7 @@ export default function SignIn({
                 error={!!emailError}
               />
             )}
-            <HelperText type="error" visible={!!emailError} style={{ paddingLeft: 0 }}>
+            <HelperText type="error" visible={!!emailError} style={styles.helperText}>
               {emailError}
             </HelperText>
 
@@ -231,14 +230,14 @@ export default function SignIn({
                 }
               />
             </View>
-            <HelperText type="error" visible={!!passwordError} style={{ paddingLeft: 0 }}>
+            <HelperText type="error" visible={!!passwordError} style={styles.helperText}>
               {passwordError}
             </HelperText>
 
             <Button
               onPress={() => setShowSignInPage(false)}
               mode="text"
-              contentStyle={{ justifyContent: 'flex-end' }}
+              contentStyle={styles.forgotContent}
               style={styles.forgot}
               labelStyle={{ color: colors.primary }}
             >
@@ -251,7 +250,7 @@ export default function SignIn({
               loading={isLoading}
               disabled={isLoading}
               style={[styles.button, { backgroundColor: colors.primary }]}
-              contentStyle={{ paddingVertical: 8 }}
+              contentStyle={styles.buttonContent}
             >
               {isLoading ? 'Signing In...' : 'Sign In'}
             </Button>
@@ -272,7 +271,7 @@ export default function SignIn({
           >
             <Text style={styles.bottomSheetTitle}>Select Account</Text>
             {accounts.length === 0 ? (
-              <Text style={{ textAlign: 'center', padding: 10 }}>No accounts found</Text>
+              <Text style={styles.noAccountsText}>No accounts found</Text>
             ) : (
               <FlatList
                 data={[...accounts, 'None of the above']}
@@ -312,6 +311,10 @@ export default function SignIn({
 }
 
 const styles = StyleSheet.create({
+  scrollContainer: {
+    flexGrow: 1,
+    justifyContent: 'center'
+  },
   card: {
     width: '100%',
     maxWidth: 400,
@@ -338,6 +341,12 @@ const styles = StyleSheet.create({
   emailInput: {
     fontSize: 15
   },
+  selectedEmailInput: {
+    opacity: 0.6
+  },
+  unselectedEmailInput: {
+    opacity: 1
+  },
   passwordLabel: {
     marginTop: 5
   },
@@ -356,6 +365,15 @@ const styles = StyleSheet.create({
   button: {
     borderRadius: 8
   },
+  helperText: {
+    paddingLeft: 0
+  },
+  forgotContent: {
+    justifyContent: 'flex-end'
+  },
+  buttonContent: {
+    paddingVertical: 8
+  },
   bottomSheet: {
     position: 'absolute',
     bottom: 0,
@@ -370,5 +388,9 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     textAlign: 'center',
     marginVertical: 10
+  },
+  noAccountsText: {
+    textAlign: 'center',
+    padding: 10
   }
 });

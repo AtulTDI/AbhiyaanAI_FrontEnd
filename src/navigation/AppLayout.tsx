@@ -2,7 +2,6 @@ import CustomDrawer from '../components/CustomDrawer';
 import CustomLabel from '../components/CustomLabel';
 import LanguageSelector from '../components/LanguageSelector';
 import UserAvatarMenu from '../components/UserAvatarMenu';
-import ActivateSenderScreen from '../screens/ActivateSenderScreen';
 import AddApplicationScreen from '../screens/AddApplicationScreen';
 import AddCandidateScreen from '../screens/AddCandidateScreen';
 import AddSenderScreen from '../screens/AddSenderScreen';
@@ -25,7 +24,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { TouchableOpacity, useWindowDimensions, View } from 'react-native';
+import { StyleSheet, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { Text, useTheme } from 'react-native-paper';
 
 const Drawer = createDrawerNavigator();
@@ -35,6 +34,7 @@ export default function AppLayout() {
   const { width } = useWindowDimensions();
   const isLargeScreen = width >= 768;
   const theme = useTheme<AppTheme>();
+  const styles = createStyles(theme);
   const { colors } = theme;
 
   const [userName, setUserName] = useState('');
@@ -44,8 +44,8 @@ export default function AppLayout() {
   const [userEmail, setUserEmail] = useState('');
   const [applicationName, setApplicationName] = useState('');
   const [videoCount, setVideoCount] = useState<number | null>(null);
-  const [showVideoCampaign, setShowVideoCampaignn] = useState<boolean | string>(false);
-  const [showImageCampaign, setShowImageCampaignn] = useState<boolean | string>(false);
+  const [showVideoCampaign, setShowVideoCampaign] = useState<boolean | string>(false);
+  const [showImageCampaign, setShowImageCampaign] = useState<boolean | string>(false);
   const [isElectionRelated, setIsElectionRelated] = useState<boolean | string>(false);
 
   useEffect(() => {
@@ -57,7 +57,7 @@ export default function AppLayout() {
         videoCount: count,
         applicationName: userApplication,
         iselectionRelatedapp: isElectionRelatedApp,
-        showVideoCampaign: videoCampign,
+        showVideoCampaign: videoCampaign,
         showImageCampaign: imageCampaign
       } = await getAuthData();
 
@@ -74,8 +74,8 @@ export default function AppLayout() {
       }
 
       setIsElectionRelated(isElectionRelatedApp);
-      setShowVideoCampaignn(videoCampign);
-      setShowImageCampaignn(imageCampaign);
+      setShowVideoCampaign(videoCampaign);
+      setShowImageCampaign(imageCampaign);
 
       if (count !== undefined && !isNaN(Number(count))) {
         setVideoCount(Number(count));
@@ -87,8 +87,8 @@ export default function AppLayout() {
     try {
       stopConnection();
       await clearAuthData();
-    } catch (error: any) {
-      const msg = error?.response?.data?.error || 'Something went wrong.';
+    } catch (error) {
+      void error;
     } finally {
       navigate('Login');
     }
@@ -102,48 +102,27 @@ export default function AppLayout() {
 
   const headerRightComponent = () => {
     return (
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          marginRight: 10,
-          gap: 12
-        }}
-      >
+      <View style={styles.headerRightContainer}>
         <LanguageSelector />
 
         {role === 'Admin' && videoCount !== null && showVideoCampaign && (
           <TouchableOpacity
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              backgroundColor: getCountColor(),
-              paddingHorizontal: 12,
-              paddingVertical: 6,
-              borderRadius: 5,
-              shadowColor: colors.black,
-              shadowOffset: { width: 0, height: 1 },
-              shadowOpacity: 0.1,
-              shadowRadius: 3,
-              elevation: 3
-            }}
+            style={[
+              styles.videoCountContainer,
+              {
+                backgroundColor: getCountColor(),
+                shadowColor: colors.black
+              }
+            ]}
             activeOpacity={0.8}
           >
             <Ionicons
               name="videocam"
               size={18}
               color={colors.white}
-              style={{ marginRight: 6 }}
+              style={styles.videoIcon}
             />
-            <Text
-              style={{
-                color: colors.white,
-                fontSize: 14,
-                fontWeight: '600'
-              }}
-            >
-              {videoCount}
-            </Text>
+            <Text style={styles.videoCountText}>{videoCount}</Text>
           </TouchableOpacity>
         )}
 
@@ -172,17 +151,9 @@ export default function AppLayout() {
         headerShown: !isLargeScreen,
         headerLeft: isLargeScreen ? () => null : undefined,
         drawerActiveTintColor: colors.primary,
-        drawerLabelStyle: {
-          marginLeft: -16,
-          fontSize: 16
-        },
+        drawerLabelStyle: styles.drawerLabel,
         drawerActiveBackgroundColor: 'transparent',
-        drawerItemStyle: {
-          height: 48,
-          justifyContent: 'center',
-          paddingVertical: 0,
-          marginVertical: 5
-        }
+        drawerItemStyle: styles.drawerItem
       }}
     >
       {(role === 'Admin' || role === 'SuperAdmin') && (
@@ -693,3 +664,42 @@ export default function AppLayout() {
     </Drawer.Navigator>
   );
 }
+
+const createStyles = (theme: AppTheme) =>
+  StyleSheet.create({
+    headerRightContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginRight: 10,
+      gap: 12
+    },
+    videoCountContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      borderRadius: 5,
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.1,
+      shadowRadius: 3,
+      elevation: 3
+    },
+    videoIcon: {
+      marginRight: 6
+    },
+    videoCountText: {
+      color: theme.colors.white,
+      fontSize: 14,
+      fontWeight: '600'
+    },
+    drawerLabel: {
+      marginLeft: -16,
+      fontSize: 16
+    },
+    drawerItem: {
+      height: 48,
+      justifyContent: 'center',
+      paddingVertical: 0,
+      marginVertical: 5
+    }
+  });

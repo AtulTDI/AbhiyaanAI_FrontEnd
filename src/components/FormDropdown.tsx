@@ -8,9 +8,11 @@ import {
   LayoutRectangle,
   Platform,
   Pressable,
+  StyleProp,
   StyleSheet,
   Text,
-  View
+  View,
+  ViewStyle
 } from 'react-native';
 import { Portal, TextInput, useTheme } from 'react-native-paper';
 
@@ -20,7 +22,7 @@ type Option = {
   label: string;
   value: string;
   colorCode?: string;
-  itemStyle?: any;
+  itemStyle?: StyleProp<ViewStyle>;
 };
 
 type Props = {
@@ -91,18 +93,10 @@ export default function FormDropdown({
     anchorRef.current.measureInWindow((x, y, width, h) => {
       const spaceBelow = windowHeight - (y + h);
       const spaceAbove = y;
-
       const shouldOpenUpwards = spaceBelow < MENU_MAX_HEIGHT && spaceAbove > spaceBelow;
 
       setOpenUpwards(shouldOpenUpwards);
-
-      setAnchorLayout({
-        x,
-        y,
-        width,
-        height: h
-      });
-
+      setAnchorLayout({ x, y, width, height: h });
       setOpen(true);
     });
   };
@@ -117,14 +111,16 @@ export default function FormDropdown({
   return (
     <>
       {/* ================= INPUT ================= */}
-      <View style={{ marginBottom: (isAndroid || isIOS) && !noMargin ? 25 : 0 }}>
+      <View
+        style={[(isAndroid || isIOS) && !noMargin && styles.inputWrapperNativeMargin]}
+      >
         <View
-          style={{
-            backgroundColor: selectedOption?.colorCode
-              ? selectedOption.colorCode + '10'
-              : theme.colors.white,
-            borderRadius: 8
-          }}
+          style={[
+            styles.colorBackground,
+            selectedOption?.colorCode
+              ? { backgroundColor: selectedOption.colorCode + '10' }
+              : styles.colorBackgroundDefault
+          ]}
         >
           <Pressable ref={anchorRef} onPress={openMenu}>
             <TextInput
@@ -136,12 +132,14 @@ export default function FormDropdown({
               editable={false}
               disabled={disabled}
               error={!!error}
-              style={[styles.input, { fontSize: isWeb ? 15 : 14 }]}
+              style={[styles.input, isWeb ? styles.inputFontWeb : styles.inputFontNative]}
               outlineStyle={styles.outline}
               outlineColor={
                 selectedOption?.colorCode
-                  ? selectedOption?.colorCode
-                  : customOutline && theme.colors.subtleBorder
+                  ? selectedOption.colorCode
+                  : customOutline
+                    ? theme.colors.subtleBorder
+                    : undefined
               }
               activeOutlineColor={theme.colors.primary}
               right={
@@ -154,9 +152,11 @@ export default function FormDropdown({
                   />
                 )
               }
-              contentStyle={{
-                marginLeft: selectedOption?.colorCode ? 45 : 0
-              }}
+              contentStyle={
+                selectedOption?.colorCode
+                  ? styles.contentWithColor
+                  : styles.contentWithoutColor
+              }
               left={
                 selectedOption?.colorCode ? (
                   <TextInput.Icon
@@ -191,7 +191,6 @@ export default function FormDropdown({
               }
             ]}
           >
-            {/* Search */}
             {showSearch && (
               <TextInput
                 mode="outlined"
@@ -215,16 +214,21 @@ export default function FormDropdown({
 
                 return (
                   <Pressable
-                    style={({ hovered }) => [
-                      styles.option,
-                      hovered && styles.optionHover,
-                      selected && {
-                        backgroundColor: item.colorCode
-                          ? item.colorCode + '15'
-                          : theme.colors.primary + '14'
-                      },
-                      item.itemStyle
-                    ]}
+                    style={(state) => {
+                      const { hovered } = state as typeof state & {
+                        hovered?: boolean;
+                      };
+                      return [
+                        styles.option,
+                        hovered && styles.optionHover,
+                        selected && [
+                          item.colorCode
+                            ? { backgroundColor: item.colorCode + '15' }
+                            : { backgroundColor: theme.colors.primary + '14' }
+                        ],
+                        item.itemStyle
+                      ];
+                    }}
                     onPress={() => {
                       onSelect(item.value);
                       closeMenu();
@@ -232,13 +236,7 @@ export default function FormDropdown({
                   >
                     {item.colorCode && (
                       <View
-                        style={{
-                          width: 18,
-                          height: 8,
-                          borderRadius: 4,
-                          backgroundColor: item.colorCode,
-                          marginRight: 8
-                        }}
+                        style={[styles.colorSwatch, { backgroundColor: item.colorCode }]}
                       />
                     )}
                     <Text style={styles.optionText}>{item.label}</Text>
@@ -259,19 +257,37 @@ export default function FormDropdown({
 
 const createStyles = (theme: AppTheme, height: number) =>
   StyleSheet.create({
+    inputWrapperNativeMargin: {
+      marginBottom: 25
+    },
+    colorBackground: {
+      borderRadius: 8
+    },
+    colorBackgroundDefault: {
+      backgroundColor: theme.colors.white
+    },
     input: {
-      height: 44,
+      height: height ?? 44,
       backgroundColor: 'transparent'
     },
-
+    inputFontWeb: {
+      fontSize: 15
+    },
+    inputFontNative: {
+      fontSize: 14
+    },
     outline: {
       borderRadius: 8
     },
-
+    contentWithColor: {
+      marginLeft: 45
+    },
+    contentWithoutColor: {
+      marginLeft: 0
+    },
     backdrop: {
       ...StyleSheet.absoluteFillObject
     },
-
     menu: {
       position: 'absolute',
       zIndex: 1000,
@@ -286,17 +302,14 @@ const createStyles = (theme: AppTheme, height: number) =>
       shadowRadius: 20,
       shadowOffset: { width: 0, height: 8 }
     },
-
     search: {
       margin: 10,
       height: 40,
       backgroundColor: theme.colors.white
     },
-
     searchOutline: {
       borderRadius: 8
     },
-
     option: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -304,24 +317,26 @@ const createStyles = (theme: AppTheme, height: number) =>
       paddingVertical: 11,
       gap: 10
     },
-
     optionHover: {
       backgroundColor: theme.colors.lightGray + '90',
       borderRadius: 10
     },
-
     optionText: {
       fontSize: 14,
       lineHeight: 20,
       color: theme.colors.onSurface
     },
-
+    colorSwatch: {
+      width: 18,
+      height: 8,
+      borderRadius: 4,
+      marginRight: 8
+    },
     divider: {
       height: 1,
       backgroundColor: theme.colors.lightGray,
       marginLeft: 16
     },
-
     error: {
       fontSize: 12,
       color: theme.colors.error,

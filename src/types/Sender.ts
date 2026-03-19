@@ -33,7 +33,7 @@ export type CreateSenderPayload = {
   email: string;
   password: string;
   phoneNumber: string;
-  role: string;
+  role?: string;
 };
 
 export type EditSenderPayload = {
@@ -43,5 +43,5 @@ export type EditSenderPayload = {
   password?: string;
   phoneNumber?: string;
   applicationId?: string;
-  role: string;
+  role?: string;
 };

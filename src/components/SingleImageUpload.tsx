@@ -1,4 +1,5 @@
 import { usePlatformInfo } from '../hooks/usePlatformInfo';
+import { AppTheme } from '../theme';
 import { Ionicons } from '@expo/vector-icons';
 import * as FileSystem from 'expo-file-system';
 import React, { useRef } from 'react';
@@ -21,7 +22,8 @@ type Props = {
 
 export default function SingleImageUpload({ value, previewUrl, onChange }: Props) {
   const { t } = useTranslation();
-  const theme = useTheme();
+  const theme = useTheme<AppTheme>();
+  const styles = createStyles(theme);
   const { isWeb } = usePlatformInfo();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -110,7 +112,7 @@ export default function SingleImageUpload({ value, previewUrl, onChange }: Props
         ) : (
           <View style={styles.placeholder}>
             <Ionicons name="image-outline" size={28} color={theme.colors.onSurface} />
-            <Text style={{ color: theme.colors.onSurface, marginTop: 6 }}>
+            <Text style={styles.candidateUploadImageText}>
               {t('candidate.uploadImage')}
             </Text>
           </View>
@@ -120,35 +122,40 @@ export default function SingleImageUpload({ value, previewUrl, onChange }: Props
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    width: '100%'
-  },
-  box: {
-    height: 160,
-    borderWidth: 1,
-    borderStyle: 'dashed',
-    borderRadius: 10,
-    overflow: 'hidden',
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fff'
-  },
-  placeholder: {
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  preview: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'contain'
-  },
-  removeBtn: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    padding: 6,
-    borderRadius: 20
-  }
-});
+const createStyles = (theme: AppTheme) =>
+  StyleSheet.create({
+    container: {
+      width: '100%'
+    },
+    box: {
+      height: 160,
+      borderWidth: 1,
+      borderStyle: 'dashed',
+      borderRadius: 10,
+      overflow: 'hidden',
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: '#fff'
+    },
+    placeholder: {
+      alignItems: 'center',
+      justifyContent: 'center'
+    },
+    preview: {
+      width: '100%',
+      height: '100%',
+      resizeMode: 'contain'
+    },
+    removeBtn: {
+      position: 'absolute',
+      top: 8,
+      right: 8,
+      backgroundColor: 'rgba(0,0,0,0.6)',
+      padding: 6,
+      borderRadius: 20
+    },
+    candidateUploadImageText: {
+      color: theme.colors.onSurface,
+      textAlign: 'center'
+    }
+  });

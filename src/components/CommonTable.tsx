@@ -7,13 +7,15 @@ import { useTranslation } from 'react-i18next';
 import {
   Animated,
   Keyboard,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   useWindowDimensions,
-  View
+  View,
+  ViewStyle
 } from 'react-native';
 import { ActivityIndicator, Menu, TextInput, useTheme } from 'react-native-paper';
 import { Row } from 'react-native-table-component';
@@ -51,7 +53,7 @@ const ROWS_PER_PAGE_OPTIONS = [5, 10, 20, 50];
 export default function CommonTable<T>({
   data,
   columns,
-  keyExtractor = (_, index) => index.toString(),
+  keyExtractor: _keyExtractor = (_, index) => index.toString(),
   emptyText,
   emptyIcon,
   enableSearch,
@@ -189,7 +191,6 @@ export default function CommonTable<T>({
     })
   );
 
-  let enableHorizontalScroll = false;
   const totalFlex = enhancedColumns.reduce((sum, col) => sum + col.flex, 0);
   const containerWidth = screenWidth - 140;
 
@@ -210,14 +211,11 @@ export default function CommonTable<T>({
     return Math.max(calculatedWidth, minWidth);
   });
 
-  if (isMobileWeb) {
-    enableHorizontalScroll = true;
-  } else if ((isWeb && !isMobileWeb) || screenWidth < 600) {
-    enableHorizontalScroll = wrapperWidth < 900 || columns.length > 7;
-  } else {
-    const totalTableWidth = widthArr.reduce((sum, w) => sum + w, 0);
-    enableHorizontalScroll = totalTableWidth > containerWidth;
-  }
+  const enableHorizontalScroll = isMobileWeb
+    ? true
+    : (isWeb && !isMobileWeb) || screenWidth < 600
+      ? wrapperWidth < 900 || columns.length > 7
+      : widthArr.reduce((sum, w) => sum + w, 0) > containerWidth;
 
   let availableHeight;
 
@@ -327,7 +325,7 @@ export default function CommonTable<T>({
       const delay = setTimeout(() => onSearchChange({ search: filters.search }), 1000);
       return () => clearTimeout(delay);
     }
-  }, [filters.search]);
+  }, [filters.search, onSearchChange]);
 
   return (
     <View style={styles.container}>
@@ -339,12 +337,9 @@ export default function CommonTable<T>({
           <>
             <Row
               data={tableHead.map((head, idx) => (
-                <View
-                  key={idx}
-                  style={{ width: widthArr[idx], justifyContent: 'center' }}
-                >
+                <View key={idx} style={styles.headerCellContainer}>
                   <Text
-                    style={[styles.headerCell, { color: colors.white, width: '100%' }]}
+                    style={styles.headerCellOnPrimary}
                     numberOfLines={1}
                     ellipsizeMode="tail"
                   >
@@ -364,12 +359,9 @@ export default function CommonTable<T>({
           <>
             <Row
               data={tableHead.map((head, idx) => (
-                <View
-                  key={idx}
-                  style={{ width: widthArr[idx], justifyContent: 'center' }}
-                >
+                <View key={idx} style={styles.headerCellContainer}>
                   <Text
-                    style={[styles.headerCell, { color: colors.white, width: '100%' }]}
+                    style={styles.headerCellOnPrimary}
                     numberOfLines={1}
                     ellipsizeMode="tail"
                   >
@@ -425,7 +417,7 @@ export default function CommonTable<T>({
               {emptyIcon ?? (
                 <MaterialIcons
                   name="info-outline"
-                  style={{ fontSize: 10 }}
+                  style={styles.emptyIcon}
                   color={colors.borderGray}
                 />
               )}
@@ -439,25 +431,16 @@ export default function CommonTable<T>({
               horizontal={enableHorizontalScroll}
               nestedScrollEnabled
               showsHorizontalScrollIndicator={enableHorizontalScroll}
-              contentContainerStyle={{
-                minWidth: '100%',
-                flexGrow: 1
-              }}
-              style={[styles.scrollArea, isMobileWeb ? { overflowX: 'auto' } : {}]}
+              contentContainerStyle={styles.scrollContent}
+              style={[styles.scrollArea, isMobileWeb && styles.mobileWebScrollArea]}
             >
               <View>
                 {/* Header Row */}
                 <Row
                   data={tableHead.map((head, idx) => (
-                    <View
-                      key={idx}
-                      style={{ width: widthArr[idx], justifyContent: 'center' }}
-                    >
+                    <View key={idx} style={styles.headerCellContainer}>
                       <Text
-                        style={[
-                          styles.headerCell,
-                          { color: colors.white, width: '100%' }
-                        ]}
+                        style={styles.headerCellOnPrimary}
                         numberOfLines={1}
                         ellipsizeMode="tail"
                       >
@@ -513,7 +496,7 @@ export default function CommonTable<T>({
                 )}
 
                 {/* Data Rows */}
-                <View style={{ minHeight: 200, maxHeight: availableHeight }}>
+                <View style={[styles.tableBody, { maxHeight: availableHeight }]}>
                   <ScrollView nestedScrollEnabled showsVerticalScrollIndicator>
                     {tableData.map((rowData, rowIndex) => (
                       <Row
@@ -548,7 +531,7 @@ export default function CommonTable<T>({
             <View
               style={[
                 styles.paginationContainer,
-                isMobileWeb && { paddingVertical: 6, paddingHorizontal: 8 }
+                isMobileWeb && styles.compactPaginationContainer
               ]}
             >
               {isWeb && !isMobileWeb ? (
@@ -716,7 +699,18 @@ const createStyles = (
     },
     scrollArea: { flex: 1 },
     headerRow: { backgroundColor: theme.colors.primary, height: 46 },
+    headerCellContainer: {
+      justifyContent: 'center'
+    },
     headerCell: {
+      fontWeight: '600',
+      fontSize: 14,
+      textAlign: 'left',
+      paddingHorizontal: 8
+    },
+    headerCellOnPrimary: {
+      color: theme.colors.white,
+      width: '100%',
       fontWeight: '600',
       fontSize: 14,
       textAlign: 'left',
@@ -768,6 +762,22 @@ const createStyles = (
       marginTop: 8,
       color: theme.colors.darkerGrayText
     },
+    emptyIcon: {
+      fontSize: 10
+    },
+    scrollContent: {
+      minWidth: '100%',
+      flexGrow: 1
+    },
+    mobileWebScrollArea: {
+      ...Platform.select({
+        web: { overflowX: 'auto' } as ViewStyle,
+        default: {}
+      })
+    },
+    tableBody: {
+      minHeight: 200
+    },
     paginationContainer: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -775,6 +785,10 @@ const createStyles = (
       paddingHorizontal: 14,
       paddingVertical: 10,
       backgroundColor: theme.colors.white
+    },
+    compactPaginationContainer: {
+      paddingVertical: 6,
+      paddingHorizontal: 8
     },
     mobilePaginationWrapper: {
       flexDirection: 'row',

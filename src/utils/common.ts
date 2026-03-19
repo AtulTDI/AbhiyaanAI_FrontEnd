@@ -19,14 +19,35 @@ export const base64ToBlob = (base64Data: string, contentType: string): Blob => {
   return new Blob(byteArrays, { type: contentType });
 };
 
-export const extractErrorMessage = (error: any, fallback = 'Something went wrong') => {
-  const status = error?.response?.status;
+type ApiErrorData =
+  | string
+  | {
+      title?: string;
+      message?: string;
+    }
+  | Array<{
+      description?: string;
+    }>;
+
+type ApiErrorShape = {
+  response?: {
+    status?: number;
+    data?: ApiErrorData;
+  };
+};
+
+export const extractErrorMessage = (
+  error: unknown,
+  fallback = 'Something went wrong'
+) => {
+  const normalizedError = error as ApiErrorShape;
+  const status = normalizedError.response?.status;
 
   if (status === 500) {
     return fallback;
   }
 
-  const data = error?.response?.data;
+  const data = normalizedError.response?.data;
 
   if (typeof data === 'string') {
     return data;
@@ -39,16 +60,23 @@ export const extractErrorMessage = (error: any, fallback = 'Something went wrong
     }
   }
 
-  return data?.title || data?.message || fallback;
+  if (data && !Array.isArray(data) && typeof data === 'object') {
+    return data.title || data.message || fallback;
+  }
+
+  return fallback;
 };
 
 export const getFileNameWithoutExtension = (fullName: string): string => {
   return fullName.replace(/\.[^/.]+$/, '');
 };
 
-export const sortByDateDesc = (data, key) => {
+export const sortByDateDesc = <T extends Record<string, unknown>>(
+  data: T[],
+  key: keyof T
+) => {
   return [...data].sort(
-    (a, b) => new Date(b[key]).getTime() - new Date(a[key]).getTime()
+    (a, b) => new Date(b[key] as string).getTime() - new Date(a[key] as string).getTime()
   );
 };
 

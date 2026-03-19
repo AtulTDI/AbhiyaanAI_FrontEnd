@@ -1,10 +1,20 @@
+import { Buffer } from 'node:buffer';
 import fs from 'fs';
 import path from 'path';
+import process from 'node:process';
 import sharp from 'sharp';
+
+const writeStdout = (message) => {
+  process.stdout.write(`${message}\n`);
+};
+
+const writeStderr = (message) => {
+  process.stderr.write(`${message}\n`);
+};
 
 const inputPath = process.argv[2];
 if (!inputPath) {
-  console.error(
+  writeStderr(
     '❌ Please provide a path to your PNG (e.g. node generate-icons.js ./assets/abhiyan/icon.png)'
   );
   process.exit(1);
@@ -23,7 +33,7 @@ const sizes = {
 
 (async () => {
   try {
-    console.log(`\n🎨 Generating Android launcher icons from: ${inputPath}\n`);
+    writeStdout(`\n🎨 Generating Android launcher icons from: ${inputPath}\n`);
 
     for (const [folder, size] of Object.entries(sizes)) {
       const dir = path.join(outputBase, folder);
@@ -76,12 +86,13 @@ const sizes = {
         .webp({ quality: 95 })
         .toFile(foregroundPath);
 
-      console.log(`✅ ${folder}: launcher, round, foreground (${size}x${size})`);
+      writeStdout(`✅ ${folder}: launcher, round, foreground (${size}x${size})`);
     }
 
-    console.log('\n🎉 All launcher icons generated successfully!\n');
+    writeStdout('\n🎉 All launcher icons generated successfully!\n');
   } catch (err) {
-    console.error('❌ Icon generation error:', err);
+    const errorMessage = err instanceof Error ? err.message : String(err);
+    writeStderr(`❌ Icon generation error: ${errorMessage}`);
     process.exit(1);
   }
 })();

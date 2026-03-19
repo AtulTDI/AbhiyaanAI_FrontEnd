@@ -5,9 +5,15 @@ import { extractErrorMessage } from '../utils/common';
 import AddFamilyMembersDialog from './AddFamilyMemberDialog';
 import DeleteConfirmationDialog from './DeleteConfirmationDialog';
 import { useToast } from './ToastProvider';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Pressable, useWindowDimensions, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Pressable,
+  StyleSheet,
+  useWindowDimensions,
+  View
+} from 'react-native';
 import { Button, IconButton, Text, useTheme } from 'react-native-paper';
 
 type Props = {
@@ -22,6 +28,7 @@ export default function FamilyMembersCard({ voter, onSelectMember }: Props) {
   const { width } = useWindowDimensions();
 
   const isWeb = width >= 768;
+  const styles = createStyles(theme, isWeb);
 
   const [members, setMembers] = useState<Voter[]>([]);
   const [loading, setLoading] = useState(false);
@@ -31,11 +38,7 @@ export default function FamilyMembersCard({ voter, onSelectMember }: Props) {
 
   /* ================= FETCH ================= */
 
-  useEffect(() => {
-    fetchMembers();
-  }, []);
-
-  const fetchMembers = async () => {
+  const fetchMembers = useCallback(async () => {
     setLoading(true);
     try {
       const res = await getFamilyMembers(voter.id);
@@ -43,7 +46,11 @@ export default function FamilyMembersCard({ voter, onSelectMember }: Props) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [voter.id]);
+
+  useEffect(() => {
+    void fetchMembers();
+  }, [fetchMembers]);
 
   /* ================= DELETE ================= */
 
@@ -54,7 +61,7 @@ export default function FamilyMembersCard({ voter, onSelectMember }: Props) {
       await removeFamilyMember(deleteId);
       await fetchMembers();
       showToast(t('voter.deleteFamilyMemberSuccess'), 'success');
-    } catch (e: any) {
+    } catch (e: unknown) {
       showToast(extractErrorMessage(e, t('voter.deleteFamilyMemberFail')), 'error');
     } finally {
       setDeleteOpen(false);
@@ -74,7 +81,7 @@ export default function FamilyMembersCard({ voter, onSelectMember }: Props) {
       await addFamilyMember(data);
       await fetchMembers();
       showToast(t('voter.addFamilyMemberSuccess'), 'success');
-    } catch (e: any) {
+    } catch (e: unknown) {
       showToast(extractErrorMessage(e, t('voter.addFail')), 'error');
     }
   };
@@ -82,126 +89,43 @@ export default function FamilyMembersCard({ voter, onSelectMember }: Props) {
   /* ================= RENDER ================= */
 
   return (
-    <View style={{ width: '100%', gap: 12 }}>
-      {/* Header */}
-      <View
-        style={{
-          width: '100%',
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          alignItems: 'center'
-        }}
-      >
-        <Text
-          style={{
-            fontWeight: '700',
-            fontSize: 16,
-            color: theme.colors.primary
-          }}
-        >
-          {t('voter.familyMembers')}
-        </Text>
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.title}>{t('voter.familyMembers')}</Text>
 
         <Button
           mode="contained"
           compact
-          style={{ borderRadius: 10, paddingHorizontal: 6 }}
+          style={styles.addButton}
           onPress={() => setAddOpen(true)}
         >
           {t('voter.addFamilyMember')}
         </Button>
       </View>
 
-      {/* Loader */}
       {loading && <ActivityIndicator size="small" color={theme.colors.primary} />}
 
-      {/* Empty */}
       {!loading && members.length === 0 && (
-        <View
-          style={{
-            width: '100%',
-            backgroundColor: theme.colors.paperBackground,
-            borderRadius: 12,
-            borderWidth: 1,
-            borderColor: theme.colors.subtleBorder,
-            padding: 14
-          }}
-        >
-          <Text style={{ color: theme.colors.textSecondary }}>
-            {t('voter.noFamilyMembers')}
-          </Text>
+        <View style={styles.emptyCard}>
+          <Text style={styles.emptyText}>{t('voter.noFamilyMembers')}</Text>
         </View>
       )}
 
-      {/* Cards Grid */}
-      <View
-        style={{
-          width: '100%',
-          flexDirection: 'row',
-          flexWrap: 'wrap'
-        }}
-      >
+      <View style={styles.grid}>
         {members.map((m) => (
-          <View
-            key={m.id}
-            style={{
-              width: isWeb ? '50%' : '100%',
-              padding: isWeb ? 6 : 4
-            }}
-          >
+          <View key={m.id} style={styles.memberWrapper}>
             <Pressable onPress={() => onSelectMember(m.id)}>
-              <View
-                style={{
-                  backgroundColor: theme.colors.white,
-                  borderRadius: 12,
-                  borderWidth: 1,
-                  borderColor: theme.colors.subtleBorder,
-                  flexDirection: 'row',
-                  overflow: 'hidden'
-                }}
-              >
-                {/* Accent strip */}
-                <View
-                  style={{
-                    width: 4,
-                    backgroundColor: theme.colors.primaryLight
-                  }}
-                />
+              <View style={styles.memberCard}>
+                <View style={styles.accentStrip} />
 
-                {/* Content */}
-                <View
-                  style={{
-                    flex: 1,
-                    paddingVertical: 12,
-                    paddingHorizontal: 14
-                  }}
-                >
-                  {/* Top row */}
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      justifyContent: 'space-between',
-                      alignItems: 'flex-start'
-                    }}
-                  >
-                    <View style={{ flex: 1, paddingRight: 8 }}>
-                      <Text
-                        variant="titleMedium"
-                        style={{
-                          fontWeight: '600',
-                          color: theme.colors.primary
-                        }}
-                      >
+                <View style={styles.cardContent}>
+                  <View style={styles.topRow}>
+                    <View style={styles.textBlock}>
+                      <Text variant="titleMedium" style={styles.memberName}>
                         {m.fullName}
                       </Text>
 
-                      <Text
-                        style={{
-                          marginTop: 2,
-                          fontSize: 13,
-                          color: theme.colors.textSecondary
-                        }}
-                      >
+                      <Text style={styles.metaText}>
                         {t('voter.ageGender', {
                           age: m.age,
                           gender: t(`voter.gender${m.gender}`, {
@@ -215,7 +139,7 @@ export default function FamilyMembersCard({ voter, onSelectMember }: Props) {
                       icon="delete"
                       size={18}
                       iconColor={theme.colors.error}
-                      style={{ margin: 0 }}
+                      style={styles.deleteButton}
                       onPress={() => {
                         setDeleteId(m.id);
                         setDeleteOpen(true);
@@ -224,41 +148,25 @@ export default function FamilyMembersCard({ voter, onSelectMember }: Props) {
                   </View>
 
                   {!!m.fatherHusbandName && (
-                    <Text
-                      style={{
-                        marginTop: 6,
-                        fontSize: 13,
-                        color: theme.colors.textSecondary
-                      }}
-                    >
+                    <Text style={styles.relationText}>
                       {t('voter.fatherHusband')}:{' '}
-                      <Text style={{ color: theme.colors.textPrimary }}>
-                        {m.fatherHusbandName}
-                      </Text>
+                      <Text style={styles.relationValue}>{m.fatherHusbandName}</Text>
                     </Text>
                   )}
 
-                  {/* Status */}
                   <View
-                    style={{
-                      marginTop: 8,
-                      alignSelf: 'flex-start',
-                      paddingHorizontal: 8,
-                      paddingVertical: 2,
-                      borderRadius: 8,
-                      backgroundColor: m.isVerified
-                        ? theme.colors.successBackground
-                        : theme.colors.errorBackground
-                    }}
+                    style={[
+                      styles.statusBadge,
+                      m.isVerified ? styles.statusVerified : styles.statusUnverified
+                    ]}
                   >
                     <Text
-                      style={{
-                        fontSize: 12,
-                        fontWeight: '500',
-                        color: m.isVerified
-                          ? theme.colors.successText
-                          : theme.colors.errorText
-                      }}
+                      style={[
+                        styles.statusText,
+                        m.isVerified
+                          ? styles.statusVerifiedText
+                          : styles.statusUnverifiedText
+                      ]}
                     >
                       {m.isVerified ? t('voter.verified') : t('voter.notVerified')}
                     </Text>
@@ -295,3 +203,115 @@ export default function FamilyMembersCard({ voter, onSelectMember }: Props) {
     </View>
   );
 }
+
+const createStyles = (theme: AppTheme, isWeb: boolean) =>
+  StyleSheet.create({
+    container: {
+      width: '100%',
+      gap: 12
+    },
+    header: {
+      width: '100%',
+      flexDirection: 'row' as const,
+      justifyContent: 'space-between' as const,
+      alignItems: 'center' as const
+    },
+    title: {
+      fontWeight: '700' as const,
+      fontSize: 16,
+      color: theme.colors.primary
+    },
+    addButton: {
+      borderRadius: 10,
+      paddingHorizontal: 6
+    },
+    emptyCard: {
+      width: '100%',
+      backgroundColor: theme.colors.paperBackground,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: theme.colors.subtleBorder,
+      padding: 14
+    },
+    emptyText: {
+      color: theme.colors.textSecondary
+    },
+    grid: {
+      width: '100%',
+      flexDirection: 'row' as const,
+      flexWrap: 'wrap' as const
+    },
+    memberWrapper: {
+      width: isWeb ? '50%' : '100%',
+      padding: isWeb ? 6 : 4
+    },
+    memberCard: {
+      backgroundColor: theme.colors.white,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: theme.colors.subtleBorder,
+      flexDirection: 'row' as const,
+      overflow: 'hidden' as const
+    },
+    accentStrip: {
+      width: 4,
+      backgroundColor: theme.colors.primaryLight
+    },
+    cardContent: {
+      flex: 1,
+      paddingVertical: 12,
+      paddingHorizontal: 14
+    },
+    topRow: {
+      flexDirection: 'row' as const,
+      justifyContent: 'space-between' as const,
+      alignItems: 'flex-start' as const
+    },
+    textBlock: {
+      flex: 1,
+      paddingRight: 8
+    },
+    memberName: {
+      fontWeight: '600' as const,
+      color: theme.colors.primary
+    },
+    metaText: {
+      marginTop: 2,
+      fontSize: 13,
+      color: theme.colors.textSecondary
+    },
+    deleteButton: {
+      margin: 0
+    },
+    relationText: {
+      marginTop: 6,
+      fontSize: 13,
+      color: theme.colors.textSecondary
+    },
+    relationValue: {
+      color: theme.colors.textPrimary
+    },
+    statusBadge: {
+      marginTop: 8,
+      alignSelf: 'flex-start' as const,
+      paddingHorizontal: 8,
+      paddingVertical: 2,
+      borderRadius: 8
+    },
+    statusVerified: {
+      backgroundColor: theme.colors.successBackground
+    },
+    statusUnverified: {
+      backgroundColor: theme.colors.errorBackground
+    },
+    statusText: {
+      fontSize: 12,
+      fontWeight: '500' as const
+    },
+    statusVerifiedText: {
+      color: theme.colors.successText
+    },
+    statusUnverifiedText: {
+      color: theme.colors.errorText
+    }
+  });

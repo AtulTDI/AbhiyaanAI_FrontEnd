@@ -1,10 +1,13 @@
+import { RootStackParamList } from '../types';
+import { logger } from '../utils/logger';
 import { getAuthData } from '../utils/storage';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useEffect } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 export default function AuthLoadingScreen() {
-  const navigation = useNavigation<any>();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   useEffect(() => {
     const checkToken = async () => {
@@ -17,16 +20,24 @@ export default function AuthLoadingScreen() {
           navigation.replace('Login');
         }
       } catch (e) {
-        console.error('Token check failed', e);
+        logger.error('Token check failed', e);
         navigation.replace('Login');
       }
     };
     checkToken();
-  }, []);
+  }, [navigation]);
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+    <View style={styles.container}>
       <ActivityIndicator size="large" />
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center'
+  }
+});

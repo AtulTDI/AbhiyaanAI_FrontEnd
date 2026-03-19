@@ -8,12 +8,15 @@ import React, { useEffect, useState } from 'react';
 import {
   Image,
   KeyboardAvoidingView,
-  SafeAreaView,
+  Platform,
   ScrollView,
   StyleSheet,
   View
 } from 'react-native';
 import { useTheme } from 'react-native-paper';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+const Wrapper = Platform.OS === 'web' ? View : KeyboardAvoidingView;
 
 export default function LoginScreen() {
   const { isIOS } = usePlatformInfo();
@@ -35,10 +38,7 @@ export default function LoginScreen() {
       style={styles.gradient}
     >
       <SafeAreaView style={styles.safeArea}>
-        <KeyboardAvoidingView
-          behavior={isIOS ? 'padding' : undefined}
-          style={styles.flex}
-        >
+        <Wrapper behavior={isIOS ? 'padding' : undefined} style={styles.flex}>
           <ScrollView
             contentContainerStyle={styles.scrollContainer}
             keyboardShouldPersistTaps="handled"
@@ -71,7 +71,7 @@ export default function LoginScreen() {
               </View>
             </View>
           </ScrollView>
-        </KeyboardAvoidingView>
+        </Wrapper>
       </SafeAreaView>
     </LinearGradient>
   );

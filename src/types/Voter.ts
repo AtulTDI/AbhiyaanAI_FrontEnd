@@ -3,7 +3,7 @@ export type Voter = {
   epicId: string;
   fullName: string;
   fatherHusbandName: string;
-  age: number;
+  age: number | string | null;
   gender: string;
   mobileNumber: string;
   caste: string;
@@ -12,7 +12,7 @@ export type Voter = {
   rank: number;
   houseNumber: string;
   prabagNumber: number;
-  familyMembers: any[];
+  familyMembers: Voter[];
   votingBoothAddress: string;
   votingRoomNumber: number;
   votingDateAndTime: string;
@@ -155,9 +155,9 @@ export type VoterDemandItem = {
   demand?: string;
   demandMr?: string;
   category?: string;
-  categoryId: string;
-  description: string;
-  demandId: string;
+  categoryId?: string;
+  description?: string;
+  demandId?: string;
   isResolved?: boolean;
 };
 

@@ -62,8 +62,8 @@ const createStyles = (theme: AppTheme) =>
       borderWidth: 1.5,
       ...(Platform.OS === 'web'
         ? {
-            outlineStyle: 'none' as any,
-            outlineColor: 'transparent' as any
+            outlineStyle: 'none',
+            outlineColor: 'transparent'
           }
         : {})
     },

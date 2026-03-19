@@ -1,3 +1,4 @@
+import { NativeFormDataFile, UploadableFile } from '../types/Upload';
 import {
   CreateUserPayload,
   EditUserPayload,
@@ -10,7 +11,7 @@ import axios from './axiosInstance';
 /**
  * Get paginated users with optional search
  */
-export const getUsers = (pageNumber, pageSize) =>
+export const getUsers = (pageNumber: number, pageSize: number) =>
   axios.get<GetPaginatedUsers>(
     `/Users/users?page=${pageNumber + 1}&pageSize=${pageSize}`,
     { useApiPrefix: true }
@@ -19,7 +20,7 @@ export const getUsers = (pageNumber, pageSize) =>
 /**
  * Get paginated customer admins with optional search
  */
-export const getCustomerAdmins = (pageNumber, pageSize) =>
+export const getCustomerAdmins = (pageNumber: number, pageSize: number) =>
   axios.get<GetPaginatedUsers>(
     `/Users/get-admins?page=${pageNumber + 1}&pageSize=${pageSize}`,
     { useApiPrefix: true }
@@ -46,7 +47,7 @@ export const deleteUserById = (id: string) =>
 /**
  * Add multiple users
  */
-export const uploadUsers = async (file: any) => {
+export const uploadUsers = async (file: UploadableFile) => {
   const formData = new FormData();
 
   // Case: base64 string in file.uri
@@ -65,13 +66,15 @@ export const uploadUsers = async (file: any) => {
   }
   // Case: file from RN picker with uri
   else if (file?.uri) {
-    formData.append('file', {
+    const nativeFile: NativeFormDataFile = {
       uri: file.uri,
       name: file.name || 'upload.xlsx',
       type:
         file.mimeType ||
         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    } as any);
+    };
+
+    formData.append('file', nativeFile);
   } else {
     throw new Error('Unsupported file format');
   }

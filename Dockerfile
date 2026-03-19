@@ -13,7 +13,7 @@ RUN npm ci --legacy-peer-deps
 COPY App.tsx ./
 COPY index.ts ./
 COPY tsconfig.json ./
-COPY app.config.js ./
+COPY app.config.ts ./
 COPY i18n.ts ./
 COPY locales ./locales
 COPY src ./src

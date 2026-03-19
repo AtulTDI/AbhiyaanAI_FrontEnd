@@ -21,7 +21,6 @@ export default function UserUpload({ fetchUsers, setShowAddUserView }) {
     <CommonUpload
       label="Upload User Excel"
       fileType="excel"
-      onCancel={() => setShowAddUserView(false)}
       onUpload={(file) => handleUpload(file)}
     />
   );

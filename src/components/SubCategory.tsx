@@ -6,6 +6,32 @@ import { useTranslation } from 'react-i18next';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { ActivityIndicator, IconButton, Text, useTheme } from 'react-native-paper';
 
+type SubcategoryType = 'color' | 'age' | 'surname' | 'gender' | 'caste' | 'booth';
+
+type SubcategoryItem = {
+  value: string;
+  label: string;
+  count: string | number;
+  description?: string;
+  color?: string;
+  icon?: React.ComponentProps<typeof MaterialCommunityIcons>['name'];
+};
+
+type Props = {
+  title: string;
+  items: SubcategoryItem[];
+  loading: boolean;
+  type: SubcategoryType;
+  page: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+  totalRecords: number;
+  startRecord: number;
+  endRecord: number;
+  onSelect: (value: string) => void;
+  onBack: () => void;
+};
+
 export default function Subcategory({
   title,
   items,
@@ -19,7 +45,7 @@ export default function Subcategory({
   endRecord,
   onSelect,
   onBack
-}: any) {
+}: Props) {
   const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
   const { isWeb } = usePlatformInfo();
@@ -36,7 +62,7 @@ export default function Subcategory({
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.white }]}>
+    <View style={styles.container}>
       {/* HEADER */}
       <View style={styles.header}>
         <IconButton icon="arrow-left" iconColor={theme.colors.primary} onPress={onBack} />
@@ -48,9 +74,9 @@ export default function Subcategory({
         data={items}
         numColumns={numColumns}
         columnWrapperStyle={isWeb ? styles.row : undefined}
-        contentContainerStyle={{
-          paddingBottom: type === 'surname' ? 100 : 16
-        }}
+        contentContainerStyle={
+          type === 'surname' ? styles.listContentSurname : styles.listContent
+        }
         keyExtractor={(item, index) => index.toString()}
         renderItem={({ item }) => {
           const isColor = type === 'color';
@@ -75,7 +101,7 @@ export default function Subcategory({
                       name={item.icon}
                       size={22}
                       color={isColor ? theme.colors.white : theme.colors.primary}
-                      style={{ marginRight: 10 }}
+                      style={styles.itemIcon}
                     />
                   )}
 
@@ -83,9 +109,7 @@ export default function Subcategory({
                     <Text
                       style={[
                         styles.label,
-                        {
-                          color: isColor ? theme.colors.white : theme.colors.primary
-                        }
+                        isColor ? styles.labelColorMode : styles.labelDefault
                       ]}
                       numberOfLines={1}
                       ellipsizeMode="tail"
@@ -97,11 +121,9 @@ export default function Subcategory({
                       <Text
                         style={[
                           styles.description,
-                          {
-                            color: isColor
-                              ? theme.colors.white
-                              : theme.colors.textSecondary
-                          }
+                          isColor
+                            ? styles.descriptionColorMode
+                            : styles.descriptionDefault
                         ]}
                         numberOfLines={2}
                         ellipsizeMode="tail"
@@ -116,18 +138,11 @@ export default function Subcategory({
                 <View
                   style={[
                     styles.countBadge,
-                    {
-                      backgroundColor: isColor
-                        ? 'rgba(255,255,255,0.2)'
-                        : theme.colors.softOrange + '40'
-                    }
+                    isColor ? styles.countBadgeColorMode : styles.countBadgeDefault
                   ]}
                 >
                   <Text
-                    style={{
-                      color: isColor ? theme.colors.white : theme.colors.darkOrange,
-                      fontWeight: '700'
-                    }}
+                    style={isColor ? styles.countTextColorMode : styles.countTextDefault}
                   >
                     {item.count}
                   </Text>
@@ -143,7 +158,7 @@ export default function Subcategory({
                 name="info-outline"
                 size={36}
                 color={theme.colors.borderGray}
-                style={{ marginBottom: 8 }}
+                style={styles.emptyIcon}
               />
               <Text style={styles.emptyText}>{t('dashboard.noData')}</Text>
             </View>
@@ -172,10 +187,7 @@ export default function Subcategory({
             />
 
             <Text style={styles.pageText}>
-              {t('voter.pageInfo', {
-                current: page,
-                total: totalPages
-              })}
+              {t('voter.pageInfo', { current: page, total: totalPages })}
             </Text>
 
             <IconButton
@@ -196,7 +208,8 @@ const createStyles = (theme: AppTheme) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      padding: 16
+      padding: 16,
+      backgroundColor: theme.colors.white
     },
 
     loaderOverlay: {
@@ -227,6 +240,14 @@ const createStyles = (theme: AppTheme) =>
       justifyContent: 'space-between'
     },
 
+    listContent: {
+      paddingBottom: 16
+    },
+
+    listContentSurname: {
+      paddingBottom: 100
+    },
+
     cardShell: {
       borderRadius: 12,
       borderWidth: 1,
@@ -251,6 +272,10 @@ const createStyles = (theme: AppTheme) =>
       flex: 1
     },
 
+    itemIcon: {
+      marginRight: 10
+    },
+
     textContainer: {
       flex: 1,
       paddingRight: 8
@@ -262,11 +287,27 @@ const createStyles = (theme: AppTheme) =>
       flexShrink: 1
     },
 
+    labelColorMode: {
+      color: theme.colors.white
+    },
+
+    labelDefault: {
+      color: theme.colors.primary
+    },
+
     description: {
       fontSize: 13,
       marginTop: 2,
       lineHeight: 16,
       flexShrink: 1
+    },
+
+    descriptionColorMode: {
+      color: theme.colors.white
+    },
+
+    descriptionDefault: {
+      color: theme.colors.textSecondary
     },
 
     countBadge: {
@@ -277,6 +318,24 @@ const createStyles = (theme: AppTheme) =>
       alignItems: 'center',
       flexShrink: 0,
       marginLeft: 8
+    },
+
+    countBadgeColorMode: {
+      backgroundColor: 'rgba(255,255,255,0.2)'
+    },
+
+    countBadgeDefault: {
+      backgroundColor: theme.colors.softOrange + '40'
+    },
+
+    countTextColorMode: {
+      color: theme.colors.white,
+      fontWeight: '700'
+    },
+
+    countTextDefault: {
+      color: theme.colors.darkOrange,
+      fontWeight: '700'
     },
 
     floatingBar: {
@@ -323,6 +382,11 @@ const createStyles = (theme: AppTheme) =>
       justifyContent: 'center',
       paddingVertical: 30
     },
+
+    emptyIcon: {
+      marginBottom: 8
+    },
+
     emptyText: {
       marginTop: 6,
       fontSize: 14,
