@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 import {
   ActivityIndicator,
@@ -27,8 +27,6 @@ import {
   getColorCodes,
   getGenderStats,
   getSurnames,
-  getVoterById,
-  getVoters,
   getVotersByCategory
 } from '../api/voterApi';
 import FormDropdown from '../components/FormDropdown';
@@ -39,6 +37,7 @@ import { VOTER_CATEGORIES } from '../constants/voterCategories';
 import { useDebounce } from '../hooks/useDebounce';
 import { useInternalBackHandler } from '../hooks/useInternalBackHandler';
 import { usePlatformInfo } from '../hooks/usePlatformInfo';
+import { voterService } from '../services/voterService';
 import { AppTheme } from '../theme';
 import { RootStackParamList } from '../types';
 import {
@@ -244,77 +243,74 @@ export default function VotersScreen() {
     wasFocused.current = isFocused;
   }, [isFocused]);
 
+  const ageParam = useMemo(() => {
+    if (ageMode === 'between' && debouncedMinAge && debouncedMaxAge) {
+      return `${debouncedMinAge}-${debouncedMaxAge}`;
+    }
+    if ((ageMode === 'lt' || ageMode === 'gt') && debouncedAgeValue) {
+      return `${ageMode === 'lt' ? '<' : '>'}${debouncedAgeValue}`;
+    }
+    return undefined;
+  }, [ageMode, debouncedAgeValue, debouncedMinAge, debouncedMaxAge]);
+
   /* ---------------- FETCH VOTERS ---------------- */
   const fetchVoters = useCallback(async () => {
-    let res;
+    if (view !== 'list') return;
 
-    if (view === 'list') {
-      try {
-        setPageLoading(true);
-        let ageParam: string | undefined;
+    try {
+      setPageLoading(true);
 
-        if (ageMode === 'between' && debouncedMinAge && debouncedMaxAge) {
-          ageParam = `${debouncedMinAge}-${debouncedMaxAge}`;
-        } else if ((ageMode === 'lt' || ageMode === 'gt') && debouncedAgeValue) {
-          ageParam = `${ageMode === 'lt' ? '<' : '>'}${debouncedAgeValue}`;
-        }
+      if (selectedCategory === 15) {
+        const result = await voterService.getVoters({
+          page,
+          pageSize: PAGE_SIZE,
+          searchText: debouncedSearch ?? ''
+        });
 
-        if (selectedCategory === 15) {
-          res = await getVoters(
-            page,
-            PAGE_SIZE,
-            debouncedSearch ?? '',
-            ageParam,
-            gender === 'All' ? undefined : gender,
-            searchBy
-          );
-        } else {
-          res = await getVotersByCategory(
-            page,
-            PAGE_SIZE,
-            debouncedSearch ?? '',
-            selectedSubFilter.type === 'age'
-              ? (selectedSubFilter.value ?? undefined)
-              : undefined,
-            selectedSubFilter.type === 'gender'
-              ? (selectedSubFilter.value ?? undefined)
-              : undefined,
-            searchBy,
-            selectedCategory,
-            selectedSubFilter.type === 'color'
-              ? (selectedSubFilter.value ?? undefined)
-              : undefined,
-            selectedSubFilter.type === 'surname'
-              ? (selectedSubFilter.value ?? undefined)
-              : undefined,
-            selectedSubFilter.type === 'caste'
-              ? (selectedSubFilter.value ?? undefined)
-              : undefined,
-            selectedSubFilter.type === 'booth'
-              ? Number(selectedSubFilter.value ?? undefined)
-              : undefined,
-            selectedSubFilter.type === 'booth'
-              ? (selectedSubFilter.boothAddress ?? undefined)
-              : undefined
-          );
-        }
+        setVoterCount(result.total);
+        setVoters(result.data as unknown as Voter[]);
+      } else {
+        const res = await getVotersByCategory(
+          page,
+          PAGE_SIZE,
+          debouncedSearch ?? '',
+          selectedSubFilter.type === 'age'
+            ? (selectedSubFilter.value ?? undefined)
+            : ageParam,
+          selectedSubFilter.type === 'gender'
+            ? (selectedSubFilter.value ?? undefined)
+            : undefined,
+          searchBy,
+          selectedCategory,
+          selectedSubFilter.type === 'color'
+            ? (selectedSubFilter.value ?? undefined)
+            : undefined,
+          selectedSubFilter.type === 'surname'
+            ? (selectedSubFilter.value ?? undefined)
+            : undefined,
+          selectedSubFilter.type === 'caste'
+            ? (selectedSubFilter.value ?? undefined)
+            : undefined,
+          selectedSubFilter.type === 'booth'
+            ? Number(selectedSubFilter.value ?? undefined)
+            : undefined,
+          selectedSubFilter.type === 'booth'
+            ? (selectedSubFilter.boothAddress ?? undefined)
+            : undefined
+        );
 
         setVoterCount(res?.data?.totalRecords ?? 0);
         setVoters(res?.data?.data ?? []);
-      } catch {
-        return;
-      } finally {
-        setPageLoading(false);
       }
+    } catch {
+      return;
+    } finally {
+      setPageLoading(false);
     }
   }, [
-    ageMode,
+    ageParam,
     page,
     debouncedSearch,
-    debouncedAgeValue,
-    debouncedMinAge,
-    debouncedMaxAge,
-    gender,
     searchBy,
     selectedCategory,
     selectedSubFilter.boothAddress,
@@ -483,18 +479,22 @@ export default function VotersScreen() {
     try {
       setTransitionLoading(true);
 
-      const [voter] = await Promise.all([
-        typeof voterOrId === 'string'
-          ? getVoterById(voterOrId).then((r) => r.data)
-          : Promise.resolve(voterOrId),
-        delay(500)
-      ]);
+      const voterId = typeof voterOrId === 'string' ? voterOrId : voterOrId.id;
+
+      const result = await voterService.getVoterById(voterId);
+
+      if (!result) {
+        showToast(t('voter.notFound'), 'error');
+        return;
+      }
+
+      await delay(500);
 
       if (selectedVoter) {
         voterStackRef.current = [...voterStackRef.current, selectedVoter];
       }
 
-      setSelectedVoter(voter);
+      setSelectedVoter(result as unknown as Voter);
       setView('detail');
     } finally {
       setTransitionLoading(false);

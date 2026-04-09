@@ -16,12 +16,6 @@ import { useFocusEffect } from '@react-navigation/native';
 
 import { useTranslation } from 'react-i18next';
 
-import {
-  createRecipient,
-  deleteRecipientById,
-  editRecipientById,
-  getRecipients
-} from '../api/recipientApi';
 import sampleVoterUploadAsset from '../assets/sample-voter-upload.xlsx';
 import DeleteConfirmationDialog from '../components/DeleteConfirmationDialog';
 import { useToast } from '../components/ToastProvider';
@@ -31,8 +25,9 @@ import VoterUpload from '../components/VoterUpload';
 import { useInternalBackHandler } from '../hooks/useInternalBackHandler';
 import { usePlatformInfo } from '../hooks/usePlatformInfo';
 import { useServerTable } from '../hooks/useServerTable';
+import { recipientService } from '../services/recipientService';
 import { AppTheme } from '../theme';
-import {
+import type {
   CreateRecipientPayload,
   EditRecipientPayload,
   Recipient
@@ -95,10 +90,16 @@ export default function AddVoterScreen() {
 
   const fetchVoters = useCallback(
     async (page: number, pageSize: number, params?: { searchText?: string }) => {
-      const response = await getRecipients(page, pageSize, params?.searchText ?? '');
+      const result = await recipientService.getRecipients(
+        page,
+        pageSize,
+        params?.searchText ?? ''
+      );
+
+      // result.data is RecipientLocal[] and result.total is the count
       return {
-        items: Array.isArray(response?.data?.items) ? response.data.items : [],
-        totalCount: response?.data?.totalRecords ?? 0
+        items: result.data as unknown as Recipient[],
+        totalCount: result.total
       };
     },
     []
@@ -130,7 +131,7 @@ export default function AddVoterScreen() {
 
   const addVoter = async (voterData: CreateRecipientPayload) => {
     try {
-      await createRecipient(voterData);
+      await recipientService.createRecipient(voterData);
       void table.fetchData(0, table.rowsPerPage, { searchText: '' });
       showToast(t('voter.addSuccess'), 'success');
       setShowAddVoterView(false);
@@ -141,9 +142,9 @@ export default function AddVoterScreen() {
   };
 
   const editVoter = async (voterData: EditRecipientPayload) => {
-    if (!voterToEdit) return;
+    if (!voterToEdit?.id) return;
     try {
-      await editRecipientById(voterToEdit.id, voterData);
+      await recipientService.editRecipient(voterToEdit.id, voterData);
       await table.fetchData(table.page, table.rowsPerPage, { searchText: '' });
       showToast(t('voter.editSuccess'), 'success');
       setShowAddVoterView(false);
@@ -164,17 +165,18 @@ export default function AddVoterScreen() {
   };
 
   const confirmDeleteVoter = async () => {
-    if (selectedVoterId) {
-      try {
-        await deleteRecipientById(selectedVoterId);
-        void table.fetchData(table.page, table.rowsPerPage, { searchText: '' });
-        showToast(t('voter.deleteSuccess'), 'success');
-      } catch (error: unknown) {
-        showToast(extractErrorMessage(error, t('voter.deleteFail')), 'error');
-      }
-      setSelectedVoterId(null);
-      setDeleteDialogVisible(false);
+    if (!selectedVoterId) return;
+
+    try {
+      await recipientService.deleteRecipient(selectedVoterId);
+      void table.fetchData(table.page, table.rowsPerPage, { searchText: '' });
+      showToast(t('voter.deleteSuccess'), 'success');
+    } catch (error: unknown) {
+      showToast(extractErrorMessage(error, t('voter.deleteFail')), 'error');
     }
+
+    setSelectedVoterId(null);
+    setDeleteDialogVisible(false);
   };
 
   const downloadSampleExcel = async () => {
@@ -201,7 +203,7 @@ export default function AddVoterScreen() {
     }
   };
 
-  const renderScene = ({ route }) => {
+  const renderScene = ({ route }: { route: TabRoute }) => {
     switch (route.key) {
       case 'manual':
         return (

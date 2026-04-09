@@ -1,15 +1,10 @@
-import {
-  Caste,
-  SupportTypeColor,
-  VoterSurveyRequest,
-  VoterSurveyResponse
-} from '../types/Voter';
+import { Caste, SupportTypeColor, Survey } from '../types/Voter';
 import axios from './axiosInstance';
 
 /**
  * Add Survey
  */
-export const addSurvey = (payload: VoterSurveyRequest) => {
+export const addSurvey = (payload: Survey) => {
   return axios.post<{ id: string }>('/VotersSurvey/add-survey', payload, {
     useApiPrefix: true,
     useVoterBase: true
@@ -40,7 +35,7 @@ export const getCastes = () => {
  * Get Survey by Voter Id
  */
 export const getSurveyByVoterId = (voterId: string) => {
-  return axios.get<VoterSurveyResponse | null>(`/VotersSurvey/get-survey/${voterId}`, {
+  return axios.get<Survey | null>(`/VotersSurvey/get-survey/${voterId}`, {
     useApiPrefix: true,
     useVoterBase: true
   });
@@ -49,7 +44,7 @@ export const getSurveyByVoterId = (voterId: string) => {
 /**
  * Update Survey
  */
-export const updateSurvey = (surveyId: string, payload: VoterSurveyRequest) => {
+export const updateSurvey = (surveyId: string, payload: Survey) => {
   return axios.put(`/VotersSurvey/update-survey/${surveyId}`, payload, {
     useApiPrefix: true,
     useVoterBase: true

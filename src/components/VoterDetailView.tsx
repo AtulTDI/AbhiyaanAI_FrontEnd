@@ -27,10 +27,10 @@ import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 
 import { generateVoterSlip, getVoterSlip } from '../api/candidateApi';
-import { updateMobileNumber, updateStarVoter, verifyVoter } from '../api/voterApi';
 import FamilyMembersCard from '../components/FamilyMembersCard';
 import Tabs from '../components/Tabs';
 import { usePlatformInfo } from '../hooks/usePlatformInfo';
+import { voterService } from '../services/voterService';
 import { AppTheme } from '../theme';
 import { Voter } from '../types/Voter';
 import { requestBluetoothPermissions } from '../utils/bluetoothPermissions';
@@ -143,7 +143,7 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
 
   const handleMobileNumberUpdate = async (number: string) => {
     try {
-      await updateMobileNumber(voter.id, number);
+      await voterService.updateMobileNumber(voter.id, number);
       setMobile(number);
       showToast(t('voter.mobileUpdateSuccess'), 'success');
     } catch (error) {
@@ -154,7 +154,7 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
 
   const handleVerifyVoter = async () => {
     try {
-      await verifyVoter(voter.id, !isVerified);
+      await voterService.verifyVoter(voter.id, !isVerified);
       setIsVerified(!isVerified);
       showToast(
         !isVerified ? t('voter.voterVerifiedSuccess') : t('voter.voterUnverifiedSuccess'),
@@ -167,7 +167,7 @@ export default function VoterDetailView({ voter, onBack, onOpenVoter }: Props) {
 
   const handleStarVoter = async () => {
     try {
-      await updateStarVoter(voter.id, !isStarVoter);
+      await voterService.updateStarVoter(voter.id, !isStarVoter);
       setIsStarVoter(!isStarVoter);
       showToast(
         !isStarVoter ? t('voter.voterStarredSuccess') : t('voter.voterUnstarredSuccess'),

@@ -16,6 +16,7 @@ import {
 import { login } from '../api/authApi';
 import { navigate } from '../navigation/NavigationService';
 import { fetchAccounts } from '../services/accountsService';
+import { downloadVoters } from '../services/downloadService';
 import { encryptWithBackendKey } from '../services/rsaEncryptor';
 import { AppTheme } from '../theme';
 import { extractErrorMessage } from '../utils/common';
@@ -128,6 +129,10 @@ export default function SignIn({
       });
 
       navigate('App');
+
+      downloadVoters().catch((error) => {
+        logger.error('Background voter download failed', error);
+      });
     } catch (error: unknown) {
       setAuthError(extractErrorMessage(error));
     } finally {

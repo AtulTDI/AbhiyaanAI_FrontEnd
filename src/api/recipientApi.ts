@@ -125,7 +125,7 @@ export const uploadRecipients = async (file: UploadableFile) => {
       'Content-Type': 'multipart/form-data'
     },
     useApiPrefix: true,
-    transformRequest: (data) => data // ensure FormData isn't serialized
+    transformRequest: (data) => data
   });
 
   return response.data;

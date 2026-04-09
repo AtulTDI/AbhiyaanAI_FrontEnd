@@ -15,16 +15,11 @@ import {
   resolveVoterDemand,
   updateVoterDemands
 } from '../api/voterDemandApi';
-import {
-  addSurvey,
-  getCastes,
-  getSupportTypes,
-  getSurveyByVoterId,
-  updateSurvey
-} from '../api/voterSurveyApi';
+import { getCastes, getSupportTypes } from '../api/voterSurveyApi';
 import { usePlatformInfo } from '../hooks/usePlatformInfo';
+import { surveyService } from '../services/surveyService';
 import { AppTheme } from '../theme';
-import {
+import type {
   Caste,
   Demand,
   DemandCategory,
@@ -33,6 +28,7 @@ import {
   VoterSurveyRequest
 } from '../types/Voter';
 import { extractErrorMessage, formatForDisplay, toUtcIsoDate } from '../utils/common';
+import { logger } from '../utils/logger';
 import { FixedLabel } from './FixedLabel';
 import FormDropdown from './FormDropdown';
 import { useToast } from './ToastProvider';
@@ -58,11 +54,13 @@ const DEFAULT_SURVEY_DATA: VoterSurveyRequest = {
   needsFollowUp: false,
   specialVisitDate: null,
   specialVisitRemarks: '',
+  specialVisitDone: false,
+  specialVisitUserId: null,
   voterDied: false,
   remarks: '',
-  isVoted: false
+  isVoted: false,
+  surveyedByUserId: null
 };
-
 const SUPPORT_STRENGTH_OPTIONS = [
   { label: 'Unknown', value: 0 },
   { label: 'Strong', value: 1 },
@@ -122,7 +120,7 @@ export default function SurveyTab({ voterId }: Props) {
 
   const isWide = width >= 1024;
 
-  const [data, setData] = useState<VoterSurveyRequest>();
+  const [data, setData] = useState<VoterSurveyRequest>(DEFAULT_SURVEY_DATA);
   const [loading, setLoading] = useState(true);
   const [dobOpen, setDobOpen] = useState(false);
   const [specialVisitOpen, setSpecialVisitOpen] = useState(false);
@@ -157,9 +155,9 @@ export default function SurveyTab({ voterId }: Props) {
 
   const loadSurvey = useCallback(async () => {
     try {
-      const res = await getSurveyByVoterId(voterId);
+      const surveyLocal = await surveyService.getSurveyByVoterId(voterId);
 
-      if (res.status === 204) {
+      if (!surveyLocal) {
         setData(DEFAULT_SURVEY_DATA);
         setOpenDemands({});
         return;
@@ -168,12 +166,32 @@ export default function SurveyTab({ voterId }: Props) {
       const demandRes = await getVoterDemands(voterId);
       const demands = demandRes.data ?? [];
 
-      setData({
+      const mappedData: VoterSurveyRequest = {
         ...DEFAULT_SURVEY_DATA,
         demands,
-        ...res.data,
-        casteId: res.data.otherCaste.length ? 'other' : res.data.casteId
-      });
+        id: surveyLocal.id ?? undefined,
+        supportType: surveyLocal.supportType ?? 0,
+        supportStrength: surveyLocal.supportStrength ?? 0,
+        casteId: surveyLocal.otherCaste ? 'other' : (surveyLocal.casteId ?? null),
+        otherCaste: surveyLocal.otherCaste ?? '',
+        newAddress: surveyLocal.newAddress ?? '',
+        society: surveyLocal.society ?? '',
+        flatNumber: surveyLocal.flatNumber ?? '',
+        email: surveyLocal.email ?? '',
+        secondaryMobileNumber: surveyLocal.secondaryMobileNumber ?? '',
+        dateOfBirth: surveyLocal.dateOfBirth ?? null,
+        needsFollowUp: Boolean(surveyLocal.needsFollowUp),
+        voterDied: Boolean(surveyLocal.voterDied),
+        isVoted: Boolean(surveyLocal.isVoted),
+        specialVisitDone: Boolean(surveyLocal.specialVisitDone),
+        specialVisitDate: surveyLocal.specialVisitDate ?? null,
+        specialVisitRemarks: surveyLocal.specialVisitRemarks ?? '',
+        remarks: surveyLocal.remarks ?? '',
+        surveyedByUserId: surveyLocal.surveyedByUserId ?? undefined
+      };
+
+      logger.log('[SurveyTab.loadSurvey] mapped data:', JSON.stringify(mappedData));
+      setData(mappedData);
 
       const initialOpen: Record<number, boolean> = {};
       demands.forEach((_, index) => {
@@ -342,29 +360,29 @@ export default function SurveyTab({ voterId }: Props) {
       }
 
       const { demands, ...surveyPayload } = data;
+      const cleanedPayload = {
+        voterId,
+        ...surveyPayload,
+        casteId: data.casteId === 'other' ? null : data.casteId
+      };
+
       if (data.id) {
-        await updateSurvey(data.id, {
-          voterId,
-          ...surveyPayload,
-          casteId: data.casteId === 'other' ? null : data.casteId
-        });
+        logger.log('Cleaned Payload:', cleanedPayload);
+        await surveyService.updateSurvey(data.id, cleanedPayload);
       } else {
-        await addSurvey({
-          voterId,
-          ...surveyPayload,
-          casteId: data.casteId === 'other' ? null : data.casteId
-        });
+        await surveyService.addSurvey(cleanedPayload);
       }
 
       const existingDemandsPayload = demands
         .filter((d) => d.id)
         .map((d) => ({
           voterDemandId: d.id,
-          voterId: voterId,
+          voterId,
           demandCategoryId: d.categoryId ?? null,
           demandId: d.demandId ?? null,
           description: d.description ?? null
         }));
+
       const newDemands = demands.filter((d) => !d.id);
 
       await Promise.all([

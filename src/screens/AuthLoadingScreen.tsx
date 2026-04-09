@@ -4,6 +4,7 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
+import { isOnline } from '../services/networkService';
 import { RootStackParamList } from '../types';
 import { logger } from '../utils/logger';
 import { getAuthData } from '../utils/storage';
@@ -16,16 +17,26 @@ export default function AuthLoadingScreen() {
       try {
         const authData = await getAuthData();
 
-        if (authData?.accessToken) {
-          navigation.replace('App');
-        } else {
+        if (!authData?.accessToken) {
           navigation.replace('Login');
+          return;
         }
+
+        const online = await isOnline();
+
+        if (!online) {
+          logger.log('[AuthLoadingScreen] offline — using cached token');
+          navigation.replace('App');
+          return;
+        }
+
+        navigation.replace('App');
       } catch (e) {
         logger.error('Token check failed', e);
         navigation.replace('Login');
       }
     };
+
     checkToken();
   }, [navigation]);
 

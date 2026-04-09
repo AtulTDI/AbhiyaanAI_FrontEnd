@@ -8,6 +8,7 @@ export type RootStackParamList = {
   Generated: undefined;
   ResetPasswordScreen: undefined;
   EpicScanner: undefined;
+  Debug: undefined;
 };
 
 export type DrawerLabelProps = {

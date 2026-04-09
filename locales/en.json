@@ -14,6 +14,7 @@
   "generatedVideoTabLabel": "Generated Video(s)",
   "generatedImageTabLabel": "Generated Images(s)",
   "dashboardTabLabel": "Dashboard",
+  "debugTabLabel": "Debug",
 
   "distributorButtonLabel": "Distributor",
   "customerAdminButtonLabel": "Customer Admin",

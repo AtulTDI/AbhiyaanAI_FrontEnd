@@ -26,3 +26,22 @@ export type EditRecipientPayload = {
   fullName?: string;
   phoneNumber?: string;
 };
+
+// ---- Offline / Local DB types ----
+export interface RecipientLocal {
+  id: string;
+  fullName: string | null;
+  phoneNumber: string | null;
+  isSynced: number;
+}
+
+export interface RecipientQueryParams {
+  searchText?: string;
+  page?: number;
+  pageSize?: number;
+}
+
+export interface RecipientQueryResult {
+  data: RecipientLocal[];
+  total: number;
+}

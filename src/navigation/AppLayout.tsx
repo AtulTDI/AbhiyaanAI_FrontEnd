@@ -17,6 +17,7 @@ import AddSenderScreen from '../screens/AddSenderScreen';
 import AddUserScreen from '../screens/AddUserScreen';
 import AddVoterScreen from '../screens/AddVoterScreen';
 import AdminDashboardScreen from '../screens/AdminDashboardScreen';
+import DebugScreen from '../screens/DebugScreen';
 import GeneratedImagesScreen from '../screens/GeneratedImagesScreen';
 import GeneratedVideoScreen from '../screens/GeneratedVideosScreen';
 import GenerateVideoScreen from '../screens/GenerateVideoScreen';
@@ -347,6 +348,31 @@ export default function AppLayout() {
                     icon={
                       <Ionicons
                         name="people-outline"
+                        size={20}
+                        color={props.color || colors.onPrimary}
+                      />
+                    }
+                  />
+                )
+              }}
+            />
+          )}
+
+          {role === 'Admin' && (
+            <Drawer.Screen
+              name="Debug"
+              component={DebugScreen}
+              options={{
+                headerShown: true,
+                headerTitle: '',
+                headerRight: headerRightComponent,
+                drawerLabel: (props) => (
+                  <CustomLabel
+                    {...props}
+                    label={t('debugTabLabel')}
+                    icon={
+                      <Ionicons
+                        name="bug-outline"
                         size={20}
                         color={props.color || colors.onPrimary}
                       />
