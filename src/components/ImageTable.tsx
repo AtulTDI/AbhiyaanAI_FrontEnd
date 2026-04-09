@@ -52,7 +52,7 @@ export default function ImageTable({
       label: t('uploadedAt'),
       key: 'createdAt',
       flex: 0.4,
-      render: (item) => (
+      render: (item: Image) => (
         <Text>{dayjs(item.createdAt).format('DD MMM YYYY, hh:mm A')}</Text>
       )
     },
@@ -60,9 +60,9 @@ export default function ImageTable({
       label: t('approval'),
       key: 'isShared',
       flex: 0.4,
-      render: (item) => (
+      render: (item: Image) => (
         <ApprovalToggle
-          isApproved={item.isShared}
+          isApproved={item.isShared ?? false}
           onToggle={() => (item.isShared ? onUnshare(item.id) : onShare(item.id))}
           iconSize={20}
           labelStyle={styles.approvalLabel}
@@ -98,7 +98,7 @@ export default function ImageTable({
           <Ionicons name="images-outline" size={48} color={colors.disabledText} />
         }
         emptyText={t('image.noData')}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item: Image) => item.id}
         page={page}
         rowsPerPage={rowsPerPage}
         totalCount={totalCount}

@@ -9,7 +9,7 @@ import axios from './axiosInstance';
 /**
  * Get paginated senders with optional search
  */
-export const getSenders = (pageNumber, pageSize) =>
+export const getSenders = (pageNumber: number, pageSize: number) =>
   axios.get<GetPaginatedSenders>(
     `/Sender/getusersender?page=${pageNumber + 1}&pageSize=${pageSize}`,
     { useApiPrefix: true }
@@ -18,7 +18,11 @@ export const getSenders = (pageNumber, pageSize) =>
 /**
  * Get sender by ID
  */
-export const getSenderByUserId = (id: string, pageNumber, pageSize) =>
+export const getSenderByUserId = (
+  id: string,
+  pageNumber: number,
+  pageSize: number
+) =>
   axios.get<GetPaginatedSenders>(
     `/Sender/getsenderbyuserid/${id}?page=${pageNumber + 1}&pageSize=${pageSize}`,
     { useApiPrefix: true }

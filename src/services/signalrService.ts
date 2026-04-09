@@ -7,18 +7,23 @@ import { logger } from '../utils/logger';
 let connection: signalR.HubConnection | null = null;
 const joinedGroups: Set<string> = new Set();
 const subscribers: Record<string, Set<(...args: unknown[]) => void>> = {};
+const signalrApiBase = Constants.expoConfig?.extra?.API;
 
 /**
  * Start SignalR connection (idempotent)
  */
 export const startConnection = async (accessToken: string) => {
+  if (!signalrApiBase) {
+    throw new Error('Missing Expo config API environment variable');
+  }
+
   if (connection && connection.state !== signalR.HubConnectionState.Disconnected) {
     logger.log('⚠️ SignalR already connected');
     return;
   }
 
   connection = new signalR.HubConnectionBuilder()
-    .withUrl(`${Constants.expoConfig.extra.API}/videoProgressHub`, {
+    .withUrl(`${signalrApiBase}/videoProgressHub`, {
       accessTokenFactory: () => accessToken,
       transport: signalR.HttpTransportType.WebSockets
     })

@@ -41,7 +41,7 @@ export default function SenderTable({
       label: t('name'),
       key: 'fullName',
       flex: 0.5,
-      render: (item) => item.firstName + ' ' + item.lastName
+      render: (item: Sender) => item.firstName + ' ' + item.lastName
     },
     { label: t('mobile'), key: 'phoneNumber', flex: 0.4 },
     { label: t('email'), key: 'email', flex: 0.4 },
@@ -49,7 +49,7 @@ export default function SenderTable({
       label: t('createdAt'),
       key: 'createdAt',
       flex: 0.4,
-      render: (item) =>
+      render: (item: Sender) =>
         item.createdAt ? dayjs(item.createdAt).format('DD MMM YYYY, hh:mm A') : '-'
     },
     {
@@ -57,7 +57,7 @@ export default function SenderTable({
       key: 'actions',
       flex: 0.9,
       smallColumn: true,
-      render: (item) => (
+      render: (item: Sender) => (
         <View style={styles.actions}>
           <Ionicons
             name="pencil"

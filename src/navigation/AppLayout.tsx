@@ -97,9 +97,9 @@ export default function AppLayout() {
     }
   };
 
-  const getCountColor = () => {
-    if (videoCount >= 100) return colors.success;
-    if (videoCount > 50) return colors.warning;
+  const getCountColor = (count: number) => {
+    if (count >= 100) return colors.success;
+    if (count > 50) return colors.warning;
     return colors.error;
   };
 
@@ -113,7 +113,7 @@ export default function AppLayout() {
             style={[
               styles.videoCountContainer,
               {
-                backgroundColor: getCountColor(),
+                backgroundColor: getCountColor(videoCount),
                 shadowColor: colors.black
               }
             ]}
@@ -136,7 +136,7 @@ export default function AppLayout() {
         <UserAvatarMenu
           userName={userName}
           email={userEmail}
-          role={role}
+          role={role ?? ''}
           applicationName={applicationName}
         />
       </View>
@@ -335,7 +335,7 @@ export default function AppLayout() {
           {role === 'Admin' && (
             <Drawer.Screen
               name="AddUser"
-              component={AddUserScreen}
+              children={() => <AddUserScreen role="User" />}
               options={{
                 headerShown: true,
                 headerTitle: '',

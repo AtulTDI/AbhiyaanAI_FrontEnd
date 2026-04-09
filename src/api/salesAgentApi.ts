@@ -9,7 +9,7 @@ import axios from './axiosInstance';
 /**
  * Get paginated distributor with optional search
  */
-export const getDistributors = (pageNumber, pageSize) =>
+export const getDistributors = (pageNumber: number, pageSize: number) =>
   axios.get<GetPaginatedDistributors>(
     `/SalesAgent/get-distributors?page=${pageNumber + 1}&pageSize=${pageSize}`,
     { useApiPrefix: true }

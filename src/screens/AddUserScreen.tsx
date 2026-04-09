@@ -28,12 +28,18 @@ import { usePlatformInfo } from '../hooks/usePlatformInfo';
 import { useServerTable } from '../hooks/useServerTable';
 import { encryptWithBackendKey } from '../services/rsaEncryptor';
 import { AppTheme } from '../theme';
+import { Distributor } from '../types/SalesAgents';
 import { CreateUserPayload, EditUserPayload, User } from '../types/User';
 import { extractErrorMessage } from '../utils/common';
 import { getAuthData } from '../utils/storage';
 
 type Props = {
   role: string;
+};
+
+type UserTableItem = Partial<User> &
+  Partial<Distributor> & {
+  applicationName?: string;
 };
 
 export default function AddUserScreen({ role }: Props) {
@@ -84,12 +90,16 @@ export default function AddUserScreen({ role }: Props) {
               : t('userPageLabel');
 
         showToast(extractErrorMessage(error, `Failed to load ${loadTarget}`), 'error');
+        return {
+          items: [],
+          totalCount: 0
+        };
       }
     },
     [role, showToast, t]
   );
 
-  const table = useServerTable<User>(fetchUsers, {
+  const table = useServerTable<UserTableItem>(fetchUsers, {
     initialPage: 0,
     initialRowsPerPage: 10
   });
@@ -138,6 +148,8 @@ export default function AddUserScreen({ role }: Props) {
   };
 
   const editUser = async (userData: EditUserPayload) => {
+    if (!userToEdit?.id) return;
+
     try {
       if (userData?.role === 'Distributor') {
         await editDistributorById(userToEdit.id, userData);
@@ -253,7 +265,7 @@ export default function AddUserScreen({ role }: Props) {
               role={role}
               mode={userToEdit ? 'edit' : 'create'}
               onCreate={userToEdit ? editUser : addUser}
-              userToEdit={userToEdit}
+              userToEdit={userToEdit ?? ({} as User)}
               setUserToEdit={setUserToEdit}
               setShowAddUserView={setShowAddUserView}
             />
@@ -261,7 +273,7 @@ export default function AddUserScreen({ role }: Props) {
         ) : (
           <UserTable
             role={role}
-            data={table.data}
+            data={table.data as User[]}
             page={table.page}
             rowsPerPage={table.rowsPerPage}
             totalCount={table.total}

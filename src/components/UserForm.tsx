@@ -68,7 +68,7 @@ export default function UserForm({
 
         const formatted = appArray.map((app) => ({
           label: app.name,
-          value: app.id
+          value: app.id ?? ''
         }));
         setApplicationOptions(formatted);
       } catch (error) {
@@ -159,9 +159,9 @@ export default function UserForm({
           phoneNumber: userToEdit?.phoneNumber || ''
         }}
         mode={mode}
-        onSubmit={(data: UserFormValues) =>
+        onSubmit={(data) =>
           onCreate({
-            ...data,
+            ...(data as UserFormValues),
             role: role ? role : 'User'
           })
         }

@@ -17,9 +17,15 @@ declare module 'axios' {
   }
 }
 
-const API_BASE = Constants.expoConfig.extra.API;
-const ALT_API_BASE = Constants.expoConfig.extra.ALT_API;
-const VOTER_API_BASE = Constants.expoConfig.extra.VOTER_API;
+const expoExtra = Constants.expoConfig?.extra;
+
+if (!expoExtra?.API || !expoExtra?.ALT_API || !expoExtra?.VOTER_API) {
+  throw new Error('Missing Expo config API environment variables');
+}
+
+const API_BASE = expoExtra.API;
+const ALT_API_BASE = expoExtra.ALT_API;
+const VOTER_API_BASE = expoExtra.VOTER_API;
 
 const createAxiosInstance = (baseURL: string): AxiosInstance => {
   const instance = axios.create({
@@ -47,7 +53,7 @@ const createAxiosInstance = (baseURL: string): AxiosInstance => {
         config.baseURL = ALT_API_BASE;
       }
 
-      const method = config.method?.toUpperCase();
+      const method = config.method?.toUpperCase() ?? 'GET';
 
       if (['POST', 'PUT', 'PATCH'].includes(method)) {
         if (

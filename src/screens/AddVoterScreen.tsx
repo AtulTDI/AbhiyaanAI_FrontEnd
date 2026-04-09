@@ -45,6 +45,12 @@ type TabRoute = {
   title: string;
 };
 
+type EditableVoter = {
+  id?: string;
+  fullName: string;
+  phoneNumber: string;
+};
+
 export default function AddVoterScreen() {
   const { isIOS } = usePlatformInfo();
   const { t } = useTranslation();
@@ -58,7 +64,7 @@ export default function AddVoterScreen() {
   const [showAddVoterView, setShowAddVoterView] = useState(false);
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
   const [selectedVoterId, setSelectedVoterId] = useState<string | null>(null);
-  const [voterToEdit, setVoterToEdit] = useState<Recipient | null>(null);
+  const [voterToEdit, setVoterToEdit] = useState<EditableVoter | null>(null);
   const [tableParams, setTableParams] = useState<{ searchText?: string }>({
     searchText: ''
   });
@@ -141,7 +147,7 @@ export default function AddVoterScreen() {
   };
 
   const editVoter = async (voterData: EditRecipientPayload) => {
-    if (!voterToEdit) return;
+    if (!voterToEdit?.id) return;
     try {
       await editRecipientById(voterToEdit.id, voterData);
       await table.fetchData(table.page, table.rowsPerPage, { searchText: '' });
@@ -201,14 +207,14 @@ export default function AddVoterScreen() {
     }
   };
 
-  const renderScene = ({ route }) => {
+  const renderScene = ({ route }: { route: TabRoute }) => {
     switch (route.key) {
       case 'manual':
         return (
           <VoterForm
             mode="create"
             onCreate={addVoter}
-            voterToEdit={null}
+            voterToEdit={null as unknown as Recipient}
             setVoterToEdit={setVoterToEdit}
             setShowAddVoterView={setShowAddVoterView}
           />

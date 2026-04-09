@@ -51,7 +51,7 @@ export default function ApplicationForm({
 
         const formatted = agentsArray.map((app) => ({
           label: `${app.firstName} ${app.lastName}`,
-          value: app.id
+          value: app.id ?? ''
         }));
         setSalesAgentOptions(formatted);
       } catch (error) {

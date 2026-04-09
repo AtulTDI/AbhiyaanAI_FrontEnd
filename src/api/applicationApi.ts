@@ -8,7 +8,7 @@ import axios from './axiosInstance';
 /**
  * Get paginated applications with optional search
  */
-export const getApplications = (pageNumber, pageSize) =>
+export const getApplications = (pageNumber: number, pageSize: number) =>
   axios.get<GetPaginatedApplications>(
     `/Application/all?page=${pageNumber + 1}&pageSize=${pageSize}`,
     { useApiPrefix: true }
@@ -17,7 +17,7 @@ export const getApplications = (pageNumber, pageSize) =>
 /**
  * Get paginated active applications with optional search
  */
-export const getActiveApplications = (pageNumber, pageSize) =>
+export const getActiveApplications = (pageNumber: number, pageSize: number) =>
   axios.get<GetPaginatedApplications>(
     `/Application/get-active-applications?page=${pageNumber + 1}&pageSize=${pageSize}`,
     { useApiPrefix: true }

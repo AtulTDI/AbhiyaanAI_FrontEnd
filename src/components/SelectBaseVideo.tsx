@@ -63,6 +63,10 @@ export default function SelectBaseVideo({ stepData, setStepData }: Props) {
         };
       } catch (error: unknown) {
         showToast(extractErrorMessage(error, t('video.loadVideoFailMessage')), 'error');
+        return {
+          items: [],
+          totalCount: 0
+        };
       } finally {
         showLoading(false);
       }
@@ -114,7 +118,7 @@ export default function SelectBaseVideo({ stepData, setStepData }: Props) {
       key: 'actions',
       flex: 1,
       smallColumn: true,
-      render: (item) => (
+      render: (item: Video) => (
         <View style={styles.actions}>
           <Ionicons
             name="play-circle-outline"

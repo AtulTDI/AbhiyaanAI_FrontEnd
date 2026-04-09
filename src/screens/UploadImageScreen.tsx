@@ -82,6 +82,10 @@ export default function UploadImageScreen() {
         };
       } catch (error) {
         showToast(extractErrorMessage(error, t('image.loadImageFailMessage')), 'error');
+        return {
+          items: [],
+          totalCount: 0
+        };
       } finally {
         setLoading(false);
       }
@@ -273,7 +277,7 @@ export default function UploadImageScreen() {
               </View>
 
               <ImageUploadForm
-                imageToEdit={imageToEdit}
+                imageToEdit={imageToEdit as unknown as Image}
                 setImageToEdit={setImageToEdit}
                 setShowAddView={setShowAddView}
                 onAddImage={handleAddImage}

@@ -67,8 +67,8 @@ export default function GeneratedImagesScreen() {
       }));
 
       setCampaigns(transformedCampaigns);
-      if (transformedCampaigns?.length) {
-        setSelectedCampaignId((prev) => prev ?? transformedCampaigns[0]?.value);
+      if (transformedCampaigns.length > 0) {
+        setSelectedCampaignId((prev) => prev ?? transformedCampaigns[0].value);
       }
     } catch (error) {
       showToast(extractErrorMessage(error, t('image.loadImageFailMessage')), 'error');
@@ -118,9 +118,9 @@ export default function GeneratedImagesScreen() {
         <View style={styles.dropdownWrapper}>
           <FormDropdown
             placeholder={t('selectCampaign')}
-            value={selectedCampaignId}
+            value={selectedCampaignId ?? ''}
             options={campaigns}
-            onSelect={(val) => setSelectedCampaignId(val)}
+            onSelect={(val) => setSelectedCampaignId(val ?? null)}
             noMargin
           />
         </View>
@@ -159,7 +159,7 @@ export default function GeneratedImagesScreen() {
         {
           channelId: channelId,
           recipientId: item.id,
-          campaignID: selectedCampaignId
+          campaignID: selectedCampaignId ?? ''
         },
         userId
       );
@@ -185,7 +185,7 @@ export default function GeneratedImagesScreen() {
       label: t('createdAt'),
       key: 'createdAt',
       flex: 0.4,
-      render: (item) =>
+      render: (item: Recipient) =>
         item.createdAt ? dayjs(item.createdAt).format('DD MMM YYYY, hh:mm A') : '-'
     },
     {

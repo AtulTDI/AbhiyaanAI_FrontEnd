@@ -1,14 +1,20 @@
 import React from 'react';
 
 import { uploadUsers } from '../api/userApi';
+import { UploadableFile } from '../types/Upload';
 import { extractErrorMessage } from '../utils/common';
 import CommonUpload from './CommonUpload';
 import { useToast } from './ToastProvider';
 
-export default function UserUpload({ fetchUsers, setShowAddUserView }) {
+type Props = {
+  fetchUsers: () => Promise<void> | void;
+  setShowAddUserView: (show: boolean) => void;
+};
+
+export default function UserUpload({ fetchUsers, setShowAddUserView }: Props) {
   const { showToast } = useToast();
 
-  const handleUpload = async (file) => {
+  const handleUpload = async (file: UploadableFile) => {
     try {
       await uploadUsers(file);
       await fetchUsers();

@@ -27,6 +27,70 @@ const isSmallScreen = width < 600;
 
 const Tab = createMaterialTopTabNavigator();
 
+type VideoUserStat = {
+  firstName: string;
+  lastName: string;
+  totalGeneratedVideos: number;
+};
+
+type CampaignStat = {
+  campaignName: string;
+  totalGeneratedVideos: number;
+};
+
+type VideoDashboardResponse = {
+  perUserStats: VideoUserStat[];
+  aggregateTotals: {
+    totalGeneratedVideos: number;
+    totalSentVideos: number;
+    totalFailedVideos: number;
+  };
+};
+
+type CasteStat = {
+  casteId?: string;
+  casteNameEn: string;
+  count: number;
+};
+
+type VoterDashboardSummary = {
+  totalVoters: number;
+  verification: {
+    verified: number;
+    unverified: number;
+  };
+  survey: {
+    surveyed: number;
+    pending: number;
+  };
+  starVoters: {
+    count: number;
+  };
+  genderStats: {
+    male: number;
+    female: number;
+    other: number;
+  };
+  ageGroups: {
+    age18To25: number;
+    age26To35: number;
+    age36To45: number;
+    age46To60: number;
+    age60Plus: number;
+  };
+  supportStats: Record<
+    | 'ours'
+    | 'opponent'
+    | 'neutral'
+    | 'unknown'
+    | 'outOfStation'
+    | 'needSpecialVisit'
+    | 'beneficiary',
+    { count: number; color: string }
+  >;
+  casteStats: CasteStat[];
+};
+
 const AdminDashboardScreen = () => {
   const { t } = useTranslation();
   const [showVideoCampaign, setShowVideoCampaign] = useState<boolean>(false);
@@ -98,13 +162,15 @@ const VideoDashboardContent = () => {
   const { t } = useTranslation();
   const { showToast } = useToast();
 
-  const [userStats, setUserStats] = useState([]);
+  const [userStats, setUserStats] = useState<{ label: string; value: number }[]>([]);
   const [aggregateTotals, setAggregateTotals] = useState({
     totalGeneratedVideos: 0,
     totalSentVideos: 0,
     totalFailedVideos: 0
   });
-  const [campaignStats, setCampaignStats] = useState([]);
+  const [campaignStats, setCampaignStats] = useState<{ label: string; value: number }[]>(
+    []
+  );
 
   useFocusEffect(
     useCallback(() => {
@@ -118,11 +184,13 @@ const VideoDashboardContent = () => {
             getVoterDashboardSummary()
           ]);
 
-          const dashboardData = dashboardResponse.data;
-          const campaignData = campaignStatsResponse.data;
+          const dashboardData = dashboardResponse.data as VideoDashboardResponse;
+          const campaignData = campaignStatsResponse.data as {
+            perCampaignStats: CampaignStat[];
+          };
 
           setUserStats(
-            dashboardData.perUserStats.map((user) => ({
+            dashboardData.perUserStats.map((user: VideoUserStat) => ({
               label: `${user.firstName} ${user.lastName}`,
               value: user.totalGeneratedVideos
             }))
@@ -131,7 +199,7 @@ const VideoDashboardContent = () => {
           setAggregateTotals(dashboardData.aggregateTotals || {});
 
           setCampaignStats(
-            campaignData.perCampaignStats.map((campaign) => ({
+            campaignData.perCampaignStats.map((campaign: CampaignStat) => ({
               label: campaign.campaignName,
               value: campaign.totalGeneratedVideos
             }))
@@ -215,7 +283,7 @@ const VoterDashboardContent = () => {
   const { isWeb } = usePlatformInfo();
   const { showToast } = useToast();
   const { t } = useTranslation();
-  const [voterData, setVoterData] = useState(null);
+  const [voterData, setVoterData] = useState<VoterDashboardSummary | null>(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -313,7 +381,7 @@ const VoterDashboardContent = () => {
     }
   ];
 
-  const casteData = voterData.casteStats.map((c) => ({
+  const casteData = voterData.casteStats.map((c: CasteStat) => ({
     label: c.casteId ? t(`survey.castes.${c.casteNameEn}`) : c.casteNameEn,
     value: c.count
   }));

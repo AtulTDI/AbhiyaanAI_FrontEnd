@@ -40,7 +40,7 @@ export default function VoterForm({
         phoneNumber: voterToEdit?.phoneNumber || ''
       }}
       mode={mode}
-      onSubmit={onCreate}
+      onSubmit={(data) => onCreate(data as CreateRecipientPayload)}
       onCancel={() => {
         setVoterToEdit(null);
         setShowAddVoterView(false);

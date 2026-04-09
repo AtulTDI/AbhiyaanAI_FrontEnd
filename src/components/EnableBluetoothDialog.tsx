@@ -4,7 +4,17 @@ import { Button, Text, useTheme } from 'react-native-paper';
 
 import { AppTheme } from '../theme';
 
-export default function EnableBluetoothDialog({ visible, onCancel, onEnable }) {
+type Props = {
+  visible: boolean;
+  onCancel: () => void;
+  onEnable: () => void;
+};
+
+export default function EnableBluetoothDialog({
+  visible,
+  onCancel,
+  onEnable
+}: Props) {
   const theme = useTheme<AppTheme>();
   const styles = createStyles(theme);
 

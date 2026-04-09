@@ -93,9 +93,9 @@ export default function CommonTable<T>({
   const endIndex = startIndex + rowsPerPage;
   const paginatedData = controlledPage != null ? data : data.slice(startIndex, endIndex);
   const totalPages = Math.ceil(
-    totalCount > 0 ? totalCount / rowsPerPage : data.length / rowsPerPage
+    (totalCount ?? 0) > 0 ? (totalCount ?? 0) / rowsPerPage : data.length / rowsPerPage
   );
-  const searchInputRef = React.useRef(null);
+  const searchInputRef = React.useRef<any>(null);
   const horizontalScrollRef = React.useRef<ScrollView | null>(null);
 
   const toggleSearch = () => {
@@ -154,7 +154,7 @@ export default function CommonTable<T>({
         {
           key: '__sno__',
           label: enableSearch ? '' : t('sno'),
-          flex: columns?.length > 7 ? 0.4 : totalCount >= 100 ? 0.3 : 0.2,
+          flex: columns?.length > 7 ? 0.4 : (totalCount ?? 0) >= 100 ? 0.3 : 0.2,
           smallColumn: true,
           renderHeader: () =>
             enableSearch ? (
@@ -219,7 +219,7 @@ export default function CommonTable<T>({
       ? wrapperWidth < 900 || columns.length > 7
       : widthArr.reduce((sum, w) => sum + w, 0) > containerWidth;
 
-  let availableHeight;
+  let availableHeight: number | `${string}`;
 
   if (isWeb && !isMobileWeb) {
     if (typeof tableHeight === 'string' && tableHeight.includes('calc(100vh -')) {
@@ -261,7 +261,7 @@ export default function CommonTable<T>({
   }, [filters.search]);
 
   useEffect(() => {
-    let timer;
+    let timer: ReturnType<typeof setTimeout> | undefined;
     if (loading) {
       setShowLoading(true);
     } else {
@@ -498,7 +498,12 @@ export default function CommonTable<T>({
                 )}
 
                 {/* Data Rows */}
-                <View style={[styles.tableBody, { maxHeight: availableHeight }]}>
+                  <View
+                    style={[
+                      styles.tableBody,
+                      { maxHeight: availableHeight as unknown as ViewStyle['maxHeight'] }
+                    ]}
+                  >
                   <ScrollView nestedScrollEnabled showsVerticalScrollIndicator>
                     {tableData.map((rowData, rowIndex) => (
                       <Row
@@ -515,7 +520,7 @@ export default function CommonTable<T>({
                               visibleTooltip={visibleTooltip}
                               setVisibleTooltip={setVisibleTooltip}
                               textStyle={styles.dataCell}
-                              tableWithSelection={tableWithSelection}
+                              tableWithSelection={tableWithSelection ?? false}
                             />
                           );
                         })}

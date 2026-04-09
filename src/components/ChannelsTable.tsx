@@ -8,7 +8,17 @@ import { AppTheme } from '../theme';
 import { Channel } from '../types/Channel';
 import CommonTable from './CommonTable';
 
-export default function ChannelsTable({ channels, onDelete, onUpdateSettings }) {
+type Props = {
+  channels: Channel[];
+  onDelete: (id: string) => void;
+  onUpdateSettings: (id: string) => Promise<void> | void;
+};
+
+export default function ChannelsTable({
+  channels,
+  onDelete,
+  onUpdateSettings
+}: Props) {
   const theme = useTheme<AppTheme>();
   const { colors } = theme;
 
@@ -66,7 +76,7 @@ export default function ChannelsTable({ channels, onDelete, onUpdateSettings }) 
       render: (item: Channel) => (
         <TouchableOpacity
           style={styles.settingsButton}
-          onPress={() => handleSettingsClick(item.id)}
+          onPress={() => handleSettingsClick(item.id ?? '')}
           activeOpacity={0.7}
         >
           <Animated.View
@@ -88,7 +98,7 @@ export default function ChannelsTable({ channels, onDelete, onUpdateSettings }) 
           name="trash-outline"
           size={20}
           color="red"
-          onPress={() => onDelete(item.id)}
+          onPress={() => onDelete(item.id ?? '')}
         />
       )
     }

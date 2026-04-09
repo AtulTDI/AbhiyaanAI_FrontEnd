@@ -56,6 +56,10 @@ export default function AddCandidateScreen() {
       };
     } catch (error) {
       showToast(extractErrorMessage(error, t('candidate.loadFailed')), 'error');
+      return {
+        items: [],
+        totalCount: 0
+      };
     }
   }, [showToast, t]);
 

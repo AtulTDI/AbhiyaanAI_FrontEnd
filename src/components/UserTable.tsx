@@ -45,7 +45,7 @@ export default function UserTable({
       label: t('name'),
       key: 'fullName',
       flex: 0.4,
-      render: (item) => item.firstName + ' ' + item.lastName
+      render: (item: User) => item.firstName + ' ' + item.lastName
     },
     { label: t('mobile'), key: 'phoneNumber', flex: 0.2 },
     {
@@ -57,7 +57,7 @@ export default function UserTable({
       label: t('createdAt'),
       key: 'createdAt',
       flex: 0.4,
-      render: (item) => (
+      render: (item: User) => (
         <Text>
           {item.createdAt ? dayjs(item.createdAt).format('DD MMM YYYY, hh:mm A') : '-'}
         </Text>
@@ -68,7 +68,7 @@ export default function UserTable({
       key: 'actions',
       flex: 0.9,
       smallColumn: true,
-      render: (item) => (
+      render: (item: User) => (
         <View style={styles.actions}>
           <Ionicons
             name="pencil"

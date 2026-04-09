@@ -139,15 +139,16 @@ export default function VideoUploadForm({
 
       onEvent(
         'ReceiveVideoUpdate',
-        (
-          recipientId: string,
-          status: string,
-          customizedVideoLink: string,
-          voiceCloneId: string
-        ) => {
+        (...args) => {
+          const [, status, customizedVideoLink, incomingVoiceCloneId] = args as [
+            string,
+            string,
+            string,
+            string
+          ];
           if (status === 'Completed' && customizedVideoLink) {
             setGeneratedUri(customizedVideoLink);
-            setVoiceCloneId(voiceCloneId);
+            setVoiceCloneId(incomingVoiceCloneId);
             setLoading(false);
             leaveGroups(userId);
             stopConnection();
@@ -156,8 +157,13 @@ export default function VideoUploadForm({
       );
 
       setLoading(true);
+      if (!formData.file) {
+        setLoading(false);
+        return;
+      }
+
       await generateSampleVideo({
-        file: formData?.file,
+        file: formData.file,
         recipientName: name.trim(),
         cloningSpeed: formData?.cloningSpeed
       });
@@ -202,7 +208,7 @@ export default function VideoUploadForm({
 
     const payload = {
       campaign: formData.campaign.trim(),
-      message: normalizePastedText(formData.message),
+      message: normalizePastedText(formData.message ?? ''),
       cloningSpeed: formData.cloningSpeed,
       voiceCloneId: voiceCloneId,
       file: formData.file
@@ -312,7 +318,7 @@ export default function VideoUploadForm({
             <TextInput
               placeholder={t('placeholder.cloningSpeedPlaceholder')}
               placeholderTextColor={theme.colors.placeholder}
-              value={`${formData.cloningSpeed.toFixed(1)}x`}
+              value={`${(formData.cloningSpeed ?? 1).toFixed(1)}x`}
               mode="outlined"
               onChangeText={(text) => {
                 let num = parseFloat(text);
@@ -336,7 +342,10 @@ export default function VideoUploadForm({
                   onPress={() =>
                     setFormData((prev) => ({
                       ...prev,
-                      cloningSpeed: Math.min(1.2, +(prev.cloningSpeed + 0.1).toFixed(1))
+                      cloningSpeed: Math.min(
+                        1.2,
+                        +((prev.cloningSpeed ?? 1) + 0.1).toFixed(1)
+                      )
                     }))
                   }
                   textStyle={styles.affixText}
@@ -348,7 +357,10 @@ export default function VideoUploadForm({
                   onPress={() =>
                     setFormData((prev) => ({
                       ...prev,
-                      cloningSpeed: Math.max(0.8, +(prev.cloningSpeed - 0.1).toFixed(1))
+                      cloningSpeed: Math.max(
+                        0.8,
+                        +((prev.cloningSpeed ?? 1) - 0.1).toFixed(1)
+                      )
                     }))
                   }
                   textStyle={styles.affixText}
@@ -545,8 +557,8 @@ export default function VideoUploadForm({
           disabled={
             !formData.file ||
             uploading ||
-            ((authData.isProfessionalVoiceCloning === true ||
-              authData.isProfessionalVoiceCloning === 'true') &&
+            (((authData?.isProfessionalVoiceCloning ?? false) === true ||
+              authData?.isProfessionalVoiceCloning === 'true') &&
               !voiceCloneId)
           }
           loading={uploading}

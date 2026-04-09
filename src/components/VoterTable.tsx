@@ -89,7 +89,7 @@ export default function VoterTable({
         columns={columns}
         loading={loading}
         tableWithSelection={false}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item: Recipient) => item.id}
         emptyIcon={
           <Ionicons name="people-outline" size={48} color={colors.disabledText} />
         }
@@ -99,7 +99,7 @@ export default function VoterTable({
         totalCount={totalCount}
         enableSearch
         onSearchChange={(filters) => {
-          handleVoterSearch(filters.search);
+          handleVoterSearch(filters.search ?? '');
         }}
         onPageChange={onPageChange}
         onRowsPerPageChange={onRowsPerPageChange}

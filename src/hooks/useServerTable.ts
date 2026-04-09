@@ -26,6 +26,11 @@ export function useServerTable<T, P = unknown>(
   const [total, setTotal] = useState(0);
 
   const isFetching = useRef(false);
+  const fetchFnRef = useRef(fetchFn);
+
+  useEffect(() => {
+    fetchFnRef.current = fetchFn;
+  }, [fetchFn]);
 
   const fetchData = useCallback(
     async (fetchPage: number, fetchRowsPerPage: number, fetchParams?: P) => {
@@ -35,7 +40,11 @@ export function useServerTable<T, P = unknown>(
       isFetching.current = true;
       setLoading(true);
       try {
-        const response = await fetchFn(fetchPage, fetchRowsPerPage, fetchParams);
+        const response = await fetchFnRef.current(
+          fetchPage,
+          fetchRowsPerPage,
+          fetchParams
+        );
         setData(response.items ?? []);
         setTotal(response.totalCount ?? 0);
       } catch (error) {
@@ -45,11 +54,11 @@ export function useServerTable<T, P = unknown>(
         isFetching.current = false;
       }
     },
-    [fetchFn]
+    []
   );
 
   useEffect(() => {
-    fetchData(page, rowsPerPage, params);
+    void fetchData(page, rowsPerPage, params);
   }, [page, rowsPerPage, params, fetchData]);
 
   return {

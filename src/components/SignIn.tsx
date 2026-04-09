@@ -53,7 +53,7 @@ export default function SignIn({
         try {
           const accs = await fetchAccounts();
           const uniqueGmailAccounts: string[] = Array.from(
-            new Set(accs.filter((acc) => acc.includes('gmail.com')))
+            new Set(accs.filter((acc: string) => acc.includes('gmail.com')))
           );
           setAccounts(uniqueGmailAccounts);
         } catch (e) {

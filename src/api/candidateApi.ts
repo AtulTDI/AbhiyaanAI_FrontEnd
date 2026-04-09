@@ -138,6 +138,10 @@ const appendFile = async (
     uri = dest;
   }
 
+  if (!uri) {
+    throw new Error(`Missing URI for uploaded file: ${name}`);
+  }
+
   const nativeFile: NativeFormDataFile = {
     uri,
     name,

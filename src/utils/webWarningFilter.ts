@@ -11,8 +11,18 @@ const SUPPRESSED_WARNINGS = [
   'Expo AV has been deprecated'
 ];
 
-const shouldSuppress = (args: unknown[]): boolean =>
-  SUPPRESSED_WARNINGS.some((w) => (args[0] as string)?.includes?.(w));
+const shouldSuppress = (args: unknown[]): boolean => {
+  const message = args
+    .map((arg) => {
+      if (typeof arg === 'string') return arg;
+      if (arg instanceof Error) return arg.message;
+
+      return '';
+    })
+    .join(' ');
+
+  return SUPPRESSED_WARNINGS.some((warning) => message.includes(warning));
+};
 
 if (Platform.OS === 'web' && process.env.NODE_ENV === 'development') {
   const originalError = logger.error;

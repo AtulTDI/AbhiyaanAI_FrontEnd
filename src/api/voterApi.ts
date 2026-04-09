@@ -218,7 +218,7 @@ export const addFamilyMember = (data: {
 /**
  * Remove family member
  */
-export const removeFamilyMember = (id) =>
+export const removeFamilyMember = (id: string) =>
   axios.post<Voter>(
     `/Voters/remove-from-family?voterId=${id}`,
     {},
@@ -237,7 +237,7 @@ export const getColorCodes = () =>
 /**
  * Get surnames
  */
-export const getSurnames = (pageNumber, pageSize) =>
+export const getSurnames = (pageNumber: number, pageSize: number) =>
   axios.get<PaginatedSurnameStats>(
     `/Voters/get-surname-stats?page=${pageNumber}&pageSize=${pageSize}`,
     { useApiPrefix: true, useVoterBase: true }

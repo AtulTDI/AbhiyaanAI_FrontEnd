@@ -46,17 +46,17 @@ type Props = {
 const DEFAULT_SURVEY_DATA: VoterSurveyRequest = {
   supportType: 0,
   supportStrength: 0,
-  casteId: null,
+  casteId: '',
   otherCaste: '',
   newAddress: '',
   society: '',
   flatNumber: '',
   email: '',
   secondaryMobileNumber: '',
-  dateOfBirth: null,
+  dateOfBirth: '',
   demands: [],
   needsFollowUp: false,
-  specialVisitDate: null,
+  specialVisitDate: '',
   specialVisitRemarks: '',
   voterDied: false,
   remarks: '',
@@ -122,7 +122,7 @@ export default function SurveyTab({ voterId }: Props) {
 
   const isWide = width >= 1024;
 
-  const [data, setData] = useState<VoterSurveyRequest>();
+  const [data, setData] = useState<VoterSurveyRequest>(DEFAULT_SURVEY_DATA);
   const [loading, setLoading] = useState(true);
   const [dobOpen, setDobOpen] = useState(false);
   const [specialVisitOpen, setSpecialVisitOpen] = useState(false);
@@ -137,7 +137,11 @@ export default function SurveyTab({ voterId }: Props) {
 
   const loadDemandsForExisting = useCallback(async (demands: VoterDemandItem[]) => {
     const uniqueCategoryIds = [
-      ...new Set(demands.map((d) => d.categoryId).filter(Boolean))
+      ...new Set(
+        demands
+          .map((d) => d.categoryId)
+          .filter((categoryId): categoryId is string => Boolean(categoryId))
+      )
     ];
 
     await Promise.all(
@@ -157,6 +161,12 @@ export default function SurveyTab({ voterId }: Props) {
 
   const loadSurvey = useCallback(async () => {
     try {
+      if (!voterId) {
+        setData(DEFAULT_SURVEY_DATA);
+        setLoading(false);
+        return;
+      }
+
       const res = await getSurveyByVoterId(voterId);
 
       if (res.status === 204) {
@@ -167,12 +177,13 @@ export default function SurveyTab({ voterId }: Props) {
 
       const demandRes = await getVoterDemands(voterId);
       const demands = demandRes.data ?? [];
+      const surveyData = res.data ?? DEFAULT_SURVEY_DATA;
 
       setData({
         ...DEFAULT_SURVEY_DATA,
         demands,
-        ...res.data,
-        casteId: res.data.otherCaste.length ? 'other' : res.data.casteId
+        ...surveyData,
+        casteId: surveyData.otherCaste?.length ? 'other' : (surveyData.casteId ?? '')
       });
 
       const initialOpen: Record<number, boolean> = {};
@@ -245,7 +256,7 @@ export default function SurveyTab({ voterId }: Props) {
   const updateMobile = (value: string) => {
     const digits = value.replace(/\D/g, '');
 
-    if (digits.length > (data.secondaryMobileNumber?.length ?? 0) + 1) {
+    if (digits.length > data.secondaryMobileNumber.length + 1) {
       update('secondaryMobileNumber', digits.slice(-10));
     } else if (digits.length <= 10) {
       update('secondaryMobileNumber', digits);
@@ -312,10 +323,11 @@ export default function SurveyTab({ voterId }: Props) {
   };
 
   const toggleResolved = async (index: number) => {
-    const demand = data.demands[index];
+    const demand = data.demands?.[index];
+    if (!demand?.id) return;
 
     await resolveVoterDemand({
-      voterDemandId: demand.id!,
+      voterDemandId: demand.id,
       resolutionNote: ''
     });
 
@@ -326,55 +338,69 @@ export default function SurveyTab({ voterId }: Props) {
 
   const handleSave = async () => {
     try {
-      if (!isValidMobile(data?.secondaryMobileNumber)) {
+      if (!isValidMobile(data.secondaryMobileNumber)) {
         showToast(t('voter.mobileInvalid'), 'error');
         return;
       }
 
-      if (!isValidEmail(data?.email)) {
+      if (!isValidEmail(data.email)) {
         showToast(t('voter.emailInvalid'), 'error');
         return;
       }
 
-      if (!isAtLeast18(data?.dateOfBirth)) {
+      if (!isAtLeast18(data.dateOfBirth)) {
         showToast(t('voter.dobUnder18'), 'error');
         return;
       }
 
-      const { demands, ...surveyPayload } = data;
+      const { demands = [], ...surveyPayload } = data;
       if (data.id) {
         await updateSurvey(data.id, {
           voterId,
           ...surveyPayload,
-          casteId: data.casteId === 'other' ? null : data.casteId
+          casteId: data.casteId === 'other' ? undefined : data.casteId
         });
       } else {
         await addSurvey({
           voterId,
           ...surveyPayload,
-          casteId: data.casteId === 'other' ? null : data.casteId
+          casteId: data.casteId === 'other' ? undefined : data.casteId
         });
       }
 
-      const existingDemandsPayload = demands
-        .filter((d) => d.id)
+      const existingDemandsPayload = voterId
+        ? demands
+        .filter(
+          (
+            d
+          ): d is VoterDemandItem & {
+            id: string;
+            categoryId: string;
+            demandId: string;
+            description: string;
+          } =>
+            Boolean(d.id && d.categoryId && d.demandId && d.description != null)
+        )
         .map((d) => ({
           voterDemandId: d.id,
-          voterId: voterId,
-          demandCategoryId: d.categoryId ?? null,
-          demandId: d.demandId ?? null,
-          description: d.description ?? null
-        }));
+          voterId,
+          demandCategoryId: d.categoryId,
+          demandId: d.demandId,
+          description: d.description
+        }))
+        : [];
       const newDemands = demands.filter((d) => !d.id);
 
       await Promise.all([
-        existingDemandsPayload.length && updateVoterDemands(existingDemandsPayload),
-        newDemands.length && addVoterDemands(voterId, newDemands)
+        ...(existingDemandsPayload.length
+          ? [updateVoterDemands(existingDemandsPayload)]
+          : []),
+        ...(newDemands.length && voterId ? [addVoterDemands(voterId, newDemands)] : [])
       ]);
 
       loadSurvey();
 
-      showToast(t(data?.id ? 'survey.updateSuccess' : 'survey.addSuccess'), 'success');
+      showToast(t(data.id ? 'survey.updateSuccess' : 'survey.addSuccess'), 'success');
     } catch (e) {
       showToast(extractErrorMessage(e), 'error');
     }
@@ -689,7 +715,7 @@ export default function SurveyTab({ voterId }: Props) {
                             placeholder={t('placeholder.selectCategory')}
                             value={String(d.categoryId ?? '')}
                             options={demandCategories.map((c) => ({
-                              label: t(`survey.demandCategories.${c.nameEn}`),
+                              label: t(`survey.demandCategories.${c.nameEn}`, c.nameEn),
                               value: c.id
                             }))}
                             disabled={d.isResolved}
@@ -713,10 +739,12 @@ export default function SurveyTab({ voterId }: Props) {
                           <FormDropdown
                             placeholder={t('placeholder.selectDemand')}
                             value={String(d.demandId ?? '')}
-                            options={(demandsByCategory[d.categoryId] ?? []).map((x) => ({
-                              label: t(`survey.demands.${x.demandEn}`),
-                              value: x.id
-                            }))}
+                            options={(demandsByCategory[d.categoryId ?? ''] ?? []).map(
+                              (x) => ({
+                                label: t(`survey.demands.${x.demandEn}`, x.demandEn),
+                                value: x.id
+                              })
+                            )}
                             disabled={!d.categoryId || d.isResolved}
                             onSelect={(v) => updateDemand(i, { demandId: v })}
                             noMargin
@@ -841,7 +869,7 @@ function DropdownRow({
 
   return (
     <View style={[styles.mobileRowContainer, noDivider && styles.rowNoDivider]}>
-      <Text style={styles.mobileRowLabel}>{label}</Text>
+      <Text style={styles.mobileRowLabel}>{label ?? ''}</Text>
       {children}
     </View>
   );
@@ -865,10 +893,10 @@ function InputRow({
 
   if (isWeb && !isMobileWeb) {
     return (
-      <Row label={label} noDivider={noDivider}>
+      <Row label={label ?? ''} noDivider={noDivider}>
         <TextInput
           {...props}
-          value={value}
+          value={value ?? undefined}
           dense
           mode="outlined"
           multiline={multiline}
@@ -892,11 +920,11 @@ function InputRow({
 
   return (
     <View style={[styles.mobileRowContainer, noDivider && styles.rowNoDivider]}>
-      <Text style={styles.mobileRowLabel}>{label}</Text>
+      <Text style={styles.mobileRowLabel}>{label ?? ''}</Text>
 
       <TextInput
         {...props}
-        value={value}
+        value={value ?? undefined}
         dense
         mode="outlined"
         multiline={multiline}
@@ -925,7 +953,7 @@ function BooleanRow({ label, value, noDivider, onChange }: BooleanRowProps) {
   return (
     <Row label={label} noDivider={noDivider}>
       <View style={rowStyles.inlineWrap}>
-        {[true, false].map((v) => (
+        {[true, false].map((v: boolean) => (
           <Chip
             key={String(v)}
             compact

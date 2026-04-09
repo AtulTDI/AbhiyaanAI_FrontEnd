@@ -89,6 +89,7 @@ export default function AddSenderScreen() {
   };
 
   const editSender = async (senderData: EditSenderPayload) => {
+    if (!senderToEdit) return;
     try {
       await editSenderById(senderToEdit.id, {
         ...senderData,
@@ -162,7 +163,14 @@ export default function AddSenderScreen() {
           >
             <SenderForm
               mode={senderToEdit ? 'edit' : 'create'}
-              onCreate={senderToEdit ? editSender : addSender}
+              onCreate={
+                senderToEdit
+                  ? editSender
+                  : ((data) => {
+                      if (!data.password) return;
+                      void addSender(data as CreateSenderPayload);
+                    })
+              }
               senderToEdit={senderToEdit}
               setSenderToEdit={setSenderToEdit}
               setShowAddSenderView={setShowAddSenderView}

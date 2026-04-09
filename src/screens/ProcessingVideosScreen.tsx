@@ -53,7 +53,10 @@ export default function ProcessingVideosScreen() {
       }
     };
 
-    onEvent('ReceiveVideoUpdate', handleProgressUpdate);
+    onEvent('ReceiveVideoUpdate', (...args) => {
+      const [recipientId, status] = args as [string, VoterStatus];
+      handleProgressUpdate(recipientId, status);
+    });
   }, []);
 
   const fetchVoters = useCallback(async () => {
@@ -149,7 +152,7 @@ export default function ProcessingVideosScreen() {
       label: t('createdAt'),
       key: 'createdAt',
       flex: 0.4,
-      render: (item) =>
+      render: (item: Recipient) =>
         item.createdAt ? dayjs(item.createdAt).format('DD MMM YYYY, hh:mm A') : '-'
     },
     {

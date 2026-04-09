@@ -56,13 +56,13 @@ export default function GeneratedVideoScreen() {
       const videosData: Video[] = Array.isArray(rawVideos) ? rawVideos : [];
 
       const transformedVideos = videosData.map((video) => ({
-        label: video.campaignName,
+        label: video.campaignName ?? video.campaign ?? '',
         value: video.id
       }));
 
       setBaseVideos(transformedVideos);
-      if (transformedVideos?.length) {
-        setSelectedVideoId((prev) => prev ?? transformedVideos[0]?.value);
+      if (transformedVideos.length > 0) {
+        setSelectedVideoId((prev) => prev ?? transformedVideos[0].value);
       }
     } catch (error) {
       showToast(extractErrorMessage(error, t('video.loadVideoFailMessage')), 'error');
@@ -113,9 +113,9 @@ export default function GeneratedVideoScreen() {
         <View style={styles.dropdownWrapper}>
           <FormDropdown
             placeholder={t('selectCampaign')}
-            value={selectedVideoId}
+            value={selectedVideoId ?? ''}
             options={baseVideos}
-            onSelect={(val) => setSelectedVideoId(val)}
+            onSelect={(val) => setSelectedVideoId(val ?? null)}
             noMargin
           />
         </View>
@@ -154,7 +154,7 @@ export default function GeneratedVideoScreen() {
         {
           channelId: channelId,
           recipientId: item.id,
-          campaignID: selectedVideoId
+          campaignID: selectedVideoId ?? ''
         },
         userId
       );
@@ -180,7 +180,7 @@ export default function GeneratedVideoScreen() {
       label: t('createdAt'),
       key: 'createdAt',
       flex: 0.4,
-      render: (item) =>
+      render: (item: Recipient) =>
         item.createdAt ? dayjs(item.createdAt).format('DD MMM YYYY, hh:mm A') : '-'
     },
     {

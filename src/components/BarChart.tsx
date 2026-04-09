@@ -4,6 +4,21 @@ import Svg, { G, Line, Rect, Text as SvgText } from 'react-native-svg';
 
 import { useTranslation } from 'react-i18next';
 
+export type ChartDatum = {
+  label: string;
+  value: number;
+  color?: string;
+};
+
+type BarChartProps = {
+  data?: ChartDatum[];
+  height: number;
+  barColor?: string;
+  titleColor?: string;
+  noData?: boolean;
+  backgroundColor?: string;
+};
+
 type BarProps = {
   x: number;
   value: number;
@@ -52,10 +67,10 @@ const BarChart = ({
   titleColor = '#1f2937',
   noData = false,
   backgroundColor = '#fdfaf7'
-}) => {
+}: BarChartProps) => {
   const { t } = useTranslation();
   const screenWidth = Dimensions.get('window').width;
-  const scrollRef = useRef(null);
+  const scrollRef = useRef<ScrollView | null>(null);
 
   const topPadding = 30;
   const bottomPadding = 80;
@@ -80,7 +95,7 @@ const BarChart = ({
   const yStepValue = Math.ceil(rawMaxValue / yStepCount);
   const ySteps = Array.from({ length: yStepCount + 1 }, (_, i) => i * yStepValue);
 
-  const splitLabel = (label) => {
+  const splitLabel = (label: string) => {
     if (!label) return ['', ''];
 
     const words = label.split(' ');
@@ -90,7 +105,7 @@ const BarChart = ({
     return [words.slice(0, mid).join(' '), words.slice(mid).join(' ')];
   };
 
-  const renderChartContent = (svgW) => (
+  const renderChartContent = (svgW: number) => (
     <Svg height={dynamicChartHeight + bottomPadding} width={svgW}>
       <SvgText
         x={15}

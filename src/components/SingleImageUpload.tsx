@@ -14,7 +14,7 @@ export type ImageAsset = {
   uri: string;
   name?: string;
   type?: string;
-  file?: File | null;
+  file?: File;
 };
 
 type Props = {

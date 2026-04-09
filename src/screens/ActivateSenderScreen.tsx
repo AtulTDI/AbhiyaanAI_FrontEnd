@@ -26,7 +26,7 @@ export default function ActivateSenderScreen() {
   const { colors } = theme;
   const { showToast } = useToast();
 
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [selectedUserId, setSelectedUserId] = useState('');
   const [users, setUsers] = useState<{ label: string; value: string }[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
 
@@ -52,7 +52,7 @@ export default function ActivateSenderScreen() {
   }, [showToast]);
 
   const fetchSendersByUser = useCallback(
-    (page: number, pageSize: number, userId: string | null) => {
+    (page: number, pageSize: number, userId?: string) => {
       if (!userId) return Promise.resolve({ items: [], totalCount: 0 });
       return getSenderByUserId(userId, page, pageSize).then((response) => ({
         items: Array.isArray(response?.data?.items) ? response.data.items : [],
@@ -83,7 +83,7 @@ export default function ActivateSenderScreen() {
         }),
         'success'
       );
-      table.fetchData(table.page, table.rowsPerPage, selectedUserId);
+      table.fetchData(table.page, table.rowsPerPage, selectedUserId || undefined);
     } catch (error) {
       showToast(t('sender.activationFailed'), 'error');
       void error;
@@ -95,7 +95,7 @@ export default function ActivateSenderScreen() {
       label: t('name'),
       key: 'fullName',
       flex: 0.5,
-      render: (item) => `${item.firstName} ${item.lastName}`
+      render: (item: Sender) => `${item.firstName} ${item.lastName}`
     },
     { label: t('mobile'), key: 'phoneNumber', flex: 0.2 },
     { label: t('email'), key: 'email', flex: 0.4 },
@@ -115,7 +115,7 @@ export default function ActivateSenderScreen() {
       flex: 1,
       render: (item: Sender) => (
         <ApprovalToggle
-          isApproved={item.emailConfirmed}
+          isApproved={item.emailConfirmed ?? false}
           onToggle={() => handleToggleSender(item)}
           approvedText={t('activated')}
           pendingText={t('clickToActivate')}
@@ -134,7 +134,7 @@ export default function ActivateSenderScreen() {
         <FormDropdown
           value={selectedUserId}
           options={users}
-          onSelect={setSelectedUserId}
+          onSelect={(value) => setSelectedUserId(value)}
         />
 
         <View style={styles.tableWrapper}>

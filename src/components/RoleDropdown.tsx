@@ -29,7 +29,9 @@ export default function RoleDropdown({ selectedRole, onSelect }: Props) {
         placeholder="Select Role"
         options={roleOptions}
         value={selectedRole}
-        onSelect={(val) => onSelect(val)}
+        onSelect={(val) => {
+          if (val) onSelect(val);
+        }}
         mode="outlined"
         menuContentStyle={styles.menuContent}
         CustomDropdownInput={(props) => (

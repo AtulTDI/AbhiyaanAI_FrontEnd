@@ -280,7 +280,7 @@ export default function VotersScreen() {
               ? (selectedSubFilter.value ?? undefined)
               : undefined,
             searchBy,
-            selectedCategory,
+            selectedCategory ?? undefined,
             selectedSubFilter.type === 'color'
               ? (selectedSubFilter.value ?? undefined)
               : undefined,
@@ -996,7 +996,7 @@ export default function VotersScreen() {
                             { key: 'lt', label: t('voter.ageLt') },
                             { key: 'gt', label: t('voter.ageGt') },
                             { key: 'between', label: t('voter.ageBetween') }
-                          ].map((m: { key: AgeMode; label: string }) => (
+                          ].map((m) => (
                             <Chip
                               key={m.key}
                               selected={ageMode === m.key}
@@ -1095,7 +1095,7 @@ export default function VotersScreen() {
                               { key: 'lt', label: t('voter.ageLt') },
                               { key: 'gt', label: t('voter.ageGt') },
                               { key: 'between', label: t('voter.ageBetween') }
-                            ].map((m: { key: AgeMode; label: string }) => (
+                            ].map((m) => (
                               <Chip
                                 key={m.key}
                                 selected={ageMode === m.key}

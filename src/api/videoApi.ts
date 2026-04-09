@@ -17,7 +17,7 @@ import axios from './axiosInstance';
 /**
  * Get paginated videos with optional search
  */
-export const getVideos = async (pageNumber, pageSize) => {
+export const getVideos = async (pageNumber: number, pageSize: number) => {
   const { role } = await getAuthData();
 
   const response = await axios.get<GetPaginatedVideos>(
@@ -57,6 +57,10 @@ export const uploadVideo = async (payload: Video) => {
   const fileName = payload.file.name || 'video.mp4';
   const mimeType = payload.file.mimeType || 'video/mp4';
   const fileUri = payload.file.uri;
+
+  if (!fileUri) {
+    throw new Error('Video file URI is required');
+  }
 
   // --- Check file exists on Mobile ---
   if (Platform.OS !== 'web' && fileUri.startsWith('file://')) {

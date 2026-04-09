@@ -66,6 +66,10 @@ export default function AddApplicationScreen() {
         };
       } catch (error) {
         showToast(extractErrorMessage(error, t('application.loadFailed')), 'error');
+        return {
+          items: [],
+          totalCount: 0
+        };
       }
     },
     [showToast, t]
@@ -90,6 +94,7 @@ export default function AddApplicationScreen() {
 
   const handleVoterFileUpload = async (applicationId: string) => {
     try {
+      if (!voterFile) return;
       await uploadVoters(voterFile, applicationId);
     } catch (error) {
       showToast(extractErrorMessage(error, t('voter.addFailed')), 'error');
@@ -101,7 +106,7 @@ export default function AddApplicationScreen() {
       setLoading(true);
       const response = await createApplication(data);
       if (voterFile) {
-        await handleVoterFileUpload(response.data.id);
+        await handleVoterFileUpload(response.data.id ?? '');
       }
       await table.fetchData(0, table.rowsPerPage);
       setShowAddApplicationView(false);
@@ -115,6 +120,8 @@ export default function AddApplicationScreen() {
   };
 
   const editApplication = async (data: ApplicationFormValues) => {
+    if (!applicationToEdit?.id) return;
+
     setShowAddApplicationView(true);
     try {
       setLoading(true);
@@ -124,7 +131,7 @@ export default function AddApplicationScreen() {
         isActive: applicationToEdit?.isActive
       });
       if (voterFile) {
-        await handleVoterFileUpload(applicationToEdit.id);
+        await handleVoterFileUpload(applicationToEdit.id ?? '');
       }
       await table.fetchData(table.page, table.rowsPerPage);
       setShowAddApplicationView(false);
@@ -144,6 +151,7 @@ export default function AddApplicationScreen() {
 
   const handleToggle = async (item: Application) => {
     try {
+      if (!item.id) return;
       await toggleApplication(item.id, !item.isActive);
       await table.fetchData(table.page, table.rowsPerPage);
       showToast(t('application.editSuccess'), 'success');
@@ -180,7 +188,7 @@ export default function AddApplicationScreen() {
           loading={loading}
           onCreate={applicationToEdit ? editApplication : addApplication}
           onVoterFileUpload={(file) => setVoterFile(file)}
-          applicationToEdit={applicationToEdit}
+          applicationToEdit={applicationToEdit ?? ({} as Application)}
           setApplicationToEdit={setApplicationToEdit}
           setShowAddApplicationView={setShowAddApplicationView}
         />

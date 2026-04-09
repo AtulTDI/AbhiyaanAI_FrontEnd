@@ -24,7 +24,7 @@ type Props = {
   mode: 'create' | 'edit';
   formSubmitLoading?: boolean;
   onChange?: (data: FieldConfig, value: string | boolean) => void;
-  onSubmit?: (data: Record<string, string | boolean | number>) => void;
+  onSubmit?: (data: Record<string, string | boolean | number | undefined>) => void;
   onCancel?: () => void;
   children?: React.ReactNode;
 };
@@ -213,24 +213,26 @@ export default function DynamicForm({
     if (validate()) {
       onSubmit?.({
         ...formData,
-        password: mode === 'edit' ? undefined : formData.password
+        password: mode === 'edit' ? '' : formData.password
       });
     }
   };
 
-  const getDropdownOptions = (options?: FieldConfig['options']) => {
+  const getDropdownOptions = (
+    options?: FieldConfig['options']
+  ): { label: string; value: string }[] => {
     if (!Array.isArray(options) || options.length === 0) {
       return [];
     }
 
     if (typeof options[0] === 'string') {
-      return options.map((option) => ({
+      return (options as string[]).map((option) => ({
         label: option,
         value: option
       }));
     }
 
-    return options.map((option) => ({
+    return (options as { label: string; value: string | number }[]).map((option) => ({
       label: option.label,
       value: String(option.value)
     }));

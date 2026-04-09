@@ -5,7 +5,16 @@ import Svg, { G, Path, Text as SvgText } from 'react-native-svg';
 import { useTranslation } from 'react-i18next';
 
 import colors from '../constants/colors';
-import BarChart from './BarChart';
+import BarChart, { ChartDatum } from './BarChart';
+
+type DonutChartProps = {
+  data?: ChartDatum[];
+  radius?: number;
+  holeRadius?: number;
+  width?: number;
+  height?: number;
+  noData?: boolean;
+};
 
 const DonutChart = ({
   data = [],
@@ -14,9 +23,9 @@ const DonutChart = ({
   width: _width = 320,
   height = 200,
   noData = false
-}) => {
+}: DonutChartProps) => {
   const { t } = useTranslation();
-  const [drilledSlice, setDrilledSlice] = useState(null);
+  const [drilledSlice, setDrilledSlice] = useState<ChartDatum | null>(null);
   const [showAllLegends, setShowAllLegends] = useState(false);
   const styles = createStyles(height, !!drilledSlice);
 
@@ -39,7 +48,7 @@ const DonutChart = ({
     '#6366f1'
   ];
 
-  const createDonutPath = (startAngle, endAngle, radius) => {
+  const createDonutPath = (startAngle: number, endAngle: number, radius: number) => {
     const startX = radius * Math.cos(startAngle);
     const startY = radius * Math.sin(startAngle);
     const endX = radius * Math.cos(endAngle);

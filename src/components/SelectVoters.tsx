@@ -14,12 +14,24 @@ import { AppTheme } from '../theme';
 import { Recipient } from '../types/Recipient';
 import { logger } from '../utils/logger';
 
+type StepData = {
+  0: string | null;
+  1: string[];
+};
+
+type Props = {
+  stepData: StepData;
+  setStepData: React.Dispatch<React.SetStateAction<StepData>>;
+  getTotalVotersCount?: (count: number) => void;
+  getSelectedVotersCount?: (count: number) => void;
+};
+
 export default function SelectVoters({
   stepData,
   setStepData,
   getTotalVotersCount,
   getSelectedVotersCount
-}) {
+}: Props) {
   const { t } = useTranslation();
   const theme = useTheme<AppTheme>();
   const { colors } = theme;
@@ -36,7 +48,7 @@ export default function SelectVoters({
 
   const toggleSelection = useCallback(
     (id: string) => {
-      setStepData((prev) => {
+      setStepData((prev: StepData) => {
         const current = prev[1] || [];
         return current.includes(id)
           ? { ...prev, 1: current.filter((x) => x !== id) }
@@ -46,14 +58,17 @@ export default function SelectVoters({
     [setStepData]
   );
 
-  const [params, setParams] = useState({
-    baseVideoId,
+  const [params, setParams] = useState<{
+    baseVideoId?: string;
+    searchText?: string;
+  }>({
+    baseVideoId: baseVideoId ?? undefined,
     searchText: ''
   });
 
   useEffect(() => {
     setParams((prev) => {
-      const next = { baseVideoId, searchText };
+      const next = { baseVideoId: baseVideoId ?? undefined, searchText };
       return JSON.stringify(prev) !== JSON.stringify(next) ? next : prev;
     });
   }, [baseVideoId, searchText]);
@@ -106,7 +121,7 @@ export default function SelectVoters({
   const toggleSelectAll = useCallback(() => {
     const currentPageIds = table.data.map((v) => v.id);
 
-    setStepData((prev) => {
+    setStepData((prev: StepData) => {
       const current = prev[1] || [];
 
       const allSelectedOnPage =
@@ -159,7 +174,7 @@ export default function SelectVoters({
       table.setPage(0);
       table.setRowsPerPage(10);
       table.fetchData(0, 10);
-      setStepData((prev) => ({ ...prev, 1: [] }));
+      setStepData((prev: StepData) => ({ ...prev, 1: [] }));
     }
   }, [baseVideoId, setStepData, table]);
 
@@ -211,9 +226,9 @@ export default function SelectVoters({
           <Ionicons name="people-outline" size={48} color={colors.disabledText} />
         }
         emptyText={t('voter.noData')}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item: Recipient) => item.id}
         enableSearch
-        onSearchChange={(filters) => handleVoterSearch(filters.search)}
+        onSearchChange={(filters) => handleVoterSearch(filters.search ?? '')}
         loading={loading}
         tableWithSelection
         tableType="tableUnderStepper"

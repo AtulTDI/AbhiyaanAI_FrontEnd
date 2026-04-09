@@ -20,7 +20,7 @@ async function getPublicKeyPem() {
 /**
  * Encrypt text with backend public key
  */
-export async function encryptWithBackendKey(text) {
+export async function encryptWithBackendKey(text: string) {
   const publicKeyPem = await getPublicKeyPem();
 
   const encryptor = new JSEncrypt();

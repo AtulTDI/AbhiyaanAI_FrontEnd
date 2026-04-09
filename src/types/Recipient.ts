@@ -1,5 +1,5 @@
 export type Recipient = {
-  id?: string;
+  id: string;
   fullName: string;
   phoneNumber: string;
   createdAt?: string;

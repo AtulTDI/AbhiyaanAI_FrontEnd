@@ -38,6 +38,10 @@ export default function PremiumVoicesScreen() {
         };
       } catch (error) {
         showToast(extractErrorMessage(error, t('voice.loadFailed')), 'error');
+        return {
+          items: [],
+          totalCount: 0
+        };
       }
     },
     [showToast, t]

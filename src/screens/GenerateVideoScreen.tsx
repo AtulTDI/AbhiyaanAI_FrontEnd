@@ -16,8 +16,14 @@ import { usePlatformInfo } from '../hooks/usePlatformInfo';
 import { navigate } from '../navigation/NavigationService';
 import { joinGroups, startConnection } from '../services/signalrService';
 import { AppTheme } from '../theme';
+import { GenerateVideo } from '../types/Video';
 import { extractErrorMessage } from '../utils/common';
 import { getAuthData } from '../utils/storage';
+
+type StepData = {
+  0: string | null;
+  1: string[];
+};
 
 export default function GenerateVideoScreen() {
   const { isWeb, isMobileWeb } = usePlatformInfo();
@@ -28,7 +34,7 @@ export default function GenerateVideoScreen() {
 
   const [activeStep, setActiveStep] = useState(0);
   const { showToast } = useToast();
-  const [stepData, setStepData] = useState({
+  const [stepData, setStepData] = useState<StepData>({
     0: null,
     1: []
   });
@@ -69,8 +75,10 @@ export default function GenerateVideoScreen() {
     }, [])
   );
 
-  const generateVideo = async (allVotersSelected) => {
-    const payload = {
+  const generateVideo = async (allVotersSelected?: boolean) => {
+    if (!stepData[0]) return;
+
+    const payload: GenerateVideo & { isSelectAllClicked?: boolean } = {
       baseVideoId: stepData[0],
       recipientIds: allVotersSelected ? [] : stepData[1],
       isSelectAllClicked: allVotersSelected ? allVotersSelected : undefined
@@ -87,7 +95,7 @@ export default function GenerateVideoScreen() {
     }
   };
 
-  const setupSignalR = async (allVotersSelected) => {
+  const setupSignalR = async (allVotersSelected?: boolean) => {
     const { accessToken } = await getAuthData();
 
     await startConnection(accessToken);
@@ -131,8 +139,8 @@ export default function GenerateVideoScreen() {
           <SelectVoters
             stepData={stepData}
             setStepData={setStepData}
-            getTotalVotersCount={(count) => setTotalVoterCount(count)}
-            getSelectedVotersCount={(count) => setSelectedVoterCount(count)}
+            getTotalVotersCount={(count: number) => setTotalVoterCount(count)}
+            getSelectedVotersCount={(count: number) => setSelectedVoterCount(count)}
           />
         );
       default:

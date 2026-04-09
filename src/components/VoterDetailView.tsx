@@ -875,7 +875,7 @@ function EditableInfoRow({
         <View style={rowStyles.editingRow}>
           <TextInput
             mode="outlined"
-            value={local}
+            value={local ?? undefined}
             keyboardType={keyboardType}
             onChangeText={(text) => {
               const digitsOnly = text.replace(/\D/g, '');
@@ -888,7 +888,7 @@ function EditableInfoRow({
               }
             }}
             outlineColor={
-              local !== '' && !/^\d{10}$/.test(local)
+              local !== '' && !/^\d{10}$/.test(local ?? '')
                 ? theme.colors.error
                 : theme.colors.white
             }
@@ -899,12 +899,12 @@ function EditableInfoRow({
               icon="check"
               size={18}
               onPress={() => {
-                if (local !== '' && !/^\d{10}$/.test(local)) {
+                if (local !== '' && !/^\d{10}$/.test(local ?? '')) {
                   showToast(t('voter.mobileInvalid'), 'error');
                   return;
                 }
 
-                onSave?.(local);
+                onSave?.(local ?? '');
                 setEditing(false);
               }}
             />

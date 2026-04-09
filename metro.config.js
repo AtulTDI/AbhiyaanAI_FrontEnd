@@ -5,7 +5,8 @@ const WEB_STUBS = {
   'react-native-vision-camera': './stubs/vision-camera.stub.js',
   'react-native-contacts': './stubs/contacts.stub.js',
   'react-native-fs': './stubs/fs.stub.js',
-  'react-native-share': './stubs/share.stub.js'
+  'react-native-share': './stubs/share.stub.js',
+  'react-native-walkthrough-tooltip': './stubs/walkthrough-tooltip.stub.js'
 };
 
 module.exports = (async () => {

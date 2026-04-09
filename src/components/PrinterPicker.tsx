@@ -20,8 +20,19 @@ import { logger } from '../utils/logger';
 
 const { ThermalPrinter } = NativeModules;
 
-export default function PrinterPicker({ visible, onSelect, onClose }) {
-  const [devices, setDevices] = useState([]);
+type PrinterDevice = {
+  name?: string;
+  mac: string;
+};
+
+type Props = {
+  visible: boolean;
+  onSelect: (device: PrinterDevice) => Promise<void> | void;
+  onClose: () => void;
+};
+
+export default function PrinterPicker({ visible, onSelect, onClose }: Props) {
+  const [devices, setDevices] = useState<PrinterDevice[]>([]);
   const [loading, setLoading] = useState(false);
   const [connectingMac, setConnectingMac] = useState<string | null>(null);
   const [connectedMac, setConnectedMac] = useState<string | null>(null);
@@ -48,7 +59,7 @@ export default function PrinterPicker({ visible, onSelect, onClose }) {
     setLoading(false);
   };
 
-  const handleSelect = async (item) => {
+  const handleSelect = async (item: PrinterDevice) => {
     if (connectingMac) return;
 
     setErrorMessage(null);
@@ -70,7 +81,7 @@ export default function PrinterPicker({ visible, onSelect, onClose }) {
     }
   };
 
-  const renderItem = ({ item }) => {
+  const renderItem = ({ item }: { item: PrinterDevice }) => {
     const selected = connectedMac === item.mac;
     const connecting = connectingMac === item.mac;
 

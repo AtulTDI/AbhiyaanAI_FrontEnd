@@ -77,6 +77,7 @@ export default function ImageUploadForm({
   imageToEdit,
   setImageToEdit
 }: Props) {
+  const isEditing = Boolean(imageToEdit);
   const { t } = useTranslation();
   const { isWeb, isMobileWeb } = usePlatformInfo();
   const theme = useTheme<AppTheme>();
@@ -90,7 +91,7 @@ export default function ImageUploadForm({
 
   const [images, setImages] = useState<ImageAsset[]>(() => {
     return imageToEdit
-      ? imageToEdit.images.map((img) => ({
+      ? (imageToEdit.images ?? []).map((img) => ({
           uri: img,
           locked: true
         }))
@@ -231,12 +232,12 @@ export default function ImageUploadForm({
         return;
       }
 
-      const result: PickerResultLike = await ImagePickerModule.launchImageLibraryAsync({
+      const result = (await ImagePickerModule.launchImageLibraryAsync({
         mediaTypes: ImagePickerModule.MediaTypeOptions.Images,
         allowsMultipleSelection: false,
         quality: 0.8,
         base64: false
-      });
+      })) as PickerResultLike;
 
       const cancelled = result.cancelled ?? result.canceled ?? false;
 
@@ -437,9 +438,9 @@ export default function ImageUploadForm({
         <Divider style={styles.sectionDivider} />
 
         <Text variant="titleMedium" style={[styles.uploadTitle, uploadTitleStyle]}>
-          {t(imageToEdit ? 'image.view' : 'image.upload')}
+          {t(isEditing ? 'image.view' : 'image.upload')}
         </Text>
-        {!imageToEdit && (
+        {!isEditing && (
           <Text style={styles.uploadSubtitle}>
             {t('image.uploadMax', { max: MAX_IMAGES })}
           </Text>
@@ -485,7 +486,7 @@ export default function ImageUploadForm({
           ))}
 
           {/* Add button – still allowed in edit mode, but respects MAX_IMAGES */}
-          {!imageToEdit && images.length < MAX_IMAGES && (
+          {!isEditing && images.length < MAX_IMAGES && (
             <TouchableOpacity
               onPress={pickImage}
               activeOpacity={0.75}
@@ -611,7 +612,7 @@ export default function ImageUploadForm({
         <Button
           mode="outlined"
           onPress={() => {
-            setImageToEdit(null);
+            setImageToEdit(null as unknown as ImageType);
             setShowAddView(false);
           }}
           style={styles.actionButton}
@@ -627,7 +628,7 @@ export default function ImageUploadForm({
           loading={uploading}
           style={styles.actionButton}
         >
-          {imageToEdit ? t('update') : t('image.upload')}
+          {isEditing ? t('update') : t('image.upload')}
         </Button>
       </View>
     </View>

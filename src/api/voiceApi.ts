@@ -4,7 +4,7 @@ import axios from './axiosInstance';
 /**
  * Get paginated voices with optional search
  */
-export const getVoices = (pageNumber, pageSize) =>
+export const getVoices = (pageNumber: number, pageSize: number) =>
   axios.get<GetPaginatedVoices>(
     `/VoiceManagement/getVoices?page=${pageNumber + 1}&pageSize=${pageSize}`,
     { useApiPrefix: true }

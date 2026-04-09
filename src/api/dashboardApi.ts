@@ -3,13 +3,13 @@ import axios from './axiosInstance';
 /**
  * Get Dashboard
  */
-export const getDashboard = (userId) =>
+export const getDashboard = (userId: string) =>
   axios.get(`/Dashboard/get-dashboard/${userId}`, { useApiPrefix: true });
 
 /**
  * Get Campaign Stats
  */
-export const getCampaignStats = (userId) =>
+export const getCampaignStats = (userId: string) =>
   axios.get(`/Dashboard/getallcampaign-stats/${userId}`, { useApiPrefix: true });
 
 /**

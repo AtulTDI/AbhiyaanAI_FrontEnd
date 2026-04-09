@@ -4,7 +4,17 @@ import { Card } from 'react-native-paper';
 
 import colors from '../constants/colors';
 
-const KPICard = ({ item, idx }) => {
+type KPIItem = {
+  title: string;
+  value: number;
+};
+
+type Props = {
+  item: KPIItem;
+  idx: number;
+};
+
+const KPICard = ({ item, idx }: Props) => {
   return (
     <Card key={idx} style={styles.kpiCard}>
       <View style={styles.cardContent}>

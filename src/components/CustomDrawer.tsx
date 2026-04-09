@@ -40,7 +40,9 @@ export default function CustomDrawer(props: DrawerContentComponentProps) {
   );
 
   useEffect(() => {
-    const updatePhoto = (newPath: string) => {
+    const updatePhoto = (newPath: unknown) => {
+      if (typeof newPath !== 'string') return;
+
       setCandidatePhotoPath((prev) => {
         if (!prev) return newPath;
 

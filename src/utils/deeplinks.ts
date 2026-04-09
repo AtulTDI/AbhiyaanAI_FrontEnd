@@ -1,4 +1,6 @@
-const ENV = process.env.APP_ENV || 'development';
+type AppEnv = 'development' | 'uat' | 'demo' | 'production';
+
+const ENV: AppEnv = (process.env.APP_ENV as AppEnv) || 'development';
 
 const apiMap = {
   development: {
@@ -23,7 +25,7 @@ const apiMap = {
   }
 };
 
-const selected = apiMap[ENV] || apiMap.development;
+const selected = apiMap[ENV] ?? apiMap.development;
 
 const prefixes = [selected.API, selected.ALT_API, selected.VOTER_API, 'abhiyanai://'];
 
